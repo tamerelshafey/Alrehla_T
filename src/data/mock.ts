@@ -1,9 +1,11 @@
+import { cookies } from 'next/headers';
 import {
   WritingPackage,
   Instructor,
   PersonalizedProduct,
   BlogPost,
-  UserProfile
+  UserProfile,
+  UserRole
 } from '../types';
 
 export const mockWritingPackages: WritingPackage[] = [
@@ -132,5 +134,15 @@ export const getBlogPostBySlug = async (slug: string): Promise<BlogPost | null> 
 };
 
 export const getCurrentUser = async (): Promise<UserProfile> => {
-  return Promise.resolve(mockCurrentUser);
+  const cookieStore = await cookies();
+  const mockRoleCookie = cookieStore.get('mockRole');
+  const role = (mockRoleCookie?.value as UserRole) || 'visitor';
+
+  return Promise.resolve({
+    id: 'current-user',
+    fullName: role === 'visitor' ? 'زائر تجريبي' : `مستخدم تجريبي (${role})`,
+    email: `${role}@example.com`,
+    role: role,
+    createdAt: '2023-01-01T00:00:00Z',
+  });
 };
