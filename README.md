@@ -1,11 +1,45 @@
-<div align="center">
+# الرحلة (Al-Rehla)
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+منصة تعليمية لتعلّم الكتابة الإبداعية وتقديم قصص وهدايا مخصصة للأطفال والشباب.
 
-  <h1>Built with AI Studio</h2>
+## المتطلبات الأساسية
+- Node.js (الإصدار 18 أو أحدث)
+- مدير الحزم npm أو yarn أو pnpm
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## التشغيل محليًا
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+1. تثبيت الاعتمادات:
+   ```bash
+   npm install
+   ```
 
-</div>
+2. تشغيل خادم التطوير:
+   ```bash
+   npm run dev
+   ```
+
+3. افتح [http://localhost:3000](http://localhost:3000) في المتصفح لرؤية النتيجة.
+
+## بنية المجلدات
+
+تم تنظيم المشروع داخل مجلد `src/` كالتالي:
+
+- `src/app`: يحتوي على مسارات التطبيق (Routes) باستخدام Next.js App Router.
+- `src/components`: المكونات المشتركة لإعادة الاستخدام (سيتم تقسيمها لاحقًا إلى ui، layout، features).
+- `src/lib`: أدوات ودوال مساعدة عامة (Utilities).
+- `src/types`: تعريفات TypeScript للكيانات وأنواع البيانات.
+- `src/data`: طبقة البيانات (للتعامل مع قواعد البيانات والمصادر الخارجية لاحقًا).
+
+## قواعد الكود (Code Rules)
+
+1. **مكونات الخادم أولاً (Server-first components):** 
+   يتم اعتبار جميع المكونات Server Components بشكل افتراضي للحصول على أداء أفضل وتقليل حجم الجافاسكريبت المُرسل للمتصفح. 
+   لا يتم استخدام موجه `"use client"` إلا عند الحاجة الفعلية لحالات التفاعل (State) أو أحداث المتصفح (Browser Events).
+2. **TypeScript:**
+   الوضع الصارم (Strict mode) مفعل. يجب تجنب استخدام `any` وتوفير تعريفات أنواع واضحة للبيانات.
+3. **الجودة والتنسيق:**
+   - يتم استخدام `ESLint` مع قواعد Next.js الموصى بها.
+   - يتم استخدام `Prettier` لتنسيق الكود تلقائيًا.
+4. **التصميم (Styling):**
+   - الاعتماد الكامل على Tailwind CSS.
+   - دعم كامل للغة العربية واتجاه الصفحة من اليمين لليسار (RTL) بشكل افتراضي.
