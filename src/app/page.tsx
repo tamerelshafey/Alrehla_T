@@ -11,7 +11,7 @@ export default async function HomePage() {
       <section className="relative z-10 text-center space-y-6 max-w-4xl mx-auto pt-20">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[600px] md:w-[800px] h-[300px] sm:h-[400px] bg-blue-100/30 rounded-full blur-[100px] md:blur-[120px] pointer-events-none"></div>
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-black leading-tight tracking-tight text-slate-900 drop-shadow-sm relative z-10">
-          رحلةٌ تُكتب باسمه، ورحلةٌ يكتبها بصوته.
+          رحلتان مختلفتان... ومساحة واحدة للحكاية والنمو
         </h1>
         <p className="text-lg md:text-xl text-slate-500 max-w-3xl mx-auto font-medium leading-relaxed relative z-10">
           «الرحلة» منصة عربية أسرية تجمع مشروعين: «إنها لك» يقدّم قصصًا مصورة هادفة تُخصَّص لأبنائكم ليكونوا هم أبطالها، و«بداية الرحلة» برنامج فردي للكتابة يساعدهم على اكتشاف أصواتهم وتنمية أدواتهم الكتابية.

@@ -20,7 +20,7 @@ export default function Footer() {
               <Link href="/about" className="hover:text-blue-600 transition-colors">عن المنصة</Link>
               <Link href="/enha-lak" className="hover:text-blue-600 transition-colors">إنها لك</Link>
               <Link href="/creative-writing" className="hover:text-blue-600 transition-colors">دورات الكتابة</Link>
-              <Link href="/support" className="hover:text-blue-600 transition-colors">المساعدة</Link>
+              <Link href="/support" className="hover:text-blue-600 transition-colors">الدعم والمساعدة</Link>
             </div>
           </div>
           

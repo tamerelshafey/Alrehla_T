@@ -8,51 +8,124 @@ import {
   UserRole,
   Testimonial,
   AddonProduct,
-  SubscriptionTier
+  SubscriptionTier,
+  CreativeService
 } from '../types';
 
 export const mockWritingPackages: WritingPackage[] = [
+  // مسار الإبداع التأسيسي (دون 12 سنة)
   {
     id: 'pkg-1',
-    slug: 'creative-writing-basics',
-    name: 'أساسيات الكتابة الإبداعية',
+    slug: 'golden-words',
+    name: 'الكلمات الذهبية',
     ageGroup: 'under_12',
-    sessionsCount: 4,
-    durationWeeks: 4,
-    shortDescription: 'دورة مبسطة للأطفال لتعلم أساسيات سرد القصص.',
-    fullDescription: 'دورة متكاملة تركز على بناء الشخصيات وخلق عوالم خيالية ممتعة...',
+    price: 2990,
+    durationText: '3 أشهر',
+    sessionsCount: 12,
+    sessionDuration: '40 دقيقة',
+    targetAudience: 'تناسب الطفل الذي يخوض تجربة منظمة أولى مع الكتابة، أو يريد اكتشاف علاقته بها في مساحة فردية دافئة وخفيفة، دون الحاجة إلى خبرة سابقة.',
+    prerequisiteNote: 'مستقلة بذاتها (يمكن الانتقال بعدها إلى السطور السحرية لكنها ليست شرطًا لها)',
+    shortDescription: 'رحلة استكشافية قصيرة للمبتدئين.',
+    fullDescription: 'دورة تركز على اكتشاف الكتابة كمساحة للتعبير...',
     isActive: true,
   },
   {
     id: 'pkg-2',
-    slug: 'advanced-storytelling',
-    name: 'السرد المتقدم',
-    ageGroup: '12_plus',
-    sessionsCount: 8,
-    durationWeeks: 8,
-    prerequisitePackageId: 'pkg-1',
-    shortDescription: 'دورة متقدمة للشباب لتطوير مهارات السرد والحبكة.',
-    fullDescription: 'تتناول هذه الدورة تقنيات متقدمة في الكتابة، الحبكة الدرامية، وتطوير الحوار...',
+    slug: 'magic-lines',
+    name: 'السطور السحرية',
+    ageGroup: 'under_12',
+    price: 5990,
+    durationText: '6 أشهر',
+    sessionsCount: 24,
+    sessionDuration: '40 دقيقة',
+    targetAudience: 'تناسب الطفل الذي يريد مساحة أطول للكتابة والتجريب، ويرغب في توسيع أدواته واكتشاف أنواع متعددة من الكتابة والعمل على مشروع كتابي خاص يمتد عبر فترة أطول.',
+    prerequisiteNote: 'لا تشترط إتمام الكلمات الذهبية مسبقًا',
+    shortDescription: 'رحلة أطول لتوسيع أدوات الكتابة وبناء مشروع.',
+    fullDescription: 'دورة لتوسيع مهارات الكتابة وبناء مشروع شخصي...',
     isActive: true,
   },
+  // مسار اليافعين والكبار (12 سنة فأعلى)
+  {
+    id: 'pkg-3',
+    slug: 'first-spark',
+    name: 'الشرارة الأولى',
+    ageGroup: '12_plus',
+    price: 2990,
+    durationText: '3 أشهر',
+    sessionsCount: 12,
+    sessionDuration: '40 دقيقة',
+    targetAudience: 'تناسب اليافع أو الشاب أو الكبير الذي يريد أن يبدأ ممارسة الكتابة، أو يكتشف علاقته بها، أو يحوّل أفكاره الأولى إلى نصوص فعلية، دون الحاجة إلى الاشتراك في مسار طويل.',
+    prerequisiteNote: 'مستقلة بذاتها',
+    shortDescription: 'رحلة قصيرة لتحويل الأفكار إلى نصوص.',
+    fullDescription: 'الخطوة الأولى في عالم الكتابة والتعبير...',
+    isActive: true,
+  },
+  {
+    id: 'pkg-4',
+    slug: 'crafting-impact',
+    name: 'صياغة الأثر',
+    ageGroup: '12_plus',
+    price: 5990,
+    durationText: '6 أشهر',
+    sessionsCount: 24,
+    sessionDuration: '60 دقيقة',
+    targetAudience: 'تناسب من يريد أن يمنح الكتابة وقتًا أطول، ويعمّق أدواته، ويجرب أكبر من نوع أدبي، ثم ينتقل إلى بناء مشروع كتابي خاص به.',
+    prerequisiteNote: 'مستقلة بذاتها، ويمكن الاشتراك فيها مباشرة',
+    shortDescription: 'مسار متعمق لتجربة أنواع أدبية مختلفة.',
+    fullDescription: 'برنامج متكامل يعمق أدوات الكاتب ويوسع مداركه...',
+    isActive: true,
+  },
+  {
+    id: 'pkg-5',
+    slug: 'story-maker',
+    name: 'صانع الحكاية',
+    ageGroup: '12_plus',
+    price: 11990,
+    durationText: '6 أشهر',
+    sessionsCount: 24,
+    sessionDuration: '60 دقيقة',
+    targetAudience: 'تناسب المشارك الذي أتم «صياغة الأثر» وأصبح لديه أساس كتابي ومشروع يمكن تطويره، ويريد التعمق في بناء الحكاية والعمل على مشروع أدبي أكبر امتدادًا.',
+    prerequisiteNote: 'يشترط إتمام رحلة صياغة الأثر أولًا',
+    prerequisitePackageId: 'pkg-4',
+    shortDescription: 'رحلة لبناء وتطوير مشروع أدبي متكامل.',
+    fullDescription: 'التعمق في بناء الحكاية والشخصيات وتطوير مشروع أدبي متماسك...',
+    isActive: true,
+  },
+  {
+    id: 'pkg-6',
+    slug: 'journey-to-story',
+    name: 'رحلتي نحو الحكاية',
+    ageGroup: '12_plus',
+    price: 19190,
+    durationText: '12 شهر (البرنامج الكامل)',
+    sessionsCount: 48,
+    sessionDuration: '60 دقيقة',
+    targetAudience: 'تناسب من يريد خوض مسار سنوي واحد متصل بدلًا من رحلتين منفصلتين، ويبحث عن تجربة متصلة تمنحه الوقت للانتقال من التأسيس والتجريب إلى بناء المشروع ثم صقله وتطوير ملف أعماله.',
+    prerequisiteNote: 'لا تشترط إتمام أي رحلة سابقة، لأنها تحتوي المسار الكامل داخل تجربة سنوية واحدة',
+    shortDescription: 'المسار الكامل من التجريب إلى صقل مشروع التخرج.',
+    fullDescription: 'برنامج سنوي شامل ينتقل بالكاتب من نقطة البداية وحتى إنهاء مشروعه...',
+    isActive: true,
+  }
 ];
 
 export const mockInstructors: Instructor[] = [
   {
     id: 'inst-1',
     userId: 'user-101',
-    displayName: 'أحمد محمود',
-    bio: 'كاتب روائي مهتم بأدب الطفل.',
-    specialties: ['أدب الطفل', 'القصص القصيرة'],
+    displayName: 'مدربة أولى',
+    bio: 'سيتم إضافة الملفات الفعلية للمدربين قريبًا.',
+    specialties: ['كتابة إبداعية'],
     yearsExperience: 5,
+    isSample: true,
   },
   {
     id: 'inst-2',
     userId: 'user-102',
-    displayName: 'سارة خالد',
-    bio: 'محررة ومدربة كتابة إبداعية.',
-    specialties: ['كتابة السيناريو', 'الرواية'],
-    yearsExperience: 8,
+    displayName: 'مدرب أول',
+    bio: 'سيتم إضافة الملفات الفعلية للمدربين قريبًا.',
+    specialties: ['الكتابة للأطفال', 'بناء الشخصيات'],
+    yearsExperience: 7,
+    isSample: true,
   },
 ];
 
@@ -190,26 +263,68 @@ export const mockTestimonials: Testimonial[] = [
     authorRole: 'طالبة في دورة الكتابة',
     content: 'تعلمت كيف أترجم مشاعري إلى كلمات، والأجمل هو الدعم المستمر والمساحة الآمنة للتعبير في دورات بداية الرحلة.',
   },
+  {
+    id: 'test-4',
+    authorName: 'خالد عبد الرحمن',
+    authorRole: 'ولي أمر طالب',
+    content: 'أصبح ابني ينتظر موعد الجلسة بشغف. الكتابة تحولت من واجب مدرسي ثقيل إلى مساحة يحبها ويعبر فيها عن نفسه بحرية.',
+  },
+  {
+    id: 'test-5',
+    authorName: 'مريم العلي',
+    authorRole: 'ولية أمر طالبة',
+    content: 'لم أكن أعرف كيف أساعد ابنتي على تنمية موهبتها. بداية الرحلة وفرت لها المدربة والمنهج والمساحة الآمنة لتكبر موهبتها.',
+  }
+];
+
+export const mockCreativeServices: CreativeService[] = [
+  {
+    id: 'srv-1',
+    name: 'مراجعة قصة قصيرة',
+    price: 350,
+    description: 'مراجعة لغوية وإبداعية لقصة قصيرة كتبها الطفل.',
+  },
+  {
+    id: 'srv-2',
+    name: 'جلسة توليد أفكار',
+    price: 410,
+    description: 'لقاء فردي لمن يريد تطوير فكرة قصة أو شخصيات أو إيجاد مدخل للبدء.',
+  },
+  {
+    id: 'srv-3',
+    name: 'تقرير على عينة كتابية',
+    price: 290,
+    description: 'قراءة مركزة لعينة يرسلها العميل، تتضمن أبرز نقاط القوة وفرص التطوير.',
+  },
 ];
 
 export const mockBlogPosts: BlogPost[] = [
   {
     id: 'post-1',
-    slug: 'how-to-encourage-reading',
-    title: 'كيف تشجع طفلك على القراءة؟',
-    excerpt: 'خطوات بسيطة وفعالة لبناء عادة القراءة لدى الأطفال.',
-    content: 'محتوى المقال هنا...',
+    slug: 'discover-writing-voice',
+    title: 'كيف تساعد طفلك على اكتشاف صوته الكتابي؟',
+    excerpt: 'خطوات بسيطة وعملية تبدأ من الاستماع لا من التصحيح.',
+    content: `كل طفل يحمل طريقة تعبير خاصة به، لكنها تحتاج مساحة لتظهر. ابدأ بالاستماع لما يحب أن يحكيه شفهيًا قبل أن تطلب منه الكتابة؛ فالقصص التي يرويها بصوته العالي غالبًا ما تكون أقرب أسلوبه الحقيقي. اترك له حرية اختيار الموضوع في البداية، فالحماس للموضوع أهم من الالتزام بقالب معين. لا تصحح كل خطأ إملائي أو نحوي فور ظهوره؛ التركيز الأول على الفكرة والصوت، والتحرير يأتي لاحقًا كخطوة منفصلة. واحتفِ بكل محاولة كاملة، مهما كانت قصيرة، لأن الثقة بالكتابة تُبنى قبل إتقانها.`,
     publishedAt: '2023-10-01T10:00:00Z',
     authorName: 'فريق الرحلة',
   },
   {
     id: 'post-2',
-    slug: 'benefits-of-creative-writing',
-    title: 'فوائد الكتابة الإبداعية للشباب',
-    excerpt: 'الكتابة الإبداعية ليست مجرد هواية، بل هي أداة لبناء الشخصية.',
-    content: 'محتوى المقال هنا...',
+    slug: 'why-children-love-being-heroes',
+    title: 'لماذا يحب الأطفال أن يروا أنفسهم أبطالًا في القصة؟',
+    excerpt: 'التخصيص ليس رفاهية، بل أداة تربوية حقيقية.',
+    content: `حين يرى الطفل اسمه وملامحه داخل قصة مطبوعة، تتغير علاقته بالقراءة من مجرد نشاط إلى تجربة شخصية. هذا الشعور بالحضور داخل الحكاية يعزز تقدير الطفل لذاته، ويجعله أكثر انتباهًا لتفاصيل النص لأنه يخصه هو تحديدًا. كما أن القيم التربوية المطروحة داخل القصة تصل بشكل أعمق حين يعيشها الطفل كبطل للأحداث، لا كمتفرج عليها من الخارج. لهذا تصبح القصة المخصصة أداة فعالة ليس فقط للترفيه، بل لتعزيز السلوكيات والقيم التي يسعى الأهل لغرسها بأسلوب غير مباشر وغير مباشر في فرضه.`,
     publishedAt: '2023-10-15T12:00:00Z',
-    authorName: 'سارة خالد',
+    authorName: 'فريق الرحلة',
+  },
+  {
+    id: 'post-3',
+    slug: '5-simple-ideas-for-writing-at-home',
+    title: 'خمس أفكار بسيطة لتشجيع طفلك على الكتابة في المنزل',
+    excerpt: 'لا تحتاج إلى أدوات معقدة، فقط عادة صغيرة يومية.',
+    content: `أولًا، خصص "دفتر أفكار" يكتب فيه الطفل جملة أو فكرة يومية دون أي شرط بالطول أو الصحة اللغوية. ثانيًا، اطلب منه أحيانًا أن يكتب نهاية بديلة لقصة قرأها بدل النهاية الأصلية. ثالثًا، شجعه على كتابة رسائل قصيرة لأفراد العائلة في المناسبات بدل الاكتفاء بالتهنئة الشفهية. رابعًا، اجعلوا وقت القراءة العائلي فرصة لطرح سؤال: "لو كنت مكان البطل، ماذا كنت ستفعل؟" ثم اتركوه يكتب إجابته. خامسًا، لا تربط الكتابة دائمًا بالواجب المدرسي؛ اجعل جزءًا منها خاصًا باللعب والخيال الحر بلا تقييم.`,
+    publishedAt: '2023-11-01T10:00:00Z',
+    authorName: 'فريق الرحلة',
   },
 ];
 
@@ -254,6 +369,10 @@ export const getSubscriptionTiers = async (): Promise<SubscriptionTier[]> => {
 
 export const getTestimonials = async (): Promise<Testimonial[]> => {
   return Promise.resolve(mockTestimonials);
+};
+
+export const getCreativeServices = async (): Promise<CreativeService[]> => {
+  return Promise.resolve(mockCreativeServices);
 };
 
 export const getBlogPosts = async (): Promise<BlogPost[]> => {

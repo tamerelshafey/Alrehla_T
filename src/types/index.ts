@@ -20,8 +20,12 @@ export type WritingPackage = {
   slug: string;
   name: string;
   ageGroup: AgeGroup;
+  price: number;
+  durationText: string;
   sessionsCount: number;
-  durationWeeks: number;
+  sessionDuration: string;
+  targetAudience: string;
+  prerequisiteNote?: string;
   prerequisitePackageId?: string;
   shortDescription: string;
   fullDescription: string;
@@ -37,6 +41,15 @@ export type Instructor = {
   specialties: string[];
   avatarUrl?: string;
   yearsExperience: number;
+  isSample?: boolean;
+};
+
+// خدمة إبداعية مستقلة
+export type CreativeService = {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
 };
 
 // حالة الحجز
