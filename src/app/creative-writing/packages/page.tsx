@@ -5,33 +5,34 @@ import { WritingPackage } from '@/types';
 
 export default async function PackagesPage() {
   const packages = await getWritingPackages();
-  
-  const under12 = packages.filter(p => p.ageGroup === 'under_12');
-  const over12 = packages.filter(p => p.ageGroup === '12_plus');
+
+  const under12 = packages.filter((p) => p.ageGroup === 'under_12');
+  const over12 = packages.filter((p) => p.ageGroup === '12_plus');
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-start relative px-6 md:px-12 py-20 w-full font-sans text-slate-800 space-y-24">
-      
+    <div className="relative flex w-full flex-1 flex-col items-center justify-start space-y-24 px-6 py-20 font-sans text-slate-800 md:px-12">
       {/* Header */}
-      <section className="text-center space-y-6 max-w-4xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">
+      <section className="mx-auto max-w-4xl space-y-6 text-center">
+        <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-5xl">
           باقات «بداية الرحلة»
         </h1>
-        <p className="text-lg md:text-xl text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto">
-          ست رحلات تختلف في طول المسار وعدد الجلسات، موزعة على مسارين عمريين. قارن ما تتضمنه كل رحلة ثم اختر ما يناسب المشارك.
+        <p className="mx-auto max-w-2xl text-lg leading-relaxed font-medium text-slate-500 md:text-xl">
+          ست رحلات تختلف في طول المسار وعدد الجلسات، موزعة على مسارين عمريين.
+          قارن ما تتضمنه كل رحلة ثم اختر ما يناسب المشارك.
         </p>
       </section>
 
       {/* Tabs / Filters (Visual only for now, can be implemented with state later) */}
-      <div className="w-full max-w-6xl mx-auto space-y-20">
-        
+      <div className="mx-auto w-full max-w-6xl space-y-20">
         {/* Track 1: Under 12 */}
         <section>
           <div className="mb-10 text-center md:text-right">
-            <h2 className="text-3xl font-black text-slate-800">مسار الإبداع التأسيسي</h2>
-            <p className="text-slate-500 font-medium mt-2">لأعمار دون 12 سنة</p>
+            <h2 className="text-3xl font-black text-slate-800">
+              مسار الإبداع التأسيسي
+            </h2>
+            <p className="mt-2 font-medium text-slate-500">لأعمار دون 12 سنة</p>
           </div>
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid gap-8 lg:grid-cols-2">
             {under12.map((pkg) => (
               <PackageCard key={pkg.id} pkg={pkg} />
             ))}
@@ -41,77 +42,100 @@ export default async function PackagesPage() {
         {/* Track 2: 12 Plus */}
         <section>
           <div className="mb-10 text-center md:text-right">
-            <h2 className="text-3xl font-black text-slate-800">مسار اليافعين والكبار</h2>
-            <p className="text-slate-500 font-medium mt-2">12 سنة فأعلى</p>
+            <h2 className="text-3xl font-black text-slate-800">
+              مسار اليافعين والكبار
+            </h2>
+            <p className="mt-2 font-medium text-slate-500">12 سنة فأعلى</p>
           </div>
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid gap-8 lg:grid-cols-2">
             {over12.map((pkg) => (
               <PackageCard key={pkg.id} pkg={pkg} />
             ))}
           </div>
         </section>
-
       </div>
 
       {/* Help Link */}
-      <div className="w-full max-w-4xl mx-auto text-center mt-12 bg-slate-50 border border-slate-100 p-6 rounded-2xl">
-        <p className="text-slate-600 font-medium text-lg">
-          غير متأكد أي باقة تناسبك؟ <Link href="/support" className="text-amber-600 font-bold hover:underline">تواصل معنا وسنساعدك على فهم الفروق قبل الحجز.</Link>
+      <div className="mx-auto mt-12 w-full max-w-4xl rounded-2xl border border-slate-100 bg-slate-50 p-6 text-center">
+        <p className="text-lg font-medium text-slate-600">
+          غير متأكد أي باقة تناسبك؟{' '}
+          <Link
+            href="/support"
+            className="font-bold text-amber-600 hover:underline"
+          >
+            تواصل معنا وسنساعدك على فهم الفروق قبل الحجز.
+          </Link>
         </p>
       </div>
-
     </div>
   );
 }
 
 function PackageCard({ pkg }: { pkg: WritingPackage }) {
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl p-8 flex flex-col shadow-sm hover:shadow-xl hover:border-amber-200 transition-all duration-300">
-      <div className="flex justify-between items-start mb-6">
+    <div className="flex flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition-all duration-300 hover:border-amber-200 hover:shadow-xl">
+      <div className="mb-6 flex items-start justify-between">
         <h3 className="text-2xl font-black text-slate-800">{pkg.name}</h3>
-        <div className="bg-amber-50 text-amber-700 font-black px-4 py-2 rounded-xl">
+        <div className="rounded-xl bg-amber-50 px-4 py-2 font-black text-amber-700">
           {pkg.price.toLocaleString('ar-EG')} ج.م
         </div>
       </div>
-      
-      <div className={`grid ${pkg.sessionDuration ? 'grid-cols-3' : 'grid-cols-2'} gap-4 mb-8`}>
-        <div className="bg-slate-50 rounded-xl p-3 text-center">
-          <Calendar className="w-5 h-5 mx-auto text-slate-400 mb-2" />
-          <div className="text-xs text-slate-500 font-medium">المدة</div>
-          <div className="text-sm font-bold text-slate-800">{pkg.durationText}</div>
+
+      <div
+        className={`grid ${pkg.sessionDuration ? 'grid-cols-3' : 'grid-cols-2'} mb-8 gap-4`}
+      >
+        <div className="rounded-xl bg-slate-50 p-3 text-center">
+          <Calendar className="mx-auto mb-2 h-5 w-5 text-slate-400" />
+          <div className="text-xs font-medium text-slate-500">المدة</div>
+          <div className="text-sm font-bold text-slate-800">
+            {pkg.durationText}
+          </div>
         </div>
-        <div className="bg-slate-50 rounded-xl p-3 text-center">
-          <Target className="w-5 h-5 mx-auto text-slate-400 mb-2" />
-          <div className="text-xs text-slate-500 font-medium">الجلسات</div>
-          <div className="text-sm font-bold text-slate-800">{pkg.sessionsCount} جلسة</div>
+        <div className="rounded-xl bg-slate-50 p-3 text-center">
+          <Target className="mx-auto mb-2 h-5 w-5 text-slate-400" />
+          <div className="text-xs font-medium text-slate-500">الجلسات</div>
+          <div className="text-sm font-bold text-slate-800">
+            {pkg.sessionsCount} جلسة
+          </div>
         </div>
         {pkg.sessionDuration && (
-          <div className="bg-slate-50 rounded-xl p-3 text-center">
-            <Clock className="w-5 h-5 mx-auto text-slate-400 mb-2" />
-            <div className="text-xs text-slate-500 font-medium">مدة الجلسة</div>
-            <div className="text-sm font-bold text-slate-800">{pkg.sessionDuration}</div>
+          <div className="rounded-xl bg-slate-50 p-3 text-center">
+            <Clock className="mx-auto mb-2 h-5 w-5 text-slate-400" />
+            <div className="text-xs font-medium text-slate-500">مدة الجلسة</div>
+            <div className="text-sm font-bold text-slate-800">
+              {pkg.sessionDuration}
+            </div>
           </div>
         )}
       </div>
 
-      <div className="flex-1 space-y-6 mb-8">
+      <div className="mb-8 flex-1 space-y-6">
         <div>
-          <h4 className="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+          <h4 className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-800">
+            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
             لمن تناسب؟
           </h4>
-          <p className="text-slate-600 font-medium text-sm leading-relaxed">{pkg.targetAudience}</p>
+          <p className="text-sm leading-relaxed font-medium text-slate-600">
+            {pkg.targetAudience}
+          </p>
         </div>
-        
+
         {pkg.prerequisiteNote && (
-          <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">ملاحظة</h4>
-            <p className="text-slate-700 font-medium text-sm leading-relaxed">{pkg.prerequisiteNote}</p>
+          <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+            <h4 className="mb-1 text-xs font-bold tracking-wider text-slate-500 uppercase">
+              ملاحظة
+            </h4>
+            <p className="text-sm leading-relaxed font-medium text-slate-700">
+              {pkg.prerequisiteNote}
+            </p>
           </div>
         )}
       </div>
 
-      <Link href="/creative-writing/booking" className="w-full py-4 text-center bg-slate-900 text-white rounded-xl font-bold text-sm shadow-md hover:bg-slate-800 transition-colors mt-auto">
+      <Link
+        href="/creative-writing/booking"
+        className="mt-auto w-full rounded-xl bg-slate-900 py-4 text-center text-sm font-bold text-white shadow-md transition-colors hover:bg-slate-800"
+      >
         اكتشف المدربين والأسعار
       </Link>
     </div>

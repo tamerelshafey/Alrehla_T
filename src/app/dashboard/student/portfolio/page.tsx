@@ -12,50 +12,70 @@ export default async function PortfolioPage() {
   }
 
   const items = await getPortfolioItems();
-  
+
   // Sort items by date descending
-  const sortedItems = [...items].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const sortedItems = [...items].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 
   return (
-    <div className="flex-1 w-full max-w-4xl mx-auto px-6 py-12">
+    <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">
       <div className="mb-8">
-        <Link href="/dashboard/student" className="inline-flex items-center gap-2 text-sm text-slate-500 font-bold hover:text-slate-800 transition-colors mb-6">
-          <ArrowLeft className="w-4 h-4" />
+        <Link
+          href="/dashboard/student"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition-colors hover:text-slate-800"
+        >
+          <ArrowLeft className="h-4 w-4" />
           العودة للوحة التحكم
         </Link>
-        <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-          <BookOpen className="w-8 h-8 text-amber-500" />
+        <h1 className="flex items-center gap-3 text-3xl font-black text-slate-900">
+          <BookOpen className="h-8 w-8 text-amber-500" />
           ملفي الكتابي
         </h1>
-        <p className="text-slate-500 mt-2 font-medium">مساحة تجمع إبداعاتك ونصوصك خلال رحلتك معنا.</p>
+        <p className="mt-2 font-medium text-slate-500">
+          مساحة تجمع إبداعاتك ونصوصك خلال رحلتك معنا.
+        </p>
       </div>
 
       <div className="space-y-6">
         {sortedItems.map((item) => (
-          <article key={item.id} className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
+          <article
+            key={item.id}
+            className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md md:p-8"
+          >
+            <div className="mb-4 flex flex-col justify-between gap-4 md:flex-row md:items-start">
               <div>
-                <h2 className="text-2xl font-bold text-slate-800 mb-2">{item.title}</h2>
+                <h2 className="mb-2 text-2xl font-bold text-slate-800">
+                  {item.title}
+                </h2>
                 <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-slate-500">
-                  <span className="bg-amber-50 text-amber-700 px-3 py-1 rounded-full">{item.packageName}</span>
-                  <span className="bg-slate-100 px-3 py-1 rounded-full">الجلسة {item.sessionNumber}</span>
+                  <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-700">
+                    {item.packageName}
+                  </span>
+                  <span className="rounded-full bg-slate-100 px-3 py-1">
+                    الجلسة {item.sessionNumber}
+                  </span>
                 </div>
               </div>
-              <div className="flex items-center gap-1 text-slate-400 text-sm font-medium whitespace-nowrap">
-                <Calendar className="w-4 h-4" />
-                {new Date(item.createdAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
+              <div className="flex items-center gap-1 text-sm font-medium whitespace-nowrap text-slate-400">
+                <Calendar className="h-4 w-4" />
+                {new Date(item.createdAt).toLocaleDateString('ar-EG', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
               </div>
             </div>
-            
-            <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
-              <FileText className="w-6 h-6 text-slate-300 mb-3" />
-              <p className="text-slate-600 font-medium leading-relaxed italic">
+
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6">
+              <FileText className="mb-3 h-6 w-6 text-slate-300" />
+              <p className="leading-relaxed font-medium text-slate-600 italic">
                 "{item.excerpt}"
               </p>
             </div>
-            
+
             <div className="mt-6 flex justify-end">
-              <button className="text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors">
+              <button className="text-sm font-bold text-blue-600 transition-colors hover:text-blue-800">
                 قراءة النص كاملاً
               </button>
             </div>
@@ -63,10 +83,14 @@ export default async function PortfolioPage() {
         ))}
 
         {sortedItems.length === 0 && (
-          <div className="text-center py-12 bg-white border border-slate-200 rounded-3xl">
-            <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-slate-700 mb-2">لا توجد نصوص بعد</h3>
-            <p className="text-slate-500 font-medium">لم تقم بإضافة أي نصوص إلى ملفك الكتابي حتى الآن.</p>
+          <div className="rounded-3xl border border-slate-200 bg-white py-12 text-center">
+            <FileText className="mx-auto mb-4 h-12 w-12 text-slate-300" />
+            <h3 className="mb-2 text-xl font-bold text-slate-700">
+              لا توجد نصوص بعد
+            </h3>
+            <p className="font-medium text-slate-500">
+              لم تقم بإضافة أي نصوص إلى ملفك الكتابي حتى الآن.
+            </p>
           </div>
         )}
       </div>

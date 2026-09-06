@@ -6,10 +6,11 @@
     "dev": "next dev",
     "build": "NODE_ENV=production next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "next lint",
     "clean": "next clean"
   },
   "dependencies": {
+    "@eslint/eslintrc": "^3.3.7",
     "@hookform/resolvers": "^5.2.1",
     "autoprefixer": "^10.4.21",
     "class-variance-authority": "^0.7.1",

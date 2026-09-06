@@ -11,36 +11,49 @@ export default async function InstructorDashboard() {
   }
 
   const allBookings = await getBookings();
-  const confirmedBookings = allBookings.filter(b => b.status === 'confirmed');
-  
+  const confirmedBookings = allBookings.filter((b) => b.status === 'confirmed');
+
   // Sort by date closest first
-  const upcomingSessions = [...confirmedBookings].sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+  const upcomingSessions = [...confirmedBookings].sort(
+    (a, b) =>
+      new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
+  );
 
   // Count unique students
-  const uniqueStudents = new Set(allBookings.map(b => b.studentId)).size;
+  const uniqueStudents = new Set(allBookings.map((b) => b.studentId)).size;
 
   return (
-    <div className="flex-1 w-full max-w-6xl mx-auto px-6 py-12">
-      <h1 className="text-3xl font-black text-slate-900 mb-8">مرحباً أستاذ(ة)، {user.fullName}</h1>
-      
+    <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
+      <h1 className="mb-8 text-3xl font-black text-slate-900">
+        مرحباً أستاذ(ة)، {user.fullName}
+      </h1>
+
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
-          <Users className="w-8 h-8 text-amber-500 mb-4" />
-          <div className="text-3xl font-black text-slate-800">{uniqueStudents}</div>
-          <div className="text-sm font-bold text-slate-500 mt-1">الطلاب الحاليين</div>
+      <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <Users className="mb-4 h-8 w-8 text-amber-500" />
+          <div className="text-3xl font-black text-slate-800">
+            {uniqueStudents}
+          </div>
+          <div className="mt-1 text-sm font-bold text-slate-500">
+            الطلاب الحاليين
+          </div>
         </div>
-        <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
-          <Calendar className="w-8 h-8 text-blue-500 mb-4" />
-          <div className="text-3xl font-black text-slate-800">{confirmedBookings.length}</div>
-          <div className="text-sm font-bold text-slate-500 mt-1">جلسات قادمة</div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <Calendar className="mb-4 h-8 w-8 text-blue-500" />
+          <div className="text-3xl font-black text-slate-800">
+            {confirmedBookings.length}
+          </div>
+          <div className="mt-1 text-sm font-bold text-slate-500">
+            جلسات قادمة
+          </div>
         </div>
       </div>
 
       {/* Upcoming Sessions */}
-      <section className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm">
-        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2 mb-6">
-          <Video className="w-5 h-5 text-indigo-500" />
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+        <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-slate-800">
+          <Video className="h-5 w-5 text-indigo-500" />
           جلساتي القادمة
         </h2>
 
@@ -48,28 +61,42 @@ export default async function InstructorDashboard() {
           {upcomingSessions.map((session) => {
             const date = new Date(session.scheduledAt);
             const isToday = new Date().toDateString() === date.toDateString();
-            
+
             return (
-              <div key={session.id} className={`flex flex-col md:flex-row md:items-center justify-between p-4 rounded-2xl border ${isToday ? 'bg-indigo-50/50 border-indigo-200' : 'bg-slate-50 border-slate-100'} gap-4`}>
+              <div
+                key={session.id}
+                className={`flex flex-col justify-between rounded-2xl border p-4 md:flex-row md:items-center ${isToday ? 'border-indigo-200 bg-indigo-50/50' : 'border-slate-100 bg-slate-50'} gap-4`}
+              >
                 <div className="flex items-center gap-4">
-                  <div className={`w-14 h-14 rounded-xl flex flex-col items-center justify-center font-bold ${isToday ? 'bg-indigo-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-700'}`}>
-                    <span className="text-xs">{date.toLocaleDateString('ar-EG', { month: 'short' })}</span>
-                    <span className="text-lg leading-none">{date.getDate()}</span>
+                  <div
+                    className={`flex h-14 w-14 flex-col items-center justify-center rounded-xl font-bold ${isToday ? 'bg-indigo-600 text-white shadow-md' : 'border border-slate-200 bg-white text-slate-700'}`}
+                  >
+                    <span className="text-xs">
+                      {date.toLocaleDateString('ar-EG', { month: 'short' })}
+                    </span>
+                    <span className="text-lg leading-none">
+                      {date.getDate()}
+                    </span>
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800">جلسة مع الطالب (رقم {session.studentId.split('-')[1]})</h3>
-                    <div className="text-sm font-medium text-slate-500 mt-1 flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      {date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
+                    <h3 className="font-bold text-slate-800">
+                      جلسة مع الطالب (رقم {session.studentId.split('-')[1]})
+                    </h3>
+                    <div className="mt-1 flex items-center gap-2 text-sm font-medium text-slate-500">
+                      <Clock className="h-4 w-4" />
+                      {date.toLocaleTimeString('ar-EG', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </div>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                  <button className="flex-1 md:flex-none px-6 py-2 bg-slate-900 text-white rounded-xl font-bold text-sm shadow-md hover:bg-slate-800 transition-colors whitespace-nowrap">
+
+                <div className="flex w-full items-center gap-3 md:w-auto">
+                  <button className="flex-1 rounded-xl bg-slate-900 px-6 py-2 text-sm font-bold whitespace-nowrap text-white shadow-md transition-colors hover:bg-slate-800 md:flex-none">
                     دخول الجلسة
                   </button>
-                  <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-50 transition-colors whitespace-nowrap">
+                  <button className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold whitespace-nowrap text-slate-700 transition-colors hover:bg-slate-50">
                     الملف
                   </button>
                 </div>
@@ -78,7 +105,7 @@ export default async function InstructorDashboard() {
           })}
 
           {upcomingSessions.length === 0 && (
-            <div className="text-center py-8 text-slate-500 font-medium">
+            <div className="py-8 text-center font-medium text-slate-500">
               لا توجد جلسات مجدولة حالياً.
             </div>
           )}

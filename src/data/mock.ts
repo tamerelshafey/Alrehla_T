@@ -9,7 +9,7 @@ import {
   Testimonial,
   AddonProduct,
   SubscriptionTier,
-  CreativeService
+  CreativeService,
 } from '../types';
 
 export const mockWritingPackages: WritingPackage[] = [
@@ -23,8 +23,10 @@ export const mockWritingPackages: WritingPackage[] = [
     durationText: '3 أشهر',
     sessionsCount: 12,
     sessionDuration: '40 دقيقة',
-    targetAudience: 'تناسب الطفل الذي يخوض تجربة منظمة أولى مع الكتابة، أو يريد اكتشاف علاقته بها في مساحة فردية دافئة وخفيفة، دون الحاجة إلى خبرة سابقة.',
-    prerequisiteNote: 'مستقلة بذاتها (يمكن الانتقال بعدها إلى السطور السحرية لكنها ليست شرطًا لها)',
+    targetAudience:
+      'تناسب الطفل الذي يخوض تجربة منظمة أولى مع الكتابة، أو يريد اكتشاف علاقته بها في مساحة فردية دافئة وخفيفة، دون الحاجة إلى خبرة سابقة.',
+    prerequisiteNote:
+      'مستقلة بذاتها (يمكن الانتقال بعدها إلى السطور السحرية لكنها ليست شرطًا لها)',
     shortDescription: 'رحلة استكشافية قصيرة للمبتدئين.',
     fullDescription: 'دورة تركز على اكتشاف الكتابة كمساحة للتعبير...',
     isActive: true,
@@ -37,7 +39,8 @@ export const mockWritingPackages: WritingPackage[] = [
     price: 5990,
     durationText: '6 أشهر',
     sessionsCount: 24,
-    targetAudience: 'تناسب الطفل الذي يريد مساحة أطول للكتابة والتجريب، ويرغب في توسيع أدواته واكتشاف أنواع متعددة من الكتابة والعمل على مشروع كتابي خاص يمتد عبر فترة أطول.',
+    targetAudience:
+      'تناسب الطفل الذي يريد مساحة أطول للكتابة والتجريب، ويرغب في توسيع أدواته واكتشاف أنواع متعددة من الكتابة والعمل على مشروع كتابي خاص يمتد عبر فترة أطول.',
     prerequisiteNote: 'لا تشترط إتمام الكلمات الذهبية مسبقًا',
     shortDescription: 'رحلة أطول لتوسيع أدوات الكتابة وبناء مشروع.',
     fullDescription: 'دورة لتوسيع مهارات الكتابة وبناء مشروع شخصي...',
@@ -53,7 +56,8 @@ export const mockWritingPackages: WritingPackage[] = [
     durationText: '3 أشهر',
     sessionsCount: 12,
     sessionDuration: '40 دقيقة',
-    targetAudience: 'تناسب اليافع أو الشاب أو الكبير الذي يريد أن يبدأ ممارسة الكتابة، أو يكتشف علاقته بها، أو يحوّل أفكاره الأولى إلى نصوص فعلية، دون الحاجة إلى الاشتراك في مسار طويل.',
+    targetAudience:
+      'تناسب اليافع أو الشاب أو الكبير الذي يريد أن يبدأ ممارسة الكتابة، أو يكتشف علاقته بها، أو يحوّل أفكاره الأولى إلى نصوص فعلية، دون الحاجة إلى الاشتراك في مسار طويل.',
     prerequisiteNote: 'مستقلة بذاتها',
     shortDescription: 'رحلة قصيرة لتحويل الأفكار إلى نصوص.',
     fullDescription: 'الخطوة الأولى في عالم الكتابة والتعبير...',
@@ -67,7 +71,8 @@ export const mockWritingPackages: WritingPackage[] = [
     price: 5990,
     durationText: '6 أشهر',
     sessionsCount: 24,
-    targetAudience: 'تناسب من يريد أن يمنح الكتابة وقتًا أطول، ويعمّق أدواته، ويجرب أكبر من نوع أدبي، ثم ينتقل إلى بناء مشروع كتابي خاص به.',
+    targetAudience:
+      'تناسب من يريد أن يمنح الكتابة وقتًا أطول، ويعمّق أدواته، ويجرب أكبر من نوع أدبي، ثم ينتقل إلى بناء مشروع كتابي خاص به.',
     prerequisiteNote: 'مستقلة بذاتها، ويمكن الاشتراك فيها مباشرة',
     shortDescription: 'مسار متعمق لتجربة أنواع أدبية مختلفة.',
     fullDescription: 'برنامج متكامل يعمق أدوات الكاتب ويوسع مداركه...',
@@ -81,11 +86,13 @@ export const mockWritingPackages: WritingPackage[] = [
     price: 11990,
     durationText: '6 أشهر',
     sessionsCount: 24,
-    targetAudience: 'تناسب المشارك الذي أتم «صياغة الأثر» وأصبح لديه أساس كتابي ومشروع يمكن تطويره، ويريد التعمق في بناء الحكاية والعمل على مشروع أدبي أكبر امتدادًا.',
+    targetAudience:
+      'تناسب المشارك الذي أتم «صياغة الأثر» وأصبح لديه أساس كتابي ومشروع يمكن تطويره، ويريد التعمق في بناء الحكاية والعمل على مشروع أدبي أكبر امتدادًا.',
     prerequisiteNote: 'يشترط إتمام رحلة صياغة الأثر أولًا',
     prerequisitePackageId: 'pkg-4',
     shortDescription: 'رحلة لبناء وتطوير مشروع أدبي متكامل.',
-    fullDescription: 'التعمق في بناء الحكاية والشخصيات وتطوير مشروع أدبي متماسك...',
+    fullDescription:
+      'التعمق في بناء الحكاية والشخصيات وتطوير مشروع أدبي متماسك...',
     isActive: true,
   },
   {
@@ -96,12 +103,15 @@ export const mockWritingPackages: WritingPackage[] = [
     price: 19190,
     durationText: '12 شهر (البرنامج الكامل)',
     sessionsCount: 48,
-    targetAudience: 'تناسب من يريد خوض مسار سنوي واحد متصل بدلًا من رحلتين منفصلتين، ويبحث عن تجربة متصلة تمنحه الوقت للانتقال من التأسيس والتجريب إلى بناء المشروع ثم صقله وتطوير ملف أعماله.',
-    prerequisiteNote: 'لا تشترط إتمام أي رحلة سابقة، لأنها تحتوي المسار الكامل داخل تجربة سنوية واحدة',
+    targetAudience:
+      'تناسب من يريد خوض مسار سنوي واحد متصل بدلًا من رحلتين منفصلتين، ويبحث عن تجربة متصلة تمنحه الوقت للانتقال من التأسيس والتجريب إلى بناء المشروع ثم صقله وتطوير ملف أعماله.',
+    prerequisiteNote:
+      'لا تشترط إتمام أي رحلة سابقة، لأنها تحتوي المسار الكامل داخل تجربة سنوية واحدة',
     shortDescription: 'المسار الكامل من التجريب إلى صقل مشروع التخرج.',
-    fullDescription: 'برنامج سنوي شامل ينتقل بالكاتب من نقطة البداية وحتى إنهاء مشروعه...',
+    fullDescription:
+      'برنامج سنوي شامل ينتقل بالكاتب من نقطة البداية وحتى إنهاء مشروعه...',
     isActive: true,
-  }
+  },
 ];
 
 export const mockInstructors: Instructor[] = [
@@ -165,7 +175,8 @@ export const mockProducts: PersonalizedProduct[] = [
     category: 'library',
     price: 350,
     electronicPrice: 150,
-    shortDescription: 'مجموعة مختارة من قصص الأنبياء بأسلوب مبسط ومناسب للأطفال، مع رسومات توضيحية جميلة (بدون تجسيد).',
+    shortDescription:
+      'مجموعة مختارة من قصص الأنبياء بأسلوب مبسط ومناسب للأطفال، مع رسومات توضيحية جميلة (بدون تجسيد).',
     coverImageUrl: 'https://picsum.photos/seed/lib1/600/800',
   },
   {
@@ -174,7 +185,8 @@ export const mockProducts: PersonalizedProduct[] = [
     name: 'موسوعة المستكشف الصغير',
     category: 'library',
     price: 400,
-    shortDescription: 'رحلة في عالم العلوم، الفضاء، جسم الإنسان، والطبيعة. مليئة بالحقائق المدهشة والصور.',
+    shortDescription:
+      'رحلة في عالم العلوم، الفضاء، جسم الإنسان، والطبيعة. مليئة بالحقائق المدهشة والصور.',
     coverImageUrl: 'https://picsum.photos/seed/lib2/600/800',
   },
   {
@@ -184,7 +196,8 @@ export const mockProducts: PersonalizedProduct[] = [
     category: 'library',
     price: 300,
     electronicPrice: 120,
-    shortDescription: 'قصص قصيرة تعلم الأطفال الآداب الإسلامية والأخلاق الحميدة في التعامل مع الأسرة والجيران والأصدقاء.',
+    shortDescription:
+      'قصص قصيرة تعلم الأطفال الآداب الإسلامية والأخلاق الحميدة في التعامل مع الأسرة والجيران والأصدقاء.',
     coverImageUrl: 'https://picsum.photos/seed/lib3/600/800',
   },
   {
@@ -194,9 +207,10 @@ export const mockProducts: PersonalizedProduct[] = [
     category: 'library',
     price: 320,
     electronicPrice: 130,
-    shortDescription: 'مجموعة هادئة ولطيفة من القصص الخيالية القصيرة لتساعد طفلك على الاسترخاء والنوم بأحلام سعيدة.',
+    shortDescription:
+      'مجموعة هادئة ولطيفة من القصص الخيالية القصيرة لتساعد طفلك على الاسترخاء والنوم بأحلام سعيدة.',
     coverImageUrl: 'https://picsum.photos/seed/lib4/600/800',
-  }
+  },
 ];
 
 export const mockAddonProducts: AddonProduct[] = [
@@ -204,13 +218,15 @@ export const mockAddonProducts: AddonProduct[] = [
     id: 'addon-1',
     name: 'دفتر تلوين الأبطال',
     price: 80,
-    description: 'دفتر تلوين يحتوي على شخصيات القصة ومشاهد منها، ليقوم الطفل بتلوين مغامرته بنفسه.',
+    description:
+      'دفتر تلوين يحتوي على شخصيات القصة ومشاهد منها، ليقوم الطفل بتلوين مغامرته بنفسه.',
   },
   {
     id: 'addon-2',
     name: 'ملصقات اسمي',
     price: 50,
-    description: 'مجموعة ملصقات عالية الجودة تحمل اسم طفلك وشخصيات كرتونية لطيفة.',
+    description:
+      'مجموعة ملصقات عالية الجودة تحمل اسم طفلك وشخصيات كرتونية لطيفة.',
   },
 ];
 
@@ -245,32 +261,37 @@ export const mockTestimonials: Testimonial[] = [
     id: 'test-1',
     authorName: 'أم أحمد',
     authorRole: 'ولية أمر',
-    content: 'لم أكن أتخيل أن رؤية ابني لاسمه كبطل للقصة ستغير من حبه للقراءة بهذا الشكل. تجربة رائعة ومختلفة!',
+    content:
+      'لم أكن أتخيل أن رؤية ابني لاسمه كبطل للقصة ستغير من حبه للقراءة بهذا الشكل. تجربة رائعة ومختلفة!',
   },
   {
     id: 'test-2',
     authorName: 'د. خالد مصطفى',
     authorRole: 'أخصائي تربوي',
-    content: 'ما تقدمه "الرحلة" في دمج القيم التربوية عبر التخصيص الشخصي يعد نقلة نوعية في أدب الطفل العربي.',
+    content:
+      'ما تقدمه "الرحلة" في دمج القيم التربوية عبر التخصيص الشخصي يعد نقلة نوعية في أدب الطفل العربي.',
   },
   {
     id: 'test-3',
     authorName: 'سارة',
     authorRole: 'طالبة في دورة الكتابة',
-    content: 'تعلمت كيف أترجم مشاعري إلى كلمات، والأجمل هو الدعم المستمر والمساحة الآمنة للتعبير في دورات بداية الرحلة.',
+    content:
+      'تعلمت كيف أترجم مشاعري إلى كلمات، والأجمل هو الدعم المستمر والمساحة الآمنة للتعبير في دورات بداية الرحلة.',
   },
   {
     id: 'test-4',
     authorName: 'خالد عبد الرحمن',
     authorRole: 'ولي أمر طالب',
-    content: 'أصبح ابني ينتظر موعد الجلسة بشغف. الكتابة تحولت من واجب مدرسي ثقيل إلى مساحة يحبها ويعبر فيها عن نفسه بحرية.',
+    content:
+      'أصبح ابني ينتظر موعد الجلسة بشغف. الكتابة تحولت من واجب مدرسي ثقيل إلى مساحة يحبها ويعبر فيها عن نفسه بحرية.',
   },
   {
     id: 'test-5',
     authorName: 'مريم العلي',
     authorRole: 'ولية أمر طالبة',
-    content: 'لم أكن أعرف كيف أساعد ابنتي على تنمية موهبتها. بداية الرحلة وفرت لها المدربة والمنهج والمساحة الآمنة لتكبر موهبتها.',
-  }
+    content:
+      'لم أكن أعرف كيف أساعد ابنتي على تنمية موهبتها. بداية الرحلة وفرت لها المدربة والمنهج والمساحة الآمنة لتكبر موهبتها.',
+  },
 ];
 
 export const mockCreativeServices: CreativeService[] = [
@@ -284,13 +305,15 @@ export const mockCreativeServices: CreativeService[] = [
     id: 'srv-2',
     name: 'جلسة توليد أفكار',
     price: 410,
-    description: 'لقاء فردي لمن يريد تطوير فكرة قصة أو شخصيات أو إيجاد مدخل للبدء.',
+    description:
+      'لقاء فردي لمن يريد تطوير فكرة قصة أو شخصيات أو إيجاد مدخل للبدء.',
   },
   {
     id: 'srv-3',
     name: 'تقرير على عينة كتابية',
     price: 290,
-    description: 'قراءة مركزة لعينة يرسلها العميل، تتضمن أبرز نقاط القوة وفرص التطوير.',
+    description:
+      'قراءة مركزة لعينة يرسلها العميل، تتضمن أبرز نقاط القوة وفرص التطوير.',
   },
 ];
 
@@ -337,8 +360,10 @@ export const getWritingPackages = async (): Promise<WritingPackage[]> => {
   return Promise.resolve(mockWritingPackages);
 };
 
-export const getWritingPackageBySlug = async (slug: string): Promise<WritingPackage | null> => {
-  const pkg = mockWritingPackages.find(p => p.slug === slug);
+export const getWritingPackageBySlug = async (
+  slug: string
+): Promise<WritingPackage | null> => {
+  const pkg = mockWritingPackages.find((p) => p.slug === slug);
   return Promise.resolve(pkg || null);
 };
 
@@ -346,12 +371,16 @@ export const getInstructors = async (): Promise<Instructor[]> => {
   return Promise.resolve(mockInstructors);
 };
 
-export const getInstructorById = async (id: string): Promise<Instructor | null> => {
-  const inst = mockInstructors.find(i => i.id === id);
+export const getInstructorById = async (
+  id: string
+): Promise<Instructor | null> => {
+  const inst = mockInstructors.find((i) => i.id === id);
   return Promise.resolve(inst || null);
 };
 
-export const getPersonalizedProducts = async (): Promise<PersonalizedProduct[]> => {
+export const getPersonalizedProducts = async (): Promise<
+  PersonalizedProduct[]
+> => {
   return Promise.resolve(mockProducts);
 };
 
@@ -375,8 +404,10 @@ export const getBlogPosts = async (): Promise<BlogPost[]> => {
   return Promise.resolve(mockBlogPosts);
 };
 
-export const getBlogPostBySlug = async (slug: string): Promise<BlogPost | null> => {
-  const post = mockBlogPosts.find(p => p.slug === slug);
+export const getBlogPostBySlug = async (
+  slug: string
+): Promise<BlogPost | null> => {
+  const post = mockBlogPosts.find((p) => p.slug === slug);
   return Promise.resolve(post || null);
 };
 
@@ -394,7 +425,13 @@ export const getCurrentUser = async (): Promise<UserProfile> => {
   });
 };
 
-import { Booking, Order, PortfolioItem, OrderStatus, BookingStatus } from '../types';
+import {
+  Booking,
+  Order,
+  PortfolioItem,
+  OrderStatus,
+  BookingStatus,
+} from '../types';
 
 export const mockBookings: Booking[] = [
   {
@@ -423,7 +460,7 @@ export const mockBookings: Booking[] = [
     status: 'pending',
     scheduledAt: new Date(Date.now() + 86400000 * 5).toISOString(), // +5 days
     createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
-  }
+  },
 ];
 
 export const mockOrders: Order[] = [
@@ -442,7 +479,7 @@ export const mockOrders: Order[] = [
     totalAmount: 120,
     status: 'pending',
     createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
-  }
+  },
 ];
 
 export const mockPortfolioItems: PortfolioItem[] = [
@@ -459,7 +496,8 @@ export const mockPortfolioItems: PortfolioItem[] = [
     id: 'port-2',
     studentId: 'student-1',
     title: 'قصة الشجرة التي رفضت أن تكبر',
-    excerpt: 'في الغابة البعيدة، كانت هناك شجرة صغيرة ترفض أن تمتد جذورها في الأرض...',
+    excerpt:
+      'في الغابة البعيدة، كانت هناك شجرة صغيرة ترفض أن تمتد جذورها في الأرض...',
     packageName: 'الكلمات الذهبية',
     sessionNumber: 6,
     createdAt: new Date(Date.now() - 86400000 * 7).toISOString(),
@@ -468,11 +506,12 @@ export const mockPortfolioItems: PortfolioItem[] = [
     id: 'port-3',
     studentId: 'student-1',
     title: 'حوار مع غيمة',
-    excerpt: 'سألتها: لماذا تبكين دائماً في الشتاء؟ فقالت: هذه ليست دموع، بل هدايا للأرض.',
+    excerpt:
+      'سألتها: لماذا تبكين دائماً في الشتاء؟ فقالت: هذه ليست دموع، بل هدايا للأرض.',
     packageName: 'السطور السحرية',
     sessionNumber: 1,
     createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
-  }
+  },
 ];
 
 export const getBookings = async (): Promise<Booking[]> => {
@@ -486,4 +525,3 @@ export const getOrders = async (): Promise<Order[]> => {
 export const getPortfolioItems = async (): Promise<PortfolioItem[]> => {
   return Promise.resolve(mockPortfolioItems);
 };
-

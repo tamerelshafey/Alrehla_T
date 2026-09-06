@@ -1,6 +1,19 @@
-import { getCurrentUser, getWritingPackages, getOrders, getBookings, getInstructors } from '@/data/mock';
+import {
+  getCurrentUser,
+  getWritingPackages,
+  getOrders,
+  getBookings,
+  getInstructors,
+} from '@/data/mock';
 import { redirect } from 'next/navigation';
-import { Package, ShoppingCart, Calendar, Users, Activity, FileText } from 'lucide-react';
+import {
+  Package,
+  ShoppingCart,
+  Calendar,
+  Users,
+  Activity,
+  FileText,
+} from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,52 +28,70 @@ export default async function AdminDashboard() {
   const bookings = await getBookings();
   const instructors = await getInstructors();
 
-  const activePackages = packages.filter(p => p.isActive).length;
-  
-  const sortedOrders = [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  const sortedBookings = [...bookings].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const activePackages = packages.filter((p) => p.isActive).length;
+
+  const sortedOrders = [...orders].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+  const sortedBookings = [...bookings].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 
   return (
-    <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
-      <h1 className="text-3xl font-black text-slate-900 mb-8 flex items-center gap-3">
-        <Activity className="w-8 h-8 text-amber-500" />
+    <div className="mx-auto w-full max-w-7xl flex-1 px-6 py-12">
+      <h1 className="mb-8 flex items-center gap-3 text-3xl font-black text-slate-900">
+        <Activity className="h-8 w-8 text-amber-500" />
         لوحة تحكم الإدارة
       </h1>
-      
+
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
-          <Package className="w-8 h-8 text-amber-500 mb-4" />
-          <div className="text-3xl font-black text-slate-800">{activePackages}</div>
-          <div className="text-sm font-bold text-slate-500 mt-1">باقات نشطة</div>
+      <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <Package className="mb-4 h-8 w-8 text-amber-500" />
+          <div className="text-3xl font-black text-slate-800">
+            {activePackages}
+          </div>
+          <div className="mt-1 text-sm font-bold text-slate-500">
+            باقات نشطة
+          </div>
         </div>
-        <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
-          <ShoppingCart className="w-8 h-8 text-blue-500 mb-4" />
-          <div className="text-3xl font-black text-slate-800">{orders.length}</div>
-          <div className="text-sm font-bold text-slate-500 mt-1">إجمالي الطلبات</div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <ShoppingCart className="mb-4 h-8 w-8 text-blue-500" />
+          <div className="text-3xl font-black text-slate-800">
+            {orders.length}
+          </div>
+          <div className="mt-1 text-sm font-bold text-slate-500">
+            إجمالي الطلبات
+          </div>
         </div>
-        <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
-          <Calendar className="w-8 h-8 text-indigo-500 mb-4" />
-          <div className="text-3xl font-black text-slate-800">{bookings.length}</div>
-          <div className="text-sm font-bold text-slate-500 mt-1">إجمالي الحجوزات</div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <Calendar className="mb-4 h-8 w-8 text-indigo-500" />
+          <div className="text-3xl font-black text-slate-800">
+            {bookings.length}
+          </div>
+          <div className="mt-1 text-sm font-bold text-slate-500">
+            إجمالي الحجوزات
+          </div>
         </div>
-        <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
-          <Users className="w-8 h-8 text-green-500 mb-4" />
-          <div className="text-3xl font-black text-slate-800">{instructors.length}</div>
-          <div className="text-sm font-bold text-slate-500 mt-1">المدربين</div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <Users className="mb-4 h-8 w-8 text-green-500" />
+          <div className="text-3xl font-black text-slate-800">
+            {instructors.length}
+          </div>
+          <div className="mt-1 text-sm font-bold text-slate-500">المدربين</div>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid gap-8 md:grid-cols-2">
         {/* Latest Orders */}
-        <section className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm overflow-hidden">
-          <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-blue-500" />
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-slate-800">
+            <ShoppingCart className="h-5 w-5 text-blue-500" />
             أحدث الطلبات
           </h2>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-right">
-              <thead className="text-xs text-slate-500 bg-slate-50 border-y border-slate-100">
+            <table className="w-full text-right text-sm">
+              <thead className="border-y border-slate-100 bg-slate-50 text-xs text-slate-500">
                 <tr>
                   <th className="px-4 py-3 font-bold">رقم الطلب</th>
                   <th className="px-4 py-3 font-bold">الطالب</th>
@@ -69,15 +100,25 @@ export default async function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {sortedOrders.map(order => (
+                {sortedOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-slate-50/50">
-                    <td className="px-4 py-4 font-bold text-slate-700">#{order.id.split('-')[1]}</td>
-                    <td className="px-4 py-4 text-slate-600 font-medium">{order.userId.split('-')[1]}</td>
-                    <td className="px-4 py-4 text-slate-600 font-bold">{order.totalAmount} ج.م</td>
+                    <td className="px-4 py-4 font-bold text-slate-700">
+                      #{order.id.split('-')[1]}
+                    </td>
+                    <td className="px-4 py-4 font-medium text-slate-600">
+                      {order.userId.split('-')[1]}
+                    </td>
+                    <td className="px-4 py-4 font-bold text-slate-600">
+                      {order.totalAmount} ج.م
+                    </td>
                     <td className="px-4 py-4">
-                      <span className={`px-2 py-1 rounded-md text-xs font-bold ${
-                        order.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                      }`}>
+                      <span
+                        className={`rounded-md px-2 py-1 text-xs font-bold ${
+                          order.status === 'paid'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-amber-100 text-amber-700'
+                        }`}
+                      >
                         {order.status}
                       </span>
                     </td>
@@ -89,14 +130,14 @@ export default async function AdminDashboard() {
         </section>
 
         {/* Latest Bookings */}
-        <section className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm overflow-hidden">
-          <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-indigo-500" />
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-slate-800">
+            <Calendar className="h-5 w-5 text-indigo-500" />
             أحدث الحجوزات
           </h2>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-right">
-              <thead className="text-xs text-slate-500 bg-slate-50 border-y border-slate-100">
+            <table className="w-full text-right text-sm">
+              <thead className="border-y border-slate-100 bg-slate-50 text-xs text-slate-500">
                 <tr>
                   <th className="px-4 py-3 font-bold">رقم الحجز</th>
                   <th className="px-4 py-3 font-bold">الطالب</th>
@@ -105,21 +146,32 @@ export default async function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {sortedBookings.map(booking => {
+                {sortedBookings.map((booking) => {
                   const date = new Date(booking.scheduledAt);
                   return (
                     <tr key={booking.id} className="hover:bg-slate-50/50">
-                      <td className="px-4 py-4 font-bold text-slate-700">#{booking.id.split('-')[1]}</td>
-                      <td className="px-4 py-4 text-slate-600 font-medium">{booking.studentId.split('-')[1]}</td>
-                      <td className="px-4 py-4 text-slate-600 font-medium whitespace-nowrap">
-                        {date.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' })}
+                      <td className="px-4 py-4 font-bold text-slate-700">
+                        #{booking.id.split('-')[1]}
+                      </td>
+                      <td className="px-4 py-4 font-medium text-slate-600">
+                        {booking.studentId.split('-')[1]}
+                      </td>
+                      <td className="px-4 py-4 font-medium whitespace-nowrap text-slate-600">
+                        {date.toLocaleDateString('ar-EG', {
+                          month: 'short',
+                          day: 'numeric',
+                        })}
                       </td>
                       <td className="px-4 py-4">
-                        <span className={`px-2 py-1 rounded-md text-xs font-bold ${
-                          booking.status === 'confirmed' ? 'bg-indigo-100 text-indigo-700' : 
-                          booking.status === 'completed' ? 'bg-slate-100 text-slate-700' : 
-                          'bg-amber-100 text-amber-700'
-                        }`}>
+                        <span
+                          className={`rounded-md px-2 py-1 text-xs font-bold ${
+                            booking.status === 'confirmed'
+                              ? 'bg-indigo-100 text-indigo-700'
+                              : booking.status === 'completed'
+                                ? 'bg-slate-100 text-slate-700'
+                                : 'bg-amber-100 text-amber-700'
+                          }`}
+                        >
                           {booking.status}
                         </span>
                       </td>

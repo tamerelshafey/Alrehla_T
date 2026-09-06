@@ -1,9 +1,10 @@
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 import type { Metadata } from 'next';
 import { Cairo } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import ScrollToTop from '@/components/layout/ScrollToTop';
 import DevAuthToolbar from '@/components/dev/DevAuthToolbar';
 
 const cairo = Cairo({
@@ -14,7 +15,8 @@ const cairo = Cairo({
 
 export const metadata: Metadata = {
   title: 'الرحلة',
-  description: 'منصة تعليمية لتعلّم الكتابة الإبداعية وتقديم قصص وهدايا مخصصة للأطفال والشباب.',
+  description:
+    'منصة تعليمية لتعلّم الكتابة الإبداعية وتقديم قصص وهدايا مخصصة للأطفال والشباب.',
 };
 
 export default function RootLayout({
@@ -27,11 +29,13 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body className={`${cairo.variable} font-sans text-slate-800 antialiased min-h-screen flex flex-col`} suppressHydrationWarning>
+      <body
+        className={`${cairo.variable} flex min-h-screen flex-col font-sans text-slate-800 antialiased`}
+        suppressHydrationWarning
+      >
+        <ScrollToTop />
         <Header />
-        <main className="flex-1 flex flex-col relative w-full">
-          {children}
-        </main>
+        <main className="relative flex w-full flex-1 flex-col">{children}</main>
         <Footer />
         <DevAuthToolbar />
       </body>
