@@ -12,7 +12,7 @@ export default function Error({
 }) {
   useEffect(() => {
     // يمكن إضافة خدمة تتبع الأخطاء هنا مستقبلاً
-    console.error(error);
+    // console.error(error);
   }, [error]);
 
   return (

@@ -1,8 +1,19 @@
-export default function Page() {
-  return (
-    <div className="py-24 text-center">
-      <h1 className="text-4xl font-bold text-slate-800">لوحة التحكم</h1>
-      <p className="mt-4 text-slate-500">محتوى صفحة لوحة التحكم سيتم إضافته هنا لاحقاً.</p>
-    </div>
-  );
+import { redirect } from 'next/navigation';
+import { getCurrentUser } from '@/data/mock';
+
+export default async function DashboardPage() {
+  const user = await getCurrentUser();
+
+  switch (user.role) {
+    case 'student':
+      redirect('/dashboard/student');
+    case 'instructor':
+      redirect('/dashboard/instructor');
+    case 'super_admin':
+    case 'general_supervisor':
+      redirect('/dashboard/admin');
+    case 'visitor':
+    default:
+      redirect('/sign-in');
+  }
 }

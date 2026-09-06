@@ -17,9 +17,11 @@ export default function Footer() {
           <div className="space-y-3">
             <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest">روابط سريعة</h4>
             <div className="flex flex-col gap-2 text-sm text-slate-500 font-medium">
-              <Link href="/about" className="hover:text-amber-500 transition-colors">عن المنصة</Link>
+              <Link href="/about" className="hover:text-amber-500 transition-colors">رحلتنا</Link>
               <Link href="/enha-lak" className="hover:text-amber-500 transition-colors">إنها لك</Link>
-              <Link href="/creative-writing" className="hover:text-amber-500 transition-colors">دورات الكتابة</Link>
+              <Link href="/creative-writing" className="hover:text-amber-500 transition-colors">بداية الرحلة</Link>
+              <Link href="/blog" className="hover:text-amber-500 transition-colors">المدونة</Link>
+              <Link href="/join-us" className="hover:text-amber-500 transition-colors">انضم إلينا</Link>
               <Link href="/support" className="hover:text-amber-500 transition-colors">الدعم والمساعدة</Link>
             </div>
           </div>

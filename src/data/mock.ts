@@ -37,7 +37,6 @@ export const mockWritingPackages: WritingPackage[] = [
     price: 5990,
     durationText: '6 أشهر',
     sessionsCount: 24,
-    sessionDuration: '40 دقيقة',
     targetAudience: 'تناسب الطفل الذي يريد مساحة أطول للكتابة والتجريب، ويرغب في توسيع أدواته واكتشاف أنواع متعددة من الكتابة والعمل على مشروع كتابي خاص يمتد عبر فترة أطول.',
     prerequisiteNote: 'لا تشترط إتمام الكلمات الذهبية مسبقًا',
     shortDescription: 'رحلة أطول لتوسيع أدوات الكتابة وبناء مشروع.',
@@ -68,7 +67,6 @@ export const mockWritingPackages: WritingPackage[] = [
     price: 5990,
     durationText: '6 أشهر',
     sessionsCount: 24,
-    sessionDuration: '60 دقيقة',
     targetAudience: 'تناسب من يريد أن يمنح الكتابة وقتًا أطول، ويعمّق أدواته، ويجرب أكبر من نوع أدبي، ثم ينتقل إلى بناء مشروع كتابي خاص به.',
     prerequisiteNote: 'مستقلة بذاتها، ويمكن الاشتراك فيها مباشرة',
     shortDescription: 'مسار متعمق لتجربة أنواع أدبية مختلفة.',
@@ -83,7 +81,6 @@ export const mockWritingPackages: WritingPackage[] = [
     price: 11990,
     durationText: '6 أشهر',
     sessionsCount: 24,
-    sessionDuration: '60 دقيقة',
     targetAudience: 'تناسب المشارك الذي أتم «صياغة الأثر» وأصبح لديه أساس كتابي ومشروع يمكن تطويره، ويريد التعمق في بناء الحكاية والعمل على مشروع أدبي أكبر امتدادًا.',
     prerequisiteNote: 'يشترط إتمام رحلة صياغة الأثر أولًا',
     prerequisitePackageId: 'pkg-4',
@@ -99,7 +96,6 @@ export const mockWritingPackages: WritingPackage[] = [
     price: 19190,
     durationText: '12 شهر (البرنامج الكامل)',
     sessionsCount: 48,
-    sessionDuration: '60 دقيقة',
     targetAudience: 'تناسب من يريد خوض مسار سنوي واحد متصل بدلًا من رحلتين منفصلتين، ويبحث عن تجربة متصلة تمنحه الوقت للانتقال من التأسيس والتجريب إلى بناء المشروع ثم صقله وتطوير ملف أعماله.',
     prerequisiteNote: 'لا تشترط إتمام أي رحلة سابقة، لأنها تحتوي المسار الكامل داخل تجربة سنوية واحدة',
     shortDescription: 'المسار الكامل من التجريب إلى صقل مشروع التخرج.',
@@ -397,3 +393,97 @@ export const getCurrentUser = async (): Promise<UserProfile> => {
     createdAt: '2023-01-01T00:00:00Z',
   });
 };
+
+import { Booking, Order, PortfolioItem, OrderStatus, BookingStatus } from '../types';
+
+export const mockBookings: Booking[] = [
+  {
+    id: 'bkg-1',
+    studentId: 'student-1',
+    packageId: 'pkg-1',
+    instructorId: 'inst-1',
+    status: 'confirmed',
+    scheduledAt: new Date(Date.now() + 86400000 * 2).toISOString(), // +2 days
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+  },
+  {
+    id: 'bkg-2',
+    studentId: 'student-2',
+    packageId: 'pkg-2',
+    instructorId: 'inst-2',
+    status: 'completed',
+    scheduledAt: new Date(Date.now() - 86400000 * 3).toISOString(), // -3 days
+    createdAt: new Date(Date.now() - 86400000 * 10).toISOString(),
+  },
+  {
+    id: 'bkg-3',
+    studentId: 'student-3',
+    packageId: 'pkg-1',
+    instructorId: 'inst-1',
+    status: 'pending',
+    scheduledAt: new Date(Date.now() + 86400000 * 5).toISOString(), // +5 days
+    createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+  }
+];
+
+export const mockOrders: Order[] = [
+  {
+    id: 'ord-1',
+    userId: 'student-1',
+    items: ['prod-1', 'addon-1'],
+    totalAmount: 395,
+    status: 'paid',
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+  },
+  {
+    id: 'ord-2',
+    userId: 'student-2',
+    items: ['prod-2'],
+    totalAmount: 120,
+    status: 'pending',
+    createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+  }
+];
+
+export const mockPortfolioItems: PortfolioItem[] = [
+  {
+    id: 'port-1',
+    studentId: 'student-1',
+    title: 'رسالة إلى صديقي الخيالي',
+    excerpt: 'كان يجلس دائماً على حافة النافذة، يخبرني عن أسرار الغيوم...',
+    packageName: 'الكلمات الذهبية',
+    sessionNumber: 3,
+    createdAt: new Date(Date.now() - 86400000 * 14).toISOString(),
+  },
+  {
+    id: 'port-2',
+    studentId: 'student-1',
+    title: 'قصة الشجرة التي رفضت أن تكبر',
+    excerpt: 'في الغابة البعيدة، كانت هناك شجرة صغيرة ترفض أن تمتد جذورها في الأرض...',
+    packageName: 'الكلمات الذهبية',
+    sessionNumber: 6,
+    createdAt: new Date(Date.now() - 86400000 * 7).toISOString(),
+  },
+  {
+    id: 'port-3',
+    studentId: 'student-1',
+    title: 'حوار مع غيمة',
+    excerpt: 'سألتها: لماذا تبكين دائماً في الشتاء؟ فقالت: هذه ليست دموع، بل هدايا للأرض.',
+    packageName: 'السطور السحرية',
+    sessionNumber: 1,
+    createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+  }
+];
+
+export const getBookings = async (): Promise<Booking[]> => {
+  return Promise.resolve(mockBookings);
+};
+
+export const getOrders = async (): Promise<Order[]> => {
+  return Promise.resolve(mockOrders);
+};
+
+export const getPortfolioItems = async (): Promise<PortfolioItem[]> => {
+  return Promise.resolve(mockPortfolioItems);
+};
+

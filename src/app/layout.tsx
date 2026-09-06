@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import type { Metadata } from 'next';
 import { Cairo } from 'next/font/google';
 import './globals.css';
@@ -24,18 +25,6 @@ export const metadata: Metadata = {
     title: 'الرحلة',
     description: 'منصة تعليمية لتعلّم الكتابة الإبداعية وتقديم قصص وهدايا مخصصة للأطفال والشباب.',
   },
-  alternates: {
-    languages: {
-      'ar': '/',
-      'en': '/en',
-    },
-  },
-};
-
-export const viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
 };
 
 export default function RootLayout({

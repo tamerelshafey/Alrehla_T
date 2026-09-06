@@ -74,7 +74,7 @@ function PackageCard({ pkg }: { pkg: WritingPackage }) {
         </div>
       </div>
       
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className={`grid ${pkg.sessionDuration ? 'grid-cols-3' : 'grid-cols-2'} gap-4 mb-8`}>
         <div className="bg-slate-50 rounded-xl p-3 text-center">
           <Calendar className="w-5 h-5 mx-auto text-slate-400 mb-2" />
           <div className="text-xs text-slate-500 font-medium">المدة</div>
@@ -85,11 +85,13 @@ function PackageCard({ pkg }: { pkg: WritingPackage }) {
           <div className="text-xs text-slate-500 font-medium">الجلسات</div>
           <div className="text-sm font-bold text-slate-800">{pkg.sessionsCount} جلسة</div>
         </div>
-        <div className="bg-slate-50 rounded-xl p-3 text-center">
-          <Clock className="w-5 h-5 mx-auto text-slate-400 mb-2" />
-          <div className="text-xs text-slate-500 font-medium">مدة الجلسة</div>
-          <div className="text-sm font-bold text-slate-800">{pkg.sessionDuration}</div>
-        </div>
+        {pkg.sessionDuration && (
+          <div className="bg-slate-50 rounded-xl p-3 text-center">
+            <Clock className="w-5 h-5 mx-auto text-slate-400 mb-2" />
+            <div className="text-xs text-slate-500 font-medium">مدة الجلسة</div>
+            <div className="text-sm font-bold text-slate-800">{pkg.sessionDuration}</div>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 space-y-6 mb-8">

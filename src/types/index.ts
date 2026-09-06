@@ -23,7 +23,7 @@ export type WritingPackage = {
   price: number;
   durationText: string;
   sessionsCount: number;
-  sessionDuration: string;
+  sessionDuration?: string;
   targetAudience: string;
   prerequisiteNote?: string;
   prerequisitePackageId?: string;
@@ -104,6 +104,17 @@ export type BlogPost = {
   coverImageUrl?: string;
   publishedAt: string;
   authorName: string;
+};
+
+// عمل في الملف الكتابي للطالب
+export type PortfolioItem = {
+  id: string;
+  studentId: string;
+  title: string;
+  excerpt: string;
+  packageName: string;
+  sessionNumber: number;
+  createdAt: string;
 };
 
 // شهادة مستخدم
