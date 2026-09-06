@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getWritingPackages } from '@/data/mock';
 import { Target, Clock, Calendar, CheckCircle2 } from 'lucide-react';
+import { WritingPackage } from '@/types';
 
 export default async function PackagesPage() {
   const packages = await getWritingPackages();
@@ -63,7 +64,7 @@ export default async function PackagesPage() {
   );
 }
 
-function PackageCard({ pkg }: { pkg: any }) {
+function PackageCard({ pkg }: { pkg: WritingPackage }) {
   return (
     <div className="bg-white border border-slate-200 rounded-3xl p-8 flex flex-col shadow-sm hover:shadow-xl hover:border-amber-200 transition-all duration-300">
       <div className="flex justify-between items-start mb-6">

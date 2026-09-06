@@ -1,5 +1,6 @@
 import { getSubscriptionTiers } from '@/data/mock';
 import { PackageOpen, Sparkles, Gift, Activity, Check } from 'lucide-react';
+import { SVGProps } from 'react';
 
 export default async function SubscriptionPage() {
   const tiers = await getSubscriptionTiers();
@@ -103,7 +104,7 @@ export default async function SubscriptionPage() {
   );
 }
 
-function BookOpenIcon(props: any) {
+function BookOpenIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className="py-8 md:py-12 bg-white border-t border-slate-200 px-6 md:px-12 mt-auto">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center md:items-start gap-8">
         <div className="space-y-4 text-center md:text-right">
-          <Link href="/" className="text-2xl font-black tracking-tighter text-blue-700 block">
+          <Link href="/" className="text-2xl font-black tracking-tighter text-amber-500 block">
             الرحلة
           </Link>
           <p className="text-sm text-slate-500 max-w-xs">
@@ -17,18 +17,18 @@ export default function Footer() {
           <div className="space-y-3">
             <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest">روابط سريعة</h4>
             <div className="flex flex-col gap-2 text-sm text-slate-500 font-medium">
-              <Link href="/about" className="hover:text-blue-600 transition-colors">عن المنصة</Link>
-              <Link href="/enha-lak" className="hover:text-blue-600 transition-colors">إنها لك</Link>
-              <Link href="/creative-writing" className="hover:text-blue-600 transition-colors">دورات الكتابة</Link>
-              <Link href="/support" className="hover:text-blue-600 transition-colors">الدعم والمساعدة</Link>
+              <Link href="/about" className="hover:text-amber-500 transition-colors">عن المنصة</Link>
+              <Link href="/enha-lak" className="hover:text-amber-500 transition-colors">إنها لك</Link>
+              <Link href="/creative-writing" className="hover:text-amber-500 transition-colors">دورات الكتابة</Link>
+              <Link href="/support" className="hover:text-amber-500 transition-colors">الدعم والمساعدة</Link>
             </div>
           </div>
           
           <div className="space-y-3">
             <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest">القانونية</h4>
             <div className="flex flex-col gap-2 text-sm text-slate-500 font-medium">
-              <Link href="/privacy" className="hover:text-blue-600 transition-colors">سياسة الخصوصية</Link>
-              <Link href="/terms" className="hover:text-blue-600 transition-colors">الشروط والأحكام</Link>
+              <Link href="/privacy" className="hover:text-amber-500 transition-colors">سياسة الخصوصية</Link>
+              <Link href="/terms" className="hover:text-amber-500 transition-colors">الشروط والأحكام</Link>
             </div>
           </div>
         </div>

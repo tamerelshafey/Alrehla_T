@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   title: 'الرحلة',
   description: 'منصة تعليمية لتعلّم الكتابة الإبداعية وتقديم قصص وهدايا مخصصة للأطفال والشباب.',
   openGraph: {
-    title: 'الرحلة',
+    title: 'الرحلة - Al-Rehla',
     description: 'منصة تعليمية لتعلّم الكتابة الإبداعية وتقديم قصص وهدايا مخصصة للأطفال والشباب.',
     type: 'website',
   },
@@ -24,6 +24,18 @@ export const metadata: Metadata = {
     title: 'الرحلة',
     description: 'منصة تعليمية لتعلّم الكتابة الإبداعية وتقديم قصص وهدايا مخصصة للأطفال والشباب.',
   },
+  alternates: {
+    languages: {
+      'ar': '/',
+      'en': '/en',
+    },
+  },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

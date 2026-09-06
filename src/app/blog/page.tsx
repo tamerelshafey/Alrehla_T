@@ -26,7 +26,7 @@ export default async function BlogPage() {
               
               <div className="w-full aspect-[4/3] bg-slate-100 rounded-2xl mb-6 flex items-center justify-center overflow-hidden">
                 {post.coverImageUrl ? (
-                  <img src={post.coverImageUrl} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <img src={post.coverImageUrl} alt={post.title} loading="lazy" referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
                   <BookOpen className="w-12 h-12 text-slate-300" />
                 )}

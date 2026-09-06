@@ -9,7 +9,7 @@ export default async function HomePage() {
     <div className="flex-1 flex flex-col items-center justify-start relative px-6 md:px-12 py-12 w-full font-sans text-slate-800 space-y-32">
       {/* Hero Section */}
       <section className="relative z-10 text-center space-y-6 max-w-4xl mx-auto pt-20">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[600px] md:w-[800px] h-[300px] sm:h-[400px] bg-blue-100/30 rounded-full blur-[100px] md:blur-[120px] pointer-events-none"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[600px] md:w-[800px] h-[300px] sm:h-[400px] bg-amber-100/40 rounded-full blur-[100px] md:blur-[120px] pointer-events-none"></div>
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-black leading-tight tracking-tight text-slate-900 drop-shadow-sm relative z-10">
           رحلتان مختلفتان... ومساحة واحدة للحكاية والنمو
         </h1>
