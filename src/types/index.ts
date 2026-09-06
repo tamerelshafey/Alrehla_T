@@ -63,6 +63,7 @@ export type PersonalizedProduct = {
   name: string;
   category: ProductCategory;
   price: number;
+  electronicPrice?: number;
   shortDescription: string;
   coverImageUrl?: string;
 };
@@ -90,4 +91,30 @@ export type BlogPost = {
   coverImageUrl?: string;
   publishedAt: string;
   authorName: string;
+};
+
+// شهادة مستخدم
+export type Testimonial = {
+  id: string;
+  authorName: string;
+  authorRole: string;
+  content: string;
+};
+
+// إضافة إضافية لمنتج
+export type AddonProduct = {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+};
+
+// خطة اشتراك
+export type SubscriptionTier = {
+  id: string;
+  name: string;
+  priceTotal: number;
+  priceMonthly: number;
+  durationMonths: number;
+  savingsNote?: string;
 };
