@@ -59,6 +59,15 @@ export default function AboutPage() {
         <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-6xl">
           رحلتنا: تبدأ بالأمان وتقودها القيم
         </h1>
+        <div className="relative mt-12 h-64 w-full overflow-hidden rounded-[2.5rem] md:h-96">
+          <img 
+            src="https://picsum.photos/seed/aboutplatform/1200/600" 
+            alt="فريق الرحلة" 
+            className="h-full w-full object-cover" 
+            referrerPolicy="no-referrer"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent"></div>
+        </div>
       </section>
 
       {/* The Spark */}
