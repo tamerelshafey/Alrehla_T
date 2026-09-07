@@ -1,15 +1,9 @@
 import { Sparkles, PenTool, Heart } from 'lucide-react';
-import { SectionSubNav } from '@/components/SectionSubNav';
+
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
 
-const creativeWritingTabs = [
-  { name: 'نظرة عامة', href: '/creative-writing' },
-  { name: 'عن البرنامج', href: '/creative-writing/about' },
-  { name: 'الباقات', href: '/creative-writing/packages' },
-  { name: 'المدربون', href: '/creative-writing/instructors' },
-  { name: 'الخدمات الإبداعية', href: '/creative-writing/services' },
-];
+
 
 export default function AboutProgramPage() {
   const features = [
@@ -45,12 +39,7 @@ export default function AboutProgramPage() {
       <SectionHeader
         title="عن «بداية الرحلة»"
         titleClassName="md:text-6xl"
-        subNav={
-          <SectionSubNav
-            tabs={creativeWritingTabs}
-            activeColorClass="bg-emerald-600 text-white"
-          />
-        }
+        
         description="الكتابة مساحة للتعبير والنمو"
       />
 

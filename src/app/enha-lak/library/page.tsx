@@ -1,16 +1,11 @@
 import Image from 'next/image';
 import { getPersonalizedProducts } from '@/data/mock';
 import { BookOpen, Book, FileText, ShoppingCart } from 'lucide-react';
-import { SectionSubNav } from '@/components/SectionSubNav';
+
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
 
-const enhaLakTabs = [
-  { name: 'نظرة عامة', href: '/enha-lak' },
-  { name: 'أنت البطل هنا', href: '/enha-lak/custom' },
-  { name: 'المكتبة العامة', href: '/enha-lak/library' },
-  { name: 'صندوق الرحلة', href: '/enha-lak/subscription' },
-];
+
 
 export default async function LibraryPage() {
   const allProducts = await getPersonalizedProducts();
@@ -23,12 +18,7 @@ export default async function LibraryPage() {
         title="المكتبة العامة"
         icon={<BookOpen className="h-8 w-8" />}
         iconClassName="bg-emerald-50 text-emerald-600"
-        subNav={
-          <SectionSubNav
-            tabs={enhaLakTabs}
-            activeColorClass="bg-rose-600 text-white"
-          />
-        }
+        
         description="اختر قصة جاهزة من المكتبة وخصص غلافها فقط، محتوى القصة الأصلي يبقى كما هو. خيار مثالي لمن يبحث عن محتوى قيم بلمسة شخصية بسيطة."
       />
 

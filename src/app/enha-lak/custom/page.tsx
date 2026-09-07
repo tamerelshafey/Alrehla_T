@@ -2,16 +2,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getPersonalizedProducts, getAddonProducts } from '@/data/mock';
 import { PenTool, Plus, Book, FileText, ShoppingCart } from 'lucide-react';
-import { SectionSubNav } from '@/components/SectionSubNav';
+
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
 
-const enhaLakTabs = [
-  { name: 'نظرة عامة', href: '/enha-lak' },
-  { name: 'أنت البطل هنا', href: '/enha-lak/custom' },
-  { name: 'المكتبة العامة', href: '/enha-lak/library' },
-  { name: 'صندوق الرحلة', href: '/enha-lak/subscription' },
-];
+
 
 export default async function CustomPage() {
   const allProducts = await getPersonalizedProducts();
@@ -25,12 +20,7 @@ export default async function CustomPage() {
         title="أنت البطل هنا"
         icon={<PenTool className="h-8 w-8" />}
         iconClassName="bg-violet-50 text-violet-600"
-        subNav={
-          <SectionSubNav
-            tabs={enhaLakTabs}
-            activeColorClass="bg-rose-600 text-white"
-          />
-        }
+        
         description="نصنع محتوى مخصصاً لطفلك من الصفر بعد إتمام الطلب، ليكون هو محور القصة بأدق تفاصيلها."
       />
 

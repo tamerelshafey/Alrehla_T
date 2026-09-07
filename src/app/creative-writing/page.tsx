@@ -1,17 +1,11 @@
 import Link from 'next/link';
 import { getTestimonials } from '@/data/mock';
-import { HeroCarousel } from '@/components/HeroCarousel';
-import { SectionSubNav } from '@/components/SectionSubNav';
+
+
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
 
-const creativeWritingTabs = [
-  { name: 'نظرة عامة', href: '/creative-writing' },
-  { name: 'عن البرنامج', href: '/creative-writing/about' },
-  { name: 'الباقات', href: '/creative-writing/packages' },
-  { name: 'المدربون', href: '/creative-writing/instructors' },
-  { name: 'الخدمات الإبداعية', href: '/creative-writing/services' },
-];
+
 
 import {
   PenTool,
@@ -26,35 +20,7 @@ import {
 } from 'lucide-react';
 
 
-const creativeSlides = [
-  {
-    id: '1',
-    title: 'رحلة كتابة، لا درس كتابة',
-    description: 'أكاديمية بداية الرحلة للكتابة الإبداعية تساعد الشباب والأطفال على اكتشاف أصواتهم.',
-    image: 'https://picsum.photos/seed/creative1/1600/900',
-    ctaText: 'استكشف الباقات',
-    ctaLink: '/creative-writing/packages',
-    theme: 'emerald' as const,
-  },
-  {
-    id: '2',
-    title: 'تطوير المهارات برعاية خبراء',
-    description: 'جلسات تفاعلية، توجيه فردي، وتطوير مستمر لمهارات السرد والتعبير.',
-    image: 'https://picsum.photos/seed/creative2/1600/900',
-    ctaText: 'تعرف على مدربينا',
-    ctaLink: '/creative-writing/instructors',
-    theme: 'teal' as const,
-  },
-  {
-    id: '3',
-    title: 'خدمات إبداعية متكاملة',
-    description: 'من التحرير والتدقيق إلى الاستشارات الأدبية، نحن هنا لدعم قلمك.',
-    image: 'https://picsum.photos/seed/creative3/1600/900',
-    ctaText: 'عرض الخدمات',
-    ctaLink: '/creative-writing/services',
-    theme: 'emerald' as const,
-  }
-];
+
 
 export default async function CreativeWritingPage() {
   const allTestimonials = await getTestimonials();
@@ -122,17 +88,10 @@ export default async function CreativeWritingPage() {
       {/* Hero Section */}
       
       {/* Hero Section Carousel */}
-      <section className="mx-auto w-full max-w-7xl pt-8 pb-12">
-        <HeroCarousel slides={creativeSlides} />
-      </section>
+      
       
       {/* Sub Navigation */}
-      <div className="mx-auto max-w-4xl text-center mb-16">
-        <SectionSubNav
-            tabs={creativeWritingTabs}
-            activeColorClass="bg-emerald-600 text-white"
-          />
-      </div>
+      
 
 
       {/* Suitable For */}

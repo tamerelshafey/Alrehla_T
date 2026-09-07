@@ -1,16 +1,11 @@
 import { getSubscriptionTiers } from '@/data/mock';
 import { PackageOpen, Sparkles, Gift, Activity, Check } from 'lucide-react';
 import { SVGProps } from 'react';
-import { SectionSubNav } from '@/components/SectionSubNav';
+
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
 
-const enhaLakTabs = [
-  { name: 'نظرة عامة', href: '/enha-lak' },
-  { name: 'أنت البطل هنا', href: '/enha-lak/custom' },
-  { name: 'المكتبة العامة', href: '/enha-lak/library' },
-  { name: 'صندوق الرحلة', href: '/enha-lak/subscription' },
-];
+
 
 export default async function SubscriptionPage() {
   const tiers = await getSubscriptionTiers();
@@ -28,12 +23,7 @@ export default async function SubscriptionPage() {
         title="صندوق الرحلة"
         icon={<PackageOpen className="h-8 w-8" />}
         iconClassName="bg-purple-50 text-purple-600"
-        subNav={
-          <SectionSubNav
-            tabs={enhaLakTabs}
-            activeColorClass="bg-rose-600 text-white"
-          />
-        }
+        
         description="اشتراك يضمن متعة متجددة لطفلك كل شهر، مع مفاجآت تُصنع خصيصًا له وتصله حتى باب المنزل."
       />
 

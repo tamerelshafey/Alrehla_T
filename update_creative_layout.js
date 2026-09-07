@@ -1,4 +1,6 @@
-import React from 'react';
+const fs = require('fs');
+
+const layoutContent = `import React from 'react';
 import { HeroCarousel } from '@/components/HeroCarousel';
 import { SectionSubNav } from '@/components/SectionSubNav';
 
@@ -61,3 +63,19 @@ export default function CreativeWritingLayout({ children }: { children: React.Re
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/app/creative-writing/layout.tsx', layoutContent, 'utf8');
+
+// Now remove them from page.tsx
+let pageContent = fs.readFileSync('src/app/creative-writing/page.tsx', 'utf8');
+pageContent = pageContent.replace(/const creativeWritingTabs[\s\S]*?\];/, '');
+pageContent = pageContent.replace(/const creativeSlides[\s\S]*?\];/, '');
+pageContent = pageContent.replace(/<section className="mx-auto w-full max-w-7xl pt-8 pb-12">[\s\S]*?<\/section>/, '');
+pageContent = pageContent.replace(/<div className="mx-auto max-w-4xl text-center mb-16">[\s\S]*?<\/div>/, '');
+pageContent = pageContent.replace(/import \{ HeroCarousel \} from '@\/components\/HeroCarousel';/, '');
+pageContent = pageContent.replace(/import \{ SectionSubNav \} from '@\/components\/SectionSubNav';/, '');
+
+fs.writeFileSync('src/app/creative-writing/page.tsx', pageContent, 'utf8');
+
+console.log('creative-writing layout updated.');

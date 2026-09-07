@@ -1,17 +1,11 @@
 import Link from 'next/link';
 import { getCreativeServices } from '@/data/mock';
 import { ArrowLeft } from 'lucide-react';
-import { SectionSubNav } from '@/components/SectionSubNav';
+
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
 
-const creativeWritingTabs = [
-  { name: 'نظرة عامة', href: '/creative-writing' },
-  { name: 'عن البرنامج', href: '/creative-writing/about' },
-  { name: 'الباقات', href: '/creative-writing/packages' },
-  { name: 'المدربون', href: '/creative-writing/instructors' },
-  { name: 'الخدمات الإبداعية', href: '/creative-writing/services' },
-];
+
 
 export default async function ServicesPage() {
   const services = await getCreativeServices();
@@ -21,12 +15,7 @@ export default async function ServicesPage() {
       {/* Header */}
       <SectionHeader
         title="الخدمات الإبداعية المستقلة"
-        subNav={
-          <SectionSubNav
-            tabs={creativeWritingTabs}
-            activeColorClass="bg-emerald-600 text-white"
-          />
-        }
+        
         description="خدمات فردية وسريعة لتطوير مهارات الكتابة، ومراجعة النصوص، وتوليد الأفكار، دون الالتزام ببرنامج طويل."
       />
 

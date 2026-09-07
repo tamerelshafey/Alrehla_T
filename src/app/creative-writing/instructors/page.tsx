@@ -1,16 +1,10 @@
 import { getInstructors } from '@/data/mock';
 import { User, Award, CheckCircle } from 'lucide-react';
-import { SectionSubNav } from '@/components/SectionSubNav';
+
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
 
-const creativeWritingTabs = [
-  { name: 'نظرة عامة', href: '/creative-writing' },
-  { name: 'عن البرنامج', href: '/creative-writing/about' },
-  { name: 'الباقات', href: '/creative-writing/packages' },
-  { name: 'المدربون', href: '/creative-writing/instructors' },
-  { name: 'الخدمات الإبداعية', href: '/creative-writing/services' },
-];
+
 
 export default async function InstructorsPage() {
   const instructors = await getInstructors();
@@ -20,12 +14,7 @@ export default async function InstructorsPage() {
       {/* Header */}
       <SectionHeader
         title="مدربو «بداية الرحلة»"
-        subNav={
-          <SectionSubNav
-            tabs={creativeWritingTabs}
-            activeColorClass="bg-emerald-600 text-white"
-          />
-        }
+        
         description="فريق من الكُتّاب والتربويين المتخصصين في أدب الطفل واليافعين، يجمعون بين الشغف الإبداعي والقدرة على التوجيه بأسلوب داعم ومحفز."
       />
 

@@ -1,16 +1,11 @@
 import Link from 'next/link';
-import { HeroCarousel } from '@/components/HeroCarousel';
+
 import { getTestimonials } from '@/data/mock';
-import { SectionSubNav } from '@/components/SectionSubNav';
+
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
 
-const enhaLakTabs = [
-  { name: 'نظرة عامة', href: '/enha-lak' },
-  { name: 'أنت البطل هنا', href: '/enha-lak/custom' },
-  { name: 'المكتبة العامة', href: '/enha-lak/library' },
-  { name: 'صندوق الرحلة', href: '/enha-lak/subscription' },
-];
+
 
 import {
   Fingerprint,
@@ -25,35 +20,7 @@ import {
 } from 'lucide-react';
 
 
-const enhaLakSlides = [
-  {
-    id: '1',
-    title: 'قصتك أنت البطل فيها',
-    description: 'نصنع قصصاً مخصصة تجعل طفلك محور الأحداث وتغرس فيه أجمل القيم.',
-    image: 'https://picsum.photos/seed/enhalak1/1600/900',
-    ctaText: 'اصنع قصتك',
-    ctaLink: '/enha-lak/custom',
-    theme: 'violet' as const,
-  },
-  {
-    id: '2',
-    title: 'صندوق الرحلة السحري',
-    description: 'اشتراكات شهرية مليئة بالمفاجآت والكتب الممتعة لتنمية حب القراءة.',
-    image: 'https://picsum.photos/seed/enhalak2/1600/900',
-    ctaText: 'اكتشف الصندوق',
-    ctaLink: '/enha-lak/subscription',
-    theme: 'rose' as const,
-  },
-  {
-    id: '3',
-    title: 'مكتبة الخيال الواسعة',
-    description: 'تصفح قصصنا وإصداراتنا المتنوعة التي تناسب مختلف الأعمار.',
-    image: 'https://picsum.photos/seed/enhalak3/1600/900',
-    ctaText: 'تصفح المكتبة',
-    ctaLink: '/enha-lak/library',
-    theme: 'violet' as const,
-  }
-];
+
 
 export default async function EnhaLakPage() {
   const testimonials = await getTestimonials();
@@ -105,17 +72,10 @@ export default async function EnhaLakPage() {
   return (
     <PageContainer>
       {/* Hero Section Carousel */}
-      <section className="mx-auto w-full max-w-7xl pt-8 pb-12">
-        <HeroCarousel slides={enhaLakSlides} />
-      </section>
+      
       
       {/* Sub Navigation */}
-      <div className="mx-auto max-w-4xl text-center mb-16">
-        <SectionSubNav
-            tabs={enhaLakTabs}
-            activeColorClass="bg-rose-600 text-white"
-          />
-      </div>
+      
 
       {/* Path Selection */}
       <section className="mx-auto w-full max-w-5xl">
