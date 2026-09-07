@@ -1,40 +1,50 @@
 import Link from 'next/link';
+import { HeroCarousel } from '@/components/HeroCarousel';
 import { getTestimonials } from '@/data/mock';
 import { Quote } from 'lucide-react';
+
+
+const homeSlides = [
+  {
+    id: '1',
+    title: 'رحلتان مختلفتان... ومساحة واحدة للحكاية والنمو',
+    description: '«الرحلة» منصة عربية أسرية تجمع مشروعين: «إنها لك» و«بداية الرحلة».',
+    image: 'https://picsum.photos/seed/magicbook/1600/900',
+    ctaText: 'ابدأ الرحلة',
+    ctaLink: '/about',
+    theme: 'amber' as const,
+  },
+  {
+    id: '2',
+    title: 'إنها لك: حيث يتحول الخيال إلى واقع',
+    description: 'قصص ومنتجات مخصصة تجعل الطفل جزءًا من الحكاية، وتجعل الأسرة شريكةً.',
+    image: 'https://picsum.photos/seed/kidsstory/1600/900',
+    ctaText: 'استكشف إنها لك',
+    ctaLink: '/enha-lak',
+    theme: 'violet' as const,
+  },
+  {
+    id: '3',
+    title: 'أكاديمية بداية الرحلة',
+    description: 'برنامج فردي للكتابة الإبداعية يساعد الشباب والأطفال على اكتشاف أصواتهم الخاصة.',
+    image: 'https://picsum.photos/seed/childwriting/1600/900',
+    ctaText: 'تعرف على الأكاديمية',
+    ctaLink: '/creative-writing',
+    theme: 'emerald' as const,
+  }
+];
 
 export default async function HomePage() {
   const testimonials = await getTestimonials();
 
   return (
     <div className="relative flex w-full flex-1 flex-col items-center justify-start space-y-32 px-6 py-12 font-sans text-slate-800 md:px-12">
+      
       {/* Hero Section */}
-      <section className="relative z-10 mx-auto max-w-7xl pt-20">
-        <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-          <div className="space-y-6 text-center lg:text-right">
-            <div className="pointer-events-none absolute top-1/2 left-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-100/40 blur-[100px] sm:h-[400px] sm:w-[600px] md:w-[800px] md:blur-[120px] lg:left-3/4"></div>
-            <h1 className="relative z-10 text-5xl leading-tight font-black tracking-tight text-slate-900 drop-shadow-sm sm:text-6xl md:text-7xl">
-              رحلتان مختلفتان... ومساحة واحدة للحكاية والنمو
-            </h1>
-            <p className="relative z-10 mx-auto max-w-3xl text-lg leading-relaxed font-medium text-slate-500 lg:mx-0 md:text-xl">
-              «الرحلة» منصة عربية أسرية تجمع مشروعين: «إنها لك» يقدّم قصصًا مصورة
-              هادفة تُخصَّص لأبنائكم ليكونوا هم أبطالها، و«بداية الرحلة» برنامج فردي
-              للكتابة يساعدهم على اكتشاف أصواتهم وتنمية أدواتهم الكتابية.
-            </p>
-          </div>
-          <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-            <div className="relative aspect-square overflow-hidden rounded-[3rem] border-8 border-white bg-slate-100 shadow-2xl">
-              <img 
-                src="https://picsum.photos/seed/magicbook/800/800" 
-                alt="خيال وإبداع" 
-                className="h-full w-full object-cover" 
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            <div className="absolute -bottom-6 -left-6 h-32 w-32 rounded-full bg-amber-400 blur-2xl opacity-50 mix-blend-multiply"></div>
-            <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-blue-400 blur-2xl opacity-50 mix-blend-multiply"></div>
-          </div>
-        </div>
+      <section className="relative z-10 mx-auto max-w-7xl pt-8 pb-12 w-full">
+        <HeroCarousel slides={homeSlides} />
       </section>
+
 
       {/* Choose Your Journey */}
       <section className="mx-auto w-full max-w-6xl">

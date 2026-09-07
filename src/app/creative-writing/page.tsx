@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getTestimonials } from '@/data/mock';
+import { HeroCarousel } from '@/components/HeroCarousel';
 import { SectionSubNav } from '@/components/SectionSubNav';
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
@@ -23,6 +24,37 @@ import {
   ArrowLeft,
   Quote,
 } from 'lucide-react';
+
+
+const creativeSlides = [
+  {
+    id: '1',
+    title: 'رحلة كتابة، لا درس كتابة',
+    description: 'أكاديمية بداية الرحلة للكتابة الإبداعية تساعد الشباب والأطفال على اكتشاف أصواتهم.',
+    image: 'https://picsum.photos/seed/creative1/1600/900',
+    ctaText: 'استكشف الباقات',
+    ctaLink: '/creative-writing/packages',
+    theme: 'emerald' as const,
+  },
+  {
+    id: '2',
+    title: 'تطوير المهارات برعاية خبراء',
+    description: 'جلسات تفاعلية، توجيه فردي، وتطوير مستمر لمهارات السرد والتعبير.',
+    image: 'https://picsum.photos/seed/creative2/1600/900',
+    ctaText: 'تعرف على مدربينا',
+    ctaLink: '/creative-writing/instructors',
+    theme: 'teal' as const,
+  },
+  {
+    id: '3',
+    title: 'خدمات إبداعية متكاملة',
+    description: 'من التحرير والتدقيق إلى الاستشارات الأدبية، نحن هنا لدعم قلمك.',
+    image: 'https://picsum.photos/seed/creative3/1600/900',
+    ctaText: 'عرض الخدمات',
+    ctaLink: '/creative-writing/services',
+    theme: 'emerald' as const,
+  }
+];
 
 export default async function CreativeWritingPage() {
   const allTestimonials = await getTestimonials();
@@ -88,39 +120,20 @@ export default async function CreativeWritingPage() {
   return (
     <PageContainer className="space-y-32">
       {/* Hero Section */}
-      <SectionHeader
-        title="رحلة كتابة، لا درس كتابة"
-        titleClassName="md:text-6xl"
-        badge={
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-100 bg-amber-50 px-4 py-1.5 text-xs font-bold tracking-widest text-amber-700 uppercase">
-            مشروع بداية الرحلة
-          </div>
-        }
-        subNav={
-          <SectionSubNav
+      
+      {/* Hero Section Carousel */}
+      <section className="mx-auto w-full max-w-7xl pt-8 pb-12">
+        <HeroCarousel slides={creativeSlides} />
+      </section>
+      
+      {/* Sub Navigation */}
+      <div className="mx-auto max-w-4xl text-center mb-16">
+        <SectionSubNav
             tabs={creativeWritingTabs}
             activeColorClass="bg-emerald-600 text-white"
           />
-        }
-        description="برنامج كتابة فردي عبر الإنترنت لأعمار 6–20، يساعد المشارك على تنمية أدواته وصوته في الكتابة."
-        descriptionClassName="mb-10 max-w-3xl"
-        className="pt-10"
-      >
-        <div className="flex flex-col justify-center gap-4 sm:flex-row">
-          <Link
-            href="/creative-writing/packages"
-            className="rounded-2xl bg-emerald-500 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-amber-200 transition-colors hover:bg-emerald-600"
-          >
-            استعرض الباقات
-          </Link>
-          <Link
-            href="/creative-writing/services"
-            className="rounded-2xl border border-slate-200 bg-white px-8 py-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50"
-          >
-            الخدمات الإبداعية المستقلة
-          </Link>
-        </div>
-      </SectionHeader>
+      </div>
+
 
       {/* Suitable For */}
       <section className="mx-auto w-full max-w-6xl rounded-3xl border border-slate-100 bg-slate-50/50 p-8 md:p-16">

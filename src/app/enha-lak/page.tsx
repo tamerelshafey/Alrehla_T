@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { HeroCarousel } from '@/components/HeroCarousel';
 import { getTestimonials } from '@/data/mock';
 import { SectionSubNav } from '@/components/SectionSubNav';
 import { PageContainer } from '@/components/PageContainer';
@@ -22,6 +23,37 @@ import {
   Package,
   Quote,
 } from 'lucide-react';
+
+
+const enhaLakSlides = [
+  {
+    id: '1',
+    title: 'قصتك أنت البطل فيها',
+    description: 'نصنع قصصاً مخصصة تجعل طفلك محور الأحداث وتغرس فيه أجمل القيم.',
+    image: 'https://picsum.photos/seed/enhalak1/1600/900',
+    ctaText: 'اصنع قصتك',
+    ctaLink: '/enha-lak/custom',
+    theme: 'violet' as const,
+  },
+  {
+    id: '2',
+    title: 'صندوق الرحلة السحري',
+    description: 'اشتراكات شهرية مليئة بالمفاجآت والكتب الممتعة لتنمية حب القراءة.',
+    image: 'https://picsum.photos/seed/enhalak2/1600/900',
+    ctaText: 'اكتشف الصندوق',
+    ctaLink: '/enha-lak/subscription',
+    theme: 'rose' as const,
+  },
+  {
+    id: '3',
+    title: 'مكتبة الخيال الواسعة',
+    description: 'تصفح قصصنا وإصداراتنا المتنوعة التي تناسب مختلف الأعمار.',
+    image: 'https://picsum.photos/seed/enhalak3/1600/900',
+    ctaText: 'تصفح المكتبة',
+    ctaLink: '/enha-lak/library',
+    theme: 'violet' as const,
+  }
+];
 
 export default async function EnhaLakPage() {
   const testimonials = await getTestimonials();
