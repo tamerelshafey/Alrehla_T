@@ -1,7 +1,11 @@
 import Link from 'next/link';
 import { ShoppingCart, User } from 'lucide-react';
+import { cookies } from 'next/headers';
 
-export default function Header() {
+export default async function Header() {
+  const cookieStore = await cookies();
+  const mockRole = cookieStore.get('mockRole')?.value || 'visitor';
+  const isLoggedIn = mockRole !== 'visitor';
   return (
     <header className="sticky top-0 z-50 flex h-20 items-center justify-between border-b border-slate-200 bg-white/80 px-6 backdrop-blur-md md:px-12">
       <div className="flex items-center gap-10">
@@ -60,7 +64,7 @@ export default function Header() {
         </Link>
         <div className="mx-1 hidden h-6 w-[1px] bg-slate-200 sm:block"></div>
         <Link
-          href="/sign-in"
+          href={isLoggedIn ? "/account" : "/sign-in"}
           className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-md transition-colors hover:bg-slate-800"
         >
           <User className="h-4 w-4" />

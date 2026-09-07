@@ -1,6 +1,6 @@
 // الأدوار المتاحة للمستخدمين في المنصة
 export type UserRole =
-  'visitor' | 'student' | 'instructor' | 'general_supervisor' | 'super_admin';
+  'visitor' | 'student' | 'instructor' | 'publisher' | 'general_supervisor' | 'super_admin';
 
 // الملف الشخصي للمستخدم
 export type UserProfile = {
@@ -80,6 +80,7 @@ export type PersonalizedProduct = {
   electronicPrice?: number;
   shortDescription: string;
   coverImageUrl?: string;
+  publisherId?: string;
 };
 
 // حالة الطلب
@@ -143,3 +144,61 @@ export type SubscriptionTier = {
   durationMonths: number;
   savingsNote?: string;
 };
+
+// أفراد العائلة المرتبطين بحساب
+export interface FamilyMember {
+  id: string;
+  name: string;
+  age: number;
+  avatarUrl?: string;
+}
+
+// الإشعارات
+export interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+// تذاكر الدعم
+export interface SupportTicket {
+  id: string;
+  subject: string;
+  category: string;
+  status: 'open' | 'answered' | 'closed';
+  createdAt: string;
+}
+
+// الناشر
+export type Publisher = {
+  id: string;
+  slug: string;
+  name: string;
+  logoUrl?: string;
+  bio: string;
+  isSample: boolean;
+};
+
+
+// حالة الدفع
+export type PayoutStatus = 'pending' | 'paid';
+
+// مستحقات المدرب
+export interface InstructorPayout {
+  id: string;
+  instructorId: string;
+  period: string;
+  amount: number;
+  status: PayoutStatus;
+}
+
+// مستحقات الناشر
+export interface PublisherPayout {
+  id: string;
+  publisherId: string;
+  period: string;
+  amount: number;
+  status: PayoutStatus;
+}

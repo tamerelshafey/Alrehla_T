@@ -7,6 +7,7 @@ const ROLES: { label: string; value: UserRole }[] = [
   { label: 'زائر', value: 'visitor' },
   { label: 'طالب', value: 'student' },
   { label: 'مدرب', value: 'instructor' },
+  { label: 'ناشر', value: 'publisher' },
   { label: 'مشرف عام', value: 'general_supervisor' },
   { label: 'مدير نظام', value: 'super_admin' },
 ];

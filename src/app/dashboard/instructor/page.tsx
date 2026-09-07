@@ -1,6 +1,7 @@
 import { getCurrentUser, getBookings } from '@/data/mock';
 import { redirect } from 'next/navigation';
-import { Users, Calendar, Video, Clock } from 'lucide-react';
+import Link from 'next/link';
+import { Users, Calendar, Video, Clock, Wallet } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,9 +25,14 @@ export default async function InstructorDashboard() {
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
-      <h1 className="mb-8 text-3xl font-black text-slate-900">
-        مرحباً أستاذ(ة)، {user.fullName}
-      </h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-black text-slate-900">
+          مرحباً أستاذ(ة)، {user.fullName}
+        </h1>
+        <Link href="/dashboard/instructor/payouts" className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-md transition-colors hover:bg-slate-800">
+          <Wallet className="h-4 w-4" /> المستحقات المالية
+        </Link>
+      </div>
 
       {/* Stats */}
       <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">

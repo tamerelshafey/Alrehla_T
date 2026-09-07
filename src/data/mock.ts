@@ -3,6 +3,9 @@ import {
   WritingPackage,
   Instructor,
   PersonalizedProduct,
+  Publisher,
+  InstructorPayout,
+  PublisherPayout,
   BlogPost,
   UserProfile,
   UserRole,
@@ -170,6 +173,7 @@ export const mockProducts: PersonalizedProduct[] = [
   // Library Products
   {
     id: 'prod-lib-1',
+    publisherId: 'pub-1',
     slug: 'prophets-stories',
     name: 'قصص الأنبياء للأطفال',
     category: 'library',
@@ -181,6 +185,7 @@ export const mockProducts: PersonalizedProduct[] = [
   },
   {
     id: 'prod-lib-2',
+    publisherId: 'pub-2',
     slug: 'little-explorer',
     name: 'موسوعة المستكشف الصغير',
     category: 'library',
@@ -191,6 +196,7 @@ export const mockProducts: PersonalizedProduct[] = [
   },
   {
     id: 'prod-lib-3',
+    publisherId: 'pub-1',
     slug: 'morals-garden',
     name: 'حديقة الأخلاق',
     category: 'library',
@@ -202,6 +208,7 @@ export const mockProducts: PersonalizedProduct[] = [
   },
   {
     id: 'prod-lib-4',
+    publisherId: 'pub-2',
     slug: 'bedtime-stories',
     name: 'حكايات قبل النوم',
     category: 'library',
@@ -523,3 +530,68 @@ export const getOrders = async (): Promise<Order[]> => {
 export const getPortfolioItems = async (): Promise<PortfolioItem[]> => {
   return Promise.resolve(mockPortfolioItems);
 };
+
+export const mockFamilyMembers = [
+  { id: 'fm-1', name: 'أحمد', age: 8 },
+  { id: 'fm-2', name: 'سارة', age: 12 },
+];
+export const getFamilyMembers = async () => mockFamilyMembers;
+
+export const mockNotifications = [
+  { id: 'notif-1', title: 'تم تأكيد طلبك', message: 'طلبك لمشروع إنها لك قيد التنفيذ الآن.', isRead: false, createdAt: '2023-10-27T10:00:00Z' },
+  { id: 'notif-2', title: 'موعد جلستك القادمة', message: 'نذكرك بموعد الجلسة غداً الساعة ٤ عصراً.', isRead: true, createdAt: '2023-10-25T14:30:00Z' },
+  { id: 'notif-3', title: 'تحديث في صندوق الرحلة', message: 'صندوق هذا الشهر جاهز للشحن!', isRead: false, createdAt: '2023-10-26T09:15:00Z' },
+];
+export const getNotifications = async () => mockNotifications;
+
+export const mockTickets = [
+  { id: 'tkt-1', subject: 'استفسار عن باقات الكتابة', category: 'الاستفسارات العامة', status: 'answered' as const, createdAt: '2023-10-24T11:20:00Z' },
+  { id: 'tkt-2', subject: 'تأخر شحنة صندوق الرحلة', category: 'الطلبات والشحن', status: 'open' as const, createdAt: '2023-10-26T16:45:00Z' },
+];
+export const getMyTickets = async () => mockTickets;
+
+export const mockPublishers: Publisher[] = [
+  {
+    id: 'pub-1',
+    slug: 'dar-alhekaya',
+    name: 'دار الحكاية الصغيرة',
+    logoUrl: 'https://picsum.photos/seed/pub1/200/200',
+    bio: 'دار متخصصة في نشر القصص التعليمية والتربوية للأطفال لبناء جيل واعٍ ومبدع.',
+    isSample: true
+  },
+  {
+    id: 'pub-2',
+    slug: 'khayal-akhdar',
+    name: 'ناشر الخيال الأخضر',
+    logoUrl: 'https://picsum.photos/seed/pub2/200/200',
+    bio: 'ناشر رائد في كتب المغامرات والموسوعات العلمية المبسطة لتشجيع الخيال والابتكار.',
+    isSample: true
+  }
+];
+
+export const getPublishers = async (): Promise<Publisher[]> => mockPublishers;
+
+export const getPublisherBySlug = async (slug: string): Promise<Publisher | null> => {
+  return mockPublishers.find(p => p.slug === slug) || null;
+};
+
+export const getProductBySlug = async (slug: string): Promise<PersonalizedProduct | null> => {
+  const product = mockProducts.find(p => p.slug === slug);
+  if (product && !product.publisherId) {
+    return product;
+  }
+  return null;
+};
+
+export const mockInstructorPayouts: InstructorPayout[] = [
+  { id: 'ip-1', instructorId: 'inst-1', period: 'أكتوبر 2023', amount: 4500, status: 'paid' },
+  { id: 'ip-2', instructorId: 'inst-1', period: 'نوفمبر 2023', amount: 5200, status: 'pending' },
+];
+
+export const mockPublisherPayouts: PublisherPayout[] = [
+  { id: 'pp-1', publisherId: 'pub-1', period: 'الربع الثالث 2023', amount: 12500, status: 'paid' },
+  { id: 'pp-2', publisherId: 'pub-1', period: 'الربع الرابع 2023', amount: 14200, status: 'pending' },
+];
+
+export const getInstructorPayouts = async (): Promise<InstructorPayout[]> => mockInstructorPayouts;
+export const getPublisherPayouts = async (): Promise<PublisherPayout[]> => mockPublisherPayouts;
