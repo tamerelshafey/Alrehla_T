@@ -104,24 +104,18 @@ export default async function EnhaLakPage() {
 
   return (
     <PageContainer>
-      {/* Header */}
-      <SectionHeader
-        title="قصة فريدة... بطلها طفلك"
-        titleClassName="md:text-6xl"
-        badge={
-          <div className="inline-flex items-center gap-2 rounded-full border border-violet-100 bg-violet-50 px-4 py-1.5 text-xs font-bold tracking-widest text-blue-700 uppercase">
-            مشروع إنها لك
-          </div>
-        }
-        subNav={
-          <SectionSubNav
+      {/* Hero Section Carousel */}
+      <section className="mx-auto w-full max-w-7xl pt-8 pb-12">
+        <HeroCarousel slides={enhaLakSlides} />
+      </section>
+      
+      {/* Sub Navigation */}
+      <div className="mx-auto max-w-4xl text-center mb-16">
+        <SectionSubNav
             tabs={enhaLakTabs}
             activeColorClass="bg-rose-600 text-white"
           />
-        }
-        description="قصص ومنتجات مخصصة تجعل الطفل جزءًا من الحكاية، وتجعل الأسرة شريكةً في اختيار الفكرة أو القيمة التي تُنسج حولها."
-        descriptionClassName="max-w-none"
-      />
+      </div>
 
       {/* Path Selection */}
       <section className="mx-auto w-full max-w-5xl">
