@@ -1,5 +1,15 @@
 import Link from 'next/link';
 import { getTestimonials } from '@/data/mock';
+import { SectionSubNav } from '@/components/SectionSubNav';
+
+const creativeWritingTabs = [
+  { name: 'نظرة عامة', href: '/creative-writing' },
+  { name: 'عن البرنامج', href: '/creative-writing/about' },
+  { name: 'الباقات', href: '/creative-writing/packages' },
+  { name: 'المدربون', href: '/creative-writing/instructors' },
+  { name: 'الخدمات الإبداعية', href: '/creative-writing/services' },
+];
+
 import {
   PenTool,
   Target,
@@ -83,6 +93,7 @@ export default async function CreativeWritingPage() {
         <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-6xl">
           رحلة كتابة، لا درس كتابة
         </h1>
+        <SectionSubNav tabs={creativeWritingTabs} activeColorClass="bg-sky-600 text-white" />
         <p className="mx-auto mb-10 max-w-3xl text-lg leading-relaxed font-medium text-slate-500 md:text-xl">
           برنامج كتابة فردي عبر الإنترنت لأعمار 6–20، يساعد المشارك على تنمية
           أدواته وصوته في الكتابة.

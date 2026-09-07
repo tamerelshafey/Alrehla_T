@@ -1,5 +1,14 @@
 import Link from 'next/link';
 import { getTestimonials } from '@/data/mock';
+import { SectionSubNav } from '@/components/SectionSubNav';
+
+const enhaLakTabs = [
+  { name: 'نظرة عامة', href: '/enha-lak' },
+  { name: 'أنت البطل هنا', href: '/enha-lak/custom' },
+  { name: 'المكتبة العامة', href: '/enha-lak/library' },
+  { name: 'صندوق الرحلة', href: '/enha-lak/subscription' },
+];
+
 import {
   Fingerprint,
   BookOpen,
@@ -69,6 +78,7 @@ export default async function EnhaLakPage() {
         <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-6xl">
           قصة فريدة... بطلها طفلك
         </h1>
+        <SectionSubNav tabs={enhaLakTabs} activeColorClass="bg-rose-500 text-white" />
         <p className="text-lg leading-relaxed font-medium text-slate-500 md:text-xl">
           قصص ومنتجات مخصصة تجعل الطفل جزءًا من الحكاية، وتجعل الأسرة شريكةً في
           اختيار الفكرة أو القيمة التي تُنسج حولها.
@@ -77,7 +87,7 @@ export default async function EnhaLakPage() {
 
       {/* Path Selection */}
       <section className="mx-auto w-full max-w-5xl">
-        <div className="grid gap-8 md:grid-cols-2">
+        <div className="grid gap-8 md:grid-cols-3">
           <Link
             href="/enha-lak/custom"
             className="group relative block overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 text-center transition-all duration-300 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10 md:text-right"
@@ -93,7 +103,6 @@ export default async function EnhaLakPage() {
               القصة بأدق تفاصيلها.
             </p>
           </Link>
-
           <Link
             href="/enha-lak/library"
             className="group relative block overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 text-center transition-all duration-300 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/10 md:text-right"
@@ -107,6 +116,20 @@ export default async function EnhaLakPage() {
             <p className="leading-relaxed font-medium text-slate-600">
               اختر قصة جاهزة من المكتبة وخصص غلافها فقط، محتوى القصة الأصلي يبقى
               كما هو.
+            </p>
+          </Link>
+          <Link
+            href="/enha-lak/subscription"
+            className="group relative block overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 text-center transition-all duration-300 hover:border-purple-300 hover:shadow-xl hover:shadow-purple-500/10 md:text-right"
+          >
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 transition-transform group-hover:scale-110 md:mx-0">
+              <Package className="h-8 w-8" />
+            </div>
+            <h3 className="mb-3 text-2xl font-bold text-slate-800">
+              صندوق الرحلة
+            </h3>
+            <p className="leading-relaxed font-medium text-slate-600">
+              اشترك واستقبل قصة جديدة مختارة بعناية كل فترة.
             </p>
           </Link>
         </div>

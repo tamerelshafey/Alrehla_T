@@ -1,6 +1,15 @@
 import Image from 'next/image';
 import { getPersonalizedProducts, getAddonProducts } from '@/data/mock';
 import { PenTool, Plus, Book, FileText, ShoppingCart } from 'lucide-react';
+import { SectionSubNav } from '@/components/SectionSubNav';
+
+const enhaLakTabs = [
+  { name: 'نظرة عامة', href: '/enha-lak' },
+  { name: 'أنت البطل هنا', href: '/enha-lak/custom' },
+  { name: 'المكتبة العامة', href: '/enha-lak/library' },
+  { name: 'صندوق الرحلة', href: '/enha-lak/subscription' },
+];
+
 
 export default async function CustomPage() {
   const allProducts = await getPersonalizedProducts();
@@ -17,6 +26,7 @@ export default async function CustomPage() {
         <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-5xl">
           أنت البطل هنا
         </h1>
+        <SectionSubNav tabs={enhaLakTabs} activeColorClass="bg-rose-500 text-white" />
         <p className="mx-auto max-w-2xl text-lg leading-relaxed font-medium text-slate-500 md:text-xl">
           نصنع محتوى مخصصاً لطفلك من الصفر بعد إتمام الطلب، ليكون هو محور القصة
           بأدق تفاصيلها.

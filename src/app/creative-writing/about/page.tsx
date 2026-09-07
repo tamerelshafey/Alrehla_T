@@ -1,4 +1,14 @@
 import { Sparkles, PenTool, Heart } from 'lucide-react';
+import { SectionSubNav } from '@/components/SectionSubNav';
+
+const creativeWritingTabs = [
+  { name: 'نظرة عامة', href: '/creative-writing' },
+  { name: 'عن البرنامج', href: '/creative-writing/about' },
+  { name: 'الباقات', href: '/creative-writing/packages' },
+  { name: 'المدربون', href: '/creative-writing/instructors' },
+  { name: 'الخدمات الإبداعية', href: '/creative-writing/services' },
+];
+
 
 export default function AboutProgramPage() {
   const features = [
@@ -35,6 +45,7 @@ export default function AboutProgramPage() {
         <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-6xl">
           عن «بداية الرحلة»
         </h1>
+        <SectionSubNav tabs={creativeWritingTabs} activeColorClass="bg-sky-600 text-white" />
         <p className="mx-auto max-w-2xl text-xl leading-relaxed font-medium text-slate-500 md:text-2xl">
           الكتابة مساحة للتعبير والنمو
         </p>
