@@ -1,5 +1,7 @@
 import { Sparkles, PenTool, Heart } from 'lucide-react';
 import { SectionSubNav } from '@/components/SectionSubNav';
+import { PageContainer } from '@/components/PageContainer';
+import { SectionHeader } from '@/components/SectionHeader';
 
 const creativeWritingTabs = [
   { name: 'نظرة عامة', href: '/creative-writing' },
@@ -8,7 +10,6 @@ const creativeWritingTabs = [
   { name: 'المدربون', href: '/creative-writing/instructors' },
   { name: 'الخدمات الإبداعية', href: '/creative-writing/services' },
 ];
-
 
 export default function AboutProgramPage() {
   const features = [
@@ -39,17 +40,19 @@ export default function AboutProgramPage() {
   ];
 
   return (
-    <div className="relative flex w-full flex-1 flex-col items-center justify-start space-y-24 px-6 py-20 font-sans text-slate-800 md:px-12">
+    <PageContainer>
       {/* Hero Section */}
-      <section className="mx-auto max-w-4xl space-y-6 text-center">
-        <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-6xl">
-          عن «بداية الرحلة»
-        </h1>
-        <SectionSubNav tabs={creativeWritingTabs} activeColorClass="bg-sky-600 text-white" />
-        <p className="mx-auto max-w-2xl text-xl leading-relaxed font-medium text-slate-500 md:text-2xl">
-          الكتابة مساحة للتعبير والنمو
-        </p>
-      </section>
+      <SectionHeader
+        title="عن «بداية الرحلة»"
+        titleClassName="md:text-6xl"
+        subNav={
+          <SectionSubNav
+            tabs={creativeWritingTabs}
+            activeColorClass="bg-sky-600 text-white"
+          />
+        }
+        description="الكتابة مساحة للتعبير والنمو"
+      />
 
       {/* Why Us Section */}
       <section className="mx-auto w-full max-w-5xl rounded-3xl border border-slate-100 bg-slate-50 p-8 md:p-16">
@@ -108,6 +111,6 @@ export default function AboutProgramPage() {
           })}
         </div>
       </section>
-    </div>
+    </PageContainer>
   );
 }

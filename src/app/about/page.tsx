@@ -1,3 +1,4 @@
+import { PageContainer } from '@/components/PageContainer';
 import {
   Sparkles,
   Target,
@@ -49,7 +50,7 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="relative flex w-full flex-1 flex-col items-center justify-start space-y-24 px-6 py-20 font-sans text-slate-800 md:px-12">
+    <PageContainer>
       {/* Header */}
       <section className="mx-auto max-w-4xl space-y-6 text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-xs font-bold tracking-widest text-slate-600 uppercase">
@@ -140,6 +141,6 @@ export default function AboutPage() {
           })}
         </div>
       </section>
-    </div>
+    </PageContainer>
   );
 }

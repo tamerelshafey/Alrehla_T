@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { getCreativeServices } from '@/data/mock';
 import { ArrowLeft } from 'lucide-react';
 import { SectionSubNav } from '@/components/SectionSubNav';
+import { PageContainer } from '@/components/PageContainer';
+import { SectionHeader } from '@/components/SectionHeader';
 
 const creativeWritingTabs = [
   { name: 'نظرة عامة', href: '/creative-writing' },
@@ -11,23 +13,22 @@ const creativeWritingTabs = [
   { name: 'الخدمات الإبداعية', href: '/creative-writing/services' },
 ];
 
-
 export default async function ServicesPage() {
   const services = await getCreativeServices();
 
   return (
-    <div className="relative flex w-full flex-1 flex-col items-center justify-start space-y-24 px-6 py-20 font-sans text-slate-800 md:px-12">
+    <PageContainer>
       {/* Header */}
-      <section className="mx-auto max-w-4xl space-y-6 text-center">
-        <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-5xl">
-          الخدمات الإبداعية المستقلة
-        </h1>
-        <SectionSubNav tabs={creativeWritingTabs} activeColorClass="bg-sky-600 text-white" />
-        <p className="mx-auto max-w-2xl text-lg leading-relaxed font-medium text-slate-500 md:text-xl">
-          خدمات فردية وسريعة لتطوير مهارات الكتابة، ومراجعة النصوص، وتوليد
-          الأفكار، دون الالتزام ببرنامج طويل.
-        </p>
-      </section>
+      <SectionHeader
+        title="الخدمات الإبداعية المستقلة"
+        subNav={
+          <SectionSubNav
+            tabs={creativeWritingTabs}
+            activeColorClass="bg-sky-600 text-white"
+          />
+        }
+        description="خدمات فردية وسريعة لتطوير مهارات الكتابة، ومراجعة النصوص، وتوليد الأفكار، دون الالتزام ببرنامج طويل."
+      />
 
       {/* Services Grid */}
       <section className="mx-auto w-full max-w-5xl">
@@ -71,6 +72,6 @@ export default async function ServicesPage() {
           استعرض الباقات <ArrowLeft className="h-5 w-5" />
         </Link>
       </div>
-    </div>
+    </PageContainer>
   );
 }

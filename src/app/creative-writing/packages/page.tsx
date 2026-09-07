@@ -3,6 +3,8 @@ import { getWritingPackages } from '@/data/mock';
 import { Target, Clock, Calendar, CheckCircle2 } from 'lucide-react';
 import { WritingPackage } from '@/types';
 import { SectionSubNav } from '@/components/SectionSubNav';
+import { PageContainer } from '@/components/PageContainer';
+import { SectionHeader } from '@/components/SectionHeader';
 
 const creativeWritingTabs = [
   { name: 'نظرة عامة', href: '/creative-writing' },
@@ -12,7 +14,6 @@ const creativeWritingTabs = [
   { name: 'الخدمات الإبداعية', href: '/creative-writing/services' },
 ];
 
-
 export default async function PackagesPage() {
   const packages = await getWritingPackages();
 
@@ -20,18 +21,18 @@ export default async function PackagesPage() {
   const over12 = packages.filter((p) => p.ageGroup === '12_plus');
 
   return (
-    <div className="relative flex w-full flex-1 flex-col items-center justify-start space-y-24 px-6 py-20 font-sans text-slate-800 md:px-12">
+    <PageContainer>
       {/* Header */}
-      <section className="mx-auto max-w-4xl space-y-6 text-center">
-        <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-5xl">
-          باقات «بداية الرحلة»
-        </h1>
-        <SectionSubNav tabs={creativeWritingTabs} activeColorClass="bg-sky-600 text-white" />
-        <p className="mx-auto max-w-2xl text-lg leading-relaxed font-medium text-slate-500 md:text-xl">
-          ست رحلات تختلف في طول المسار وعدد الجلسات، موزعة على مسارين عمريين.
-          قارن ما تتضمنه كل رحلة ثم اختر ما يناسب المشارك.
-        </p>
-      </section>
+      <SectionHeader
+        title="باقات «بداية الرحلة»"
+        subNav={
+          <SectionSubNav
+            tabs={creativeWritingTabs}
+            activeColorClass="bg-sky-600 text-white"
+          />
+        }
+        description="ست رحلات تختلف في طول المسار وعدد الجلسات، موزعة على مسارين عمريين. قارن ما تتضمنه كل رحلة ثم اختر ما يناسب المشارك."
+      />
 
       {/* Tabs / Filters (Visual only for now, can be implemented with state later) */}
       <div className="mx-auto w-full max-w-6xl space-y-20">
@@ -78,7 +79,7 @@ export default async function PackagesPage() {
           </Link>
         </p>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 

@@ -12,7 +12,6 @@ import {
   Calendar,
   Users,
   Activity,
-  FileText,
 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';

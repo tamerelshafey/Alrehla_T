@@ -14,11 +14,14 @@ interface SectionSubNavProps {
   activeColorClass?: string;
 }
 
-export function SectionSubNav({ tabs, activeColorClass = 'bg-sky-600 text-white' }: SectionSubNavProps) {
+export function SectionSubNav({
+  tabs,
+  activeColorClass = 'bg-sky-600 text-white',
+}: SectionSubNavProps) {
   const pathname = usePathname();
 
   return (
-    <div className="w-full overflow-x-auto py-2 mb-6 hide-scrollbar flex justify-center md:justify-start">
+    <div className="hide-scrollbar mb-6 flex w-full justify-center overflow-x-auto py-2 md:justify-start">
       <div className="flex items-center gap-2 whitespace-nowrap">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href;
@@ -27,10 +30,10 @@ export function SectionSubNav({ tabs, activeColorClass = 'bg-sky-600 text-white'
               key={tab.href}
               href={tab.href}
               className={cn(
-                "px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200",
+                'rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200',
                 isActive
                   ? activeColorClass
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
               )}
             >
               {tab.name}

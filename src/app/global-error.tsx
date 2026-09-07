@@ -1,12 +1,6 @@
 'use client';
 
-export default function GlobalError({
-  error,
-  reset,
-}: {
-  error: any;
-  reset: any;
-}) {
+export default function GlobalError() {
   return (
     <html lang="ar">
       <body>

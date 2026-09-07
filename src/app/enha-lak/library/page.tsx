@@ -2,6 +2,8 @@ import Image from 'next/image';
 import { getPersonalizedProducts } from '@/data/mock';
 import { BookOpen, Book, FileText, ShoppingCart } from 'lucide-react';
 import { SectionSubNav } from '@/components/SectionSubNav';
+import { PageContainer } from '@/components/PageContainer';
+import { SectionHeader } from '@/components/SectionHeader';
 
 const enhaLakTabs = [
   { name: 'نظرة عامة', href: '/enha-lak' },
@@ -10,27 +12,25 @@ const enhaLakTabs = [
   { name: 'صندوق الرحلة', href: '/enha-lak/subscription' },
 ];
 
-
 export default async function LibraryPage() {
   const allProducts = await getPersonalizedProducts();
   const libraryProducts = allProducts.filter((p) => p.category === 'library');
 
   return (
-    <div className="relative flex w-full flex-1 flex-col items-center justify-start space-y-24 px-6 py-20 font-sans text-slate-800 md:px-12">
+    <PageContainer>
       {/* Header */}
-      <section className="mx-auto max-w-4xl space-y-6 text-center">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
-          <BookOpen className="h-8 w-8" />
-        </div>
-        <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-5xl">
-          المكتبة العامة
-        </h1>
-        <SectionSubNav tabs={enhaLakTabs} activeColorClass="bg-rose-500 text-white" />
-        <p className="mx-auto max-w-2xl text-lg leading-relaxed font-medium text-slate-500 md:text-xl">
-          اختر قصة جاهزة من المكتبة وخصص غلافها فقط، محتوى القصة الأصلي يبقى كما
-          هو. خيار مثالي لمن يبحث عن محتوى قيم بلمسة شخصية بسيطة.
-        </p>
-      </section>
+      <SectionHeader
+        title="المكتبة العامة"
+        icon={<BookOpen className="h-8 w-8" />}
+        iconClassName="bg-emerald-50 text-emerald-600"
+        subNav={
+          <SectionSubNav
+            tabs={enhaLakTabs}
+            activeColorClass="bg-rose-500 text-white"
+          />
+        }
+        description="اختر قصة جاهزة من المكتبة وخصص غلافها فقط، محتوى القصة الأصلي يبقى كما هو. خيار مثالي لمن يبحث عن محتوى قيم بلمسة شخصية بسيطة."
+      />
 
       {/* Library Products */}
       <section className="mx-auto w-full max-w-6xl">
@@ -96,6 +96,6 @@ export default async function LibraryPage() {
           ))}
         </div>
       </section>
-    </div>
+    </PageContainer>
   );
 }

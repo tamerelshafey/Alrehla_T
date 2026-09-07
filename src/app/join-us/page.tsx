@@ -1,3 +1,4 @@
+import { PageContainer } from '@/components/PageContainer';
 import {
   Heart,
   Users,
@@ -64,7 +65,7 @@ export default function JoinUsPage() {
   ];
 
   return (
-    <div className="relative flex w-full flex-1 flex-col items-center justify-start space-y-24 px-6 py-20 font-sans text-slate-800 md:px-12">
+    <PageContainer>
       {/* Hero Section */}
       <section className="mx-auto max-w-4xl space-y-6 text-center">
         <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-6xl">
@@ -226,6 +227,6 @@ export default function JoinUsPage() {
           </form>
         </div>
       </section>
-    </div>
+    </PageContainer>
   );
 }

@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { getTestimonials } from '@/data/mock';
 import { SectionSubNav } from '@/components/SectionSubNav';
+import { PageContainer } from '@/components/PageContainer';
+import { SectionHeader } from '@/components/SectionHeader';
 
 const enhaLakTabs = [
   { name: 'نظرة عامة', href: '/enha-lak' },
@@ -69,21 +71,25 @@ export default async function EnhaLakPage() {
   ];
 
   return (
-    <div className="relative flex w-full flex-1 flex-col items-center justify-start space-y-24 px-6 py-20 font-sans text-slate-800 md:px-12">
+    <PageContainer>
       {/* Header */}
-      <section className="mx-auto max-w-4xl space-y-6 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-1.5 text-xs font-bold tracking-widest text-blue-700 uppercase">
-          مشروع إنها لك
-        </div>
-        <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-6xl">
-          قصة فريدة... بطلها طفلك
-        </h1>
-        <SectionSubNav tabs={enhaLakTabs} activeColorClass="bg-rose-500 text-white" />
-        <p className="text-lg leading-relaxed font-medium text-slate-500 md:text-xl">
-          قصص ومنتجات مخصصة تجعل الطفل جزءًا من الحكاية، وتجعل الأسرة شريكةً في
-          اختيار الفكرة أو القيمة التي تُنسج حولها.
-        </p>
-      </section>
+      <SectionHeader
+        title="قصة فريدة... بطلها طفلك"
+        titleClassName="md:text-6xl"
+        badge={
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-1.5 text-xs font-bold tracking-widest text-blue-700 uppercase">
+            مشروع إنها لك
+          </div>
+        }
+        subNav={
+          <SectionSubNav
+            tabs={enhaLakTabs}
+            activeColorClass="bg-rose-500 text-white"
+          />
+        }
+        description="قصص ومنتجات مخصصة تجعل الطفل جزءًا من الحكاية، وتجعل الأسرة شريكةً في اختيار الفكرة أو القيمة التي تُنسج حولها."
+        descriptionClassName="max-w-none"
+      />
 
       {/* Path Selection */}
       <section className="mx-auto w-full max-w-5xl">
@@ -220,6 +226,6 @@ export default async function EnhaLakPage() {
           ))}
         </div>
       </section>
-    </div>
+    </PageContainer>
   );
 }

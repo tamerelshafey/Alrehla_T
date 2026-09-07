@@ -2,6 +2,8 @@ import { getSubscriptionTiers } from '@/data/mock';
 import { PackageOpen, Sparkles, Gift, Activity, Check } from 'lucide-react';
 import { SVGProps } from 'react';
 import { SectionSubNav } from '@/components/SectionSubNav';
+import { PageContainer } from '@/components/PageContainer';
+import { SectionHeader } from '@/components/SectionHeader';
 
 const enhaLakTabs = [
   { name: 'نظرة عامة', href: '/enha-lak' },
@@ -9,7 +11,6 @@ const enhaLakTabs = [
   { name: 'المكتبة العامة', href: '/enha-lak/library' },
   { name: 'صندوق الرحلة', href: '/enha-lak/subscription' },
 ];
-
 
 export default async function SubscriptionPage() {
   const tiers = await getSubscriptionTiers();
@@ -21,21 +22,20 @@ export default async function SubscriptionPage() {
   ];
 
   return (
-    <div className="relative flex w-full flex-1 flex-col items-center justify-start space-y-24 px-6 py-20 font-sans text-slate-800 md:px-12">
+    <PageContainer>
       {/* Header */}
-      <section className="mx-auto max-w-4xl space-y-6 text-center">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-50 text-purple-600">
-          <PackageOpen className="h-8 w-8" />
-        </div>
-        <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-5xl">
-          صندوق الرحلة
-        </h1>
-        <SectionSubNav tabs={enhaLakTabs} activeColorClass="bg-rose-500 text-white" />
-        <p className="mx-auto max-w-2xl text-lg leading-relaxed font-medium text-slate-500 md:text-xl">
-          اشتراك يضمن متعة متجددة لطفلك كل شهر، مع مفاجآت تُصنع خصيصًا له وتصله
-          حتى باب المنزل.
-        </p>
-      </section>
+      <SectionHeader
+        title="صندوق الرحلة"
+        icon={<PackageOpen className="h-8 w-8" />}
+        iconClassName="bg-purple-50 text-purple-600"
+        subNav={
+          <SectionSubNav
+            tabs={enhaLakTabs}
+            activeColorClass="bg-rose-500 text-white"
+          />
+        }
+        description="اشتراك يضمن متعة متجددة لطفلك كل شهر، مع مفاجآت تُصنع خصيصًا له وتصله حتى باب المنزل."
+      />
 
       {/* Pricing */}
       <section className="mx-auto w-full max-w-5xl">
@@ -80,7 +80,6 @@ export default async function SubscriptionPage() {
 
                 <ul className="mb-8 flex-1 space-y-4">
                   {benefits.map((benefit, i) => {
-                    const Icon = benefit.icon;
                     return (
                       <li key={i} className="flex items-center gap-3">
                         <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-600">
@@ -126,10 +125,9 @@ export default async function SubscriptionPage() {
           })}
         </div>
       </section>
-    </div>
+    </PageContainer>
   );
 }
-
 function BookOpenIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg

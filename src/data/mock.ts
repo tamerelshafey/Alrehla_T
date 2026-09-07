@@ -429,8 +429,6 @@ import {
   Booking,
   Order,
   PortfolioItem,
-  OrderStatus,
-  BookingStatus,
 } from '../types';
 
 export const mockBookings: Booking[] = [

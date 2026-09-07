@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { getTestimonials } from '@/data/mock';
 import { SectionSubNav } from '@/components/SectionSubNav';
+import { PageContainer } from '@/components/PageContainer';
+import { SectionHeader } from '@/components/SectionHeader';
 
 const creativeWritingTabs = [
   { name: 'نظرة عامة', href: '/creative-writing' },
@@ -84,20 +86,26 @@ export default async function CreativeWritingPage() {
   ];
 
   return (
-    <div className="relative flex w-full flex-1 flex-col items-center justify-start space-y-32 px-6 py-20 font-sans text-slate-800 md:px-12">
+    <PageContainer className="space-y-32">
       {/* Hero Section */}
-      <section className="mx-auto max-w-4xl space-y-6 pt-10 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-amber-100 bg-amber-50 px-4 py-1.5 text-xs font-bold tracking-widest text-amber-700 uppercase">
-          مشروع بداية الرحلة
-        </div>
-        <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-6xl">
-          رحلة كتابة، لا درس كتابة
-        </h1>
-        <SectionSubNav tabs={creativeWritingTabs} activeColorClass="bg-sky-600 text-white" />
-        <p className="mx-auto mb-10 max-w-3xl text-lg leading-relaxed font-medium text-slate-500 md:text-xl">
-          برنامج كتابة فردي عبر الإنترنت لأعمار 6–20، يساعد المشارك على تنمية
-          أدواته وصوته في الكتابة.
-        </p>
+      <SectionHeader
+        title="رحلة كتابة، لا درس كتابة"
+        titleClassName="md:text-6xl"
+        badge={
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-100 bg-amber-50 px-4 py-1.5 text-xs font-bold tracking-widest text-amber-700 uppercase">
+            مشروع بداية الرحلة
+          </div>
+        }
+        subNav={
+          <SectionSubNav
+            tabs={creativeWritingTabs}
+            activeColorClass="bg-sky-600 text-white"
+          />
+        }
+        description="برنامج كتابة فردي عبر الإنترنت لأعمار 6–20، يساعد المشارك على تنمية أدواته وصوته في الكتابة."
+        descriptionClassName="mb-10 max-w-3xl"
+        className="pt-10"
+      >
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Link
             href="/creative-writing/packages"
@@ -112,7 +120,7 @@ export default async function CreativeWritingPage() {
             الخدمات الإبداعية المستقلة
           </Link>
         </div>
-      </section>
+      </SectionHeader>
 
       {/* Suitable For */}
       <section className="mx-auto w-full max-w-6xl rounded-3xl border border-slate-100 bg-slate-50/50 p-8 md:p-16">
@@ -281,6 +289,6 @@ export default async function CreativeWritingPage() {
           </Link>
         </div>
       </section>
-    </div>
+    </PageContainer>
   );
 }

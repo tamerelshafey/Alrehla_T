@@ -1,6 +1,8 @@
 import { getInstructors } from '@/data/mock';
 import { User, Award, CheckCircle } from 'lucide-react';
 import { SectionSubNav } from '@/components/SectionSubNav';
+import { PageContainer } from '@/components/PageContainer';
+import { SectionHeader } from '@/components/SectionHeader';
 
 const creativeWritingTabs = [
   { name: 'نظرة عامة', href: '/creative-writing' },
@@ -10,23 +12,22 @@ const creativeWritingTabs = [
   { name: 'الخدمات الإبداعية', href: '/creative-writing/services' },
 ];
 
-
 export default async function InstructorsPage() {
   const instructors = await getInstructors();
 
   return (
-    <div className="relative flex w-full flex-1 flex-col items-center justify-start space-y-24 px-6 py-20 font-sans text-slate-800 md:px-12">
+    <PageContainer>
       {/* Header */}
-      <section className="mx-auto max-w-4xl space-y-6 text-center">
-        <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-5xl">
-          مدربو «بداية الرحلة»
-        </h1>
-        <SectionSubNav tabs={creativeWritingTabs} activeColorClass="bg-sky-600 text-white" />
-        <p className="mx-auto max-w-2xl text-lg leading-relaxed font-medium text-slate-500 md:text-xl">
-          فريق من الكُتّاب والتربويين المتخصصين في أدب الطفل واليافعين، يجمعون
-          بين الشغف الإبداعي والقدرة على التوجيه بأسلوب داعم ومحفز.
-        </p>
-      </section>
+      <SectionHeader
+        title="مدربو «بداية الرحلة»"
+        subNav={
+          <SectionSubNav
+            tabs={creativeWritingTabs}
+            activeColorClass="bg-sky-600 text-white"
+          />
+        }
+        description="فريق من الكُتّاب والتربويين المتخصصين في أدب الطفل واليافعين، يجمعون بين الشغف الإبداعي والقدرة على التوجيه بأسلوب داعم ومحفز."
+      />
 
       {/* Instructors Grid */}
       <section className="mx-auto w-full max-w-6xl">
@@ -81,6 +82,6 @@ export default async function InstructorsPage() {
           ))}
         </div>
       </section>
-    </div>
+    </PageContainer>
   );
 }
