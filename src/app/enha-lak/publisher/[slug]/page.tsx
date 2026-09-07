@@ -61,7 +61,7 @@ export default async function PublisherPage({ params }: { params: Promise<{ slug
                 <div className="p-5">
                   <h3 className="text-lg font-bold text-slate-900 line-clamp-1">{product.name}</h3>
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="text-lg font-black text-amber-500">
+                    <span className="text-lg font-black text-rose-500">
                       {product.price} ج.م
                     </span>
                   </div>

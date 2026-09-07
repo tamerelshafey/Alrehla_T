@@ -30,10 +30,11 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body
-        className={`${cairo.variable} flex min-h-screen flex-col font-sans text-slate-800 antialiased`}
+        className={`${cairo.variable} flex min-h-screen flex-col font-sans text-slate-800 antialiased bg-[#FCFDFD] selection:bg-amber-200 selection:text-amber-900`}
         suppressHydrationWarning
       >
         <ScrollToTop />
+        <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-rose-500 to-emerald-500 z-50" />
         <Header />
         <main className="relative flex w-full flex-1 flex-col">{children}</main>
         <Footer />

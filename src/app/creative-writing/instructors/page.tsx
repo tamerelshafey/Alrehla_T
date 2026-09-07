@@ -23,7 +23,7 @@ export default async function InstructorsPage() {
         subNav={
           <SectionSubNav
             tabs={creativeWritingTabs}
-            activeColorClass="bg-sky-600 text-white"
+            activeColorClass="bg-emerald-600 text-white"
           />
         }
         description="فريق من الكُتّاب والتربويين المتخصصين في أدب الطفل واليافعين، يجمعون بين الشغف الإبداعي والقدرة على التوجيه بأسلوب داعم ومحفز."
@@ -51,7 +51,7 @@ export default async function InstructorsPage() {
                   <h3 className="mb-2 text-2xl font-black text-slate-800">
                     {instructor.displayName}
                   </h3>
-                  <div className="flex items-center gap-2 text-sm font-bold text-amber-600">
+                  <div className="flex items-center gap-2 text-sm font-bold text-emerald-600">
                     <Award className="h-4 w-4" />
                     خبرة {instructor.yearsExperience} سنوات
                   </div>

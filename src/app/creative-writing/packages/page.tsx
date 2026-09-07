@@ -28,7 +28,7 @@ export default async function PackagesPage() {
         subNav={
           <SectionSubNav
             tabs={creativeWritingTabs}
-            activeColorClass="bg-sky-600 text-white"
+            activeColorClass="bg-emerald-600 text-white"
           />
         }
         description="ست رحلات تختلف في طول المسار وعدد الجلسات، موزعة على مسارين عمريين. قارن ما تتضمنه كل رحلة ثم اختر ما يناسب المشارك."
@@ -73,7 +73,7 @@ export default async function PackagesPage() {
           غير متأكد أي باقة تناسبك؟{' '}
           <Link
             href="/support"
-            className="font-bold text-amber-600 hover:underline"
+            className="font-bold text-emerald-600 hover:underline"
           >
             تواصل معنا وسنساعدك على فهم الفروق قبل الحجز.
           </Link>

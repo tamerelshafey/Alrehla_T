@@ -26,7 +26,7 @@ export default async function LibraryPage() {
         subNav={
           <SectionSubNav
             tabs={enhaLakTabs}
-            activeColorClass="bg-rose-500 text-white"
+            activeColorClass="bg-rose-600 text-white"
           />
         }
         description="اختر قصة جاهزة من المكتبة وخصص غلافها فقط، محتوى القصة الأصلي يبقى كما هو. خيار مثالي لمن يبحث عن محتوى قيم بلمسة شخصية بسيطة."

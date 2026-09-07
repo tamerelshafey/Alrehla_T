@@ -46,7 +46,7 @@ export default async function EnhaLakPage() {
       title: 'غرس القيم',
       description: 'الرسائل التربوية أكثر تأثيراً عندما يعيشها الطفل بنفسه.',
       icon: Sparkles,
-      color: 'text-amber-600',
+      color: 'text-rose-600',
       bg: 'bg-amber-50',
     },
   ];
@@ -77,14 +77,14 @@ export default async function EnhaLakPage() {
         title="قصة فريدة... بطلها طفلك"
         titleClassName="md:text-6xl"
         badge={
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-1.5 text-xs font-bold tracking-widest text-blue-700 uppercase">
+          <div className="inline-flex items-center gap-2 rounded-full border border-violet-100 bg-violet-50 px-4 py-1.5 text-xs font-bold tracking-widest text-blue-700 uppercase">
             مشروع إنها لك
           </div>
         }
         subNav={
           <SectionSubNav
             tabs={enhaLakTabs}
-            activeColorClass="bg-rose-500 text-white"
+            activeColorClass="bg-rose-600 text-white"
           />
         }
         description="قصص ومنتجات مخصصة تجعل الطفل جزءًا من الحكاية، وتجعل الأسرة شريكةً في اختيار الفكرة أو القيمة التي تُنسج حولها."
@@ -98,7 +98,7 @@ export default async function EnhaLakPage() {
             href="/enha-lak/custom"
             className="group relative block overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 text-center transition-all duration-300 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10 md:text-right"
           >
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 transition-transform group-hover:scale-110 md:mx-0">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 transition-transform group-hover:scale-110 md:mx-0">
               <PenTool className="h-8 w-8" />
             </div>
             <h3 className="mb-3 text-2xl font-bold text-slate-800">
@@ -179,7 +179,7 @@ export default async function EnhaLakPage() {
             const Icon = step.icon;
             return (
               <div key={index} className="relative text-center">
-                <div className="relative z-10 mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border-2 border-blue-100 bg-white text-blue-600 shadow-sm">
+                <div className="relative z-10 mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border-2 border-violet-100 bg-white text-violet-600 shadow-sm">
                   <Icon className="h-7 w-7" />
                   <div className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
                     {index + 1}

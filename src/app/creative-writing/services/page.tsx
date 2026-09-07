@@ -24,7 +24,7 @@ export default async function ServicesPage() {
         subNav={
           <SectionSubNav
             tabs={creativeWritingTabs}
-            activeColorClass="bg-sky-600 text-white"
+            activeColorClass="bg-emerald-600 text-white"
           />
         }
         description="خدمات فردية وسريعة لتطوير مهارات الكتابة، ومراجعة النصوص، وتوليد الأفكار، دون الالتزام ببرنامج طويل."
@@ -42,7 +42,7 @@ export default async function ServicesPage() {
                 <h3 className="mb-2 text-2xl font-black text-slate-800">
                   {service.name}
                 </h3>
-                <div className="text-lg font-black text-blue-600">
+                <div className="text-lg font-black text-teal-600">
                   {service.price.toLocaleString('ar-EG')} ج.م
                 </div>
               </div>
@@ -67,7 +67,7 @@ export default async function ServicesPage() {
         </h3>
         <Link
           href="/creative-writing/packages"
-          className="inline-flex items-center gap-2 text-lg font-bold text-amber-600 transition-all hover:gap-3"
+          className="inline-flex items-center gap-2 text-lg font-bold text-emerald-600 transition-all hover:gap-3"
         >
           استعرض الباقات <ArrowLeft className="h-5 w-5" />
         </Link>

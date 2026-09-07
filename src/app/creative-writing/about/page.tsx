@@ -18,7 +18,7 @@ export default function AboutProgramPage() {
       description:
         'نبدأ بإشعال شرارة الفضول والخيال قبل الخوض في تقنيات الكتابة المعقدة.',
       icon: Sparkles,
-      color: 'text-amber-600',
+      color: 'text-emerald-600',
       bg: 'bg-amber-50',
     },
     {
@@ -26,8 +26,8 @@ export default function AboutProgramPage() {
       description:
         'نؤمن أن الكتابة مهارة تنمو بالتجربة والمحاولة المستمرة أكثر من التنظير.',
       icon: PenTool,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
+      color: 'text-teal-600',
+      bg: 'bg-teal-50',
     },
     {
       title: 'الثقة هي المفتاح',
@@ -48,7 +48,7 @@ export default function AboutProgramPage() {
         subNav={
           <SectionSubNav
             tabs={creativeWritingTabs}
-            activeColorClass="bg-sky-600 text-white"
+            activeColorClass="bg-emerald-600 text-white"
           />
         }
         description="الكتابة مساحة للتعبير والنمو"
@@ -73,7 +73,7 @@ export default function AboutProgramPage() {
               key={idx}
               className="flex items-center gap-4 rounded-2xl bg-white p-6 shadow-sm"
             >
-              <div className="h-3 w-3 shrink-0 rounded-full bg-amber-500"></div>
+              <div className="h-3 w-3 shrink-0 rounded-full bg-emerald-500"></div>
               <p className="text-lg leading-relaxed font-medium text-slate-700">
                 {point}
               </p>

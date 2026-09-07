@@ -24,11 +24,11 @@ export default async function CustomPage() {
       <SectionHeader
         title="أنت البطل هنا"
         icon={<PenTool className="h-8 w-8" />}
-        iconClassName="bg-blue-50 text-blue-600"
+        iconClassName="bg-violet-50 text-violet-600"
         subNav={
           <SectionSubNav
             tabs={enhaLakTabs}
-            activeColorClass="bg-rose-500 text-white"
+            activeColorClass="bg-rose-600 text-white"
           />
         }
         description="نصنع محتوى مخصصاً لطفلك من الصفر بعد إتمام الطلب، ليكون هو محور القصة بأدق تفاصيلها."
@@ -40,7 +40,7 @@ export default async function CustomPage() {
           {customProducts.map((product) => (
             <div
               key={product.id}
-              className="flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:border-blue-200 hover:shadow-xl"
+              className="flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:border-violet-200 hover:shadow-xl"
             >
               <div className="relative h-64 w-full bg-slate-100">
                 <Image
@@ -70,7 +70,7 @@ export default async function CustomPage() {
                         نسخة مطبوعة
                       </span>
                     </div>
-                    <span className="font-black text-blue-600">
+                    <span className="font-black text-violet-600">
                       {product.price.toLocaleString('ar-EG')} ج.م
                     </span>
                   </div>
@@ -82,7 +82,7 @@ export default async function CustomPage() {
                           نسخة إلكترونية
                         </span>
                       </div>
-                      <span className="font-black text-blue-600">
+                      <span className="font-black text-violet-600">
                         {product.electronicPrice.toLocaleString('ar-EG')} ج.م
                       </span>
                     </div>
@@ -108,7 +108,7 @@ export default async function CustomPage() {
       <section className="mx-auto w-full max-w-4xl rounded-3xl border border-slate-100 bg-slate-50/50 p-8 md:p-12">
         <div className="mb-10 text-center">
           <h2 className="flex items-center justify-center gap-3 text-3xl font-black text-slate-800">
-            <Plus className="h-8 w-8 text-amber-500" />
+            <Plus className="h-8 w-8 text-rose-500" />
             إضافات اختيارية
           </h2>
           <p className="mt-4 font-medium text-slate-500">
@@ -131,10 +131,10 @@ export default async function CustomPage() {
                 </p>
               </div>
               <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
-                <span className="text-lg font-black text-amber-600">
+                <span className="text-lg font-black text-rose-600">
                   {addon.price.toLocaleString('ar-EG')} ج.م
                 </span>
-                <button className="text-sm font-bold text-blue-600 hover:text-blue-800">
+                <button className="text-sm font-bold text-violet-600 hover:text-violet-800">
                   إضافة للطلب
                 </button>
               </div>

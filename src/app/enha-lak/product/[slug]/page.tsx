@@ -13,7 +13,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <h1 className="text-3xl font-black text-slate-800">المنتج غير موجود</h1>
           <p className="mt-4 text-slate-500">عذراً، المنتج الذي تبحث عنه غير متاح أو لا يمتلك صفحة تفصيلية مستقلة.</p>
-          <Link href="/enha-lak" className="mt-8 rounded-xl bg-amber-500 px-6 py-3 font-bold text-white hover:bg-amber-600 transition-colors">
+          <Link href="/enha-lak" className="mt-8 rounded-xl bg-rose-500 px-6 py-3 font-bold text-white hover:bg-rose-600 transition-colors">
             العودة للمتجر
           </Link>
         </div>
@@ -48,7 +48,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           
           <div className="rounded-2xl bg-slate-50 p-6 border border-slate-100">
             <div className="flex items-center gap-4">
-              <span className="text-3xl font-black text-amber-500">{product.price} ج.م</span>
+              <span className="text-3xl font-black text-rose-500">{product.price} ج.م</span>
               {product.electronicPrice && (
                 <span className="text-sm font-bold text-slate-500 line-through">
                   بدلاً من {product.price + 5000} ج.م

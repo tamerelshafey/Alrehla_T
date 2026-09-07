@@ -35,14 +35,14 @@ export default async function CreativeWritingPage() {
     {
       text: 'لديه أفكار أو صور أو قصص، ويريد أدوات تساعده على تحويلها إلى كتابة أوضح.',
       icon: Sparkles,
-      color: 'text-amber-600',
+      color: 'text-emerald-600',
       bg: 'bg-amber-50',
     },
     {
       text: 'قد لا يعرف من أين يبدأ، أو يتوقف طويلاً أمام الصفحة البيضاء، ويحتاج إلى مساحة تساعده على المحاولة.',
       icon: Target,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
+      color: 'text-teal-600',
+      bg: 'bg-teal-50',
     },
     {
       text: 'لديه نصوص أو محاولات ويريد تطوير الفكرة والصياغة والمراجعة مع الحفاظ على صوته.',
@@ -66,7 +66,7 @@ export default async function CreativeWritingPage() {
         'يتعرف إلى أدوات تساعده على تنمية الفكرة والوصف والتنظيم والمراجعة.',
       icon: PenTool,
       color: 'text-indigo-600',
-      bg: 'bg-indigo-50',
+      bg: 'bg-emerald-50',
     },
     {
       title: 'صوت واختيار',
@@ -99,7 +99,7 @@ export default async function CreativeWritingPage() {
         subNav={
           <SectionSubNav
             tabs={creativeWritingTabs}
-            activeColorClass="bg-sky-600 text-white"
+            activeColorClass="bg-emerald-600 text-white"
           />
         }
         description="برنامج كتابة فردي عبر الإنترنت لأعمار 6–20، يساعد المشارك على تنمية أدواته وصوته في الكتابة."
@@ -109,7 +109,7 @@ export default async function CreativeWritingPage() {
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Link
             href="/creative-writing/packages"
-            className="rounded-2xl bg-amber-500 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-amber-200 transition-colors hover:bg-amber-600"
+            className="rounded-2xl bg-emerald-500 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-amber-200 transition-colors hover:bg-emerald-600"
           >
             استعرض الباقات
           </Link>
@@ -188,7 +188,7 @@ export default async function CreativeWritingPage() {
             href="/creative-writing/packages"
             className="group block rounded-3xl border border-slate-200 bg-white p-8 transition-all duration-300 hover:border-amber-300 hover:shadow-xl hover:shadow-amber-500/10"
           >
-            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-emerald-600">
               <Map className="h-6 w-6" />
             </div>
             <h3 className="mb-3 text-2xl font-bold text-slate-800">
@@ -197,7 +197,7 @@ export default async function CreativeWritingPage() {
             <p className="mb-6 font-medium text-slate-600">
               لمن يريد مسارًا متتابعًا
             </p>
-            <span className="flex items-center gap-2 font-bold text-amber-600 transition-all group-hover:gap-3">
+            <span className="flex items-center gap-2 font-bold text-emerald-600 transition-all group-hover:gap-3">
               اكتشف الباقات <ArrowLeft className="h-4 w-4" />
             </span>
           </Link>
@@ -205,7 +205,7 @@ export default async function CreativeWritingPage() {
             href="/creative-writing/services"
             className="group block rounded-3xl border border-slate-200 bg-white p-8 transition-all duration-300 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10"
           >
-            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
               <PenTool className="h-6 w-6" />
             </div>
             <h3 className="mb-3 text-2xl font-bold text-slate-800">
@@ -214,7 +214,7 @@ export default async function CreativeWritingPage() {
             <p className="mb-6 font-medium text-slate-600">
               مراجعات واستشارات سريعة
             </p>
-            <span className="flex items-center gap-2 font-bold text-blue-600 transition-all group-hover:gap-3">
+            <span className="flex items-center gap-2 font-bold text-teal-600 transition-all group-hover:gap-3">
               اكتشف الخدمات <ArrowLeft className="h-4 w-4" />
             </span>
           </Link>
@@ -277,7 +277,7 @@ export default async function CreativeWritingPage() {
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Link
             href="/creative-writing/packages"
-            className="rounded-2xl bg-amber-500 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-amber-200 transition-colors hover:bg-amber-600"
+            className="rounded-2xl bg-emerald-500 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-amber-200 transition-colors hover:bg-emerald-600"
           >
             استعرض الباقات
           </Link>

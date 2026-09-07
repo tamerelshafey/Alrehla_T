@@ -31,7 +31,7 @@ export default async function SubscriptionPage() {
         subNav={
           <SectionSubNav
             tabs={enhaLakTabs}
-            activeColorClass="bg-rose-500 text-white"
+            activeColorClass="bg-rose-600 text-white"
           />
         }
         description="اشتراك يضمن متعة متجددة لطفلك كل شهر، مع مفاجآت تُصنع خصيصًا له وتصله حتى باب المنزل."
