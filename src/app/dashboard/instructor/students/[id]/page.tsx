@@ -2,8 +2,8 @@ import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
-import { getInstructorStudents, getBookings } from '@/data/mock';
-import { User, Calendar } from 'lucide-react';
+import { getInstructorStudents, getBookings, getStudentDocuments } from '@/data/mock';
+import { User, Calendar, FileText } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
 
 export const dynamic = 'force-dynamic';
@@ -36,6 +36,35 @@ export default async function StudentDetailsPage({ params }: { params: Promise<{
     )
   }));
 
+  
+  const documents = await getStudentDocuments(studentId);
+  const docsData = documents.map(doc => ({
+    title: doc.title,
+    date: formatDate(doc.updatedAt),
+    status: doc.status === 'reviewed' ? (
+      <StatusBadge type="success" label="تمت المراجعة" />
+    ) : doc.status === 'submitted' ? (
+      <StatusBadge type="warning" label="بانتظار مراجعتك" />
+    ) : (
+      <StatusBadge type="neutral" label="مسودة" />
+    ),
+    action: (
+      <Link 
+        href={`/dashboard/instructor/students/${studentId}/portfolio/${doc.id}`}
+        className="text-blue-600 font-bold hover:underline"
+      >
+        عرض ومراجعة
+      </Link>
+    )
+  }));
+
+  const docsColumns = [
+    { header: 'عنوان النص', accessorKey: 'title' },
+    { header: 'آخر تحديث', accessorKey: 'date' },
+    { header: 'الحالة', accessorKey: 'status' },
+    { header: 'الإجراء', accessorKey: 'action' }
+  ];
+
   const columns = [
     { header: 'الجلسة', accessorKey: 'sessionNumber' },
     { header: 'التاريخ', accessorKey: 'date' },
@@ -65,7 +94,23 @@ export default async function StudentDetailsPage({ params }: { params: Promise<{
         </div>
       </div>
 
+      
+      <div className="mb-8">
+        <h3 className="mb-4 text-xl font-bold text-slate-800 flex items-center gap-2">
+          <FileText className="h-5 w-5 text-blue-500" />
+          الملف الكتابي للطالب (النصوص والمشاريع)
+        </h3>
+        {docsData.length > 0 ? (
+          <SimpleDataTable columns={docsColumns} data={docsData} />
+        ) : (
+          <div className="rounded-2xl border-2 border-dashed border-slate-200 py-8 text-center text-slate-500">
+            لم يقم الطالب بكتابة أي نصوص بعد.
+          </div>
+        )}
+      </div>
+
       <h3 className="mb-4 text-xl font-bold text-slate-800 flex items-center gap-2">
+
         <Calendar className="h-5 w-5 text-amber-500" />
         سجل الجلسات
       </h3>

@@ -886,3 +886,104 @@ export const addFamilyMember = async (name: string, age: number, gender: string)
     mockFamilyMembers.push(newMember);
     return newMember;
 };
+
+
+export const mockDocuments: import('@/types').PortfolioDocument[] = [
+  {
+    id: 'doc-1',
+    studentId: 'user-2',
+    title: 'قصتي القصيرة الأولى: البحث عن الضوء',
+    content: 'في قرية صغيرة تحيط بها الجبال من كل جانب، كان هناك شاب يدعى مالك. كان مالك يحلم دائماً باكتشاف ما وراء هذه الجبال الشاهقة...',
+    status: 'reviewed',
+    instructorFeedback: 'بداية ممتازة يا مالك! أسلوبك في الوصف جذاب جداً. أنصحك بالعمل أكثر على الحوار بين الشخصيات لإضفاء مزيد من الحيوية على القصة.',
+    updatedAt: '2023-10-20T10:00:00Z'
+  },
+  {
+    id: 'doc-2',
+    studentId: 'user-2',
+    title: 'مقال: تأثير التكنولوجيا على الأدب',
+    content: 'لا شك أن التكنولوجيا الحديثة قد أحدثت ثورة في كل مجالات الحياة، والأدب ليس استثناءً. فمع ظهور الكتب الإلكترونية...',
+    status: 'submitted',
+    updatedAt: '2023-10-22T14:30:00Z'
+  },
+  {
+    id: 'doc-3',
+    studentId: 'user-2',
+    title: 'مسودة: رواية الخيال العلمي',
+    content: 'في عام 2150، لم تعد الأرض كما نعرفها...',
+    status: 'draft',
+    updatedAt: '2023-10-25T09:15:00Z'
+  }
+];
+
+export async function getStudentDocuments(studentId: string) {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 800));
+  return mockDocuments.filter(d => d.studentId === studentId);
+}
+
+export async function getDocumentById(id: string) {
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return mockDocuments.find(d => d.id === id);
+}
+
+
+export const mockPublisherOrders: import('@/types').PublisherOrder[] = [
+  {
+    id: 'po-1',
+    orderId: 'ORD-10023',
+    productName: 'قصة خيالية مخصصة',
+    quantity: 1,
+    totalAmount: 150,
+    publisherShare: 105, // 70% share
+    status: 'completed',
+    createdAt: '2023-10-25T14:30:00Z'
+  },
+  {
+    id: 'po-2',
+    orderId: 'ORD-10024',
+    productName: 'كتاب المغامرات العظيم',
+    quantity: 2,
+    totalAmount: 200,
+    publisherShare: 140,
+    status: 'pending',
+    createdAt: '2023-10-26T09:15:00Z'
+  },
+  {
+    id: 'po-3',
+    orderId: 'ORD-10025',
+    productName: 'قصة قبل النوم المخصصة',
+    quantity: 1,
+    totalAmount: 120,
+    publisherShare: 84,
+    status: 'completed',
+    createdAt: '2023-10-27T18:45:00Z'
+  }
+];
+
+export async function getPublisherOrders() {
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return mockPublisherOrders;
+}
+
+export const mockPublisherPayouts: import('@/types').PublisherPayout[] = [
+  {
+    id: 'pay-1',
+    publisherId: 'pub-1',
+    period: 'أكتوبر 2023',
+    amount: 1500,
+    status: 'paid'
+  },
+  {
+    id: 'pay-2',
+    publisherId: 'pub-1',
+    period: 'نوفمبر 2023 (حتى الآن)',
+    amount: 850,
+    status: 'pending'
+  }
+];
+
+export async function getPublisherPayouts() {
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return mockPublisherPayouts;
+}

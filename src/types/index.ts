@@ -389,3 +389,50 @@ export interface CourseSubscription {
   startedAt: string;
   createdAt: string;
 }
+
+
+export type DocumentStatus = 'draft' | 'submitted' | 'reviewed';
+
+export interface PortfolioDocument {
+  id: string;
+  studentId: string;
+  title: string;
+  content: string;
+  status: DocumentStatus;
+  instructorFeedback?: string;
+  updatedAt: string;
+}
+
+
+
+
+;
+export type PaymentMethod = 'credit_card' | 'fawry' | 'wallet';
+
+export interface CheckoutSession {
+  id: string;
+  userId: string;
+  items: any[];
+  total: number;
+  status: 'pending' | 'completed' | 'failed';
+  paymentMethod?: PaymentMethod;
+  shippingAddress?: {
+    name: string;
+    phone: string;
+    address: string;
+    city: string;
+    gov: string;
+  };
+}
+
+
+export interface PublisherOrder {
+  id: string;
+  orderId: string;
+  productName: string;
+  quantity: number;
+  totalAmount: number;
+  publisherShare: number;
+  status: 'pending' | 'completed' | 'cancelled';
+  createdAt: string;
+}
