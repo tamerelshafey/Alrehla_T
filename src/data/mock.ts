@@ -967,3 +967,198 @@ export async function getPublisherOrders() {
 }
 
 
+
+
+export const mockInstructorWeeklyAvailability: import('@/types').InstructorWeeklyAvailability[] = [
+  {
+    id: 'iwa-1',
+    instructorId: 'inst-1',
+    dayOfWeek: 'saturday',
+    startTime: '10:00',
+    endTime: '14:00',
+    isActive: true,
+    createdAt: '2023-10-01T10:00:00Z'
+  },
+  {
+    id: 'iwa-2',
+    instructorId: 'inst-1',
+    dayOfWeek: 'monday',
+    startTime: '16:00',
+    endTime: '20:00',
+    isActive: true,
+    createdAt: '2023-10-01T10:00:00Z'
+  },
+  {
+    id: 'iwa-3',
+    instructorId: 'inst-2',
+    dayOfWeek: 'sunday',
+    startTime: '14:00',
+    endTime: '18:00',
+    isActive: true,
+    createdAt: '2023-10-01T10:00:00Z'
+  },
+  {
+    id: 'iwa-4',
+    instructorId: 'inst-2',
+    dayOfWeek: 'wednesday',
+    startTime: '16:00',
+    endTime: '21:00',
+    isActive: true,
+    createdAt: '2023-10-01T10:00:00Z'
+  }
+];
+
+export const mockRecurringSessionSlots: import('@/types').RecurringSessionSlot[] = [
+  {
+    id: 'rss-1',
+    courseSubscriptionId: 'csub-1',
+    instructorId: 'inst-1',
+    dayOfWeek: 'saturday',
+    startTime: '10:00',
+    status: 'active',
+    effectiveFrom: '2023-10-05T00:00:00Z',
+    createdAt: '2023-10-02T10:00:00Z'
+  },
+  {
+    id: 'rss-2',
+    courseSubscriptionId: 'csub-2',
+    instructorId: 'inst-2',
+    dayOfWeek: 'sunday',
+    startTime: '14:00',
+    status: 'active',
+    effectiveFrom: '2023-10-10T00:00:00Z',
+    createdAt: '2023-10-08T10:00:00Z'
+  }
+];
+
+export const mockSlotChangeRequests: import('@/types').SlotChangeRequest[] = [
+  {
+    id: 'scr-1',
+    recurringSlotId: 'rss-1',
+    requestedBy: 'guardian',
+    requestedDayOfWeek: 'monday',
+    requestedStartTime: '16:00',
+    reason: 'تغيير مواعيد المدرسة',
+    status: 'pending',
+    createdAt: '2023-10-20T10:00:00Z'
+  }
+];
+
+export const mockInstructorPricingOptions: import('@/types').InstructorPricingOption[] = [
+  {
+    id: 'ipo-1',
+    label: 'مبتدئ',
+    basePricePerSession: 100,
+    isActive: true
+  },
+  {
+    id: 'ipo-2',
+    label: 'متوسط',
+    basePricePerSession: 150,
+    isActive: true
+  },
+  {
+    id: 'ipo-3',
+    label: 'خبير',
+    basePricePerSession: 200,
+    isActive: true
+  }
+];
+
+export const mockPricingFormulaSettings: import('@/types').PricingFormulaSettings[] = [
+  {
+    id: 'default',
+    platformMultiplier: 1.2,
+    fixedAdminFee: 50,
+    updatedAt: '2023-10-01T10:00:00Z'
+  }
+];
+
+export const mockInstructorCompensationProfiles: import('@/types').InstructorCompensationProfile[] = [
+  {
+    id: 'icp-1',
+    instructorId: 'inst-1',
+    billingModel: 'monthly',
+    selectedPricingOptionId: 'ipo-2',
+    monthlyMinimumHours: 60,
+    approvalStatus: 'approved',
+    createdAt: '2023-10-01T10:00:00Z',
+    updatedAt: '2023-10-02T10:00:00Z'
+  },
+  {
+    id: 'icp-2',
+    instructorId: 'inst-2',
+    billingModel: 'per_session',
+    selectedPricingOptionId: 'ipo-3',
+    monthlyMinimumHours: 0,
+    approvalStatus: 'approved',
+    createdAt: '2023-10-05T10:00:00Z',
+    updatedAt: '2023-10-06T10:00:00Z'
+  },
+  {
+    id: 'icp-3',
+    instructorId: 'inst-pending',
+    billingModel: 'per_session',
+    selectedPricingOptionId: 'ipo-1',
+    monthlyMinimumHours: 0,
+    approvalStatus: 'proposed',
+    createdAt: '2023-10-25T10:00:00Z',
+    updatedAt: '2023-10-25T10:00:00Z'
+  },
+  {
+    id: 'icp-4',
+    instructorId: 'inst-training',
+    billingModel: 'monthly',
+    selectedPricingOptionId: 'ipo-1',
+    monthlyMinimumHours: 60,
+    approvalStatus: 'under_discussion',
+    createdAt: '2023-10-26T10:00:00Z',
+    updatedAt: '2023-10-27T10:00:00Z'
+  }
+];
+
+export const mockInstructorCertifications: import('@/types').InstructorCertification[] = [
+  {
+    id: 'ic-1',
+    instructorId: 'inst-1',
+    trainingCompletedAt: '2023-09-15T10:00:00Z',
+    examPassed: true,
+    examScore: 95,
+    certifiedAt: '2023-09-20T10:00:00Z'
+  },
+  {
+    id: 'ic-2',
+    instructorId: 'inst-2',
+    trainingCompletedAt: '2023-09-18T10:00:00Z',
+    examPassed: true,
+    examScore: 92,
+    certifiedAt: '2023-09-22T10:00:00Z'
+  },
+  {
+    id: 'ic-3',
+    instructorId: 'inst-pending',
+    trainingCompletedAt: '2023-10-25T10:00:00Z',
+    examPassed: false,
+    examScore: 65
+  },
+  {
+    id: 'ic-4',
+    instructorId: 'inst-training',
+    examPassed: false
+  }
+];
+
+export const getWeeklyAvailability = async (instructorId: string) =>
+  Promise.resolve(mockInstructorWeeklyAvailability.filter(a => a.instructorId === instructorId));
+
+export const getRecurringSlotBySubscription = async (courseSubscriptionId: string) =>
+  Promise.resolve(mockRecurringSessionSlots.find(s => s.courseSubscriptionId === courseSubscriptionId) || null);
+
+export const getPricingFormulaSettings = async () =>
+  Promise.resolve(mockPricingFormulaSettings[0]);
+
+export const getInstructorCompensationProfile = async (instructorId: string) =>
+  Promise.resolve(mockInstructorCompensationProfiles.find(c => c.instructorId === instructorId) || null);
+
+export const getInstructorCertification = async (instructorId: string) =>
+  Promise.resolve(mockInstructorCertifications.find(c => c.instructorId === instructorId) || null);

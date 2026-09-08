@@ -39,3 +39,10 @@ export function assertSingleParticipant(
     throw new Error('لا يمكن تحديد أكثر من مشارك واحد');
   }
 }
+
+export function calculateFinalSessionPrice(
+  basePricePerSession: number,
+  formula: { platformMultiplier: number; fixedAdminFee: number }
+): number {
+  return basePricePerSession * formula.platformMultiplier + formula.fixedAdminFee;
+}

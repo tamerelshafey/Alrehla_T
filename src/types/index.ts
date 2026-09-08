@@ -87,6 +87,7 @@ export interface Review {
   studentName: string;
   rating: number; // 1 to 5
   comment: string;
+  scheduledSessionId?: string;
   createdAt: string;
 }
 
@@ -435,4 +436,84 @@ export interface PublisherOrder {
   publisherShare: number;
   status: 'pending' | 'completed' | 'cancelled';
   createdAt: string;
+}
+
+
+export interface InstructorWeeklyAvailability {
+  id: string;
+  instructorId: string;
+  dayOfWeek: DayOfWeek;
+  startTime: string; // "10:00"
+  endTime: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export type RecurringSlotStatus = 'active' | 'change_requested' | 'ended';
+
+export interface RecurringSessionSlot {
+  id: string;
+  courseSubscriptionId: string;
+  instructorId: string;
+  dayOfWeek: DayOfWeek;
+  startTime: string;
+  status: RecurringSlotStatus;
+  effectiveFrom: string; // تاريخ
+  effectiveUntil?: string;
+  createdAt: string;
+}
+
+export type SlotChangeRequestedBy = 'guardian' | 'instructor' | 'admin';
+export type SlotChangeRequestStatus = 'pending' | 'approved' | 'rejected';
+
+export interface SlotChangeRequest {
+  id: string;
+  recurringSlotId: string;
+  requestedBy: SlotChangeRequestedBy;
+  requestedDayOfWeek: DayOfWeek;
+  requestedStartTime: string;
+  reason?: string;
+  status: SlotChangeRequestStatus;
+  createdAt: string;
+}
+
+export interface InstructorPricingOption {
+  id: string;
+  label: string;
+  basePricePerSession: number;
+  isActive: boolean;
+}
+
+export interface PricingFormulaSettings {
+  id: string; // سجل واحد فقط (singleton) — استخدم id ثابت مثل 'default'
+  platformMultiplier: number; // مثال: 1.2
+  fixedAdminFee: number; // مثال: 50
+  updatedAt: string;
+}
+
+export type BillingModel = 'monthly' | 'per_session';
+export type CompensationApprovalStatus = 'proposed' | 'under_discussion' | 'approved' | 'rejected';
+
+export interface InstructorCompensationProfile {
+  id: string;
+  instructorId: string;
+  billingModel: BillingModel;
+  selectedPricingOptionId: string;
+  monthlyMinimumHours: number; // افتراضي 60، يُستخدم فقط عند billingModel = 'monthly'
+  overtimeRatePerHour?: number;
+  approvalStatus: CompensationApprovalStatus;
+  adminNotes?: string;
+  reviewedByProfileId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InstructorCertification {
+  id: string;
+  instructorId: string;
+  trainingCompletedAt?: string;
+  trainingMeetingLink?: string; // رابط Google Meet/Jitsi الذي تم فيه التدريب
+  examPassed: boolean;
+  examScore?: number;
+  certifiedAt?: string;
 }
