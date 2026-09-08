@@ -1,0 +1,104 @@
+import React, { useState } from 'react';
+import { useFormContext } from 'react-hook-form';
+
+export function Step2Details({ onNext, onPrev }: { onNext: () => void, onPrev: () => void }) {
+  const { register, watch, setValue, formState: { errors } } = useFormContext();
+  
+  const facePhotoFile = watch('facePhotoFile');
+  const secondPhotoFile = watch('secondPhotoFile');
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setValue(fieldName, e.target.files[0], { shouldValidate: true });
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-black text-slate-800">تفاصيل القصة</h2>
+
+      <div className="space-y-2">
+        <label className="text-sm font-bold text-slate-700">الهدف التربوي (إلزامي)</label>
+        <select 
+          {...register('storyGoal')}
+          className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        >
+          <option value="">اختر الهدف من القصة...</option>
+          <option value="شجاعة">الشجاعة والتغلب على الخوف</option>
+          <option value="ثقة">بناء الثقة بالنفس</option>
+          <option value="حل المشكلات">تعلم حل المشكلات</option>
+          <option value="تعاون">التعاون مع الآخرين</option>
+        </select>
+        {errors.storyGoal && <span className="text-sm text-red-500">{errors.storyGoal.message as string}</span>}
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-bold text-slate-700">وصف بطل القصة (إلزامي)</label>
+        <textarea 
+          {...register('heroDescription')}
+          className="w-full h-24 rounded-xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          placeholder="مثال: يحب الديناصورات، لونه المفضل الأزرق، لديه قطة اسمها بسبوس..."
+        />
+        {errors.heroDescription && <span className="text-sm text-red-500">{errors.heroDescription.message as string}</span>}
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-bold text-slate-700">أسماء أفراد العائلة والأصدقاء (اختياري)</label>
+        <textarea 
+          {...register('familyMemberNames')}
+          className="w-full h-20 rounded-xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          placeholder="أدخل أسماء يمكن تضمينهم في أحداث القصة..."
+        />
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-slate-700">الصورة الشخصية (إلزامي)</label>
+          <p className="text-xs text-slate-500 mb-2">صورة واضحة للوجه ليتم رسم البطل بناءً عليها.</p>
+          <input 
+            type="file" 
+            accept="image/*"
+            onChange={(e) => handleFileChange(e, 'facePhotoFile')}
+            className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+          {/* TODO: استبدال بمعاينة Cloudinary الفعلية عند ربط الباك إند */}
+          {facePhotoFile && (
+             <img src={URL.createObjectURL(facePhotoFile)} alt="معاينة" className="mt-4 h-32 w-32 object-cover rounded-xl border border-slate-200" />
+          )}
+          {errors.facePhotoFile && <span className="text-sm text-red-500">{errors.facePhotoFile.message as string}</span>}
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-slate-700">صورة إضافية (اختياري)</label>
+          <p className="text-xs text-slate-500 mb-2">للحيوان الأليف، لعبة مفضلة، أو زاوية أخرى.</p>
+          <input 
+            type="file" 
+            accept="image/*"
+            onChange={(e) => handleFileChange(e, 'secondPhotoFile')}
+            className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+          {secondPhotoFile && (
+             <img src={URL.createObjectURL(secondPhotoFile)} alt="معاينة" className="mt-4 h-32 w-32 object-cover rounded-xl border border-slate-200" />
+          )}
+        </div>
+      </div>
+
+      <div className="flex justify-between pt-6 border-t border-slate-100">
+        <button
+          type="button"
+          onClick={onPrev}
+          className="rounded-xl bg-slate-100 px-8 py-3 font-bold text-slate-700 transition-colors hover:bg-slate-200"
+        >
+          السابق
+        </button>
+        <button
+          type="button"
+          onClick={onNext}
+          className="rounded-xl bg-blue-600 px-8 py-3 font-bold text-white transition-colors hover:bg-blue-700"
+        >
+          الخطوة التالية
+        </button>
+      </div>
+    </div>
+  );
+}

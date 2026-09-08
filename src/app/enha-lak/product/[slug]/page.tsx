@@ -46,6 +46,22 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <h1 className="text-4xl font-black text-slate-900 leading-tight">{product.name}</h1>
             <p className="mt-6 text-lg text-slate-600 leading-relaxed">{product.shortDescription}</p>
           </div>
+
+          {product.features && product.features.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="font-bold text-slate-800">ميزات المنتج:</h3>
+              <ul className="space-y-2">
+                {product.features.map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-2 text-slate-600">
+                    <svg className="h-5 w-5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           
           <div className="rounded-2xl bg-slate-50 p-6 border border-slate-100">
             <div className="flex items-center gap-4">
@@ -58,7 +74,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
             
             <div className="mt-6">
-              <AddToCartButton 
+              {product.ownerType === 'platform' ? (
+                <Link 
+                  href={`/enha-lak/custom/${product.slug}`}
+                  className="flex w-full items-center justify-center rounded-xl bg-slate-900 px-6 py-4 font-bold text-white transition-colors hover:bg-slate-800"
+                >
+                  ابدأ التخصيص
+                </Link>
+              ) : (
+                <AddToCartButton 
                   product={{
                     id: product.id,
                     name: product.name,
@@ -68,6 +92,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     imageUrl: product.coverImageUrl || `https://picsum.photos/seed/${product.id}/600/800`
                   }} 
                 />
+              )}
             </div>
           </div>
         </div>

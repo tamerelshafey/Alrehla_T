@@ -169,6 +169,7 @@ export const mockProducts: PersonalizedProduct[] = [
     electronicPrice: 11970,
     shortDescription: 'قصة فريدة بطلها طفلك، باسمه وصورته وهواياته.',
     coverImageUrl: 'https://picsum.photos/seed/custom1/600/800',
+    features: ['تخصيص كامل', 'قصه هو بطلها', 'اختيار الهدف التربوي', 'رسومات احترافية'],
   },
   {
     ownerType: 'platform',
@@ -180,6 +181,7 @@ export const mockProducts: PersonalizedProduct[] = [
     electronicPrice: 13500,
     shortDescription: 'قصة مخصصة لمساعدة طفلك على فهم مشاعره والتعبير عنها.',
     coverImageUrl: 'https://picsum.photos/seed/custom2/600/800',
+    features: ['تنمية الذكاء العاطفي', 'سيناريو تفاعلي', 'مخصص حسب حالة الطفل'],
   },
   {
     ownerType: 'platform',
@@ -191,6 +193,7 @@ export const mockProducts: PersonalizedProduct[] = [
     electronicPrice: 600,
     shortDescription: 'مغامرات شيقة بطلها طفلك في أعماق البحار المحيطات.',
     coverImageUrl: 'https://picsum.photos/seed/custom3/600/800',
+    features: ['مغامرة خيالية', 'حقائق علمية مبسطة', 'تخصيص المظهر'],
   },
   // Library Products
   {
@@ -832,4 +835,16 @@ export const getParticipantName = async (dependentId?: string, independentId?: s
     if (familyMember) return familyMember.name;
   }
   return 'مشارك غير معروف';
+};
+
+
+export const addFamilyMember = async (name: string, age: number, gender: string) => {
+    const newMember = {
+        id: 'fam-' + Date.now(),
+        name,
+        age,
+        gender
+    };
+    mockFamilyMembers.push(newMember);
+    return newMember;
 };

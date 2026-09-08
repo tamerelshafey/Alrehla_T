@@ -9,6 +9,7 @@ export type CartItem = {
   quantity: number;
   imageUrl?: string;
   type: 'book' | 'custom' | 'subscription' | 'package';
+  customizationData?: any;
 };
 
 interface CartContextType {

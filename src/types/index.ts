@@ -87,6 +87,7 @@ export type PersonalizedProduct = {
   coverImageUrl?: string;
   publisherId?: string;
   ownerType: 'platform' | 'publisher';
+  features?: string[];
 };
 
 // حالة الطلب
