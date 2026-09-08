@@ -1,12 +1,13 @@
 import { getCurrentUser, getBookings } from '@/data/mock';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Users, Calendar, Video, Clock, Wallet } from 'lucide-react';
+import { Users, Calendar, Video, Clock, Wallet, User, CalendarDays } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 export default async function InstructorDashboard() {
   const user = await getCurrentUser();
+
   if (user.role !== 'instructor') {
     redirect('/dashboard');
   }
@@ -25,13 +26,24 @@ export default async function InstructorDashboard() {
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <h1 className="text-3xl font-black text-slate-900">
           مرحباً أستاذ(ة)، {user.fullName}
         </h1>
-        <Link href="/dashboard/instructor/payouts" className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-md transition-colors hover:bg-slate-800">
-          <Wallet className="h-4 w-4" /> المستحقات المالية
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/dashboard/instructor/students" className="flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200">
+            <Users className="h-4 w-4" /> المتدربين
+          </Link>
+          <Link href="/dashboard/instructor/schedule" className="flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200">
+            <CalendarDays className="h-4 w-4" /> الجدول
+          </Link>
+          <Link href="/dashboard/instructor/profile" className="flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200">
+            <User className="h-4 w-4" /> الملف الشخصي
+          </Link>
+          <Link href="/dashboard/instructor/payouts" className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-md transition-colors hover:bg-slate-800">
+            <Wallet className="h-4 w-4" /> المستحقات
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
@@ -62,12 +74,10 @@ export default async function InstructorDashboard() {
           <Video className="h-5 w-5 text-indigo-500" />
           جلساتي القادمة
         </h2>
-
         <div className="space-y-4">
-          {upcomingSessions.map((session) => {
+          {upcomingSessions.map((session, index) => {
             const date = new Date(session.scheduledAt);
             const isToday = new Date().toDateString() === date.toDateString();
-
             return (
               <div
                 key={session.id}
@@ -97,19 +107,23 @@ export default async function InstructorDashboard() {
                     </div>
                   </div>
                 </div>
-
                 <div className="flex w-full items-center gap-3 md:w-auto">
-                  <button className="flex-1 rounded-xl bg-slate-900 px-6 py-2 text-sm font-bold whitespace-nowrap text-white shadow-md transition-colors hover:bg-slate-800 md:flex-none">
+                  <Link 
+                    href={`/dashboard/instructor/sessions/s-${index}`}
+                    className="flex-1 rounded-xl bg-slate-900 px-6 py-2 text-center text-sm font-bold whitespace-nowrap text-white shadow-md transition-colors hover:bg-slate-800 md:flex-none"
+                  >
                     دخول الجلسة
-                  </button>
-                  <button className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold whitespace-nowrap text-slate-700 transition-colors hover:bg-slate-50">
+                  </Link>
+                  <Link 
+                    href={`/dashboard/instructor/students/${session.studentId}`}
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-center text-sm font-bold whitespace-nowrap text-slate-700 transition-colors hover:bg-slate-50"
+                  >
                     الملف
-                  </button>
+                  </Link>
                 </div>
               </div>
             );
           })}
-
           {upcomingSessions.length === 0 && (
             <div className="py-8 text-center font-medium text-slate-500">
               لا توجد جلسات مجدولة حالياً.

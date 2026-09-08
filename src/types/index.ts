@@ -10,6 +10,7 @@ export type UserProfile = {
   role: UserRole;
   avatarUrl?: string;
   createdAt: string;
+  permissions?: AdminPermission[];
 };
 
 // الفئة العمرية للباقات
@@ -222,3 +223,32 @@ export interface StudyMaterial {
   description: string;
   packageName: string;
 }
+
+export interface InstructorStudent {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+  packageName: string;
+  sessionsCompleted: number;
+  totalSessions: number;
+}
+
+export interface AvailabilitySlot {
+  id: string;
+  dayLabel: string;
+  timeLabel: string;
+  isBooked: boolean;
+}
+
+export type AdminPermission = 
+  | 'canManageUsers'
+  | 'canManageInstructors'
+  | 'canManagePublishers'
+  | 'canManageCatalog'
+  | 'canManageSubscriptions'
+  | 'canManageOrders'
+  | 'canManageBookings'
+  | 'canManageSupport'
+  | 'canManageContent'
+  | 'canManageFinance'
+  | 'canViewAuditLogs';

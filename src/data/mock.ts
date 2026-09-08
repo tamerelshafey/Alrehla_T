@@ -11,6 +11,8 @@ import {
   SessionMessage,
   SessionAttachment,
   StudyMaterial,
+  InstructorStudent,
+  AvailabilitySlot,
   UserRole,
   Testimonial,
   AddonProduct,
@@ -426,12 +428,29 @@ export const getCurrentUser = async (): Promise<UserProfile> => {
   const mockRoleCookie = cookieStore.get('mockRole');
   const role = (mockRoleCookie?.value as UserRole) || 'visitor';
 
+  let permissions: import('../types').AdminPermission[] = [];
+  if (role === 'super_admin') {
+    permissions = [
+      'canManageUsers', 'canManageInstructors', 'canManagePublishers', 
+      'canManageCatalog', 'canManageSubscriptions', 'canManageOrders', 
+      'canManageBookings', 'canManageSupport', 'canManageContent', 
+      'canManageFinance', 'canViewAuditLogs'
+    ];
+  } else if (role === 'general_supervisor') {
+    permissions = [
+      'canManageUsers', 'canManageInstructors', 'canManagePublishers', 
+      'canManageCatalog', 'canManageSubscriptions', 'canManageOrders', 
+      'canManageBookings', 'canManageSupport', 'canManageContent'
+    ];
+  }
+
   return Promise.resolve({
     id: 'current-user',
     fullName: role === 'visitor' ? 'زائر تجريبي' : `مستخدم تجريبي (${role})`,
     email: `${role}@example.com`,
     role: role,
     createdAt: '2023-01-01T00:00:00Z',
+    ...(permissions.length > 0 ? { permissions } : {})
   });
 };
 
@@ -618,5 +637,24 @@ export const getStudyMaterials = async (): Promise<StudyMaterial[]> => {
     { id: '1', title: 'مقدمة في بناء الشخصيات', description: 'ملف تفصيلي لخطوات بناء شخصيات ثلاثية الأبعاد', packageName: 'باقة الإبحار (4 أسابيع)' },
     { id: '2', title: 'أساسيات الحبكة', description: 'دليل لترتيب أحداث القصة بشكل مشوق', packageName: 'باقة الغوص (12 أسبوع)' },
     { id: '3', title: 'تمارين تحفيز الخيال', description: 'تمارين يومية سريعة لكسر حاجز الكتابة', packageName: 'جلسة استشارية فردية' }
+  ];
+};
+
+export const getInstructorStudents = async (): Promise<InstructorStudent[]> => {
+  return [
+    { id: 'st-1', name: 'ياسمين طارق', packageName: 'باقة الإبحار (4 أسابيع)', sessionsCompleted: 2, totalSessions: 4 },
+    { id: 'st-2', name: 'عمر طارق', packageName: 'باقة الغوص (12 أسبوع)', sessionsCompleted: 5, totalSessions: 12 },
+    { id: 'st-3', name: 'مريم أحمد', packageName: 'جلسة استشارية فردية', sessionsCompleted: 1, totalSessions: 1 },
+  ];
+};
+
+export const getAvailabilitySlots = async (): Promise<AvailabilitySlot[]> => {
+  return [
+    { id: 'slot-1', dayLabel: 'السبت، 15 أكتوبر', timeLabel: '04:00 عصراً', isBooked: true },
+    { id: 'slot-2', dayLabel: 'السبت، 15 أكتوبر', timeLabel: '05:30 مساءً', isBooked: false },
+    { id: 'slot-3', dayLabel: 'الأحد، 16 أكتوبر', timeLabel: '03:00 عصراً', isBooked: true },
+    { id: 'slot-4', dayLabel: 'الأحد، 16 أكتوبر', timeLabel: '04:30 عصراً', isBooked: false },
+    { id: 'slot-5', dayLabel: 'الإثنين، 17 أكتوبر', timeLabel: '06:00 مساءً', isBooked: false },
+    { id: 'slot-6', dayLabel: 'الإثنين، 17 أكتوبر', timeLabel: '07:30 مساءً', isBooked: true },
   ];
 };

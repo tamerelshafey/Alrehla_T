@@ -6,6 +6,7 @@ import {
   getInstructors,
 } from '@/data/mock';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import {
   Package,
   ShoppingCart,
@@ -18,6 +19,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboard() {
   const user = await getCurrentUser();
+
   if (user.role !== 'super_admin' && user.role !== 'general_supervisor') {
     redirect('/dashboard');
   }
@@ -32,6 +34,7 @@ export default async function AdminDashboard() {
   const sortedOrders = [...orders].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
+
   const sortedBookings = [...bookings].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
@@ -45,49 +48,52 @@ export default async function AdminDashboard() {
 
       {/* Stats */}
       <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <Package className="mb-4 h-8 w-8 text-amber-500" />
+        <Link href="/dashboard/admin/writing/packages" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:border-amber-300 hover:shadow-md transition-all group">
+          <Package className="mb-4 h-8 w-8 text-amber-500 group-hover:scale-110 transition-transform" />
           <div className="text-3xl font-black text-slate-800">
             {activePackages}
           </div>
           <div className="mt-1 text-sm font-bold text-slate-500">
             باقات نشطة
           </div>
-        </div>
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <ShoppingCart className="mb-4 h-8 w-8 text-blue-500" />
+        </Link>
+        <Link href="/dashboard/admin/orders" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300 hover:shadow-md transition-all group">
+          <ShoppingCart className="mb-4 h-8 w-8 text-blue-500 group-hover:scale-110 transition-transform" />
           <div className="text-3xl font-black text-slate-800">
             {orders.length}
           </div>
           <div className="mt-1 text-sm font-bold text-slate-500">
             إجمالي الطلبات
           </div>
-        </div>
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <Calendar className="mb-4 h-8 w-8 text-indigo-500" />
+        </Link>
+        <Link href="/dashboard/admin/bookings" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all group">
+          <Calendar className="mb-4 h-8 w-8 text-indigo-500 group-hover:scale-110 transition-transform" />
           <div className="text-3xl font-black text-slate-800">
             {bookings.length}
           </div>
           <div className="mt-1 text-sm font-bold text-slate-500">
             إجمالي الحجوزات
           </div>
-        </div>
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <Users className="mb-4 h-8 w-8 text-green-500" />
+        </Link>
+        <Link href="/dashboard/admin/instructors" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:border-green-300 hover:shadow-md transition-all group">
+          <Users className="mb-4 h-8 w-8 text-green-500 group-hover:scale-110 transition-transform" />
           <div className="text-3xl font-black text-slate-800">
             {instructors.length}
           </div>
           <div className="mt-1 text-sm font-bold text-slate-500">المدربين</div>
-        </div>
+        </Link>
       </div>
 
       <div className="grid gap-8 md:grid-cols-2">
         {/* Latest Orders */}
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-slate-800">
-            <ShoppingCart className="h-5 w-5 text-blue-500" />
-            أحدث الطلبات
-          </h2>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-xl font-bold text-slate-800">
+              <ShoppingCart className="h-5 w-5 text-blue-500" />
+              أحدث الطلبات
+            </h2>
+            <Link href="/dashboard/admin/orders" className="text-sm font-bold text-blue-600 hover:underline">عرض الكل</Link>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-right text-sm">
               <thead className="border-y border-slate-100 bg-slate-50 text-xs text-slate-500">
@@ -99,10 +105,12 @@ export default async function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {sortedOrders.map((order) => (
+                {sortedOrders.slice(0, 5).map((order) => (
                   <tr key={order.id} className="hover:bg-slate-50/50">
                     <td className="px-4 py-4 font-bold text-slate-700">
-                      #{order.id.split('-')[1]}
+                      <Link href={`/dashboard/admin/orders/${order.id}`} className="hover:text-blue-600 hover:underline">
+                        #{order.id.split('-')[1]}
+                      </Link>
                     </td>
                     <td className="px-4 py-4 font-medium text-slate-600">
                       {order.userId.split('-')[1]}
@@ -130,10 +138,13 @@ export default async function AdminDashboard() {
 
         {/* Latest Bookings */}
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-slate-800">
-            <Calendar className="h-5 w-5 text-indigo-500" />
-            أحدث الحجوزات
-          </h2>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-xl font-bold text-slate-800">
+              <Calendar className="h-5 w-5 text-indigo-500" />
+              أحدث الحجوزات
+            </h2>
+            <Link href="/dashboard/admin/bookings" className="text-sm font-bold text-blue-600 hover:underline">عرض الكل</Link>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-right text-sm">
               <thead className="border-y border-slate-100 bg-slate-50 text-xs text-slate-500">
@@ -145,12 +156,14 @@ export default async function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {sortedBookings.map((booking) => {
+                {sortedBookings.slice(0, 5).map((booking) => {
                   const date = new Date(booking.scheduledAt);
                   return (
                     <tr key={booking.id} className="hover:bg-slate-50/50">
                       <td className="px-4 py-4 font-bold text-slate-700">
-                        #{booking.id.split('-')[1]}
+                        <Link href={`/dashboard/admin/bookings/${booking.id}`} className="hover:text-blue-600 hover:underline">
+                          #{booking.id.split('-')[1]}
+                        </Link>
                       </td>
                       <td className="px-4 py-4 font-medium text-slate-600">
                         {booking.studentId.split('-')[1]}
