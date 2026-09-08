@@ -1,4 +1,5 @@
-import { BoxSubscription, JoinRequest, SupportSessionRequest, AuditLog, SupportTicket } from '@/types';
+import {
+  SupportTicketMessage, BoxSubscription, JoinRequest, SupportSessionRequest, AuditLog, SupportTicket } from '@/types';
 import { cookies } from 'next/headers';
 import {
   WritingPackage,
@@ -126,6 +127,7 @@ export const mockWritingPackages: WritingPackage[] = [
 export const mockInstructors: Instructor[] = [
   {
     id: 'inst-1',
+    status: 'active',
     userId: 'user-101',
     displayName: 'مدربة أولى',
     bio: 'سيتم إضافة الملفات الفعلية للمدربين قريبًا.',
@@ -135,6 +137,7 @@ export const mockInstructors: Instructor[] = [
   },
   {
     id: 'inst-2',
+    status: 'active',
     userId: 'user-102',
     displayName: 'مدرب أول',
     bio: 'سيتم إضافة الملفات الفعلية للمدربين قريبًا.',
@@ -142,11 +145,22 @@ export const mockInstructors: Instructor[] = [
     yearsExperience: 7,
     isSample: true,
   },
+
+  {
+    id: 'inst-pending',
+    userId: 'user-new',
+    displayName: 'أحمد محمود',
+    bio: 'مدرب جديد في انتظار الاعتماد',
+    specialties: ['كتابة الخيال'],
+    yearsExperience: 2,
+    status: 'pending',
+  },
 ];
 
 export const mockProducts: PersonalizedProduct[] = [
   // Custom Products
   {
+    ownerType: 'platform',
     id: 'prod-custom-1',
     slug: 'custom-story-book',
     name: 'القصة المخصصة',
@@ -157,6 +171,7 @@ export const mockProducts: PersonalizedProduct[] = [
     coverImageUrl: 'https://picsum.photos/seed/custom1/600/800',
   },
   {
+    ownerType: 'platform',
     id: 'prod-custom-2',
     slug: 'emotional-story',
     name: 'القصة الشعورية',
@@ -167,6 +182,7 @@ export const mockProducts: PersonalizedProduct[] = [
     coverImageUrl: 'https://picsum.photos/seed/custom2/600/800',
   },
   {
+    ownerType: 'platform',
     id: 'prod-custom-3',
     slug: 'deep-sea-adventures',
     name: 'اعماق البحار',
@@ -178,6 +194,7 @@ export const mockProducts: PersonalizedProduct[] = [
   },
   // Library Products
   {
+    ownerType: 'publisher',
     id: 'prod-lib-1',
     publisherId: 'pub-1',
     slug: 'prophets-stories',
@@ -190,6 +207,7 @@ export const mockProducts: PersonalizedProduct[] = [
     coverImageUrl: 'https://picsum.photos/seed/lib1/600/800',
   },
   {
+    ownerType: 'publisher',
     id: 'prod-lib-2',
     publisherId: 'pub-2',
     slug: 'little-explorer',
@@ -201,6 +219,7 @@ export const mockProducts: PersonalizedProduct[] = [
     coverImageUrl: 'https://picsum.photos/seed/lib2/600/800',
   },
   {
+    ownerType: 'publisher',
     id: 'prod-lib-3',
     publisherId: 'pub-1',
     slug: 'morals-garden',
@@ -213,6 +232,7 @@ export const mockProducts: PersonalizedProduct[] = [
     coverImageUrl: 'https://picsum.photos/seed/lib3/600/800',
   },
   {
+    ownerType: 'publisher',
     id: 'prod-lib-4',
     publisherId: 'pub-2',
     slug: 'bedtime-stories',
@@ -578,6 +598,7 @@ export const getMyTickets = async () => mockTickets;
 export const mockPublishers: Publisher[] = [
   {
     id: 'pub-1',
+    status: 'active',
     slug: 'dar-alhekaya',
     name: 'دار الحكاية الصغيرة',
     logoUrl: 'https://picsum.photos/seed/pub1/200/200',
@@ -586,12 +607,21 @@ export const mockPublishers: Publisher[] = [
   },
   {
     id: 'pub-2',
+    status: 'active',
     slug: 'khayal-akhdar',
     name: 'ناشر الخيال الأخضر',
     logoUrl: 'https://picsum.photos/seed/pub2/200/200',
     bio: 'ناشر رائد في كتب المغامرات والموسوعات العلمية المبسطة لتشجيع الخيال والابتكار.',
     isSample: true
-  }
+  },
+  {
+    id: 'pub-pending',
+    slug: 'dar-new',
+    name: 'دار النشر الجديدة',
+    bio: 'دار نشر جديدة في انتظار الاعتماد',
+    isSample: true,
+    status: 'pending',
+  },
 ];
 
 export const getPublishers = async (): Promise<Publisher[]> => mockPublishers;
@@ -769,3 +799,24 @@ export async function getServiceOrders(): Promise<ServiceOrder[]> {
 export async function getCourseSubscriptions(): Promise<CourseSubscription[]> {
   return mockCourseSubscriptions;
 }
+
+
+export const mockSupportTicketMessages: SupportTicketMessage[] = [
+  {
+    id: 'msg-1',
+    ticketId: 'ticket-1',
+    senderName: 'يوسف العتيبي',
+    message: 'أواجه مشكلة في تحميل الملفات للمهمة.',
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+  },
+  {
+    id: 'msg-2',
+    ticketId: 'ticket-1',
+    senderName: 'الدعم الفني',
+    message: 'مرحباً يوسف، يرجى التأكد من أن حجم الملف لا يتجاوز 5 ميغابايت.',
+    createdAt: new Date(Date.now() - 86400000 * 1.5).toISOString(),
+  }
+];
+
+export const getMessagesForTicket = async (ticketId: string) =>
+  Promise.resolve(mockSupportTicketMessages.filter((m) => m.ticketId === ticketId));

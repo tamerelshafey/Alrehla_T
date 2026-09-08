@@ -45,6 +45,7 @@ export type Instructor = {
   avatarUrl?: string;
   yearsExperience: number;
   isSample?: boolean;
+  status: 'pending' | 'active' | 'suspended';
 };
 
 // خدمة إبداعية مستقلة
@@ -85,6 +86,7 @@ export type PersonalizedProduct = {
   shortDescription: string;
   coverImageUrl?: string;
   publisherId?: string;
+  ownerType: 'platform' | 'publisher';
 };
 
 // حالة الطلب
@@ -193,6 +195,14 @@ export interface SupportTicket {
   createdAt: string;
 }
 
+export interface SupportTicketMessage {
+  id: string;
+  ticketId: string;
+  senderName: string;
+  message: string;
+  createdAt: string;
+}
+
 // الناشر
 export type Publisher = {
   id: string;
@@ -201,6 +211,7 @@ export type Publisher = {
   logoUrl?: string;
   bio: string;
   isSample: boolean;
+  status: 'pending' | 'active' | 'suspended';
 };
 
 
