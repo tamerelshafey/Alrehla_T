@@ -36,7 +36,7 @@ export default function DevAuthToolbar() {
 
   if (!isMounted) return null;
 
-  if (process.env.NODE_ENV !== 'development') {
+  if (process.env.NODE_ENV !== 'development' && process.env.NEXT_PUBLIC_SHOW_DEV_TOOLBAR !== 'true') {
     return null;
   }
 

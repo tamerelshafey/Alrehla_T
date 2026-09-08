@@ -1,5 +1,13 @@
 import Link from 'next/link';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'الشروط والأحكام',
+  description: 'الشروط والأحكام الخاصة باستخدام خدمات منصة الرحلة.',
+};
+
+
 export default function TermsPage() {
   return (
     <div className="relative flex w-full flex-1 flex-col items-center justify-start px-6 py-20 font-sans text-slate-800 md:px-12">

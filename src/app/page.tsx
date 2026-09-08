@@ -3,6 +3,14 @@ import { HeroCarousel } from '@/components/HeroCarousel';
 import { getTestimonials } from '@/data/mock';
 import { Quote } from 'lucide-react';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'منصة الرحلة - الصفحة الرئيسية',
+  description: 'المنصة الرائدة لتعليم وتعزيز مهارات الكتابة الإبداعية وتنمية الخيال.',
+};
+
+
 
 const homeSlides = [
   {

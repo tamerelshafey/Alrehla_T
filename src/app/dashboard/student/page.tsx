@@ -2,6 +2,7 @@ import { getCurrentUser, getWritingPackages, getOrders } from '@/data/mock';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Book, ShoppingBag, ArrowLeft, Calendar, FileText, User, FileBox, Eye } from 'lucide-react';
+import { StatusBadge } from '@/components/StatusBadge';
 
 export const dynamic = 'force-dynamic';
 

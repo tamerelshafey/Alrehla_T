@@ -1,5 +1,15 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'انضم إلينا كمدرب أو ناشر',
+  description: 'قدم طلبك للانضمام إلى فريق منصة الرحلة كمدرب معتمد أو دار نشر.',
+};
+
 import { PageContainer } from '@/components/PageContainer';
 import {
+
+
+
   Heart,
   Users,
   Map,

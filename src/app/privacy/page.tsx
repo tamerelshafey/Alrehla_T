@@ -1,5 +1,13 @@
 import Link from 'next/link';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'سياسة الخصوصية',
+  description: 'تعرف على سياسة الخصوصية وكيفية حماية بياناتك في منصة الرحلة.',
+};
+
+
 export default function PrivacyPage() {
   return (
     <div className="relative flex w-full flex-1 flex-col items-center justify-start px-6 py-20 font-sans text-slate-800 md:px-12">

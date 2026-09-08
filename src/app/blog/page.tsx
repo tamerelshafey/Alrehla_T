@@ -3,6 +3,14 @@ import { getBlogPosts } from '@/data/mock';
 import { BookOpen, Calendar, ArrowLeft } from 'lucide-react';
 import { PageContainer } from '@/components/PageContainer';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'المدونة',
+  description: 'تصفح أحدث مقالات ونصائح منصة الرحلة.',
+};
+
+
 export default async function BlogPage() {
   const posts = await getBlogPosts();
 

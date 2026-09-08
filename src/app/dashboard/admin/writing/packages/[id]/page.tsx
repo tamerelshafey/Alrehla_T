@@ -1,22 +1,59 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser } from '@/data/mock';
+import { getCurrentUser, getWritingPackages } from '@/data/mock';
 import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Page() {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
   if (!hasAdminPermission(user, 'canManageCatalog')) {
     return <Unauthorized />;
   }
 
+  const { id } = await params;
+  const packages = await getWritingPackages();
+  const target = packages.find(p => p.id === id) || packages[0];
+
   return (
-    <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
-      <DashboardPageHeader title="تفاصيل الباقة" />
-      <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center text-slate-500 font-medium">
-        قيد الإنشاء — سيُفعَّل في مرحلة قادمة
+    <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">
+      <DashboardPageHeader title={`تعديل الباقة: ${target.name}`} backHref="/dashboard/admin/writing/packages" />
+      
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <form className="space-y-6">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">اسم الباقة</label>
+            <input type="text" defaultValue={target.name} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">الوصف</label>
+            <textarea defaultValue={target.shortDescription} rows={3} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">السعر (ج.م)</label>
+              <input type="number" defaultValue={target.price} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">عدد الجلسات</label>
+              <input type="number" defaultValue={target.sessionsCount} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <input type="checkbox" id="isActive" defaultChecked={target.isActive} className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+            <label htmlFor="isActive" className="font-bold text-slate-700">الباقة نشطة ومتاحة للحجز</label>
+          </div>
+          
+          <div className="pt-6 border-t border-slate-100 flex justify-end">
+            <button type="button" className="rounded-xl bg-slate-900 px-8 py-3 font-bold text-white shadow-md transition-colors hover:bg-slate-800">
+              حفظ التعديلات
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

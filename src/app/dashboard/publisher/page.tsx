@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Package, ShoppingBag, Wallet, User, ListOrdered } from 'lucide-react';
 import Image from 'next/image';
+import { StatusBadge } from '@/components/StatusBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,11 +22,11 @@ export default async function PublisherDashboard() {
   const getOrderStatus = (status: string) => {
     switch (status) {
       case 'paid':
-        return <span className="rounded-md bg-green-100 px-2 py-1 text-xs font-bold text-green-700">مكتمل الدفع</span>;
+        return <StatusBadge type="success" label="مكتمل الدفع" />;
       case 'pending':
-        return <span className="rounded-md bg-amber-100 px-2 py-1 text-xs font-bold text-amber-700">قيد الانتظار</span>;
+        return <StatusBadge type="warning" label="قيد الانتظار" />;
       default:
-        return <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">{status}</span>;
+        return <StatusBadge type="neutral" label={status} />;
     }
   };
 

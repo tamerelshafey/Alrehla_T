@@ -13,10 +13,36 @@ export default async function Page() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
-      <DashboardPageHeader title="إعدادات المحتوى" />
-      <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center text-slate-500 font-medium">
-        قيد الإنشاء — سيُفعَّل في مرحلة قادمة
+    <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">
+      <DashboardPageHeader title="الإعدادات العامة للمنصة" />
+      
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <form className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">اسم الموقع</label>
+              <input type="text" defaultValue="منصة الرحلة" className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">بريد التواصل الرئيسي</label>
+              <input type="email" defaultValue="contact@alrehla.com" className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">رابط فيسبوك</label>
+              <input type="url" defaultValue="https://facebook.com/alrehla" className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">رابط إنستجرام</label>
+              <input type="url" defaultValue="https://instagram.com/alrehla" className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            </div>
+          </div>
+          
+          <div className="pt-6 border-t border-slate-100 flex justify-end">
+            <button type="button" className="rounded-xl bg-slate-900 px-8 py-3 font-bold text-white shadow-md transition-colors hover:bg-slate-800">
+              حفظ الإعدادات
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

@@ -1,5 +1,15 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'عن منصة الرحلة',
+  description: 'تعرف على رؤيتنا ومهمتنا في منصة الرحلة لتطوير قدرات الأطفال والشباب.',
+};
+
 import { PageContainer } from '@/components/PageContainer';
 import {
+
+
+
   Sparkles,
   Target,
   Compass,

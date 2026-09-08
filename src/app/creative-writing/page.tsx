@@ -1,3 +1,10 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'الكتابة الإبداعية',
+  description: 'استكشف برامج ودورات الكتابة الإبداعية المتاحة.',
+};
+
 import Link from 'next/link';
 import { getTestimonials } from '@/data/mock';
 
@@ -8,6 +15,9 @@ import { SectionHeader } from '@/components/SectionHeader';
 
 
 import {
+
+
+
   PenTool,
   Target,
   Map,

@@ -3,6 +3,7 @@ import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader'
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { getInstructorStudents, getBookings } from '@/data/mock';
 import { User, Calendar } from 'lucide-react';
+import { StatusBadge } from '@/components/StatusBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,9 +21,9 @@ export default async function StudentDetailsPage({ params }: { params: Promise<{
     sessionNumber: `الجلسة ${index + 1}`,
     date: new Date(b.createdAt).toLocaleDateString('ar-EG'),
     status: b.status === 'confirmed' ? (
-      <span className="rounded-md bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700">مكتملة</span>
+      <StatusBadge type="success" label="مكتملة" />
     ) : (
-      <span className="rounded-md bg-amber-100 px-2 py-1 text-xs font-bold text-amber-700">قادمة</span>
+      <StatusBadge type="warning" label="قادمة" />
     ),
     action: (
       <Link 

@@ -7,6 +7,7 @@ import {
 } from '@/data/mock';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { StatusBadge } from '@/components/StatusBadge';
 import {
   Package,
   ShoppingCart,

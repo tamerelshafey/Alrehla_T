@@ -1,4 +1,5 @@
 import React from 'react';
+import { Inbox } from 'lucide-react';
 
 interface Column {
   header: string;
@@ -13,8 +14,9 @@ interface SimpleDataTableProps {
 export function SimpleDataTable({ columns, data }: SimpleDataTableProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-12 text-center text-slate-500 font-medium">
-        لا توجد بيانات للعرض حالياً.
+      <div className="rounded-3xl border border-slate-200 bg-white p-16 flex flex-col items-center justify-center gap-4 text-slate-400">
+        <Inbox className="h-16 w-16 opacity-50" />
+        <p className="text-lg font-bold text-slate-500">لا توجد بيانات للعرض حالياً.</p>
       </div>
     );
   }

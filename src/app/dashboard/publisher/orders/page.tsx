@@ -1,6 +1,7 @@
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { getOrders } from '@/data/mock';
+import { StatusBadge } from '@/components/StatusBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,8 +14,8 @@ export default async function PublisherOrdersPage() {
     dateDisplay: new Date(order.createdAt).toLocaleDateString('ar-EG'),
     amountDisplay: `${order.totalAmount} ج.م`,
     statusDisplay: order.status === 'paid' 
-      ? <span className="rounded-md bg-green-100 px-2 py-1 text-xs font-bold text-green-700">مكتمل الدفع</span>
-      : <span className="rounded-md bg-amber-100 px-2 py-1 text-xs font-bold text-amber-700">قيد الانتظار</span>
+      ? <StatusBadge type="success" label="مكتمل الدفع" />
+      : <StatusBadge type="warning" label="قيد الانتظار" />
   }));
 
   const columns = [

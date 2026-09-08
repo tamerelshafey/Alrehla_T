@@ -1,8 +1,9 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser } from '@/data/mock';
+import { getCurrentUser, getCreativeServices } from '@/data/mock';
 import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
+import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,12 +13,23 @@ export default async function Page() {
     return <Unauthorized />;
   }
 
+  const services = await getCreativeServices();
+  
+  const formatted = services.map(s => ({
+    ...s,
+    priceDisplay: `${s.price} ج.م`
+  }));
+
+  const columns = [
+    { header: 'اسم الخدمة', accessorKey: 'name' },
+    { header: 'السعر', accessorKey: 'priceDisplay' },
+    { header: 'الوصف', accessorKey: 'description' }
+  ];
+
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
-      <DashboardPageHeader title="خدمات الكتابة" />
-      <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center text-slate-500 font-medium">
-        قيد الإنشاء — سيُفعَّل في مرحلة قادمة
-      </div>
+      <DashboardPageHeader title="الخدمات الإبداعية المستقلة" />
+      <SimpleDataTable columns={columns} data={formatted} />
     </div>
   );
 }

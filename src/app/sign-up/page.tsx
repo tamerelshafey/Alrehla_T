@@ -2,6 +2,14 @@ import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
 import { Mail, Lock, User, UserPlus, ArrowRight } from 'lucide-react';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'إنشاء حساب جديد',
+  description: 'أنشئ حساباً جديداً في منصة الرحلة وابدأ رحلتك.',
+};
+
+
 export default function SignUpPage() {
   return (
     <PageContainer>

@@ -2,6 +2,14 @@ import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
 import { ShoppingCart, Trash2, ArrowRight, Package } from 'lucide-react';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'سلة المشتريات',
+  description: 'مراجعة المنتجات في سلة المشتريات الخاصة بك وإتمام الطلب.',
+};
+
+
 export default function CartPage() {
   return (
     <PageContainer>

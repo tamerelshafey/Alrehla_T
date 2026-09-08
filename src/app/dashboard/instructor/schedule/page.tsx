@@ -1,6 +1,7 @@
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { getAvailabilitySlots } from '@/data/mock';
+import { StatusBadge } from '@/components/StatusBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,9 +11,9 @@ export default async function InstructorSchedulePage() {
   const formattedSlots = slots.map(slot => ({
     ...slot,
     statusDisplay: slot.isBooked ? (
-      <span className="rounded-md bg-amber-100 px-2 py-1 text-xs font-bold text-amber-700">محجوز</span>
+      <StatusBadge type="warning" label="محجوز" />
     ) : (
-      <span className="rounded-md bg-green-100 px-2 py-1 text-xs font-bold text-green-700">متاح</span>
+      <StatusBadge type="success" label="متاح" />
     )
   }));
 

@@ -8,6 +8,7 @@ export type UserProfile = {
   fullName: string;
   email: string;
   role: UserRole;
+  isGuardian?: boolean;
   avatarUrl?: string;
   createdAt: string;
   permissions?: AdminPermission[];
@@ -166,6 +167,7 @@ export interface NotificationItem {
 // تذاكر الدعم
 export interface SupportTicket {
   id: string;
+  senderName?: string;
   subject: string;
   category: string;
   status: 'open' | 'answered' | 'closed';
@@ -252,3 +254,36 @@ export type AdminPermission =
   | 'canManageContent'
   | 'canManageFinance'
   | 'canViewAuditLogs';
+
+
+export type BoxSubscription = {
+  id: string;
+  customerName: string;
+  planName: string;
+  status: 'active' | 'cancelled' | 'paused';
+  nextShipmentDate: string;
+};
+
+export type JoinRequest = {
+  id: string;
+  applicantName: string;
+  roleRequested: 'instructor' | 'publisher';
+  status: 'pending' | 'approved' | 'rejected';
+  submittedAt: string;
+};
+
+export type SupportSessionRequest = {
+  id: string;
+  studentName: string;
+  topic: string;
+  status: 'pending' | 'scheduled' | 'completed';
+  createdAt: string;
+};
+
+export type AuditLog = {
+  id: string;
+  action: string;
+  performedBy: string;
+  timestamp: string;
+  details: string;
+};

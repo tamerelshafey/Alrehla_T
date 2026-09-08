@@ -1,3 +1,10 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'قسم إنهى لك',
+  description: 'تصفح المتجر واكتشف أحدث منتجات وإصدارات إنهى لك.',
+};
+
 import Link from 'next/link';
 
 import { getTestimonials } from '@/data/mock';
@@ -8,6 +15,9 @@ import { SectionHeader } from '@/components/SectionHeader';
 
 
 import {
+
+
+
   Fingerprint,
   BookOpen,
   PenTool,

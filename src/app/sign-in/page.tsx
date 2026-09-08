@@ -2,6 +2,14 @@ import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
 import { Mail, Lock, LogIn, ArrowRight } from 'lucide-react';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'تسجيل الدخول',
+  description: 'سجل دخولك إلى حسابك في منصة الرحلة.',
+};
+
+
 export default function SignInPage() {
   return (
     <PageContainer>

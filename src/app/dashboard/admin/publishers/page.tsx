@@ -1,8 +1,10 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser } from '@/data/mock';
+import { getCurrentUser, getPublishers } from '@/data/mock';
 import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
+import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,12 +14,21 @@ export default async function Page() {
     return <Unauthorized />;
   }
 
+  const publishers = await getPublishers();
+  const formatted = publishers.map(p => ({
+    ...p,
+    nameDisplay: <Link href={`/dashboard/admin/publishers/${p.id}`} className="font-bold text-blue-600 hover:underline">{p.name}</Link>
+  }));
+
+  const columns = [
+    { header: 'الاسم', accessorKey: 'nameDisplay' },
+    { header: 'الوصف', accessorKey: 'bio' }
+  ];
+
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
       <DashboardPageHeader title="إدارة الناشرين" />
-      <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center text-slate-500 font-medium">
-        قيد الإنشاء — سيُفعَّل في مرحلة قادمة
-      </div>
+      <SimpleDataTable columns={columns} data={formatted} />
     </div>
   );
 }
