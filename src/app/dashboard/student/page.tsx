@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/utils';
 import { getCurrentUser, getWritingPackages, getOrders } from '@/data/mock';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -148,7 +149,7 @@ export default async function StudentDashboard() {
                       طلب رقم #{order.id.split('-')[1]}
                     </div>
                     <div className="mt-1 text-xs font-medium text-slate-500">
-                      {new Date(order.createdAt).toLocaleDateString('ar-EG')}
+                      {formatDate(order.createdAt)}
                     </div>
                   </div>
                 </div>

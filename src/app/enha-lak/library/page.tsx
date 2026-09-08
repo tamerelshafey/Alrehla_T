@@ -4,6 +4,7 @@ import { BookOpen, Book, FileText, ShoppingCart } from 'lucide-react';
 
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
+import { AddToCartButton } from '@/components/cart/AddToCartButton';
 
 
 
@@ -77,10 +78,16 @@ export default async function LibraryPage() {
                   )}
                 </div>
 
-                <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-slate-800">
-                  <ShoppingCart className="h-4 w-4" />
-                  اطلب الآن
-                </button>
+                <AddToCartButton 
+                  product={{
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    type: 'book',
+                    imageUrl: product.coverImageUrl || `https://picsum.photos/seed/${product.id}/600/800`
+                  }} 
+                />
               </div>
             </div>
           ))}

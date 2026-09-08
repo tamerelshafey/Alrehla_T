@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/utils';
 import { getNotifications } from '@/data/mock';
 import { Bell } from 'lucide-react';
 
@@ -22,7 +23,7 @@ export default async function NotificationsPage() {
                   <p className={`font-bold ${notif.isRead ? 'text-slate-800' : 'text-blue-900'}`}>{notif.title}</p>
                   <p className={`mt-1 text-sm ${notif.isRead ? 'text-slate-600' : 'text-blue-700'}`}>{notif.message}</p>
                 </div>
-                <span className="text-xs text-slate-400">{new Date(notif.createdAt).toLocaleDateString('ar-EG')}</span>
+                <span className="text-xs text-slate-400">{formatDate(notif.createdAt)}</span>
               </div>
             </div>
           ))}

@@ -22,7 +22,7 @@ export default async function InstructorDashboard() {
   );
 
   // Count unique students
-  const uniqueStudents = new Set(allBookings.map((b) => b.studentId)).size;
+  const uniqueStudents = new Set(allBookings.map((b) => b?.independentParticipantId)).size;
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
@@ -96,7 +96,7 @@ export default async function InstructorDashboard() {
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-800">
-                      جلسة مع الطالب (رقم {session.studentId.split('-')[1]})
+                      جلسة مع الطالب (رقم {(session?.independentParticipantId || session?.dependentParticipantId || '')?.split('-')[1]})
                     </h3>
                     <div className="mt-1 flex items-center gap-2 text-sm font-medium text-slate-500">
                       <Clock className="h-4 w-4" />
@@ -115,7 +115,7 @@ export default async function InstructorDashboard() {
                     دخول الجلسة
                   </Link>
                   <Link 
-                    href={`/dashboard/instructor/students/${session.studentId}`}
+                    href={`/dashboard/instructor/students/${(session?.independentParticipantId || session?.dependentParticipantId || '')}`}
                     className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-center text-sm font-bold whitespace-nowrap text-slate-700 transition-colors hover:bg-slate-50"
                   >
                     الملف

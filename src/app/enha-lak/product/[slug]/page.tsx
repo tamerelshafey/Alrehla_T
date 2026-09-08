@@ -2,6 +2,7 @@ import { getProductBySlug } from '@/data/mock';
 import { PageContainer } from '@/components/PageContainer';
 import Image from 'next/image';
 import Link from 'next/link';
+import { AddToCartButton } from '@/components/cart/AddToCartButton';
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -56,9 +57,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               )}
             </div>
             
-            <button className="mt-6 w-full rounded-xl bg-slate-900 py-4 text-center font-bold text-white shadow-xl transition-all hover:-translate-y-1 hover:bg-slate-800">
-              أضف للسلة
-            </button>
+            <div className="mt-6">
+              <AddToCartButton 
+                  product={{
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    type: product.category === 'library' ? 'book' : 'custom',
+                    imageUrl: product.coverImageUrl || `https://picsum.photos/seed/${product.id}/600/800`
+                  }} 
+                />
+            </div>
           </div>
         </div>
       </div>

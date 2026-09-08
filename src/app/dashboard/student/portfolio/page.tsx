@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/utils';
 import { getCurrentUser, getPortfolioItems } from '@/data/mock';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -59,11 +60,7 @@ export default async function PortfolioPage() {
               </div>
               <div className="flex items-center gap-1 text-sm font-medium whitespace-nowrap text-slate-400">
                 <Calendar className="h-4 w-4" />
-                {new Date(item.createdAt).toLocaleDateString('ar-EG', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                {formatDate(item.createdAt)}
               </div>
             </div>
 

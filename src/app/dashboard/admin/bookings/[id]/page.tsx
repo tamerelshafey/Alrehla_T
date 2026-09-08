@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getBookings } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import Link from 'next/link';
 
@@ -25,7 +25,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div>
             <div className="text-sm text-slate-500 mb-1">الموعد</div>
-            <div className="font-bold text-slate-800 text-lg">{new Date(target.scheduledAt).toLocaleString('ar-EG')}</div>
+            <div className="font-bold text-slate-800 text-lg">{formatDate(target.scheduledAt)}</div>
           </div>
           <div>
             <div className="text-sm text-slate-500 mb-1">الحالة</div>
@@ -33,7 +33,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
           <div>
             <div className="text-sm text-slate-500 mb-1">معرف الطالب</div>
-            <div className="font-bold text-slate-800 text-lg">{target.studentId}</div>
+            <div className="font-bold text-slate-800 text-lg">{target?.independentParticipantId}</div>
           </div>
           <div>
             <div className="text-sm text-slate-500 mb-1">معرف المدرب</div>

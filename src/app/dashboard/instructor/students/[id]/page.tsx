@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
@@ -19,7 +20,7 @@ export default async function StudentDetailsPage({ params }: { params: Promise<{
 
   const sessions = bookings.map((b, index) => ({
     sessionNumber: `الجلسة ${index + 1}`,
-    date: new Date(b.createdAt).toLocaleDateString('ar-EG'),
+    date: formatDate(b.createdAt),
     status: b.status === 'confirmed' ? (
       <StatusBadge type="success" label="مكتملة" />
     ) : (

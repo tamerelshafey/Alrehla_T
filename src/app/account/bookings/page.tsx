@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/utils';
 
 import { getBookings } from '@/data/mock';
 
@@ -21,7 +22,7 @@ export default async function BookingsPage() {
             {bookings.map(booking => (
               <tr key={booking.id}>
                 <td className="p-4 font-bold text-slate-700">{booking.id}</td>
-                <td className="p-4 text-slate-500" dir="ltr">{new Date(booking.scheduledAt).toLocaleString('ar-EG')}</td>
+                <td className="p-4 text-slate-500" dir="ltr">{formatDate(booking.scheduledAt)}</td>
                 <td className="p-4 font-medium text-slate-700">{booking.packageId}</td>
                 <td className="p-4">
                   <span className={`inline-flex rounded-full px-2 py-1 text-xs font-bold ${booking.status === 'confirmed' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>

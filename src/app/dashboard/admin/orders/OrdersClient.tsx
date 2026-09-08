@@ -1,4 +1,5 @@
 'use client';
+import { formatDate } from '@/lib/utils';
 import React, { useState } from 'react';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { Order } from '@/types';
@@ -20,7 +21,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
           #{order.id.split('-')[1]}
         </Link>
       ),
-      dateDisplay: new Date(order.createdAt).toLocaleDateString('ar-EG'),
+      dateDisplay: formatDate(order.createdAt),
       amountDisplay: `${order.totalAmount} ج.م`,
       statusDisplay: (
         <StatusBadge

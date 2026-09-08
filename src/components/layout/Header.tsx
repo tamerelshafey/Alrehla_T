@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { ShoppingCart, User, Compass } from 'lucide-react';
+import { User, Compass } from 'lucide-react';
 import { cookies } from 'next/headers';
 import React from 'react';
+import { CartHeaderButton } from '@/components/cart/CartHeaderButton';
 
 export default async function Header() {
   const cookieStore = await cookies();
@@ -42,12 +43,7 @@ export default async function Header() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/cart"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-amber-500"
-          >
-            <ShoppingCart className="h-5 w-5" />
-          </Link>
+          <CartHeaderButton />
           <div className="hidden h-6 w-px bg-slate-200 sm:block"></div>
           <Link
             href={getAccountLink()}

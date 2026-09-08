@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getInstructors, getBookings } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import Link from 'next/link';
@@ -25,7 +25,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const formattedBookings = instructorBookings.map(b => ({
     ...b,
     idDisplay: <Link href={`/dashboard/admin/bookings/${b.id}`} className="text-blue-600 font-bold hover:underline">#{b.id.split('-')[1]}</Link>,
-    dateDisplay: new Date(b.scheduledAt).toLocaleDateString('ar-EG'),
+    dateDisplay: formatDate(b.scheduledAt),
     statusDisplay: (
       <span className={`rounded-md px-2 py-1 text-xs font-bold ${
         b.status === 'confirmed' ? 'bg-indigo-100 text-indigo-700' :

@@ -167,7 +167,7 @@ export default async function AdminDashboard() {
                         </Link>
                       </td>
                       <td className="px-4 py-4 font-medium text-slate-600">
-                        {booking.studentId.split('-')[1]}
+                        {(booking?.independentParticipantId || booking?.dependentParticipantId || '')?.split('-')[1]}
                       </td>
                       <td className="px-4 py-4 font-medium whitespace-nowrap text-slate-600">
                         {date.toLocaleDateString('ar-EG', {

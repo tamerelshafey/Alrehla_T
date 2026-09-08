@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getAllUsers } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import Link from 'next/link';
 
@@ -46,7 +46,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
             <div className="text-sm text-slate-500 mb-1">تاريخ التسجيل</div>
-            <div className="font-bold text-slate-800">{new Date(targetUser.createdAt).toLocaleDateString('ar-EG')}</div>
+            <div className="font-bold text-slate-800">{formatDate(targetUser.createdAt)}</div>
           </div>
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
             <div className="text-sm text-slate-500 mb-1">حالة ولي الأمر</div>

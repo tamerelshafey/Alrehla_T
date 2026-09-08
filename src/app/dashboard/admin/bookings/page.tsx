@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getBookings } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import Link from 'next/link';
@@ -20,7 +20,7 @@ export default async function Page() {
   const formatted = allBookings.map(b => ({
     ...b,
     idDisplay: <Link href={`/dashboard/admin/bookings/${b.id}`} className="font-bold text-blue-600 hover:underline">#{b.id.split('-')[1]}</Link>,
-    dateDisplay: new Date(b.scheduledAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+    dateDisplay: formatDate(b.scheduledAt),
     statusDisplay: (
       <StatusBadge
           type={b.status === 'confirmed' ? 'success' : b.status === 'completed' ? 'neutral' : 'warning'}

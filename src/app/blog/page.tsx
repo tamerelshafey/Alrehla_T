@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { getBlogPosts } from '@/data/mock';
 import { BookOpen, Calendar, ArrowLeft } from 'lucide-react';
@@ -59,11 +60,7 @@ export default async function BlogPage() {
                 <div className="mt-auto flex items-center justify-between text-xs font-bold text-slate-500">
                   <div className="flex items-center gap-1.5">
                     <Calendar className="h-4 w-4" />
-                    {new Date(post.publishedAt).toLocaleDateString('ar-EG', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
+                    {formatDate(post.publishedAt)}
                   </div>
                   <span className="flex items-center gap-1 text-amber-600 transition-all group-hover:gap-2">
                     اقرأ المزيد <ArrowLeft className="h-3 w-3" />

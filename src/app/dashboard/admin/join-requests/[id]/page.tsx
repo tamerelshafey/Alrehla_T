@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getJoinRequests } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 
 export const dynamic = 'force-dynamic';
@@ -32,7 +32,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
           <div>
             <div className="text-sm text-slate-500 mb-1">تاريخ التقديم</div>
-            <div className="font-bold text-slate-800 text-lg">{new Date(target.createdAt).toLocaleDateString('ar-EG')}</div>
+            <div className="font-bold text-slate-800 text-lg">{formatDate(target.createdAt)}</div>
           </div>
         </div>
 

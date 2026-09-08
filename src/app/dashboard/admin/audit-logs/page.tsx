@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getAuditLogs } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 
@@ -18,7 +18,7 @@ export default async function Page() {
   const formatted = logs.map(l => ({
     ...l,
     idDisplay: <span className="font-mono text-xs text-slate-400">{l.id}</span>,
-    dateDisplay: new Date(l.createdAt).toLocaleString('ar-EG'),
+    dateDisplay: formatDate(l.createdAt),
   }));
 
   const columns = [

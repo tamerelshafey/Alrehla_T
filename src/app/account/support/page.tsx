@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/utils';
 
 import { getMyTickets } from '@/data/mock';
 
@@ -17,7 +18,7 @@ export default async function SupportPage() {
           <div key={ticket.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div>
               <p className="font-bold text-slate-800">{ticket.subject}</p>
-              <p className="text-xs text-slate-500">{ticket.category} • {new Date(ticket.createdAt).toLocaleDateString('ar-EG')}</p>
+              <p className="text-xs text-slate-500">{ticket.category} • {formatDate(ticket.createdAt)}</p>
             </div>
             <span className={`inline-flex rounded-full px-2 py-1 text-xs font-bold ${
               ticket.status === 'open' ? 'bg-amber-50 text-amber-700' :

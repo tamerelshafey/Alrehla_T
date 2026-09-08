@@ -61,9 +61,11 @@ export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 // عملية الحجز لباقة معينة
 export type Booking = {
   id: string;
-  studentId: string;
+  dependentParticipantId?: string;
+  independentParticipantId?: string;
   packageId: string;
   instructorId?: string;
+  courseSubscriptionId?: string;
   status: BookingStatus;
   scheduledAt: string;
   createdAt: string;
@@ -89,10 +91,25 @@ export type PersonalizedProduct = {
 export type OrderStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 
 // طلب شراء من المتجر
+export interface OrderItem {
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+  customizationData?: {
+    childName?: string;
+    childPhotoUrl?: string;
+    coverChoice?: string;
+    notes?: string;
+  };
+}
+
+// طلب شراء من المتجر
 export type Order = {
   id: string;
   userId: string;
-  items: string[]; // مصفوفة معرفات المنتجات للتبسيط حالياً
+  items: OrderItem[];
+  dependentParticipantId?: string;
+  independentParticipantId?: string;
   totalAmount: number;
   status: OrderStatus;
   createdAt: string;
@@ -113,7 +130,8 @@ export type BlogPost = {
 // عمل في الملف الكتابي للطالب
 export type PortfolioItem = {
   id: string;
-  studentId: string;
+  dependentParticipantId?: string;
+  independentParticipantId?: string;
   title: string;
   excerpt: string;
   packageName: string;
@@ -289,3 +307,30 @@ export type AuditLog = {
   entityType: string;
   createdAt: string;
 };
+
+// طلب خدمات بداية الرحلة
+export type ServiceOrderStatus = 'pending' | 'paid' | 'refunded';
+
+export interface ServiceOrder {
+  id: string;
+  buyerProfileId: string;
+  packageId?: string;
+  serviceId?: string;
+  status: ServiceOrderStatus;
+  amount: number;
+  createdAt: string;
+}
+
+// اشتراك في دورة
+export type CourseSubscriptionStatus = 'active' | 'completed' | 'cancelled';
+
+export interface CourseSubscription {
+  id: string;
+  packageId: string;
+  guardianProfileId?: string;
+  dependentParticipantId?: string;
+  independentParticipantId?: string;
+  status: CourseSubscriptionStatus;
+  startedAt: string;
+  createdAt: string;
+}

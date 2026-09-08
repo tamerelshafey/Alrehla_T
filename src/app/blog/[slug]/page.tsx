@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
 import { ArrowLeft, Calendar, User, BookOpen, Share2, Facebook, Twitter, Linkedin } from 'lucide-react';
@@ -29,11 +30,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm font-bold text-slate-500">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-amber-500" />
-              {new Date(post.publishedAt).toLocaleDateString('ar-EG', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
+              {formatDate(post.publishedAt)}
             </div>
             <div className="flex items-center gap-2">
               <User className="h-5 w-5 text-amber-500" />

@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getBlogPosts } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import Link from 'next/link';
@@ -20,7 +20,7 @@ export default async function Page() {
   const formatted = posts.map(p => ({
     ...p,
     titleDisplay: <Link href={`/dashboard/admin/content/blog/${p.id}`} className="font-bold text-blue-600 hover:underline">{p.title}</Link>,
-    dateDisplay: new Date(p.publishedAt).toLocaleDateString('ar-EG'),
+    dateDisplay: formatDate(p.publishedAt),
     statusDisplay: (
       <StatusBadge 
         type={new Date(p.publishedAt) > new Date() ? 'neutral' : 'success'} 

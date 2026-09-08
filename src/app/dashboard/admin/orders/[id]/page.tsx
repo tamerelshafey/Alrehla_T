@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getOrders, getPersonalizedProducts } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 
@@ -18,13 +18,13 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const target = orders.find(o => o.id === id) || orders[0];
   const products = await getPersonalizedProducts();
 
-  const formattedItems = target.items.map((itemId, idx) => {
-    const product = products.find(p => p.id === itemId);
-    const price = product ? product.price : 0;
-    const quantity = 1; // Assuming 1 for simplicity here since item is just a string ID in Order type
+  const formattedItems = target.items.map((item, idx) => {
+    const product = products.find(p => p.id === item.productId);
+    const price = item.unitPrice || (product ? product.price : 0);
+    const quantity = item.quantity || 1;
     return {
       id: idx,
-      nameDisplay: product ? product.name : itemId,
+      nameDisplay: product ? product.name : item.productId,
       priceDisplay: `${price} ج.م`,
       quantity: quantity,
       totalDisplay: `${price * quantity} ج.م`
@@ -45,7 +45,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm mb-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
           <div>
-            <div className="text-sm text-slate-500 mb-1">تاريخ الطلب: {new Date(target.createdAt).toLocaleDateString('ar-EG')}</div>
+            <div className="text-sm text-slate-500 mb-1">تاريخ الطلب: {formatDate(target.createdAt)}</div>
             <div className="text-sm text-slate-500">حالة الدفع: {target.status === 'paid' ? 'تم الدفع' : 'معلق'}</div>
           </div>
           <div className="flex gap-3">

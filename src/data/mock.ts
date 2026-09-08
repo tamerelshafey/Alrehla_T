@@ -464,7 +464,7 @@ import {
 export const mockBookings: Booking[] = [
   {
     id: 'bkg-1',
-    studentId: 'student-1',
+    independentParticipantId: 'student-1',
     packageId: 'pkg-1',
     instructorId: 'inst-1',
     status: 'confirmed',
@@ -473,7 +473,7 @@ export const mockBookings: Booking[] = [
   },
   {
     id: 'bkg-2',
-    studentId: 'student-2',
+    dependentParticipantId: 'dep-child-2',
     packageId: 'pkg-2',
     instructorId: 'inst-2',
     status: 'completed',
@@ -482,7 +482,7 @@ export const mockBookings: Booking[] = [
   },
   {
     id: 'bkg-3',
-    studentId: 'student-3',
+    independentParticipantId: 'student-3',
     packageId: 'pkg-1',
     instructorId: 'inst-1',
     status: 'pending',
@@ -495,7 +495,8 @@ export const mockOrders: Order[] = [
   {
     id: 'ord-1',
     userId: 'student-1',
-    items: ['prod-1', 'addon-1'],
+    items: [{ productId: 'prod-1', quantity: 1, unitPrice: 350, customizationData: { childName: 'علي' } }, { productId: 'addon-1', quantity: 1, unitPrice: 45 }],
+    independentParticipantId: 'student-1',
     totalAmount: 395,
     status: 'paid',
     createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
@@ -503,7 +504,8 @@ export const mockOrders: Order[] = [
   {
     id: 'ord-2',
     userId: 'student-2',
-    items: ['prod-2'],
+    items: [{ productId: 'prod-2', quantity: 1, unitPrice: 50 }],
+    dependentParticipantId: 'dep-child-2',
     totalAmount: 120,
     status: 'pending',
     createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
@@ -513,7 +515,7 @@ export const mockOrders: Order[] = [
 export const mockPortfolioItems: PortfolioItem[] = [
   {
     id: 'port-1',
-    studentId: 'student-1',
+    independentParticipantId: 'student-1',
     title: 'رسالة إلى صديقي الخيالي',
     excerpt: 'كان يجلس دائماً على حافة النافذة، يخبرني عن أسرار الغيوم...',
     packageName: 'الكلمات الذهبية',
@@ -522,7 +524,7 @@ export const mockPortfolioItems: PortfolioItem[] = [
   },
   {
     id: 'port-2',
-    studentId: 'student-1',
+    independentParticipantId: 'student-1',
     title: 'قصة الشجرة التي رفضت أن تكبر',
     excerpt:
       'في الغابة البعيدة، كانت هناك شجرة صغيرة ترفض أن تمتد جذورها في الأرض...',
@@ -532,7 +534,7 @@ export const mockPortfolioItems: PortfolioItem[] = [
   },
   {
     id: 'port-3',
-    studentId: 'student-1',
+    independentParticipantId: 'student-1',
     title: 'حوار مع غيمة',
     excerpt:
       'سألتها: لماذا تبكين دائماً في الشتاء؟ فقالت: هذه ليست دموع، بل هدايا للأرض.',
@@ -717,3 +719,53 @@ export const mockAuditLogs: AuditLog[] = [
 ];
 
 export const getAuditLogs = async (): Promise<AuditLog[]> => mockAuditLogs;
+
+
+import { ServiceOrder, CourseSubscription } from '../types';
+
+export const mockServiceOrders: ServiceOrder[] = [
+  {
+    id: 'so-1',
+    buyerProfileId: 'parent-1',
+    packageId: 'pkg-1',
+    status: 'paid',
+    amount: 1500,
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+  },
+  {
+    id: 'so-2',
+    buyerProfileId: 'parent-2',
+    packageId: 'pkg-2',
+    status: 'pending',
+    amount: 800,
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+  }
+];
+
+export const mockCourseSubscriptions: CourseSubscription[] = [
+  {
+    id: 'csub-1',
+    packageId: 'pkg-1',
+    guardianProfileId: 'parent-1',
+    dependentParticipantId: 'dep-child-1',
+    status: 'active',
+    startedAt: new Date(Date.now() - 86400000 * 10).toISOString(),
+    createdAt: new Date(Date.now() - 86400000 * 12).toISOString(),
+  },
+  {
+    id: 'csub-2',
+    packageId: 'pkg-2',
+    independentParticipantId: 'student-1',
+    status: 'completed',
+    startedAt: new Date(Date.now() - 86400000 * 40).toISOString(),
+    createdAt: new Date(Date.now() - 86400000 * 45).toISOString(),
+  }
+];
+
+export async function getServiceOrders(): Promise<ServiceOrder[]> {
+  return mockServiceOrders;
+}
+
+export async function getCourseSubscriptions(): Promise<CourseSubscription[]> {
+  return mockCourseSubscriptions;
+}

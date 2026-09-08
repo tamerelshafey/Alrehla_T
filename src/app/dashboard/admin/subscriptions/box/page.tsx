@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getBoxSubscriptions } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import Link from 'next/link';
@@ -20,7 +20,7 @@ export default async function Page() {
   const formatted = subscriptions.map(s => ({
     ...s,
     idDisplay: <span className="font-bold text-slate-700">#{s.id.split('-')[1]}</span>,
-    dateDisplay: new Date(s.nextShipmentDate).toLocaleDateString('ar-EG'),
+    dateDisplay: formatDate(s.nextShipmentDate),
     statusDisplay: s.status === 'active' 
       ? <StatusBadge type="success" label="نشط" />
       : s.status === 'paused'

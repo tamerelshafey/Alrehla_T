@@ -5,6 +5,7 @@ import { PenTool, Plus, Book, FileText, ShoppingCart } from 'lucide-react';
 
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
+import { AddToCartButton } from '@/components/cart/AddToCartButton';
 
 
 
@@ -80,10 +81,16 @@ export default async function CustomPage() {
                 </div>
 
                 
-                <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-slate-800">
-                  <ShoppingCart className="h-4 w-4" />
-                  اطلب الآن
-                </button>
+                <AddToCartButton 
+                  product={{
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    type: 'custom',
+                    imageUrl: product.coverImageUrl || `https://picsum.photos/seed/${product.id}/600/800`
+                  }} 
+                />
                 <Link href={`/enha-lak/product/${product.slug}`} className="mt-3 flex w-full items-center justify-center rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200">
                   عرض تفاصيل المنتج
                 </Link>
@@ -124,9 +131,17 @@ export default async function CustomPage() {
                 <span className="text-lg font-black text-rose-600">
                   {addon.price.toLocaleString('ar-EG')} ج.م
                 </span>
-                <button className="text-sm font-bold text-violet-600 hover:text-violet-800">
-                  إضافة للطلب
-                </button>
+                <AddToCartButton 
+                  product={{
+                    id: addon.id,
+                    name: addon.name,
+                    price: addon.price,
+                    quantity: 1,
+                    type: 'custom',
+                  }} 
+                  variant="outline"
+                  className="w-auto px-4 py-2"
+                />
               </div>
             </div>
           ))}

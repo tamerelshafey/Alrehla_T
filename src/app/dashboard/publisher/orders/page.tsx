@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/utils';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { getOrders } from '@/data/mock';
@@ -11,7 +12,7 @@ export default async function PublisherOrdersPage() {
   const formattedOrders = orders.map(order => ({
     ...order,
     orderIdDisplay: `طلب #${order.id.split('-')[1] || order.id}`,
-    dateDisplay: new Date(order.createdAt).toLocaleDateString('ar-EG'),
+    dateDisplay: formatDate(order.createdAt),
     amountDisplay: `${order.totalAmount} ج.م`,
     statusDisplay: order.status === 'paid' 
       ? <StatusBadge type="success" label="مكتمل الدفع" />

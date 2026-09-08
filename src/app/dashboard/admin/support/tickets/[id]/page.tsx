@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getAllSupportTickets } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { Paperclip, Send } from 'lucide-react';
 
@@ -33,7 +33,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               <div className="rounded-2xl rounded-tr-none bg-white p-4 text-slate-700 shadow-sm border border-slate-100">
                 لدي مشكلة في الوصول إلى محتوى الباقة التي اشتركت بها مؤخراً، هل يمكنكم المساعدة؟
               </div>
-              <span className="text-xs text-slate-400">{new Date(target.createdAt).toLocaleString('ar-EG')}</span>
+              <span className="text-xs text-slate-400">{formatDate(target.createdAt)}</span>
             </div>
           </div>
           

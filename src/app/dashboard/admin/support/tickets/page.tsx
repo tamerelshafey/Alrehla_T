@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getAllSupportTickets } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import Link from 'next/link';
@@ -20,7 +20,7 @@ export default async function Page() {
   const formatted = tickets.map(t => ({
     ...t,
     idDisplay: <Link href={`/dashboard/admin/support/tickets/${t.id}`} className="font-bold text-blue-600 hover:underline">#{t.id.split('-')[1]}</Link>,
-    dateDisplay: new Date(t.createdAt).toLocaleDateString('ar-EG'),
+    dateDisplay: formatDate(t.createdAt),
     statusDisplay: (
       <StatusBadge
           type={t.status === 'open' ? 'warning' : t.status === 'answered' ? 'neutral' : 'neutral'}

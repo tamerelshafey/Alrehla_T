@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getJoinRequests } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import Link from 'next/link';
@@ -21,7 +21,7 @@ export default async function Page() {
     ...r,
     nameDisplay: <Link href={`/dashboard/admin/join-requests/${r.id}`} className="font-bold text-blue-600 hover:underline">{r.applicantName}</Link>,
     roleDisplay: r.requestedRole === 'instructor' ? 'مدرب' : 'ناشر',
-    dateDisplay: new Date(r.createdAt).toLocaleDateString('ar-EG'),
+    dateDisplay: formatDate(r.createdAt),
     statusDisplay: (
       <StatusBadge
           type={r.status === 'approved' ? 'success' : r.status === 'rejected' ? 'danger' : 'warning'}

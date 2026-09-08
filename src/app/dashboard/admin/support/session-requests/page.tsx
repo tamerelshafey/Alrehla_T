@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getSupportSessionRequests } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -19,7 +19,7 @@ export default async function Page() {
   const formatted = requests.map(r => ({
     ...r,
     idDisplay: <span className="font-bold text-slate-700">#{r.id.split('-')[1]}</span>,
-    dateDisplay: new Date(r.createdAt).toLocaleDateString('ar-EG'),
+    dateDisplay: formatDate(r.createdAt),
     statusDisplay: (
       <StatusBadge
           type={r.status === 'contacted' ? 'success' : r.status === 'closed' ? 'neutral' : 'warning'}
