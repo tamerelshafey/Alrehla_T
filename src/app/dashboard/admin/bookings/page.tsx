@@ -1,6 +1,6 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getBookings } from '@/data/mock';
+import { getCurrentUser, getBookings, getParticipantName } from '@/data/mock';
 import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
@@ -33,7 +33,7 @@ export default async function Page() {
   const columns = [
     { header: 'رقم الحجز', accessorKey: 'idDisplay' },
     { header: 'الموعد', accessorKey: 'dateDisplay' },
-    { header: 'الطالب', accessorKey: 'studentId' },
+    { header: 'الطالب', accessorKey: 'studentName' },
     { header: 'المدرب', accessorKey: 'instructorId' },
     { header: 'الحالة', accessorKey: 'statusDisplay' },
     { header: 'الجلسة', accessorKey: 'sessionLink' }

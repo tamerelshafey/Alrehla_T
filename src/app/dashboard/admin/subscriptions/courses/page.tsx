@@ -1,10 +1,9 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getBookings } from '@/data/mock';
+import { getCurrentUser, getCourseSubscriptions, getParticipantName } from '@/data/mock';
 import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
-import Link from 'next/link';
 import { StatusBadge } from '@/components/StatusBadge';
 
 export const dynamic = 'force-dynamic';
@@ -15,25 +14,26 @@ export default async function Page() {
     return <Unauthorized />;
   }
 
-  // Reuse bookings as a proxy for course subscriptions for now
-  const allBookings = await getBookings();
+  const allSubscriptions = await getCourseSubscriptions();
   
-  const formatted = allBookings.map(b => ({
-    ...b,
-    idDisplay: <span className="font-bold text-slate-700">#{b.id.split('-')[1]}</span>,
-    dateDisplay: formatDate(b.scheduledAt),
+  const formatted = await Promise.all(allSubscriptions.map(async s => ({
+    ...s,
+    studentName: await getParticipantName(s.dependentParticipantId, s.independentParticipantId),
+    idDisplay: <span className="font-bold text-slate-700">#{s.id.split('-')[1]}</span>,
+    dateDisplay: formatDate(s.startedAt),
     statusDisplay: (
-      <StatusBadge
-          type={b.status === 'confirmed' ? 'success' : b.status === 'completed' ? 'neutral' : 'warning'}
-          label={b.status === 'confirmed' ? 'مؤكد' : b.status === 'completed' ? 'مكتمل' : 'قيد الانتظار'}
-        />
-    )
-  }));
+      <StatusBadge 
+        type={s.status === 'active' ? 'success' : s.status === 'completed' ? 'neutral' : 'warning'}
+        label={s.status === 'active' ? 'نشط' : s.status === 'completed' ? 'مكتمل' : 'ملغى'}
+      />
+    ),
+    packageDisplay: <span className="text-slate-600 font-medium">{s.packageId}</span>
+  })));
 
   const columns = [
     { header: 'رقم الاشتراك', accessorKey: 'idDisplay' },
-    { header: 'الطالب', accessorKey: 'studentId' },
-    { header: 'المدرب المرتبط', accessorKey: 'instructorId' },
+    { header: 'المشارك', accessorKey: 'studentName' },
+    { header: 'الباقة', accessorKey: 'packageDisplay' },
     { header: 'تاريخ البدء', accessorKey: 'dateDisplay' },
     { header: 'الحالة', accessorKey: 'statusDisplay' }
   ];

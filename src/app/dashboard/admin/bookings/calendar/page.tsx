@@ -1,6 +1,6 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getBookings } from '@/data/mock';
+import { getCurrentUser, getBookings, getParticipantName } from '@/data/mock';
 import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
@@ -19,18 +19,19 @@ export default async function Page() {
   // Sort by date ascending to simulate a timeline/calendar view
   const sorted = [...allBookings].sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
   
-  const formatted = sorted.map(b => ({
+  const formatted = await Promise.all(sorted.map(async b => ({
     ...b,
+    studentName: await getParticipantName(b.dependentParticipantId, b.independentParticipantId),
     idDisplay: <Link href={`/dashboard/admin/bookings/${b.id}`} className="font-bold text-blue-600 hover:underline">#{b.id.split('-')[1]}</Link>,
     dateDisplay: formatDate(b.scheduledAt),
     timeDisplay: new Date(b.scheduledAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
-  }));
+  })));
 
   const columns = [
     { header: 'التاريخ', accessorKey: 'dateDisplay' },
     { header: 'الوقت', accessorKey: 'timeDisplay' },
     { header: 'رقم الحجز', accessorKey: 'idDisplay' },
-    { header: 'الطالب', accessorKey: 'studentId' },
+    { header: 'الطالب', accessorKey: 'studentName' },
     { header: 'المدرب', accessorKey: 'instructorId' }
   ];
 

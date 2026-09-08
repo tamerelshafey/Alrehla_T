@@ -632,7 +632,7 @@ export const getPublisherBySlug = async (slug: string): Promise<Publisher | null
 
 export const getProductBySlug = async (slug: string): Promise<PersonalizedProduct | null> => {
   const product = mockProducts.find(p => p.slug === slug);
-  if (product && !product.publisherId) {
+  if (product && product.ownerType === 'platform') {
     return product;
   }
   return null;
@@ -820,3 +820,16 @@ export const mockSupportTicketMessages: SupportTicketMessage[] = [
 
 export const getMessagesForTicket = async (ticketId: string) =>
   Promise.resolve(mockSupportTicketMessages.filter((m) => m.ticketId === ticketId));
+
+
+export const getParticipantName = async (dependentId?: string, independentId?: string): Promise<string> => {
+  if (independentId) {
+    const user = mockAllUsers.find((u) => u.id === independentId);
+    if (user) return user.fullName;
+  }
+  if (dependentId) {
+    const familyMember = mockFamilyMembers.find((f) => f.id === dependentId);
+    if (familyMember) return familyMember.name;
+  }
+  return 'مشارك غير معروف';
+};

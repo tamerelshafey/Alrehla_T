@@ -1,6 +1,6 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getAllSupportTickets } from '@/data/mock';
+import { getCurrentUser, getAllSupportTickets, getMessagesForTicket } from '@/data/mock';
 import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { Paperclip, Send } from 'lucide-react';
@@ -17,41 +17,32 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const tickets = await getAllSupportTickets();
   const target = tickets.find(t => t.id === id) || tickets[0];
 
+  
+  const messages = await getMessagesForTicket(target.id);
+  
   return (
     <div className="mx-auto flex h-screen max-w-5xl flex-col px-6 py-8">
       <DashboardPageHeader title={`تذكرة #${target.id.split('-')[1]} - ${target.subject}`} backHref="/dashboard/admin/support/tickets" />
       
       <div className="flex flex-1 flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50">
-          {/* User Message */}
-          <div className="flex gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 font-bold text-slate-600">
-              {target.requesterName?.[0] || 'U'}
-            </div>
-            <div className="flex flex-col gap-1 max-w-[80%]">
-              <span className="text-sm font-bold text-slate-700">{target.requesterName}</span>
-              <div className="rounded-2xl rounded-tr-none bg-white p-4 text-slate-700 shadow-sm border border-slate-100">
-                لدي مشكلة في الوصول إلى محتوى الباقة التي اشتركت بها مؤخراً، هل يمكنكم المساعدة؟
-              </div>
-              <span className="text-xs text-slate-400">{formatDate(target.createdAt)}</span>
-            </div>
-          </div>
-          
-          {/* Admin Reply */}
-          {target.status !== 'open' && (
-            <div className="flex gap-4 flex-row-reverse">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-600">
-                A
-              </div>
-              <div className="flex flex-col gap-1 max-w-[80%] items-end">
-                <span className="text-sm font-bold text-slate-700">الدعم الفني (أنت)</span>
-                <div className="rounded-2xl rounded-tl-none bg-blue-600 p-4 text-white shadow-sm">
-                  أهلاً بك، تم تفعيل الباقة بنجاح الآن. يمكنك التحقق من لوحة التحكم الخاصة بك. هل يوجد أي استفسار آخر؟
+          {messages.map((msg) => {
+            const isAdmin = msg.senderName === 'الدعم الفني';
+            return (
+              <div key={msg.id} className={`flex gap-4 ${isAdmin ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold ${isAdmin ? 'bg-blue-100 text-blue-600' : 'bg-slate-200 text-slate-600'}`}>
+                  {msg.senderName?.[0] || 'U'}
                 </div>
-                <span className="text-xs text-slate-400">الآن</span>
+                <div className={`flex flex-col gap-1 max-w-[80%] ${isAdmin ? 'items-end' : ''}`}>
+                  <span className="text-sm font-bold text-slate-700">{msg.senderName} {isAdmin && '(أنت)'}</span>
+                  <div className={`rounded-2xl p-4 shadow-sm ${isAdmin ? 'rounded-tl-none bg-blue-600 text-white' : 'rounded-tr-none bg-white text-slate-700 border border-slate-100'}`}>
+                    {msg.message}
+                  </div>
+                  <span className="text-xs text-slate-400">{formatDate(msg.createdAt)}</span>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })}
         </div>
         
         {/* Reply Input */}
@@ -73,4 +64,5 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       </div>
     </div>
   );
+
 }
