@@ -36,6 +36,19 @@ export type WritingPackage = {
 };
 
 // ملف المدرب
+
+export type DayOfWeek = 'saturday' | 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday';
+
+export type WeeklySlot = {
+  day: DayOfWeek;
+  time: string; // HH:mm format, e.g., "10:00"
+  isBooked?: boolean;
+};
+
+export type WorkModel = 'per_session' | 'monthly';
+
+export type InstructorStatus = 'pending_training' | 'pending_approval' | 'active' | 'suspended';
+
 export type Instructor = {
   id: string;
   userId: string;
@@ -45,8 +58,38 @@ export type Instructor = {
   avatarUrl?: string;
   yearsExperience: number;
   isSample?: boolean;
-  status: 'pending' | 'active' | 'suspended';
+  status: InstructorStatus;
+  
+  // New Fields for Scheduling & Pricing
+  trainingPassed: boolean;
+  workModel: WorkModel;
+  requestedPrice: number; // Hourly or per session requested price
+  approvedPrice?: number; // Price approved by admin
+  
+  weeklySchedule: WeeklySlot[]; // The standard weekly schedule they offer
+  pendingSchedule?: WeeklySlot[]; // If they requested a schedule change
+  
+  monthlyHoursCommitted?: number; // Only if workModel === 'monthly'. Minimum 60.
 };
+
+export interface ProfileUpdateRequest {
+  id: string;
+  instructorId: string;
+  requestedChanges: Partial<Instructor>;
+  status: 'pending' | 'approved' | 'rejected';
+  adminFeedback?: string;
+  createdAt: string;
+}
+
+export interface Review {
+  id: string;
+  studentId: string;
+  studentName: string;
+  rating: number; // 1 to 5
+  comment: string;
+  createdAt: string;
+}
+
 
 // خدمة إبداعية مستقلة
 export type CreativeService = {

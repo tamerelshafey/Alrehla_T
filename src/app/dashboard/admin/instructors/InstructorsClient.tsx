@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useState } from 'react';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { Instructor } from '@/types';
@@ -8,23 +9,15 @@ import { StatusBadge } from '@/components/StatusBadge';
 export function InstructorsClient({ initialInstructors }: { initialInstructors: Instructor[] }) {
   const [statusFilter, setStatusFilter] = useState('');
 
-  // We don't have actual status on instructor type yet, let's mock it based on id parity for demo
-  const mockStatus = (id: string) => {
-    if (id.includes('2')) return 'suspended';
-    if (id.includes('3')) return 'pending';
-    return 'active';
-  };
-
   const filtered = initialInstructors.filter(inst => {
-    const status = mockStatus(inst.id);
-    return statusFilter ? status === statusFilter : true;
+    return statusFilter ? inst.status === statusFilter : true;
   });
 
   const formatted = filtered.map(inst => {
-    const status = mockStatus(inst.id);
     let statusDisplay = <StatusBadge type="success" label="نشط" />;
-    if (status === 'suspended') statusDisplay = <StatusBadge type="danger" label="معلّق" />;
-    if (status === 'pending') statusDisplay = <StatusBadge type="warning" label="قيد المراجعة" />;
+    if (inst.status === 'suspended') statusDisplay = <StatusBadge type="danger" label="موقوف" />;
+    if (inst.status === 'pending_approval') statusDisplay = <StatusBadge type="warning" label="بانتظار الاعتماد" />;
+    if (inst.status === 'pending_training') statusDisplay = <StatusBadge type="neutral" label="قيد التدريب" />;
 
     return {
       ...inst,
@@ -34,6 +27,7 @@ export function InstructorsClient({ initialInstructors }: { initialInstructors: 
         </Link>
       ),
       statusDisplay,
+      workModelDisplay: inst.workModel === 'monthly' ? 'راتب شهري' : 'بالجلسة',
       specialtiesDisplay: inst.specialties.join('، '),
       rating: '5.0'
     };
@@ -42,7 +36,7 @@ export function InstructorsClient({ initialInstructors }: { initialInstructors: 
   const columns = [
     { header: 'الاسم', accessorKey: 'nameDisplay' },
     { header: 'التخصص', accessorKey: 'specialtiesDisplay' },
-    { header: 'التقييم', accessorKey: 'rating' },
+    { header: 'نظام العمل', accessorKey: 'workModelDisplay' },
     { header: 'الحالة', accessorKey: 'statusDisplay' }
   ];
 
@@ -56,8 +50,9 @@ export function InstructorsClient({ initialInstructors }: { initialInstructors: 
         >
           <option value="">جميع الحالات</option>
           <option value="active">نشط</option>
-          <option value="pending">قيد المراجعة</option>
-          <option value="suspended">معلّق</option>
+          <option value="pending_approval">بانتظار الاعتماد</option>
+          <option value="pending_training">قيد التدريب</option>
+          <option value="suspended">موقوف</option>
         </select>
       </div>
       <SimpleDataTable columns={columns} data={formatted} />

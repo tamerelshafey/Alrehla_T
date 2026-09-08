@@ -16,6 +16,14 @@ export function ProfileFormShell({ defaultValues }: ProfileFormShellProps) {
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
       <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
+        {/* Alert about approvals */}
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 mb-8 flex gap-3 text-blue-800">
+          <div className="text-sm">
+            <p className="font-bold">مراجعة البيانات</p>
+            <p>أي تغييرات في الاسم، الصورة الشخصية، أو النبذة تخضع لمراجعة واعتماد الإدارة قبل نشرها للطلاب.</p>
+          </div>
+        </div>
+        
         {/* Avatar Section */}
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
           <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-slate-100 bg-slate-50 shadow-sm">

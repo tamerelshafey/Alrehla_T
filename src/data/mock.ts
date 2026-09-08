@@ -129,32 +129,70 @@ export const mockInstructors: Instructor[] = [
     id: 'inst-1',
     status: 'active',
     userId: 'user-101',
-    displayName: 'مدربة أولى',
-    bio: 'سيتم إضافة الملفات الفعلية للمدربين قريبًا.',
-    specialties: ['كتابة إبداعية'],
+    displayName: 'سارة أحمد',
+    bio: 'مدربة معتمدة بخبرة واسعة في تنمية مهارات الكتابة الإبداعية لدى الأطفال.',
+    specialties: ['كتابة إبداعية', 'الخيال العلمي'],
     yearsExperience: 5,
     isSample: true,
+    trainingPassed: true,
+    workModel: 'per_session',
+    requestedPrice: 150,
+    approvedPrice: 150,
+    weeklySchedule: [
+      { day: 'saturday', time: '10:00', isBooked: true },
+      { day: 'saturday', time: '12:00' },
+      { day: 'monday', time: '16:00' }
+    ]
   },
   {
     id: 'inst-2',
     status: 'active',
     userId: 'user-102',
-    displayName: 'مدرب أول',
-    bio: 'سيتم إضافة الملفات الفعلية للمدربين قريبًا.',
+    displayName: 'خالد عبد الله',
+    bio: 'كاتب متخصص في أدب الطفل وحائز على عدة جوائز محلية.',
     specialties: ['الكتابة للأطفال', 'بناء الشخصيات'],
     yearsExperience: 7,
     isSample: true,
+    trainingPassed: true,
+    workModel: 'monthly',
+    monthlyHoursCommitted: 60,
+    requestedPrice: 120,
+    approvedPrice: 120,
+    weeklySchedule: [
+      { day: 'sunday', time: '14:00' },
+      { day: 'tuesday', time: '14:00' },
+      { day: 'thursday', time: '14:00' }
+    ]
   },
-
   {
     id: 'inst-pending',
     userId: 'user-new',
-    displayName: 'أحمد محمود',
-    bio: 'مدرب جديد في انتظار الاعتماد',
+    displayName: 'محمود طارق',
+    bio: 'مدرب شغوف بتعليم أساسيات السرد القصصي.',
     specialties: ['كتابة الخيال'],
     yearsExperience: 2,
-    status: 'pending',
+    status: 'pending_approval',
+    trainingPassed: true,
+    workModel: 'per_session',
+    requestedPrice: 200, // Wants a higher price
+    weeklySchedule: [
+      { day: 'wednesday', time: '18:00' }
+    ]
   },
+  {
+    id: 'inst-training',
+    userId: 'user-training',
+    displayName: 'منى سعيد',
+    bio: 'كاتبة شابة تسعى للانضمام للمنصة.',
+    specialties: ['الشعر'],
+    yearsExperience: 1,
+    status: 'pending_training',
+    trainingPassed: false,
+    workModel: 'monthly',
+    monthlyHoursCommitted: 80,
+    requestedPrice: 100,
+    weeklySchedule: []
+  }
 ];
 
 export const mockProducts: PersonalizedProduct[] = [

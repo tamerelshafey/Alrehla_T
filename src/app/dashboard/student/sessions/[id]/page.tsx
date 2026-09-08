@@ -1,89 +1,60 @@
+import { getCurrentUser } from '@/data/mock';
+import { redirect } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getSessionMessages, getSessionAttachments } from '@/data/mock';
-import { FileText, Download } from 'lucide-react';
+import { Video, Clock, User, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export default async function SessionDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: sessionId } = await params;
-  const messages = await getSessionMessages(sessionId);
-  const attachments = await getSessionAttachments(sessionId);
+export default async function StudentSessionPage() {
+  const user = await getCurrentUser();
+  if (user.role !== 'student') {
+    redirect('/dashboard');
+  }
 
   return (
-    <div className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">
+    <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">
       <DashboardPageHeader 
-        title={`تفاصيل الجلسة`} 
+        title={`موعد الجلسة`} 
         backHref="/dashboard/student"
-        action={{ label: 'الدخول للجلسة (ميت)', href: '#' }}
       />
-
-      <div className="grid gap-8 md:grid-cols-3">
-        {/* التفاصيل والمرفقات */}
-        <div className="space-y-8 md:col-span-1">
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-xl font-bold text-slate-800">معلومات الجلسة</h2>
-            <div className="space-y-4 text-sm font-medium">
-              <div className="flex justify-between border-b border-slate-50 pb-3">
-                <span className="text-slate-500">التاريخ والوقت</span>
-                <span className="text-slate-800 font-bold">السبت، 15 أكتوبر - 4:00 م</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-50 pb-3">
-                <span className="text-slate-500">الباقة</span>
-                <span className="text-slate-800 font-bold">باقة الإبحار</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-50 pb-3">
-                <span className="text-slate-500">المدرب</span>
-                <span className="text-slate-800 font-bold">سارة أحمد</span>
+      
+      <div className="space-y-8">
+        <div className="rounded-3xl border border-indigo-200 bg-indigo-50 p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md">
+              <Video className="h-8 w-8" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-indigo-900 mb-1">غرفة التدريب المرئية</h2>
+              <div className="flex items-center gap-3 text-indigo-700 font-medium">
+                <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> اليوم، 16:00</span>
+                <span>•</span>
+                <span className="flex items-center gap-1"><User className="h-4 w-4" /> مع المدرب أحمد محمود</span>
               </div>
             </div>
-          </section>
-
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-xl font-bold text-slate-800">المرفقات</h2>
-            <div className="space-y-3">
-              {attachments.map((file) => (
-                <div key={file.id} className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-3">
-                  <div className="flex items-center gap-2 overflow-hidden">
-                    <FileText className="h-5 w-5 shrink-0 text-blue-500" />
-                    <span className="truncate text-sm font-bold text-slate-700">{file.fileName}</span>
-                  </div>
-                  <a href={file.fileUrl} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-slate-500 shadow-sm hover:text-slate-800">
-                    <Download className="h-4 w-4" />
-                  </a>
-                </div>
-              ))}
-            </div>
-          </section>
+          </div>
+          
+          <a 
+            href="https://meet.google.com" 
+            target="_blank" 
+            rel="noreferrer"
+            className="rounded-xl bg-indigo-600 px-8 py-4 font-black text-white shadow-lg transition-transform hover:scale-105 active:scale-95 text-center w-full md:w-auto"
+          >
+            دخول الجلسة
+          </a>
         </div>
 
-        {/* الرسائل المتبادلة */}
-        <div className="md:col-span-2">
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm h-full flex flex-col">
-            <h2 className="mb-6 text-xl font-bold text-slate-800">الرسائل والملاحظات</h2>
-            <div className="flex-1 space-y-6 overflow-y-auto pr-2 pb-4">
-              {messages.map((msg) => {
-                const isInstructor = msg.senderName === 'سارة أحمد';
-                return (
-                  <div key={msg.id} className={`flex flex-col ${isInstructor ? 'items-start' : 'items-end'}`}>
-                    <div className="mb-1 text-xs font-bold text-slate-500">{msg.senderName}</div>
-                    <div className={`rounded-2xl px-5 py-3 text-sm font-medium shadow-sm ${isInstructor ? 'bg-slate-50 text-slate-700 border border-slate-100 rounded-tr-none' : 'bg-amber-100 text-amber-900 border border-amber-200 rounded-tl-none'}`}>
-                      {msg.message}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-6 flex gap-2 border-t border-slate-100 pt-6">
-              <input 
-                type="text" 
-                placeholder="اكتب ملاحظة أو استفسار..." 
-                className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium outline-none focus:border-amber-500 focus:bg-white"
-              />
-              <button className="rounded-xl bg-amber-500 px-6 font-bold text-white shadow-md hover:bg-amber-600">
-                إرسال
-              </button>
-            </div>
-          </section>
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 flex gap-3 text-blue-800">
+          <AlertCircle className="h-6 w-6 shrink-0" />
+          <div>
+            <p className="font-bold mb-1">تعليمات الجلسة</p>
+            <ul className="list-disc list-inside text-sm space-y-1">
+              <li>تأكد من استقرار اتصال الإنترنت قبل الدخول.</li>
+              <li>جهز مسودتك أو ملف الكتابة لمشاركته مع المدرب.</li>
+              <li>الجلسة تبدأ في موعدها المحدد، يُرجى الالتزام بالحضور.</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
