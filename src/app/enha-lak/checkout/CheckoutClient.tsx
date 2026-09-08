@@ -251,7 +251,12 @@ export function CheckoutClient({ user }: Props) {
                   <Image src={item.imageUrl || ''} alt={item.name} fill className="object-cover" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-sm font-bold text-slate-800 line-clamp-2">{item.product.title}</h4>
+                  
+                  <h4 className="text-sm font-bold text-slate-800 line-clamp-2">{item.name}</h4>
+                  {item.customizationData?.childName && (
+                    <p className="text-xs text-slate-500 mt-1">الطفل: {item.customizationData.childName}</p>
+                  )}
+
                   <div className="mt-1 flex items-center justify-between">
                     <span className="text-xs text-slate-500">الكمية: {item.quantity}</span>
                     <span className="text-sm font-bold text-blue-600">{(item.price * item.quantity).toLocaleString('ar-EG')} ج.م</span>

@@ -43,9 +43,14 @@ export default function CartClient() {
                           <Package className="h-10 w-10" />
                         )}
                       </div>
+                      
                       <div className="flex-1 text-center md:text-right">
                         <h3 className="text-xl font-bold text-slate-800">{item.name}</h3>
+                        {item.customizationData?.childName && (
+                          <p className="mt-1 text-sm text-slate-500">اسم الطفل: {item.customizationData.childName}</p>
+                        )}
                         <p className="mt-1 font-medium text-slate-500">الكمية: {item.quantity}</p>
+
                         <div className="mt-4 flex items-center justify-center md:justify-start gap-4">
                           <span className="text-lg font-black text-emerald-600">{item.price.toLocaleString('ar-EG')} ج.م</span>
                         </div>
