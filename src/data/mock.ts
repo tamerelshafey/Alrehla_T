@@ -966,24 +966,4 @@ export async function getPublisherOrders() {
   return mockPublisherOrders;
 }
 
-export const mockPublisherPayouts: import('@/types').PublisherPayout[] = [
-  {
-    id: 'pay-1',
-    publisherId: 'pub-1',
-    period: 'أكتوبر 2023',
-    amount: 1500,
-    status: 'paid'
-  },
-  {
-    id: 'pay-2',
-    publisherId: 'pub-1',
-    period: 'نوفمبر 2023 (حتى الآن)',
-    amount: 850,
-    status: 'pending'
-  }
-];
 
-export async function getPublisherPayouts() {
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return mockPublisherPayouts;
-}
