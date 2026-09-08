@@ -73,7 +73,7 @@ export default function CartPage() {
               </div>
               
               <Link
-                href="/checkout"
+                href="/enha-lak/checkout"
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-4 font-bold text-white shadow-md transition-colors hover:bg-slate-800"
               >
                 إتمام الطلب

@@ -1,12 +1,13 @@
 import { getCurrentUser, getWritingPackages, getOrders } from '@/data/mock';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Book, ShoppingBag, ArrowLeft, Calendar, FileText } from 'lucide-react';
+import { Book, ShoppingBag, ArrowLeft, Calendar, FileText, User, FileBox, Eye } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 export default async function StudentDashboard() {
   const user = await getCurrentUser();
+
   if (user.role !== 'student') {
     redirect('/dashboard');
   }
@@ -40,9 +41,21 @@ export default async function StudentDashboard() {
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
-      <h1 className="mb-8 text-3xl font-black text-slate-900">
-        مرحباً، {user.fullName}
-      </h1>
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <h1 className="text-3xl font-black text-slate-900">
+          مرحباً، {user.fullName}
+        </h1>
+        <div className="flex gap-3">
+          <Link href="/dashboard/student/materials" className="flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200">
+            <FileBox className="h-4 w-4" />
+            المواد الدراسية
+          </Link>
+          <Link href="/dashboard/student/profile" className="flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200">
+            <User className="h-4 w-4" />
+            الملف الشخصي
+          </Link>
+        </div>
+      </div>
 
       <div className="grid gap-8 md:grid-cols-2">
         {/* رحلتي الحالية */}
@@ -80,9 +93,18 @@ export default async function StudentDashboard() {
               ></div>
             </div>
 
-            <div className="mt-6 flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 text-sm font-medium text-slate-600">
-              <Calendar className="h-5 w-5 text-blue-500" />
-              <span>الجلسة القادمة: السبت، 15 أكتوبر - 4:00 عصراً</span>
+            <div className="mt-6 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4">
+              <div className="flex items-center gap-3 text-sm font-medium text-slate-600">
+                <Calendar className="h-5 w-5 text-blue-500 shrink-0" />
+                <span>الجلسة القادمة: السبت، 15 أكتوبر - 4:00 عصراً</span>
+              </div>
+              <Link 
+                href="/dashboard/student/sessions/s-123" 
+                className="flex items-center justify-center gap-2 rounded-lg bg-blue-50 py-2 text-sm font-bold text-blue-700 hover:bg-blue-100 transition-colors"
+              >
+                <Eye className="h-4 w-4" />
+                عرض التفاصيل
+              </Link>
             </div>
           </div>
 
@@ -137,7 +159,6 @@ export default async function StudentDashboard() {
                 </div>
               </div>
             ))}
-
             {orders.length === 0 && (
               <div className="py-8 text-center font-medium text-slate-500">
                 لا توجد طلبات سابقة.

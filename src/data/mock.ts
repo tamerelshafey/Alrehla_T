@@ -8,6 +8,9 @@ import {
   PublisherPayout,
   BlogPost,
   UserProfile,
+  SessionMessage,
+  SessionAttachment,
+  StudyMaterial,
   UserRole,
   Testimonial,
   AddonProduct,
@@ -595,3 +598,25 @@ export const mockPublisherPayouts: PublisherPayout[] = [
 
 export const getInstructorPayouts = async (): Promise<InstructorPayout[]> => mockInstructorPayouts;
 export const getPublisherPayouts = async (): Promise<PublisherPayout[]> => mockPublisherPayouts;
+
+export const getSessionMessages = async (sessionId: string): Promise<SessionMessage[]> => {
+  return [
+    { id: '1', senderName: 'سارة أحمد', message: 'مرحباً، أهلاً بك في الجلسة القادمة.', createdAt: '2024-06-14T10:00:00Z' },
+    { id: '2', senderName: 'ياسمين طارق', message: 'أهلاً بك أستاذة، أنا متحمسة جداً!', createdAt: '2024-06-14T10:05:00Z' }
+  ];
+};
+
+export const getSessionAttachments = async (sessionId: string): Promise<SessionAttachment[]> => {
+  return [
+    { id: '1', fileName: 'ملخص_الأساسيات.pdf', fileUrl: '#' },
+    { id: '2', fileName: 'تدريب_الخيال.docx', fileUrl: '#' }
+  ];
+};
+
+export const getStudyMaterials = async (): Promise<StudyMaterial[]> => {
+  return [
+    { id: '1', title: 'مقدمة في بناء الشخصيات', description: 'ملف تفصيلي لخطوات بناء شخصيات ثلاثية الأبعاد', packageName: 'باقة الإبحار (4 أسابيع)' },
+    { id: '2', title: 'أساسيات الحبكة', description: 'دليل لترتيب أحداث القصة بشكل مشوق', packageName: 'باقة الغوص (12 أسبوع)' },
+    { id: '3', title: 'تمارين تحفيز الخيال', description: 'تمارين يومية سريعة لكسر حاجز الكتابة', packageName: 'جلسة استشارية فردية' }
+  ];
+};

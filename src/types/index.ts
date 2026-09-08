@@ -202,3 +202,23 @@ export interface PublisherPayout {
   amount: number;
   status: PayoutStatus;
 }
+
+export interface SessionMessage {
+  id: string;
+  senderName: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface SessionAttachment {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+}
+
+export interface StudyMaterial {
+  id: string;
+  title: string;
+  description: string;
+  packageName: string;
+}

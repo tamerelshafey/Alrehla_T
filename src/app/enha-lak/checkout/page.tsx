@@ -105,7 +105,7 @@ export default function CheckoutPage() {
               </div>
               
               <Link
-                href="/payment-status"
+                href="/enha-lak/order-confirmation"
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-4 font-bold text-white shadow-md transition-colors hover:bg-amber-600"
               >
                 تأكيد ودفع

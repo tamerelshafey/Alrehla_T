@@ -71,13 +71,13 @@ export default function BookingPage() {
               </div>
             </div>
 
-            <button
-              type="button"
+            <Link
+              href="/creative-writing/booking/confirm"
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-4 font-bold text-white shadow-md transition-colors hover:bg-slate-800"
             >
               تأكيد الحجز
               <ArrowRight className="h-5 w-5 rotate-180" />
-            </button>
+            </Link>
           </form>
         </div>
       </div>

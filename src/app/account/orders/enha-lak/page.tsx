@@ -1,38 +1,103 @@
+import Link from 'next/link';
+import { PageContainer } from '@/components/PageContainer';
+import { BookOpen, Package, User, Shield, ChevronLeft, Calendar } from 'lucide-react';
 
-import { getOrders } from '@/data/mock';
+export default function EnhaLakOrdersPage() {
+  const orders = [
+    {
+      id: 'ORD-9428',
+      date: '2024-05-12',
+      status: 'shipped',
+      statusText: 'تم الشحن',
+      statusColor: 'text-blue-600 bg-blue-50',
+      total: 450,
+      items: ['صندوق الرحلة - اشتراك 3 أشهر'],
+    },
+    {
+      id: 'ORD-8102',
+      date: '2024-03-20',
+      status: 'delivered',
+      statusText: 'مكتمل',
+      statusColor: 'text-emerald-600 bg-emerald-50',
+      total: 120,
+      items: ['قصة مخصصة: البطل عمر'],
+    }
+  ];
 
-export default async function EnhaLakOrdersPage() {
-  const orders = await getOrders();
-  
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-black text-slate-900">طلبات إنها لك</h1>
-      <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-        <table className="w-full text-right text-sm">
-          <thead className="bg-slate-50 text-slate-500">
-            <tr>
-              <th className="p-4 font-medium">رقم الطلب</th>
-              <th className="p-4 font-medium">التاريخ</th>
-              <th className="p-4 font-medium">الإجمالي</th>
-              <th className="p-4 font-medium">الحالة</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {orders.map(order => (
-              <tr key={order.id}>
-                <td className="p-4 font-bold text-slate-700">{order.id}</td>
-                <td className="p-4 text-slate-500">{new Date(order.createdAt).toLocaleDateString('ar-EG')}</td>
-                <td className="p-4 font-medium text-slate-700">{order.totalAmount} ج.م</td>
-                <td className="p-4">
-                  <span className={`inline-flex rounded-full px-2 py-1 text-xs font-bold ${order.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-700'}`}>
-                    {order.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <PageContainer>
+      <div className="mx-auto w-full max-w-7xl pt-12 pb-24">
+        <div className="flex flex-col gap-8 md:flex-row">
+          
+          {/* Sidebar */}
+          <aside className="w-full md:w-64 shrink-0">
+             <nav className="flex flex-col gap-2 sticky top-24">
+              <Link href="/account" className="flex items-center gap-3 rounded-xl hover:bg-slate-50 text-slate-600 px-4 py-3 font-bold transition-colors">
+                <User className="h-5 w-5" />
+                <span>نظرة عامة</span>
+              </Link>
+              <Link href="/account/family" className="flex items-center gap-3 rounded-xl hover:bg-slate-50 text-slate-600 px-4 py-3 font-bold transition-colors">
+                <Shield className="h-5 w-5" />
+                <span>عائلتي</span>
+              </Link>
+              <Link href="/account/orders/enha-lak" className="flex items-center gap-3 rounded-xl bg-blue-50 text-blue-700 px-4 py-3 font-bold">
+                <BookOpen className="h-5 w-5" />
+                <span>طلبات "إنها لك"</span>
+              </Link>
+              <Link href="/account/orders/creative-writing" className="flex items-center gap-3 rounded-xl hover:bg-slate-50 text-slate-600 px-4 py-3 font-bold transition-colors">
+                <span>حجوزات بداية الرحلة</span>
+              </Link>
+            </nav>
+          </aside>
+
+          {/* Main Area */}
+          <main className="flex-1 space-y-8">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-6">
+              <div>
+                <h1 className="text-3xl font-black text-slate-800">المنتجات والاشتراكات</h1>
+                <p className="mt-2 text-slate-500 font-medium">سجل طلباتك من معرض وقصص إنها لك.</p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {orders.map((order) => (
+                <div key={order.id} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md md:p-8">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-xl font-bold text-slate-800">طلب {order.id}</h3>
+                        <span className={`rounded-full px-3 py-1 text-xs font-bold ${order.statusColor}`}>
+                          {order.statusText}
+                        </span>
+                      </div>
+                      <div className="mt-2 flex items-center gap-4 text-sm font-medium text-slate-500">
+                        <span className="flex items-center gap-1"><Calendar className="h-4 w-4" /> {order.date}</span>
+                        <span>الإجمالي: <strong className="text-slate-800">{order.total} د.إ</strong></span>
+                      </div>
+                    </div>
+                    <button className="flex items-center justify-center gap-2 rounded-xl bg-slate-50 px-6 py-3 font-bold text-slate-700 hover:bg-slate-100">
+                      تفاصيل الطلب <ChevronLeft className="h-4 w-4" />
+                    </button>
+                  </div>
+                  
+                  <div className="pt-6">
+                    <h4 className="mb-4 text-sm font-bold text-slate-500">المنتجات:</h4>
+                    <div className="space-y-3">
+                      {order.items.map((item, idx) => (
+                        <div key={idx} className="flex items-center gap-3 text-slate-700 font-medium">
+                          <Package className="h-5 w-5 text-slate-400" />
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+          </main>
+        </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }
