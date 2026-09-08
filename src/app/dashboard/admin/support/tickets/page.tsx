@@ -31,7 +31,7 @@ export default async function Page() {
 
   const columns = [
     { header: 'رقم التذكرة', accessorKey: 'idDisplay' },
-    { header: 'المُرسل', accessorKey: 'senderName' },
+    { header: 'المُرسل', accessorKey: 'requesterName' },
     { header: 'الموضوع', accessorKey: 'subject' },
     { header: 'التاريخ', accessorKey: 'dateDisplay' },
     { header: 'الحالة', accessorKey: 'statusDisplay' }

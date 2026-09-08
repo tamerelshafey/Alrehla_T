@@ -24,7 +24,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div>
             <div className="text-sm text-slate-500 mb-1">الدور المطلوب</div>
-            <div className="font-bold text-slate-800 text-lg">{target.roleRequested === 'instructor' ? 'مدرب' : 'ناشر'}</div>
+            <div className="font-bold text-slate-800 text-lg">{target.requestedRole === 'instructor' ? 'مدرب' : 'ناشر'}</div>
           </div>
           <div>
             <div className="text-sm text-slate-500 mb-1">الحالة</div>
@@ -32,7 +32,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
           <div>
             <div className="text-sm text-slate-500 mb-1">تاريخ التقديم</div>
-            <div className="font-bold text-slate-800 text-lg">{new Date(target.submittedAt).toLocaleDateString('ar-EG')}</div>
+            <div className="font-bold text-slate-800 text-lg">{new Date(target.createdAt).toLocaleDateString('ar-EG')}</div>
           </div>
         </div>
 

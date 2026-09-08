@@ -7,7 +7,7 @@ import {
   Users, UserCheck, LayoutDashboard, Settings, 
   BookOpen, Box, ShoppingCart, Calendar, 
   LifeBuoy, FileText, DollarSign, ShieldAlert 
-} from 'lucide-react';
+, LucideIcon } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -17,7 +17,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect('/dashboard');
   }
 
-  const sidebarLinks: { label: string; href: string; icon: any; permission: AdminPermission }[] = [
+  const sidebarLinks: { label: string; href: string; icon: LucideIcon; permission: AdminPermission }[] = [
     { label: 'المستخدمون والعائلات', href: '/dashboard/admin/users', icon: Users, permission: 'canManageUsers' },
     { label: 'المدربون', href: '/dashboard/admin/instructors', icon: UserCheck, permission: 'canManageInstructors' },
     { label: 'الناشرون والمنتجات', href: '/dashboard/admin/publishers', icon: BookOpen, permission: 'canManagePublishers' },

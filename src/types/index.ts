@@ -168,6 +168,7 @@ export interface NotificationItem {
 export interface SupportTicket {
   id: string;
   senderName?: string;
+  requesterName?: string;
   subject: string;
   category: string;
   status: 'open' | 'answered' | 'closed';
@@ -267,23 +268,24 @@ export type BoxSubscription = {
 export type JoinRequest = {
   id: string;
   applicantName: string;
-  roleRequested: 'instructor' | 'publisher';
+  requestedRole: 'instructor' | 'publisher';
   status: 'pending' | 'approved' | 'rejected';
-  submittedAt: string;
+  createdAt: string;
 };
 
 export type SupportSessionRequest = {
   id: string;
-  studentName: string;
-  topic: string;
-  status: 'pending' | 'scheduled' | 'completed';
+  contactName: string;
+  contactPhone: string;
+  message: string;
+  status: 'pending' | 'contacted' | 'closed';
   createdAt: string;
 };
 
 export type AuditLog = {
   id: string;
+  actorName: string;
   action: string;
-  performedBy: string;
-  timestamp: string;
-  details: string;
+  entityType: string;
+  createdAt: string;
 };

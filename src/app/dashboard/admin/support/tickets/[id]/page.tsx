@@ -26,10 +26,10 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           {/* User Message */}
           <div className="flex gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 font-bold text-slate-600">
-              {target.senderName?.[0] || 'U'}
+              {target.requesterName?.[0] || 'U'}
             </div>
             <div className="flex flex-col gap-1 max-w-[80%]">
-              <span className="text-sm font-bold text-slate-700">{target.senderName}</span>
+              <span className="text-sm font-bold text-slate-700">{target.requesterName}</span>
               <div className="rounded-2xl rounded-tr-none bg-white p-4 text-slate-700 shadow-sm border border-slate-100">
                 لدي مشكلة في الوصول إلى محتوى الباقة التي اشتركت بها مؤخراً، هل يمكنكم المساعدة؟
               </div>

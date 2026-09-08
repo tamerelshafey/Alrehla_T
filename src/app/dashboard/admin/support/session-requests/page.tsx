@@ -22,16 +22,16 @@ export default async function Page() {
     dateDisplay: new Date(r.createdAt).toLocaleDateString('ar-EG'),
     statusDisplay: (
       <StatusBadge
-          type={r.status === 'scheduled' ? 'success' : r.status === 'completed' ? 'neutral' : 'warning'}
-          label={r.status === 'scheduled' ? 'مجدولة' : r.status === 'completed' ? 'مكتملة' : 'قيد الانتظار'}
+          type={r.status === 'contacted' ? 'success' : r.status === 'closed' ? 'neutral' : 'warning'}
+          label={r.status === 'contacted' ? 'تم التواصل' : r.status === 'closed' ? 'مغلقة' : 'قيد الانتظار'}
         />
     )
   }));
 
   const columns = [
     { header: 'رقم الطلب', accessorKey: 'idDisplay' },
-    { header: 'الطالب', accessorKey: 'studentName' },
-    { header: 'الموضوع', accessorKey: 'topic' },
+    { header: 'الطالب', accessorKey: 'contactName' },
+    { header: 'الموضوع', accessorKey: 'message' },
     { header: 'التاريخ', accessorKey: 'dateDisplay' },
     { header: 'الحالة', accessorKey: 'statusDisplay' }
   ];

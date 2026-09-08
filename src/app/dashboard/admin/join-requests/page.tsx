@@ -20,8 +20,8 @@ export default async function Page() {
   const formatted = requests.map(r => ({
     ...r,
     nameDisplay: <Link href={`/dashboard/admin/join-requests/${r.id}`} className="font-bold text-blue-600 hover:underline">{r.applicantName}</Link>,
-    roleDisplay: r.roleRequested === 'instructor' ? 'مدرب' : 'ناشر',
-    dateDisplay: new Date(r.submittedAt).toLocaleDateString('ar-EG'),
+    roleDisplay: r.requestedRole === 'instructor' ? 'مدرب' : 'ناشر',
+    dateDisplay: new Date(r.createdAt).toLocaleDateString('ar-EG'),
     statusDisplay: (
       <StatusBadge
           type={r.status === 'approved' ? 'success' : r.status === 'rejected' ? 'danger' : 'warning'}

@@ -18,15 +18,15 @@ export default async function Page() {
   const formatted = logs.map(l => ({
     ...l,
     idDisplay: <span className="font-mono text-xs text-slate-400">{l.id}</span>,
-    dateDisplay: new Date(l.timestamp).toLocaleString('ar-EG'),
+    dateDisplay: new Date(l.createdAt).toLocaleString('ar-EG'),
   }));
 
   const columns = [
     { header: 'ID', accessorKey: 'idDisplay' },
     { header: 'التاريخ', accessorKey: 'dateDisplay' },
     { header: 'الإجراء', accessorKey: 'action' },
-    { header: 'بواسطة', accessorKey: 'performedBy' },
-    { header: 'التفاصيل', accessorKey: 'details' }
+    { header: 'بواسطة', accessorKey: 'actorName' },
+    { header: 'التفاصيل', accessorKey: 'entityType' }
   ];
 
   return (
