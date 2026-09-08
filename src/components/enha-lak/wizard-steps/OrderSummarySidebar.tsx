@@ -18,7 +18,16 @@ export function OrderSummarySidebar({ product }: { product: PersonalizedProduct 
   const childName = newChildName || (familyMemberId ? 'مشارك من العائلة' : null);
 
   // Calculate total
-  const addonsTotal = selectedAddonIds.length * 150; // Mocking price
+  let addonsTotal = 0;
+  const addonsData = [
+    { id: 'addon-1', price: 150 },
+    { id: 'addon-2', price: 50 },
+    { id: 'addon-3', price: 100 }
+  ];
+  selectedAddonIds.forEach(id => {
+    const addon = addonsData.find(a => a.id === id);
+    if (addon) addonsTotal += addon.price;
+  });
   const total = product.price + addonsTotal;
 
   return (

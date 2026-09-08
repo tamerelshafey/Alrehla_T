@@ -108,13 +108,25 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
        childName = 'مشارك موجود'; 
     }
 
+    // Calculate addon price
+    let addonsPrice = 0;
+    const addonsData = [
+      { id: 'addon-1', price: 150 },
+      { id: 'addon-2', price: 50 },
+      { id: 'addon-3', price: 100 }
+    ];
+    data.selectedAddonIds.forEach(id => {
+      const addon = addonsData.find(a => a.id === id);
+      if (addon) addonsPrice += addon.price;
+    });
+
     // 2. Add to cart
     addItem({
       id: product.id + '-' + Date.now(),
       name: product.name,
-      price: product.price, // We would add addons price here too but useCart assumes unitPrice
+      price: product.price + addonsPrice,
       quantity: 1,
-      type: 'custom',
+      type: product.category === 'subscription' ? 'subscription' : 'custom',
       imageUrl: product.coverImageUrl || `https://picsum.photos/seed/${product.id}/600/800`,
       customizationData: {
         childName,
@@ -122,6 +134,7 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
         heroDescription: data.heroDescription,
         storyGoal: data.storyGoal,
         familyMemberNames: data.familyMemberNames,
+        selectedAddonIds: data.selectedAddonIds,
       }
     });
 

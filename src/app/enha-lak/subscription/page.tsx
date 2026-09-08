@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { getSubscriptionTiers } from '@/data/mock';
 import { PackageOpen, Sparkles, Gift, Activity, Check } from 'lucide-react';
 import { SVGProps } from 'react';
@@ -83,11 +84,12 @@ export default async function SubscriptionPage() {
                   })}
                 </ul>
 
-                <button
-                  className={`w-full rounded-xl py-4 text-sm font-bold shadow-md transition-colors ${isPopular ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+                <Link
+                  href={`/enha-lak/custom-subscription/${tier.id}`}
+                  className={`flex w-full justify-center items-center rounded-xl py-4 text-sm font-bold shadow-md transition-colors ${isPopular ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
                 >
                   اختر الخطة
-                </button>
+                </Link>
               </div>
             );
           })}

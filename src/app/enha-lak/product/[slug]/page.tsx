@@ -81,6 +81,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 >
                   ابدأ التخصيص
                 </Link>
+              ) : product.category === 'library' ? (
+                <Link 
+                  href={`/enha-lak/custom-library/${product.slug}`}
+                  className="flex w-full items-center justify-center rounded-xl bg-emerald-600 px-6 py-4 font-bold text-white transition-colors hover:bg-emerald-700"
+                >
+                  تخصيص الغلاف وإضافة للسلة
+                </Link>
               ) : (
                 <AddToCartButton 
                   product={{
@@ -88,7 +95,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     name: product.name,
                     price: product.price,
                     quantity: 1,
-                    type: product.category === 'library' ? 'book' : 'custom',
+                    type: 'custom',
                     imageUrl: product.coverImageUrl || `https://picsum.photos/seed/${product.id}/600/800`
                   }} 
                 />
