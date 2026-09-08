@@ -9,6 +9,10 @@ export default async function DashboardPage() {
       redirect('/dashboard/student');
     case 'instructor':
       redirect('/dashboard/instructor');
+    case 'publisher':
+      redirect('/dashboard/publisher');
+    case 'customer':
+      redirect('/account');
     case 'super_admin':
     case 'general_supervisor':
       redirect('/dashboard/admin');

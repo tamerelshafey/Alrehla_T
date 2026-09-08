@@ -5,6 +5,7 @@ import { UserRole } from '@/types';
 
 const ROLES: { label: string; value: UserRole }[] = [
   { label: 'زائر', value: 'visitor' },
+  { label: 'ولي أمر/عميل', value: 'customer' },
   { label: 'طالب', value: 'student' },
   { label: 'مدرب', value: 'instructor' },
   { label: 'ناشر', value: 'publisher' },

@@ -6,7 +6,19 @@ import React from 'react';
 export default async function Header() {
   const cookieStore = await cookies();
   const mockRole = cookieStore.get('mockRole')?.value || 'visitor';
-  const isLoggedIn = mockRole !== 'visitor';
+  
+  const getAccountLink = () => {
+    switch (mockRole) {
+      case 'visitor': return '/sign-in';
+      case 'customer': return '/account';
+      case 'student': return '/dashboard/student';
+      case 'instructor': return '/dashboard/instructor';
+      case 'publisher': return '/dashboard/publisher';
+      case 'super_admin':
+      case 'general_supervisor': return '/dashboard/admin';
+      default: return '/sign-in';
+    }
+  };
 
   return (
     <div className="sticky top-0 z-[100] w-full px-4 pt-6 md:px-8">
@@ -28,6 +40,7 @@ export default async function Header() {
             <NavLink href="/join-us">انضم إلينا</NavLink>
           </nav>
         </div>
+
         <div className="flex items-center gap-3">
           <Link
             href="/cart"
@@ -37,11 +50,11 @@ export default async function Header() {
           </Link>
           <div className="hidden h-6 w-px bg-slate-200 sm:block"></div>
           <Link
-            href={isLoggedIn ? "/account" : "/sign-in"}
+            href={getAccountLink()}
             className="flex h-10 items-center gap-2 rounded-full bg-slate-900 px-5 text-sm font-bold text-white shadow-md transition-all hover:bg-amber-500 hover:shadow-lg hover:shadow-amber-500/20"
           >
             <User className="h-4 w-4" />
-            <span className="hidden sm:inline">حسابي</span>
+            <span className="hidden sm:inline">{mockRole === 'visitor' ? 'دخول' : 'حسابي'}</span>
           </Link>
         </div>
       </header>

@@ -1,6 +1,6 @@
 // الأدوار المتاحة للمستخدمين في المنصة
 export type UserRole =
-  'visitor' | 'student' | 'instructor' | 'publisher' | 'general_supervisor' | 'super_admin';
+  'visitor' | 'customer' | 'student' | 'instructor' | 'publisher' | 'general_supervisor' | 'super_admin';
 
 // الملف الشخصي للمستخدم
 export type UserProfile = {
