@@ -24,37 +24,37 @@ export default function Footer() {
             <div className="flex flex-col gap-2 text-sm font-medium text-slate-500">
               <Link
                 href="/about"
-                className="transition-colors hover:text-amber-500"
+                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
               >
                 رحلتنا
               </Link>
               <Link
                 href="/enha-lak"
-                className="transition-colors hover:text-amber-500"
+                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
               >
                 إنها لك
               </Link>
               <Link
                 href="/creative-writing"
-                className="transition-colors hover:text-amber-500"
+                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
               >
                 بداية الرحلة
               </Link>
               <Link
                 href="/blog"
-                className="transition-colors hover:text-amber-500"
+                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
               >
                 المدونة
               </Link>
               <Link
                 href="/join-us"
-                className="transition-colors hover:text-amber-500"
+                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
               >
                 انضم إلينا
               </Link>
               <Link
                 href="/support"
-                className="transition-colors hover:text-amber-500"
+                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
               >
                 الدعم والمساعدة
               </Link>
@@ -68,13 +68,13 @@ export default function Footer() {
             <div className="flex flex-col gap-2 text-sm font-medium text-slate-500">
               <Link
                 href="/privacy"
-                className="transition-colors hover:text-amber-500"
+                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
               >
                 سياسة الخصوصية
               </Link>
               <Link
                 href="/terms"
-                className="transition-colors hover:text-amber-500"
+                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
               >
                 الشروط والأحكام
               </Link>

@@ -1,5 +1,6 @@
 import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getBlogPosts } from '@/data/mock';
 import { BookOpen, Calendar, ArrowLeft } from 'lucide-react';
 import { PageContainer } from '@/components/PageContainer';
@@ -36,15 +37,9 @@ export default async function BlogPage() {
               href={`/blog/${post.slug}`}
               className="group block flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:border-amber-200 hover:shadow-xl"
             >
-              <div className="mb-6 flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl bg-slate-100">
+              <div className="relative mb-6 flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl bg-slate-100">
                 {post.coverImageUrl ? (
-                  <img
-                    src={post.coverImageUrl}
-                    alt={post.title}
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
+                  <Image src={post.coverImageUrl} alt={`صورة مقال: ${post.title}`} fill className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer" />
                 ) : (
                   <BookOpen className="h-12 w-12 text-slate-300" />
                 )}

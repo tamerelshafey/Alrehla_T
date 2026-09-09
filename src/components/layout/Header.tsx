@@ -27,7 +27,7 @@ export default async function Header() {
         <div className="flex items-center gap-8">
           <Link
             href="/"
-            className="flex items-center gap-2 text-2xl font-black tracking-tighter text-amber-500 hover:text-amber-600 transition-colors"
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 flex items-center gap-2 text-2xl font-black tracking-tighter text-amber-500 hover:text-amber-600 transition-colors"
           >
             <Compass className="h-6 w-6" />
             <span>الرحلة</span>
@@ -47,7 +47,7 @@ export default async function Header() {
           <div className="hidden h-6 w-px bg-slate-200 sm:block"></div>
           <Link
             href={getAccountLink()}
-            className="flex h-10 items-center gap-2 rounded-full bg-slate-900 px-5 text-sm font-bold text-white shadow-md transition-all hover:bg-amber-500 hover:shadow-lg hover:shadow-amber-500/20"
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 flex h-10 items-center gap-2 rounded-full bg-slate-900 px-5 text-sm font-bold text-white shadow-md transition-all hover:bg-amber-500 hover:shadow-lg hover:shadow-amber-500/20"
           >
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">{mockRole === 'visitor' ? 'دخول' : 'حسابي'}</span>
@@ -62,7 +62,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   return (
     <Link
       href={href}
-      className="rounded-full px-4 py-2 transition-all hover:bg-white hover:text-slate-900 hover:shadow-sm"
+      className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 rounded-full px-4 py-2 transition-all hover:bg-white hover:text-slate-900 hover:shadow-sm"
     >
       {children}
     </Link>

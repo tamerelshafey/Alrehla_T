@@ -81,10 +81,15 @@ export default async function EnhaLakPage() {
 
   return (
     <PageContainer>
-      {/* Hero Section Carousel */}
-      
-      
-      {/* Sub Navigation */}
+            {/* Hero Section */}
+      <section className="mx-auto max-w-4xl text-center py-12 md:py-20">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 mb-6 leading-tight">
+          إنها لك... حيث يتحول الخيال إلى واقع
+        </h1>
+        <p className="text-xl md:text-2xl font-medium text-slate-600 mb-8 leading-relaxed">
+          قصص ومنتجات مخصصة تجعل الطفل بطل الحكاية، وتعزز ارتباطه بالقراءة والقيم بأسلوب مشوق.
+        </p>
+      </section>
       
 
       {/* Path Selection */}

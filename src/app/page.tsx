@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { HeroCarousel } from '@/components/HeroCarousel';
 import { getTestimonials } from '@/data/mock';
 import { Quote } from 'lucide-react';
@@ -69,14 +70,13 @@ export default async function HomePage() {
         <div className="grid gap-8 md:grid-cols-2">
           <Link
             href="/enha-lak"
-            className="group relative flex flex-col overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white transition-all duration-300 hover:border-violet-300 hover:shadow-2xl hover:shadow-violet-500/10"
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 group relative flex flex-col overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white transition-all duration-300 hover:border-violet-300 hover:shadow-2xl hover:shadow-violet-500/10"
           >
             <div className="relative h-64 w-full overflow-hidden bg-slate-100">
-              <img 
+              <Image 
                 src="https://picsum.photos/seed/kidsstory/800/600" 
                 alt="إنها لك" 
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                referrerPolicy="no-referrer"
+                fill className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
             </div>
@@ -93,14 +93,13 @@ export default async function HomePage() {
           </Link>
           <Link
             href="/creative-writing"
-            className="group relative flex flex-col overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white transition-all duration-300 hover:border-emerald-300 hover:shadow-2xl hover:shadow-emerald-500/10"
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 group relative flex flex-col overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white transition-all duration-300 hover:border-emerald-300 hover:shadow-2xl hover:shadow-emerald-500/10"
           >
             <div className="relative h-64 w-full overflow-hidden bg-slate-100">
-              <img 
+              <Image 
                 src="https://picsum.photos/seed/childwriting/800/600" 
                 alt="بداية الرحلة" 
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                referrerPolicy="no-referrer"
+                fill className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
             </div>
@@ -122,11 +121,10 @@ export default async function HomePage() {
       <section className="mx-auto w-full max-w-6xl overflow-hidden rounded-[3rem] border border-slate-100 bg-white shadow-xl shadow-slate-200/50">
         <div className="grid lg:grid-cols-2">
           <div className="relative h-64 lg:h-auto">
-            <img 
+            <Image 
               src="https://picsum.photos/seed/familyreading/800/800" 
               alt="العائلة تقرأ معاً" 
-              className="h-full w-full object-cover" 
-              referrerPolicy="no-referrer"
+              fill className="object-cover" referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/90 lg:to-white"></div>
           </div>
@@ -153,7 +151,7 @@ export default async function HomePage() {
             <div>
               <Link
                 href="/about"
-                className="inline-flex items-center justify-center rounded-xl border-2 border-slate-200 bg-white px-8 py-3 text-sm font-bold text-slate-700 transition-colors hover:border-amber-400 hover:bg-amber-50"
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 inline-flex items-center justify-center rounded-xl border-2 border-slate-200 bg-white px-8 py-3 text-sm font-bold text-slate-700 transition-colors hover:border-amber-400 hover:bg-amber-50"
               >
                 تعرّف إلى رحلتنا
               </Link>
@@ -203,7 +201,7 @@ export default async function HomePage() {
         </p>
         <Link
           href="/blog"
-          className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-6 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-slate-800"
+          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 inline-flex items-center justify-center rounded-xl bg-slate-900 px-6 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-slate-800"
         >
           تصفح المدونة
         </Link>
@@ -217,13 +215,13 @@ export default async function HomePage() {
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Link
             href="/enha-lak"
-            className="rounded-2xl bg-blue-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-blue-200 transition-colors hover:bg-blue-700"
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded-2xl bg-blue-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-blue-200 transition-colors hover:bg-blue-700"
           >
             استكشف قصص "إنها لك"
           </Link>
           <Link
             href="/creative-writing/booking"
-            className="rounded-2xl bg-amber-500 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-amber-200 transition-colors hover:bg-amber-600"
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 rounded-2xl bg-amber-500 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-amber-200 transition-colors hover:bg-amber-600"
           >
             احجز مقعداً في "بداية الرحلة"
           </Link>

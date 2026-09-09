@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 export interface Slide {
@@ -64,9 +65,9 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
       {/* Content */}
       <div className="absolute inset-0 flex flex-col justify-center px-8 md:px-16 z-10 text-white pointer-events-none">
         <div className="max-w-2xl transform transition-all duration-700 pointer-events-auto">
-          <h2 key={`title-${currentSlide.id}`} className="text-4xl md:text-5xl lg:text-7xl font-black mb-6 leading-tight drop-shadow-lg animate-in slide-in-from-bottom-8 fade-in duration-700">
+          <h1 key={`title-${currentSlide.id}`} className="text-4xl md:text-5xl lg:text-7xl font-black mb-6 leading-tight drop-shadow-lg animate-in slide-in-from-bottom-8 fade-in duration-700">
             {currentSlide.title}
-          </h2>
+          </h1>
           {currentSlide.description && (
             <p key={`desc-${currentSlide.id}`} className="text-lg md:text-2xl font-medium mb-8 text-slate-100 drop-shadow-md leading-relaxed animate-in slide-in-from-bottom-8 fade-in duration-700 delay-150">
               {currentSlide.description}

@@ -1,5 +1,6 @@
 import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
+import Image from 'next/image';
 import { PageContainer } from '@/components/PageContainer';
 import { ArrowLeft, Calendar, User, BookOpen, Share2, Facebook, Twitter, Linkedin } from 'lucide-react';
 import { getBlogPosts } from '@/data/mock';
@@ -59,9 +60,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </header>
 
         {/* Cover Image */}
-        <div className="mb-16 aspect-[21/9] w-full overflow-hidden rounded-[2rem] bg-slate-100 shadow-lg">
+        <div className="relative mb-16 aspect-[21/9] w-full overflow-hidden rounded-[2rem] bg-slate-100 shadow-lg">
           {post.coverImageUrl ? (
-            <img 
+            <Image 
               src={post.coverImageUrl} 
               alt={post.title} 
               className="h-full w-full object-cover"

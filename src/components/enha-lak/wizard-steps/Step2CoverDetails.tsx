@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
@@ -38,7 +39,7 @@ export function Step2CoverDetails({ onNext, onPrev }: { onNext: () => void, onPr
         />
         {/* TODO: استبدال بمعاينة Cloudinary الفعلية عند ربط الباك إند */}
         {coverPhotoFile && (
-           <img src={URL.createObjectURL(coverPhotoFile)} alt="معاينة الغلاف" className="mt-4 h-32 w-32 object-cover rounded-xl border border-slate-200" />
+           <Image src={URL.createObjectURL(coverPhotoFile)} alt="معاينة صورة الغلاف المختارة" width={128} height={128} unoptimized className="mt-4 h-32 w-32 object-cover rounded-xl border border-slate-200" />
         )}
       </div>
 

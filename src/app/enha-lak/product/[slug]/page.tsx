@@ -49,7 +49,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <Image
               src={product.coverImageUrl}
               alt={product.name}
-              fill
+              fill priority
               className="object-cover"
               referrerPolicy="no-referrer"
             />

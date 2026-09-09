@@ -37,9 +37,9 @@ export default async function InstructorsPage() {
                   <User className="h-10 w-10 text-slate-400" />
                 </div>
                 <div>
-                  <h3 className="mb-2 text-2xl font-black text-slate-800">
+                  <h2 className="mb-2 text-2xl font-black text-slate-800">
                     {instructor.displayName}
-                  </h3>
+                  </h2>
                   <div className="flex items-center gap-2 text-sm font-bold text-emerald-600">
                     <Award className="h-4 w-4" />
                     خبرة {instructor.yearsExperience} سنوات
@@ -52,9 +52,9 @@ export default async function InstructorsPage() {
               </p>
 
               <div>
-                <h4 className="mb-3 text-sm font-bold tracking-wider text-slate-800 uppercase">
+                <h3 className="mb-3 text-sm font-bold tracking-wider text-slate-800 uppercase">
                   التخصصات:
-                </h4>
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {instructor.specialties.map((specialty: string, idx: number) => (
                     <span

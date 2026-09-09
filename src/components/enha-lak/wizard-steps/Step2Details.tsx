@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React, { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
@@ -63,7 +64,7 @@ export function Step2Details({ onNext, onPrev }: { onNext: () => void, onPrev: (
           />
           {/* TODO: استبدال بمعاينة Cloudinary الفعلية عند ربط الباك إند */}
           {facePhotoFile && (
-             <img src={URL.createObjectURL(facePhotoFile)} alt="معاينة" className="mt-4 h-32 w-32 object-cover rounded-xl border border-slate-200" />
+             <Image src={URL.createObjectURL(facePhotoFile)} alt="معاينة صورة الوجه المختارة للطفل" width={128} height={128} unoptimized className="mt-4 h-32 w-32 object-cover rounded-xl border border-slate-200" />
           )}
           {errors.facePhotoFile && <span className="text-sm text-red-500">{errors.facePhotoFile.message as string}</span>}
         </div>
@@ -78,7 +79,7 @@ export function Step2Details({ onNext, onPrev }: { onNext: () => void, onPrev: (
             className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
           {secondPhotoFile && (
-             <img src={URL.createObjectURL(secondPhotoFile)} alt="معاينة" className="mt-4 h-32 w-32 object-cover rounded-xl border border-slate-200" />
+             <Image src={URL.createObjectURL(secondPhotoFile)} alt="معاينة الصورة الإضافية المختارة" width={128} height={128} unoptimized className="mt-4 h-32 w-32 object-cover rounded-xl border border-slate-200" />
           )}
         </div>
       </div>

@@ -30,7 +30,7 @@ export default async function PublisherPage({ params }: { params: Promise<{ slug
             <Image
               src={publisher.logoUrl}
               alt={publisher.name}
-              fill
+              fill priority
               className="object-cover"
               referrerPolicy="no-referrer"
             />

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { PageContainer } from '@/components/PageContainer';
 import { ArrowLeft, User, Star, Award, BookOpen, MessageCircle } from 'lucide-react';
 import { getInstructors } from '@/data/mock';
@@ -29,9 +30,9 @@ export default async function InstructorProfilePage({ params }: { params: Promis
           <div className="relative px-8 pb-12 sm:px-12">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
               <div className="relative -mt-20 flex flex-col sm:flex-row sm:items-end gap-6">
-                <div className="flex h-40 w-40 items-center justify-center rounded-[2rem] border-4 border-white bg-white shadow-lg overflow-hidden">
+                <div className="relative flex h-40 w-40 items-center justify-center rounded-[2rem] border-4 border-white bg-white shadow-lg overflow-hidden">
                    {instructor.avatarUrl ? (
-                      <img src={instructor.avatarUrl} alt={instructor.displayName} className="h-full w-full object-cover" />
+                      <Image src={instructor.avatarUrl} alt={`صورة المدرب ${instructor.displayName}`} fill className="object-cover" referrerPolicy="no-referrer" priority />
                     ) : (
                       <User className="h-16 w-16 text-slate-300" />
                     )}

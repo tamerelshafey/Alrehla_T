@@ -95,12 +95,15 @@ export default async function CreativeWritingPage() {
 
   return (
     <PageContainer className="space-y-32">
-      {/* Hero Section */}
-      
-      {/* Hero Section Carousel */}
-      
-      
-      {/* Sub Navigation */}
+            {/* Hero Section */}
+      <section className="mx-auto max-w-4xl text-center pt-8">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 mb-6 leading-tight">
+          برامج الكتابة الإبداعية
+        </h1>
+        <p className="text-xl md:text-2xl font-medium text-slate-600 mb-8 leading-relaxed">
+          نساعدك على تحويل أفكارك إلى قصص، من خلال مساحة آمنة للمحاولة وتطوير مهارات الكتابة.
+        </p>
+      </section>
       
 
 

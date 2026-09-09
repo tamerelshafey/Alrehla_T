@@ -50,9 +50,9 @@ export function OrderSummarySidebar({ product }: { product: PersonalizedProduct 
         <div className="mb-6 pb-6 border-b border-slate-100">
           <h4 className="font-bold text-slate-700 text-sm mb-2">الطفل:</h4>
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 overflow-hidden rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
+            <div className="relative h-10 w-10 overflow-hidden rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
               {facePhotoFile ? (
-                 <img src={URL.createObjectURL(facePhotoFile)} alt="Child" className="h-full w-full object-cover" />
+                 <Image src={URL.createObjectURL(facePhotoFile)} alt="صورة وجه الطفل للطلب" fill unoptimized className="object-cover" />
               ) : (
                 <span className="text-xl text-slate-400 font-bold">{childName.charAt(0)}</span>
               )}
