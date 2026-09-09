@@ -89,6 +89,7 @@ export interface Review {
   id: string;
   studentId: string;
   studentName: string;
+  instructorId: string;
   rating: number; // 1 to 5
   comment: string;
   scheduledSessionId?: string;

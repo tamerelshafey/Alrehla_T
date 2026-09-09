@@ -87,3 +87,16 @@ export async function updateInstructorCertification(instructorId: string, passed
   revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
   return { success: true };
 }
+
+export async function updatePricingFormulaSettings(
+  platformMultiplier: number,
+  fixedAdminFee: number
+) {
+  const { mockPricingFormulaSettings } = require('@/data/domains/writing');
+  mockPricingFormulaSettings[0].platformMultiplier = platformMultiplier;
+  mockPricingFormulaSettings[0].fixedAdminFee = fixedAdminFee;
+  mockPricingFormulaSettings[0].updatedAt = new Date().toISOString();
+  
+  revalidatePath('/dashboard/admin/settings/creative-writing-pricing');
+  return { success: true };
+}

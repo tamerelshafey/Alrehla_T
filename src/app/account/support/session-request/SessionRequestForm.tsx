@@ -1,0 +1,89 @@
+'use client';
+
+import React, { useState } from 'react';
+import { Send, CheckCircle2 } from 'lucide-react';
+import { submitSupportSessionRequest } from '@/actions/support';
+
+export function SessionRequestForm() {
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    await submitSupportSessionRequest(name, phone, message);
+    setIsSubmitting(false);
+    setIsSuccess(true);
+    setName('');
+    setPhone('');
+    setMessage('');
+  };
+
+  if (isSuccess) {
+    return (
+      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center text-emerald-800 shadow-sm">
+        <CheckCircle2 className="mx-auto mb-4 h-12 w-12 text-emerald-500" />
+        <h3 className="mb-2 text-xl font-black">تم إرسال طلبك بنجاح!</h3>
+        <p className="text-emerald-700">سيتواصل معك فريق الدعم في أقرب وقت لمساعدتك في استكمال الحجز.</p>
+        <button 
+          onClick={() => setIsSuccess(false)}
+          className="mt-6 rounded-xl bg-emerald-600 px-6 py-2 font-bold text-white hover:bg-emerald-700"
+        >
+          إرسال طلب آخر
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="space-y-4">
+        <div>
+          <label className="mb-1 block text-sm font-bold text-slate-700">الاسم الكريم</label>
+          <input
+            type="text"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-800 outline-none focus:border-blue-500"
+            placeholder="اكتب اسمك هنا"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-bold text-slate-700">رقم الهاتف (للتواصل)</label>
+          <input
+            type="tel"
+            required
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-800 outline-none focus:border-blue-500 text-left"
+            dir="ltr"
+            placeholder="مثال: 01000000000"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-bold text-slate-700">كيف يمكننا مساعدتك في الحجز؟</label>
+          <textarea
+            required
+            rows={4}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-800 outline-none focus:border-blue-500"
+            placeholder="اكتب استفسارك أو المشكلة التي تواجهها هنا..."
+          ></textarea>
+        </div>
+      </div>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 p-4 font-bold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+      >
+        <Send className="h-5 w-5" />
+        {isSubmitting ? 'جاري الإرسال...' : 'إرسال الطلب'}
+      </button>
+    </form>
+  );
+}
