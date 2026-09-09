@@ -51,7 +51,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <div className="space-y-3">
               <h3 className="font-bold text-slate-800">ميزات المنتج:</h3>
               <ul className="space-y-2">
-                {product.features.map((feature, idx) => (
+                {product.features.map((feature: string, idx: number) => (
                   <li key={idx} className="flex items-center gap-2 text-slate-600">
                     <svg className="h-5 w-5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

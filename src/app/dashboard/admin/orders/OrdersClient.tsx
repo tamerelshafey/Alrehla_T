@@ -25,8 +25,8 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
       amountDisplay: `${order.totalAmount} ج.م`,
       statusDisplay: (
         <StatusBadge
-          type={order.status === 'paid' ? 'success' : order.status === 'failed' ? 'danger' : order.status === 'refunded' ? 'neutral' : 'warning'}
-          label={order.status === 'paid' ? 'مدفوع' : order.status === 'failed' ? 'فشل الدفع' : order.status === 'refunded' ? 'مسترجع' : 'قيد الانتظار'}
+          type={order.status === 'paid' ? 'success' : order.status === 'failed' ? 'danger' : order.status === 'refunded' ? 'neutral' : order.status === 'awaiting_verification' ? 'warning' : 'warning'}
+          label={order.status === 'paid' ? 'مدفوع' : order.status === 'failed' ? 'فشل الدفع' : order.status === 'refunded' ? 'مسترجع' : order.status === 'awaiting_verification' ? 'بانتظار تأكيد الدفع' : 'قيد الانتظار'}
         />
       )
     };
@@ -49,6 +49,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
         >
           <option value="">جميع الحالات</option>
           <option value="pending">قيد الانتظار</option>
+          <option value="awaiting_verification">بانتظار تأكيد الدفع</option>
           <option value="paid">مدفوع</option>
           <option value="failed">فشل الدفع</option>
           <option value="refunded">مسترجع</option>

@@ -6,6 +6,9 @@ import { UserProfile as UserType } from '@/types';
 import { CreditCard, Wallet, MapPin, Truck, ShieldCheck, ChevronRight, CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
+import { createDummyOrder, submitPaymentProof } from '@/actions/orders';
 
 interface Props {
   user: UserType;
@@ -14,8 +17,11 @@ interface Props {
 export function CheckoutClient({ user }: Props) {
   const { items, cartTotal } = useCart();
   const [step, setStep] = useState<1 | 2>(1); // 1: Shipping, 2: Payment
-  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'wallet' | 'fawry'>('credit_card');
+  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'wallet' | 'fawry' | 'instapay'>('credit_card');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [transactionRef, setTransactionRef] = useState('');
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [isSuccess, setIsSuccess] = useState(false);
 
   // Form states
@@ -40,13 +46,22 @@ export function CheckoutClient({ user }: Props) {
   const handlePaymentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
-    
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      setIsSuccess(true);
-      // In a real app, we would clear the cart here
-    }, 2000);
+    startTransition(async () => {
+      // Create order
+      const orderId = await createDummyOrder(items.map((i: any) => ({
+        productId: i.id,
+        quantity: i.quantity,
+        unitPrice: i.price,
+        customizationData: i.customizationData
+      })), grandTotal);
+      
+      if (paymentMethod === 'instapay') {
+        await submitPaymentProof(orderId, transactionRef);
+      }
+      
+      // In real app, clearCart() would be here
+      router.push('/enha-lak/order-confirmation?id=' + orderId);
+    });
   };
 
   if (items.length === 0 && !isSuccess) {
@@ -181,6 +196,13 @@ export function CheckoutClient({ user }: Props) {
                 <span className="font-bold text-sm">كود فوري</span>
               </label>
 
+            
+              <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-3 transition-colors ${paymentMethod === 'instapay' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white hover:border-blue-300'}`}>
+                <input type="radio" name="payment" value="instapay" checked={paymentMethod === 'instapay'} onChange={() => setPaymentMethod('instapay')} className="sr-only" />
+                <div className="h-8 flex items-center justify-center font-black text-lg tracking-wider" style={{color: paymentMethod === 'instapay' ? '#8a2be2' : '#94a3b8'}}>InstaPay</div>
+                <span className="font-bold text-sm">إنستاباي</span>
+              </label>
+
             </div>
 
             {paymentMethod === 'credit_card' && (
@@ -225,13 +247,25 @@ export function CheckoutClient({ user }: Props) {
               </div>
             )}
 
+            {paymentMethod === 'instapay' && (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 animate-in fade-in slide-in-from-top-2">
+                <p className="text-sm font-bold text-slate-700 mb-2">تعليمات الدفع عبر إنستاباي</p>
+                <div className="bg-white border border-slate-200 rounded-xl p-4 mb-4">
+                  <p className="text-sm text-slate-600 mb-2">قم بتحويل المبلغ إلى رقم المحفظة التالي:</p>
+                  <p className="text-xl font-mono font-black text-blue-700 select-all">01234567890</p>
+                </div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">رقم العملية / المرجع (Transaction Reference)</label>
+                <input type="text" required value={transactionRef} onChange={e => setTransactionRef(e.target.value)} placeholder="رقم العملية أو المرجع" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-500 font-mono text-right" />
+              </div>
+            )}
+
             <div className="pt-6">
               <button 
                 type="submit" 
                 disabled={isProcessing}
                 className="w-full flex justify-center items-center gap-2 rounded-xl bg-blue-600 px-8 py-4 font-black text-white hover:bg-blue-700 transition-colors shadow-lg disabled:opacity-70"
               >
-                {isProcessing ? 'جاري معالجة الدفع...' : `تأكيد الدفع (${grandTotal.toLocaleString('ar-EG')} ج.م)`}
+                {isPending || isProcessing ? (paymentMethod === 'instapay' ? 'جاري التحقق وإرسال الطلب...' : 'جاري معالجة الدفع...') : (paymentMethod === 'instapay' ? 'لقد قمت بالتحويل' : `تأكيد الدفع (${grandTotal.toLocaleString('ar-EG')} ج.م)`)}
               </button>
             </div>
           </form>

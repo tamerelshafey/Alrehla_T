@@ -4,6 +4,7 @@ import { getCurrentUser, getOrders, getPersonalizedProducts } from '@/data/mock'
 import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
+import { confirmOrderPayment } from '@/actions/orders';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,13 +13,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   if (!hasAdminPermission(user, 'canManageOrders')) {
     return <Unauthorized />;
   }
-
   const { id } = await params;
   const orders = await getOrders();
   const target = orders.find(o => o.id === id) || orders[0];
   const products = await getPersonalizedProducts();
-
-  const formattedItems = target.items.map((item, idx) => {
+  const formattedItems = target.items.map((item: any, idx: number) => {
     const product = products.find(p => p.id === item.productId);
     const price = item.unitPrice || (product ? product.price : 0);
     const quantity = item.quantity || 1;
@@ -30,13 +29,17 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       totalDisplay: `${price * quantity} ج.م`
     };
   });
-
   const columns = [
     { header: 'المنتج', accessorKey: 'nameDisplay' },
     { header: 'السعر', accessorKey: 'priceDisplay' },
     { header: 'الكمية', accessorKey: 'quantity' },
     { header: 'الإجمالي', accessorKey: 'totalDisplay' }
   ];
+
+  const confirmPaymentAction = async () => {
+    'use server';
+    await confirmOrderPayment(target.id);
+  };
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
@@ -46,15 +49,24 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
           <div>
             <div className="text-sm text-slate-500 mb-1">تاريخ الطلب: {formatDate(target.createdAt)}</div>
-            <div className="text-sm text-slate-500">حالة الدفع: {target.status === 'paid' ? 'تم الدفع' : 'معلق'}</div>
+            <div className="text-sm text-slate-500 mb-1">حالة الدفع: {target.status === 'paid' ? 'تم الدفع' : target.status === 'awaiting_verification' ? 'بانتظار تأكيد الدفع' : 'معلق'}</div>
+            {target.transactionReference && (
+              <div className="text-sm text-slate-500 font-mono text-blue-600">رقم العملية (InstaPay): {target.transactionReference}</div>
+            )}
           </div>
           <div className="flex gap-3">
+            {target.status === 'awaiting_verification' && (
+              <form action={confirmPaymentAction}>
+                <button type="submit" className="rounded-xl bg-emerald-600 px-6 py-2 font-bold text-white transition-colors hover:bg-emerald-700">
+                  تأكيد استلام الدفع
+                </button>
+              </form>
+            )}
             <button className="rounded-xl bg-slate-900 px-6 py-2 font-bold text-white transition-colors hover:bg-slate-800">
               تحديث حالة الشحن (مشحون)
             </button>
           </div>
         </div>
-
         <h3 className="text-xl font-bold text-slate-800 mb-4">محتويات الطلب</h3>
         <SimpleDataTable columns={columns} data={formattedItems} />
         

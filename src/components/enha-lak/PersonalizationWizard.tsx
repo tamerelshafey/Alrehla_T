@@ -12,8 +12,7 @@ import { OrderSummarySidebar } from './wizard-steps/OrderSummarySidebar';
 import { Step1ChildInfo } from './wizard-steps/Step1ChildInfo';
 import { Step2Details } from './wizard-steps/Step2Details';
 import { Step3Addons } from './wizard-steps/Step3Addons';
-import { Step4Shipping } from './wizard-steps/Step4Shipping';
-import { Step5Review } from './wizard-steps/Step5Review';
+import { Step4Review } from './wizard-steps/Step4Review';
 import { useCart } from '@/context/CartContext';
 import { createFamilyMember } from '@/app/actions/family';
 
@@ -31,10 +30,6 @@ const wizardSchema = z.object({
 
   selectedAddonIds: z.array(z.string()),
 
-  shippingName: z.string().min(2, 'الاسم مطلوب'),
-  shippingPhone: z.string().min(8, 'رقم الهاتف غير صالح'),
-  shippingAddress: z.string().min(5, 'العنوان مطلوب'),
-  shippingCity: z.string().min(2, 'المدينة مطلوبة'),
 }).superRefine((data, ctx) => {
   if (!data.familyMemberId && !data.newChildName) {
     ctx.addIssue({
@@ -158,8 +153,7 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
               {currentStep === 1 && <Step1ChildInfo onNext={() => handleNext(['familyMemberId', 'newChildName', 'newChildBirthDate', 'newChildGender'])} />}
               {currentStep === 2 && <Step2Details onNext={() => handleNext(['heroDescription', 'familyMemberNames', 'storyGoal', 'facePhotoFile'])} onPrev={handlePrev} />}
               {currentStep === 3 && <Step3Addons onNext={() => handleNext(['selectedAddonIds'])} onPrev={handlePrev} />}
-              {currentStep === 4 && <Step4Shipping onNext={() => handleNext(['shippingName', 'shippingPhone', 'shippingAddress', 'shippingCity'])} onPrev={handlePrev} />}
-              {currentStep === 5 && <Step5Review onPrev={handlePrev} product={product} />}
+              {currentStep === 4 && <Step4Review onPrev={handlePrev} product={product} />}
             </div>
           </div>
         </div>

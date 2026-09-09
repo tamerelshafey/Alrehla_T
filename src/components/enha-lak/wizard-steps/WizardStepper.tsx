@@ -4,8 +4,7 @@ const steps = [
   { step: 1, label: 'بيانات الطفل' },
   { step: 2, label: 'تفاصيل القصة' },
   { step: 3, label: 'الإضافات' },
-  { step: 4, label: 'الشحن' },
-  { step: 5, label: 'المراجعة' },
+  { step: 4, label: 'المراجعة' },
 ];
 
 export function WizardStepper({ currentStep }: { currentStep: number }) {

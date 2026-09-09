@@ -56,7 +56,7 @@ export default async function InstructorsPage() {
                   التخصصات:
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {instructor.specialties.map((specialty, idx) => (
+                  {instructor.specialties.map((specialty: string, idx: number) => (
                     <span
                       key={idx}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-600"

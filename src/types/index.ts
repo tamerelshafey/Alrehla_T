@@ -135,7 +135,7 @@ export type PersonalizedProduct = {
 };
 
 // حالة الطلب
-export type OrderStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+export type OrderStatus = 'pending' | 'awaiting_verification' | 'paid' | 'failed' | 'refunded';
 
 // طلب شراء من المتجر
 export interface OrderItem {
@@ -160,6 +160,7 @@ export type Order = {
   totalAmount: number;
   status: OrderStatus;
   createdAt: string;
+  transactionReference?: string;
 };
 
 // مقال في المدونة

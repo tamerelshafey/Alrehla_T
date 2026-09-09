@@ -1,29 +1,19 @@
 import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
 import { BookOpen, Package, User, Shield, ChevronLeft, Calendar } from 'lucide-react';
+import { getOrders } from '@/data/mock';
+import { StatusBadge } from '@/components/StatusBadge';
 
-export default function EnhaLakOrdersPage() {
-  const orders = [
-    {
-      id: 'ORD-9428',
-      date: '2024-05-12',
-      status: 'shipped',
-      statusText: 'تم الشحن',
-      statusColor: 'text-blue-600 bg-blue-50',
-      total: 450,
-      items: ['صندوق الرحلة - اشتراك 3 أشهر'],
-    },
-    {
-      id: 'ORD-8102',
-      date: '2024-03-20',
-      status: 'delivered',
-      statusText: 'مكتمل',
-      statusColor: 'text-emerald-600 bg-emerald-50',
-      total: 120,
-      items: ['قصة مخصصة: البطل عمر'],
-    }
-  ];
-
+export default async function EnhaLakOrdersPage() {
+  const allOrders = await getOrders();
+  // Filter for demo if needed, or just use them
+  const orders = allOrders.map(order => ({
+    id: order.id,
+    date: new Date(order.createdAt).toLocaleDateString('ar-EG'),
+    status: order.status,
+    total: order.totalAmount,
+    items: order.items.map(item => `منتج (${item.productId}) - كمية: ${item.quantity}`),
+  }));
   return (
     <PageContainer>
       <div className="mx-auto w-full max-w-7xl pt-12 pb-24">
@@ -65,14 +55,12 @@ export default function EnhaLakOrdersPage() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
                     <div>
                       <div className="flex items-center gap-3">
-                        <h3 className="text-xl font-bold text-slate-800">طلب {order.id}</h3>
-                        <span className={`rounded-full px-3 py-1 text-xs font-bold ${order.statusColor}`}>
-                          {order.statusText}
-                        </span>
+                        <h3 className="text-xl font-bold text-slate-800">طلب #{order.id.replace('ord-', '').toUpperCase()}</h3>
+                        <StatusBadge type={order.status === 'paid' ? 'success' : order.status === 'awaiting_verification' ? 'warning' : order.status === 'failed' ? 'danger' : order.status === 'refunded' ? 'neutral' : 'warning'} label={order.status === 'paid' ? 'مدفوع' : order.status === 'awaiting_verification' ? 'بانتظار تأكيد الدفع' : order.status === 'failed' ? 'فشل الدفع' : order.status === 'refunded' ? 'مسترجع' : 'قيد الانتظار'} />
                       </div>
                       <div className="mt-2 flex items-center gap-4 text-sm font-medium text-slate-500">
                         <span className="flex items-center gap-1"><Calendar className="h-4 w-4" /> {order.date}</span>
-                        <span>الإجمالي: <strong className="text-slate-800">{order.total} د.إ</strong></span>
+                        <span>الإجمالي: <strong className="text-slate-800">{order.total} ج.م</strong></span>
                       </div>
                     </div>
                     <button className="flex items-center justify-center gap-2 rounded-xl bg-slate-50 px-6 py-3 font-bold text-slate-700 hover:bg-slate-100">

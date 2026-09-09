@@ -3,7 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { useRouter, usePathname } from 'next/navigation';
 import { PersonalizedProduct } from '@/types';
 
-export function Step5Review({ onPrev, product }: { onPrev: () => void, product: PersonalizedProduct }) {
+export function Step4Review({ onPrev, product }: { onPrev: () => void, product: PersonalizedProduct }) {
   const { watch } = useFormContext();
   const router = useRouter();
   const pathname = usePathname();
@@ -61,27 +61,11 @@ export function Step5Review({ onPrev, product }: { onPrev: () => void, product: 
           </div>
         </div>
 
-        {/* Shipping */}
-        <div className="rounded-2xl border border-slate-200 p-6 bg-slate-50 relative">
-          <button type="button" onClick={() => goToStep(4)} className="absolute top-6 left-6 text-sm font-bold text-blue-600 hover:underline">تعديل</button>
-          <h3 className="font-bold text-slate-800 mb-4">معلومات الشحن</h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-slate-500 block mb-1">الاسم:</span>
-              <span className="font-bold text-slate-800">{values.shippingName}</span>
-            </div>
-            <div>
-              <span className="text-slate-500 block mb-1">رقم الهاتف:</span>
-              <span className="font-bold text-slate-800">{values.shippingPhone}</span>
-            </div>
-            <div className="col-span-2">
-              <span className="text-slate-500 block mb-1">العنوان:</span>
-              <span className="font-bold text-slate-800">{values.shippingAddress}، {values.shippingCity}</span>
-            </div>
-          </div>
+        {/* Shipping Info Note */}
+        <div className="rounded-2xl border border-blue-200 p-4 bg-blue-50 text-blue-800 text-sm font-bold text-center">
+          سيتم إدخال بيانات الشحن في خطوة الدفع التالية
         </div>
       </div>
-
       <div className="flex justify-between pt-6 border-t border-slate-100">
         <button
           type="button"
