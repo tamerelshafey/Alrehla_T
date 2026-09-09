@@ -5,6 +5,15 @@ import { ArrowLeft, Calendar, User, BookOpen, Share2, Facebook, Twitter, Linkedi
 import { getBlogPosts } from '@/data/mock';
 import { notFound } from 'next/navigation';
 
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params;
+  const posts = await getBlogPosts();
+  const post = posts.find(p => p.slug === resolvedParams.slug);
+  if (!post) return { title: 'مقال غير موجود' };
+  return { title: post.title, description: post.excerpt };
+}
+
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
   const posts = await getBlogPosts();
@@ -16,6 +25,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   return (
     <PageContainer>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "datePublished": post.publishedAt,
+    "author": {
+      "@type": "Organization",
+      "name": "فريق الرحلة"
+    }
+  }) }} />
       <div className="mx-auto w-full max-w-4xl pt-12 pb-24">
         {/* Back link */}
         <Link href="/blog" className="mb-8 inline-flex items-center gap-2 font-bold text-slate-500 hover:text-amber-600 transition-colors">

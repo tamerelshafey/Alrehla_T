@@ -4,6 +4,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
 
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
+  if (!product) return { title: 'منتج غير موجود' };
+  return { title: product.name, description: product.shortDescription };
+}
+
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
@@ -24,6 +32,17 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   return (
     <PageContainer>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.name,
+    "description": product.shortDescription,
+    "offers": {
+      "@type": "Offer",
+      "price": product.price,
+      "priceCurrency": "EGP"
+    }
+  }) }} />
       <div className="grid gap-12 lg:grid-cols-2">
         <div className="relative aspect-[3/4] w-full overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-lg">
           {product.coverImageUrl ? (

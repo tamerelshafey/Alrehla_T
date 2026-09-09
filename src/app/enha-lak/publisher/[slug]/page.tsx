@@ -3,6 +3,14 @@ import { PageContainer } from '@/components/PageContainer';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const publisher = await getPublisherBySlug(slug);
+  if (!publisher) return { title: 'ناشر غير موجود' };
+  return { title: publisher.name, description: publisher.bio };
+}
+
 export default async function PublisherPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const publisher = await getPublisherBySlug(slug);

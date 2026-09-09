@@ -47,6 +47,13 @@ export default async function HomePage() {
 
   return (
     <div className="relative flex w-full flex-1 flex-col items-center justify-start space-y-32 px-6 py-12 font-sans text-slate-800 md:px-12">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "الرحلة",
+  "description": "منصة مخصصة لقصص الأطفال وبرامج الكتابة الإبداعية",
+  "url": "https://www.enhalak.com"
+}) }} />
       
       {/* Hero Section */}
       <section className="relative z-10 mx-auto max-w-7xl pt-8 pb-12 w-full">
