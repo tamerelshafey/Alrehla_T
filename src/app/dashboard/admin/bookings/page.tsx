@@ -16,19 +16,24 @@ export default async function Page() {
   }
 
   const allBookings = await getBookings();
+  const allServiceOrders = await import('@/data/mock').then(m => m.getServiceOrders());
   
-  const formatted = allBookings.map(b => ({
+  const formatted = allBookings.map(b => {
+    const so = allServiceOrders.find(o => o.id === b.id);
+    const displayStatus = so?.status === 'awaiting_verification' ? 'awaiting_verification' : b.status;
+    return {
     ...b,
     idDisplay: <Link href={`/dashboard/admin/bookings/${b.id}`} className="font-bold text-blue-600 hover:underline">#{b.id.split('-')[1]}</Link>,
     dateDisplay: formatDate(b.scheduledAt),
     statusDisplay: (
       <StatusBadge
-          type={b.status === 'confirmed' ? 'success' : b.status === 'completed' ? 'neutral' : 'warning'}
-          label={b.status === 'confirmed' ? 'مؤكد' : b.status === 'completed' ? 'مكتمل' : 'قيد الانتظار'}
+          type={displayStatus === 'confirmed' ? 'success' : displayStatus === 'awaiting_verification' ? 'warning' : displayStatus === 'completed' ? 'neutral' : 'warning'}
+          label={displayStatus === 'confirmed' ? 'مؤكد' : displayStatus === 'awaiting_verification' ? 'بانتظار تأكيد الدفع' : displayStatus === 'completed' ? 'مكتمل' : 'قيد الانتظار'}
         />
     ),
     sessionLink: <Link href={`/dashboard/admin/sessions/${b.id}`} className="text-blue-600 font-bold hover:underline">عرض الجلسة</Link>
-  }));
+    };
+  });
 
   const columns = [
     { header: 'رقم الحجز', accessorKey: 'idDisplay' },

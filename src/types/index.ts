@@ -366,7 +366,7 @@ export type AuditLog = {
 };
 
 // طلب خدمات بداية الرحلة
-export type ServiceOrderStatus = 'pending' | 'paid' | 'refunded';
+export type ServiceOrderStatus = 'pending' | 'awaiting_verification' | 'paid' | 'refunded';
 
 export interface ServiceOrder {
   id: string;
@@ -376,6 +376,7 @@ export interface ServiceOrder {
   status: ServiceOrderStatus;
   amount: number;
   createdAt: string;
+  transactionReference?: string;
 }
 
 // اشتراك في دورة

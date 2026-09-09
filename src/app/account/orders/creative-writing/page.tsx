@@ -1,33 +1,26 @@
 import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
 import { PenTool, User, Shield, BookOpen, ChevronLeft, Calendar, Clock, Video } from 'lucide-react';
+import { getBookings, getServiceOrders } from '@/data/mock';
+import { StatusBadge } from '@/components/StatusBadge';
 
-export default function CreativeWritingOrdersPage() {
-  const bookings = [
-    {
-      id: 'BK-5521',
-      date: '2024-06-15',
-      time: '04:30 مساءً',
-      status: 'upcoming',
-      statusText: 'قادمة',
-      statusColor: 'text-amber-600 bg-amber-50',
-      instructor: 'سارة أحمد',
-      studentName: 'ياسمين طارق',
-      packageName: 'جلسة استشارية فردية',
-    },
-    {
-      id: 'BK-4190',
-      date: '2024-05-02',
-      time: '06:00 مساءً',
-      status: 'completed',
-      statusText: 'مكتملة',
-      statusColor: 'text-emerald-600 bg-emerald-50',
-      instructor: 'أحمد محمود',
-      studentName: 'ياسمين طارق',
-      packageName: 'باقة الإبحار (4 أسابيع)',
-    }
-  ];
-
+export default async function CreativeWritingOrdersPage() {
+  const allBookings = await getBookings();
+  const allServiceOrders = await getServiceOrders();
+  
+  const bookings = allBookings.map(b => {
+    const so = allServiceOrders.find(o => o.id === b.id);
+    const displayStatus = so?.status === 'awaiting_verification' ? 'awaiting_verification' : b.status;
+    return {
+      id: b.id,
+      date: new Date(b.scheduledAt).toLocaleDateString('ar-EG'),
+      time: new Date(b.scheduledAt).toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'}),
+      status: displayStatus,
+      instructor: 'سارة أحمد', // Placeholder for mock
+      studentName: 'الطالب',
+      packageName: 'باقة تدريبية'
+    };
+  });
   return (
     <PageContainer>
       <div className="mx-auto w-full max-w-7xl pt-12 pb-24">
@@ -72,9 +65,7 @@ export default function CreativeWritingOrdersPage() {
                     <div className="flex-1 space-y-4">
                       <div className="flex items-center gap-3">
                         <h3 className="text-xl font-bold text-slate-800">{booking.packageName}</h3>
-                        <span className={`rounded-full px-3 py-1 text-xs font-bold ${booking.statusColor}`}>
-                          {booking.statusText}
-                        </span>
+                        <StatusBadge type={booking.status === 'confirmed' ? 'success' : booking.status === 'awaiting_verification' ? 'warning' : booking.status === 'completed' ? 'neutral' : 'warning'} label={booking.status === 'confirmed' ? 'مؤكد' : booking.status === 'awaiting_verification' ? 'بانتظار تأكيد الدفع' : booking.status === 'completed' ? 'مكتمل' : 'قيد الانتظار'} />
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4 text-sm font-medium text-slate-600">
@@ -98,7 +89,7 @@ export default function CreativeWritingOrdersPage() {
                     </div>
                     
                     <div className="flex shrink-0 flex-col gap-3">
-                      {booking.status === 'upcoming' && (
+                      {booking.status === 'confirmed' && (
                         <button className="flex w-full md:w-auto items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white shadow-md hover:bg-emerald-700">
                           <Video className="h-5 w-5" />
                           رابط الجلسة
