@@ -43,6 +43,9 @@ export type WeeklySlot = {
   day: DayOfWeek;
   time: string; // HH:mm format, e.g., "10:00"
   isBooked?: boolean;
+  commitmentType?: 'ongoing' | 'fixed_term';
+  commitmentMonths?: 3 | 6;
+  commitmentEndsAt?: string;
 };
 
 export type WorkModel = 'per_session' | 'monthly';
@@ -63,7 +66,8 @@ export type Instructor = {
   // New Fields for Scheduling & Pricing
   trainingPassed: boolean;
   workModel: WorkModel;
-  requestedPrice: number; // Hourly or per session requested price
+  requestedPrice?: number;
+  selectedPricingOptionId?: string;
   approvedPrice?: number; // Price approved by admin
   
   weeklySchedule: WeeklySlot[]; // The standard weekly schedule they offer
@@ -519,3 +523,4 @@ export interface InstructorCertification {
   examScore?: number;
   certifiedAt?: string;
 }
+

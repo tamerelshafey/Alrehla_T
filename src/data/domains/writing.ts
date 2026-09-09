@@ -632,3 +632,9 @@ export const getInstructorCompensationProfile = async (instructorId: string) =>
 
 export const getInstructorCertification = async (instructorId: string) =>
   Promise.resolve(mockInstructorCertifications.find(c => c.instructorId === instructorId) || null);
+
+export let mockProfileUpdateRequests: import('@/types').ProfileUpdateRequest[] = [];
+
+export const getProfileUpdateRequestsByInstructor = async (instructorId: string) => {
+  return Promise.resolve(mockProfileUpdateRequests.filter(req => req.instructorId === instructorId));
+};
