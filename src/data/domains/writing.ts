@@ -210,6 +210,7 @@ export const mockCreativeServices: CreativeService[] = [
 ];
 
 export const getWritingPackages = async (): Promise<WritingPackage[]> => {
+  await new Promise(resolve => setTimeout(resolve, 600));
   return Promise.resolve(mockWritingPackages);
 };
 
@@ -221,6 +222,7 @@ export const getWritingPackageBySlug = async (
 };
 
 export const getInstructors = async (): Promise<Instructor[]> => {
+  await new Promise(resolve => setTimeout(resolve, 600));
   return Promise.resolve(mockInstructors);
 };
 
@@ -387,10 +389,12 @@ export const mockCourseSubscriptions: CourseSubscription[] = [
 ];
 
 export async function getServiceOrders(): Promise<ServiceOrder[]> {
+  await new Promise(resolve => setTimeout(resolve, 600));
   return mockServiceOrders;
 }
 
 export async function getCourseSubscriptions(): Promise<CourseSubscription[]> {
+  await new Promise(resolve => setTimeout(resolve, 600));
   return mockCourseSubscriptions;
 }
 

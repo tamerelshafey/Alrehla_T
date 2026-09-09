@@ -1,12 +1,11 @@
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { InstructorSettingsClient } from './InstructorSettingsClient';
-import { mockInstructors } from '@/data/mock';
+import { getInstructorById } from '@/data/mock';
 
 export const dynamic = 'force-dynamic';
 
 export default async function InstructorSettingsPage() {
-  // Mock current user instructor
-  const instructor = mockInstructors.find(i => i.id === 'inst-1');
+  const instructor = await getInstructorById('inst-1');
   
   if (!instructor) return null;
 

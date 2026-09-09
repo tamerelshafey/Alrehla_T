@@ -1,16 +1,17 @@
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { ProfileFormShell } from '@/components/dashboard/ProfileFormShell';
-import { getCurrentUser } from '@/data/mock';
+import { getCurrentUser, getInstructorById } from '@/data/mock';
 
 export const dynamic = 'force-dynamic';
 
 export default async function InstructorProfilePage() {
   const user = await getCurrentUser();
-
+  const instructor = await getInstructorById('inst-1');
+  
   const defaultValues = {
-    name: 'سارة أحمد',
-    email: 'sara@alrehla.com',
-    bio: 'مدربة معتمدة في الكتابة الإبداعية.',
+    name: instructor?.displayName || user.fullName,
+    email: user.email,
+    bio: instructor?.bio || 'مدربة معتمدة في الكتابة الإبداعية.',
     avatarUrl: user.avatarUrl
   };
 

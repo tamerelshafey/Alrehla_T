@@ -23,6 +23,7 @@ export const mockCurrentUser: UserProfile = {
 
 // Simulated Database Access Functions
 export const getCurrentUser = async (): Promise<UserProfile> => {
+  await new Promise(resolve => setTimeout(resolve, 600));
   const cookieStore = await cookies();
   const mockRoleCookie = cookieStore.get('mockRole');
   const role = (mockRoleCookie?.value as UserRole) || 'visitor';

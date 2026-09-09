@@ -240,6 +240,7 @@ export const mockPublisherOrders: import('@/types').PublisherOrder[] = [
 ];
 
 export async function getPublisherOrders() {
+  await new Promise(resolve => setTimeout(resolve, 600));
   await new Promise(resolve => setTimeout(resolve, 500));
   return mockPublisherOrders;
 }
