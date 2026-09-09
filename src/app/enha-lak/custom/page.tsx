@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getPersonalizedProducts, getAddonProducts } from '@/data/mock';
@@ -62,7 +63,7 @@ export default async function CustomPage() {
                       </span>
                     </div>
                     <span className="font-black text-violet-600">
-                      {product.price.toLocaleString('ar-EG')} ج.م
+                      {formatPrice(product.price)}
                     </span>
                   </div>
                   {product.electronicPrice && (
@@ -74,7 +75,7 @@ export default async function CustomPage() {
                         </span>
                       </div>
                       <span className="font-black text-violet-600">
-                        {product.electronicPrice.toLocaleString('ar-EG')} ج.م
+                        {formatPrice(product.electronicPrice)}
                       </span>
                     </div>
                   )}
@@ -129,7 +130,7 @@ export default async function CustomPage() {
               </div>
               <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
                 <span className="text-lg font-black text-rose-600">
-                  {addon.price.toLocaleString('ar-EG')} ج.م
+                  {formatPrice(addon.price)}
                 </span>
                 <AddToCartButton 
                   product={{

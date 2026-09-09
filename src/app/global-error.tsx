@@ -1,5 +1,4 @@
 'use client';
-
 export default function GlobalError() {
   return (
     <html lang="ar">

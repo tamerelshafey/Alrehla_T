@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getCreativeServices } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission , formatPrice } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 
@@ -17,7 +17,7 @@ export default async function Page() {
   
   const formatted = services.map(s => ({
     ...s,
-    priceDisplay: `${s.price} ج.م`
+    priceDisplay: `${formatPrice(s.price)}`
   }));
 
   const columns = [

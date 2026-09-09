@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getInstructorPayouts, getInstructors } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission , formatPrice } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import Link from 'next/link';
@@ -24,7 +24,7 @@ export default async function Page() {
       ...p,
       instructorDisplay: instructor?.displayName || p.instructorId,
       idDisplay: <Link href={`/dashboard/admin/finance/instructor-payouts/${p.id}`} className="font-bold text-blue-600 hover:underline">#{p.id.split('-')[1]}</Link>,
-      amountDisplay: `${p.amount} ج.م`,
+      amountDisplay: `${formatPrice(p.amount)}`,
       periodDisplay: p.period,
       statusDisplay: p.status === 'paid'
         ? <StatusBadge type="success" label="مدفوع" />

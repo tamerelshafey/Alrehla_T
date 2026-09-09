@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/utils';
 import { getProductBySlug } from '@/data/mock';
 import { PageContainer } from '@/components/PageContainer';
 import Image from 'next/image';
@@ -84,10 +85,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           
           <div className="rounded-2xl bg-slate-50 p-6 border border-slate-100">
             <div className="flex items-center gap-4">
-              <span className="text-3xl font-black text-rose-500">{product.price} ج.م</span>
+              <span className="text-3xl font-black text-rose-500">{formatPrice(product.price)}</span>
               {product.electronicPrice && (
                 <span className="text-sm font-bold text-slate-500 line-through">
-                  بدلاً من {product.price + 5000} ج.م
+                  بدلاً من {formatPrice(product.price + 5000)}
                 </span>
               )}
             </div>

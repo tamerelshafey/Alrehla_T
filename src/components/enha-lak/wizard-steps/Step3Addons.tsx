@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/utils';
 import React, { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { AddonProduct } from '@/types';
@@ -47,7 +48,7 @@ export function Step3Addons({ onNext, onPrev }: { onNext: () => void, onPrev: ()
                 <p className="text-sm text-slate-500 mt-1">{addon.description}</p>
               </div>
               <div className="font-black text-emerald-600">
-                +{addon.price} ج.م
+                +{formatPrice(addon.price)}
               </div>
             </div>
           );

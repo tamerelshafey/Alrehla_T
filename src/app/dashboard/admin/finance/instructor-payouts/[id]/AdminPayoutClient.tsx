@@ -1,4 +1,5 @@
 'use client';
+import { formatPrice } from '@/lib/utils';
 
 import React, { useState } from 'react';
 import { InstructorPayout, Instructor } from '@/types';
@@ -41,7 +42,7 @@ export function AdminPayoutClient({ payout, instructor }: Props) {
           </div>
           <div>
             <div className="text-sm text-slate-500 mb-1">المبلغ المطلوب</div>
-            <div className="font-black text-blue-600 text-2xl">{payout.amount.toLocaleString('ar-EG')} ج.م</div>
+            <div className="font-black text-blue-600 text-2xl">{formatPrice(payout.amount)}</div>
           </div>
           <div>
             <div className="text-sm text-slate-500 mb-1">فترة الاستحقاق</div>

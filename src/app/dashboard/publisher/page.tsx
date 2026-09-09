@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/utils';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { BookOpen, DollarSign, ShoppingBag, Star } from 'lucide-react';
@@ -22,8 +23,8 @@ export default async function PublisherDashboard() {
       <DashboardPageHeader title={`مرحباً، ${user.fullName} (ناشر)`} />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <StatCard title="إجمالي المبيعات" value={`${totalSales} ج.م`} icon={ShoppingBag} trend="+12% عن الشهر الماضي" trendUp={true} />
-        <StatCard title="أرباحك (70%)" value={`${totalEarnings} ج.م`} icon={DollarSign} trend="جاهزة للسحب: 850 ج.م" trendUp={true} />
+        <StatCard title="إجمالي المبيعات" value={`${formatPrice(totalSales)}`} icon={ShoppingBag} trend="+12% عن الشهر الماضي" trendUp={true} />
+        <StatCard title="أرباحك (70%)" value={`${formatPrice(totalEarnings)}`} icon={DollarSign} trend={`جاهزة للسحب: ${formatPrice(850)}`} trendUp={true} />
         <StatCard title="الكتب المنشورة" value="12 كتاب" icon={BookOpen} />
         <StatCard title="تقييم القراء" value="4.8/5" icon={Star} trend="من 156 تقييم" trendUp={true} />
       </div>
@@ -48,8 +49,8 @@ export default async function PublisherDashboard() {
                     <td className="py-4 font-medium text-slate-800">{order.productName}</td>
                     <td className="py-4 text-slate-500">{new Date(order.createdAt).toLocaleDateString('ar-EG')}</td>
                     <td className="py-4 text-slate-600">{order.quantity}</td>
-                    <td className="py-4 text-slate-600">{order.totalAmount} ج.م</td>
-                    <td className="py-4 font-bold text-emerald-600">{order.publisherShare} ج.م</td>
+                    <td className="py-4 text-slate-600">{formatPrice(order.totalAmount)}</td>
+                    <td className="py-4 font-bold text-emerald-600">{formatPrice(order.publisherShare)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -60,10 +61,10 @@ export default async function PublisherDashboard() {
         <div className="rounded-3xl border border-slate-200 bg-slate-900 p-8 text-white shadow-md flex flex-col justify-between">
           <div>
             <h3 className="text-xl font-bold mb-2">طلب سحب الأرباح</h3>
-            <p className="text-slate-400 text-sm mb-6">يمكنك سحب أرباحك عند وصول الرصيد القابل للسحب إلى الحد الأدنى (500 ج.م).</p>
+            <p className="text-slate-400 text-sm mb-6">يمكنك سحب أرباحك عند وصول الرصيد القابل للسحب إلى الحد الأدنى ({formatPrice(500)}).</p>
             <div className="mb-8">
               <div className="text-sm text-slate-400 mb-1">الرصيد المتاح للسحب</div>
-              <div className="text-4xl font-black text-emerald-400">850 <span className="text-xl">ج.م</span></div>
+              <div className="text-4xl font-black text-emerald-400">{formatPrice(850)}</div>
             </div>
           </div>
           <button className="w-full rounded-xl bg-white px-4 py-3 font-bold text-slate-900 transition-colors hover:bg-slate-100">

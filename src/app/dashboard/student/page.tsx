@@ -1,4 +1,4 @@
-import { formatDate } from '@/lib/utils';
+import { formatDate , formatPrice } from '@/lib/utils';
 import { getCurrentUser, getWritingPackages, getOrders } from '@/data/mock';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -121,7 +121,7 @@ export default async function StudentDashboard() {
                 </div>
                 <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-end">
                   <div className="font-bold text-slate-700">
-                    {order.totalAmount} ج.م
+                    {formatPrice(order.totalAmount)}
                   </div>
                   {getOrderStatus(order.status)}
                 </div>

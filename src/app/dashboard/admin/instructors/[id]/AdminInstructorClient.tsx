@@ -1,4 +1,5 @@
 'use client';
+import { formatPrice } from '@/lib/utils';
 
 import React, { useState } from 'react';
 import { Instructor, DayOfWeek } from '@/types';
@@ -47,7 +48,7 @@ export function AdminInstructorClient({ instructor }: AdminInstructorClientProps
             )}
             <div>
               <span className="block text-slate-500 mb-1">السعر المطلوب من المدرب:</span>
-              <span className="font-bold text-slate-800">{instructor.requestedPrice} ج.م</span>
+              <span className="font-bold text-slate-800">{formatPrice(instructor.requestedPrice)}</span>
             </div>
             <div>
               <span className="block text-slate-500 mb-1">عدد سنوات الخبرة:</span>

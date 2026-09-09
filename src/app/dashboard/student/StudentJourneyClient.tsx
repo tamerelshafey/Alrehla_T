@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState } from 'react';
 import { WritingPackage } from '@/types';
 import { Calendar, Eye, Star, CheckCircle2, MessageSquare } from 'lucide-react';

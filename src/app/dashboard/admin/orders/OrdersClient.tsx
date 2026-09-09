@@ -1,5 +1,5 @@
 'use client';
-import { formatDate } from '@/lib/utils';
+import { formatDate , formatPrice } from '@/lib/utils';
 import React, { useState } from 'react';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { Order } from '@/types';
@@ -22,7 +22,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
         </Link>
       ),
       dateDisplay: formatDate(order.createdAt),
-      amountDisplay: `${order.totalAmount} ج.م`,
+      amountDisplay: `${formatPrice(order.totalAmount)}`,
       statusDisplay: (
         <StatusBadge
           type={order.status === 'paid' ? 'success' : order.status === 'failed' ? 'danger' : order.status === 'refunded' ? 'neutral' : order.status === 'awaiting_verification' ? 'warning' : 'warning'}

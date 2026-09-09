@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getPersonalizedProducts } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission , formatPrice } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import Link from 'next/link';
@@ -21,7 +21,7 @@ export default async function Page() {
   const formattedProducts = platformProducts.map(p => ({
     ...p,
     nameDisplay: <Link href={`/dashboard/admin/products/${p.id}`} className="font-bold text-blue-600 hover:underline">{p.name}</Link>,
-    priceDisplay: `${p.price} ج.م`,
+    priceDisplay: `${formatPrice(p.price)}`,
     categoryDisplay: p.category === 'library' ? 'مكتبة' : p.category === 'custom' ? 'مخصص' : 'اشتراك',
     ownerDisplay: <StatusBadge type="neutral" label="المنصة" />
   }));

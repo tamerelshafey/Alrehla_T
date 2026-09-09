@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getOrders, getPersonalizedProducts } from '@/data/mock';
-import { hasAdminPermission, formatDate } from '@/lib/utils';
+import { hasAdminPermission, formatDate , formatPrice } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { confirmOrderPayment } from '@/actions/orders';
@@ -24,9 +24,9 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     return {
       id: idx,
       nameDisplay: product ? product.name : item.productId,
-      priceDisplay: `${price} ج.م`,
+      priceDisplay: `${formatPrice(price)}`,
       quantity: quantity,
-      totalDisplay: `${price * quantity} ج.م`
+      totalDisplay: `${formatPrice(price * quantity)}`
     };
   });
   const columns = [
@@ -71,7 +71,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <SimpleDataTable columns={columns} data={formattedItems} />
         
         <div className="mt-6 border-t border-slate-100 pt-6 flex justify-end">
-          <div className="text-2xl font-black text-slate-800">الإجمالي: {target.totalAmount} ج.م</div>
+          <div className="text-2xl font-black text-slate-800">الإجمالي: {formatPrice(target.totalAmount)}</div>
         </div>
       </div>
     </div>

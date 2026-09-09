@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState } from 'react';
 import { Instructor, WeeklySlot } from '@/types';
 import { Calendar, Clock, User, ArrowRight, Video } from 'lucide-react';
@@ -24,7 +23,7 @@ export function BookingWizardClient({ instructors }: BookingWizardProps) {
 
   const handleConfirm = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push('/creative-writing/booking/confirm');
+    router.push(`/creative-writing/booking/confirm?package=${encodeURIComponent(selectedPackage)}&instructor=${encodeURIComponent(selectedInstructorId)}`);
   };
 
   return (

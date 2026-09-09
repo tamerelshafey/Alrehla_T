@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
 import { BookOpen, Package, User, Shield, ChevronLeft, Calendar } from 'lucide-react';
@@ -60,7 +61,7 @@ export default async function EnhaLakOrdersPage() {
                       </div>
                       <div className="mt-2 flex items-center gap-4 text-sm font-medium text-slate-500">
                         <span className="flex items-center gap-1"><Calendar className="h-4 w-4" /> {order.date}</span>
-                        <span>الإجمالي: <strong className="text-slate-800">{order.total} ج.م</strong></span>
+                        <span>الإجمالي: <strong className="text-slate-800">{formatPrice(order.total)}</strong></span>
                       </div>
                     </div>
                     <button className="flex items-center justify-center gap-2 rounded-xl bg-slate-50 px-6 py-3 font-bold text-slate-700 hover:bg-slate-100">

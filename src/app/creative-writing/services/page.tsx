@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import { getCreativeServices } from '@/data/mock';
 import { ArrowLeft } from 'lucide-react';
@@ -32,7 +33,7 @@ export default async function ServicesPage() {
                   {service.name}
                 </h3>
                 <div className="text-lg font-black text-teal-600">
-                  {service.price.toLocaleString('ar-EG')} ج.م
+                  {formatPrice(service.price)}
                 </div>
               </div>
               <p className="mb-8 flex-1 text-sm leading-relaxed font-medium text-slate-600">

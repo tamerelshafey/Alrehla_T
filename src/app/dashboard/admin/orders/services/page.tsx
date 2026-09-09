@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getServiceOrders } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission , formatPrice } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import Link from 'next/link';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
@@ -22,7 +22,7 @@ export default async function Page() {
     ...order,
     idDisplay: <span className="font-bold text-blue-600">#{order.id.split('-')[1]}</span>,
     dateDisplay: formatDate(order.createdAt),
-    amountDisplay: `${order.amount} ج.م`,
+    amountDisplay: `${formatPrice(order.amount)}`,
     statusDisplay: (
       <StatusBadge 
         type={order.status === 'paid' ? 'success' : order.status === 'refunded' ? 'neutral' : 'warning'}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getPersonalizedProducts, getPublishers } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission , formatPrice } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import Image from 'next/image';
 
@@ -44,7 +44,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           
           <div className="mb-6 flex flex-wrap gap-2">
             <span className="rounded-md bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">{categoryDisplay}</span>
-            <span className="rounded-md bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700">{target.price} ج.م</span>
+            <span className="rounded-md bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700">{formatPrice(target.price)}</span>
             {pub ? (
               <span className="rounded-md bg-amber-100 px-3 py-1 text-sm font-bold text-amber-700">ناشر: {pub.name}</span>
             ) : (

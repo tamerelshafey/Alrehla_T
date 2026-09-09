@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState } from 'react';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { Instructor } from '@/types';

@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState } from 'react';
 import { Booking } from '@/types';
 import { Video, Clock, User, CheckCircle2, AlertCircle, FileText, Send } from 'lucide-react';

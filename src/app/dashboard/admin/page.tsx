@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/utils';
 import {
   getCurrentUser,
   getWritingPackages,
@@ -117,7 +118,7 @@ export default async function AdminDashboard() {
                       {order.userId.split('-')[1]}
                     </td>
                     <td className="px-4 py-4 font-bold text-slate-600">
-                      {order.totalAmount} ج.م
+                      {formatPrice(order.totalAmount)}
                     </td>
                     <td className="px-4 py-4">
                       <span

@@ -1,4 +1,5 @@
 'use client';
+import { formatPrice } from '@/lib/utils';
 
 import React, { useState } from 'react';
 import { useCart } from '@/context/CartContext';
@@ -265,7 +266,7 @@ export function CheckoutClient({ user }: Props) {
                 disabled={isProcessing}
                 className="w-full flex justify-center items-center gap-2 rounded-xl bg-blue-600 px-8 py-4 font-black text-white hover:bg-blue-700 transition-colors shadow-lg disabled:opacity-70"
               >
-                {isPending || isProcessing ? (paymentMethod === 'instapay' ? 'جاري التحقق وإرسال الطلب...' : 'جاري معالجة الدفع...') : (paymentMethod === 'instapay' ? 'لقد قمت بالتحويل' : `تأكيد الدفع (${grandTotal.toLocaleString('ar-EG')} ج.م)`)}
+                {isPending || isProcessing ? (paymentMethod === 'instapay' ? 'جاري التحقق وإرسال الطلب...' : 'جاري معالجة الدفع...') : (paymentMethod === 'instapay' ? 'لقد قمت بالتحويل' : `تأكيد الدفع (${formatPrice(grandTotal)})`)}
               </button>
             </div>
           </form>
@@ -293,7 +294,7 @@ export function CheckoutClient({ user }: Props) {
 
                   <div className="mt-1 flex items-center justify-between">
                     <span className="text-xs text-slate-500">الكمية: {item.quantity}</span>
-                    <span className="text-sm font-bold text-blue-600">{(item.price * item.quantity).toLocaleString('ar-EG')} ج.م</span>
+                    <span className="text-sm font-bold text-blue-600">{formatPrice((item.price * item.quantity))}</span>
                   </div>
                 </div>
               </div>
@@ -303,17 +304,17 @@ export function CheckoutClient({ user }: Props) {
           <div className="space-y-3 py-4 border-y border-slate-100 mb-4">
             <div className="flex justify-between text-sm text-slate-600">
               <span>المجموع الفرعي</span>
-              <span className="font-bold">{subtotal.toLocaleString('ar-EG')} ج.م</span>
+              <span className="font-bold">{formatPrice(subtotal)}</span>
             </div>
             <div className="flex justify-between text-sm text-slate-600">
               <span>مصاريف الشحن</span>
-              <span className="font-bold">{shipping === 0 ? 'مجاناً' : `${shipping} ج.م`}</span>
+              <span className="font-bold">{shipping === 0 ? 'مجاناً' : `${formatPrice(shipping)}`}</span>
             </div>
           </div>
 
           <div className="flex justify-between items-center mb-6">
             <span className="text-lg font-black text-slate-800">الإجمالي</span>
-            <span className="text-2xl font-black text-blue-600">{grandTotal.toLocaleString('ar-EG')} <span className="text-sm">ج.م</span></span>
+            <span className="text-2xl font-black text-blue-600">{formatPrice(grandTotal)}</span>
           </div>
 
           <div className="rounded-xl bg-slate-50 p-4 flex items-start gap-3">

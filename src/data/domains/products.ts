@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/utils';
 import {
   WritingPackage, Instructor, PersonalizedProduct, AddonProduct, SubscriptionTier, 
   Testimonial, CreativeService, BlogPost, UserProfile, Booking, Order, PortfolioItem, 
@@ -136,7 +137,7 @@ export const mockSubscriptionTiers: SubscriptionTier[] = [
     priceTotal: 1200,
     priceMonthly: 400,
     durationMonths: 3,
-    savingsNote: 'وفر 150 ج.م',
+    savingsNote: `وفر ${formatPrice(150)}`,
   },
   {
     id: 'sub-3',
@@ -144,7 +145,7 @@ export const mockSubscriptionTiers: SubscriptionTier[] = [
     priceTotal: 2100,
     priceMonthly: 350,
     durationMonths: 6,
-    savingsNote: 'وفر 600 ج.م',
+    savingsNote: `وفر ${formatPrice(600)}`,
   },
 ];
 

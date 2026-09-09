@@ -1,4 +1,5 @@
 'use client';
+import { formatPrice } from '@/lib/utils';
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -52,7 +53,7 @@ export default function CartClient() {
                         <p className="mt-1 font-medium text-slate-500">الكمية: {item.quantity}</p>
 
                         <div className="mt-4 flex items-center justify-center md:justify-start gap-4">
-                          <span className="text-lg font-black text-emerald-600">{item.price.toLocaleString('ar-EG')} ج.م</span>
+                          <span className="text-lg font-black text-emerald-600">{formatPrice(item.price)}</span>
                         </div>
                       </div>
                       <button 
@@ -82,17 +83,17 @@ export default function CartClient() {
                 <div className="space-y-4 border-b border-slate-200 pb-6">
                   <div className="flex justify-between font-medium text-slate-600">
                     <span>المجموع الفرعي</span>
-                    <span>{cartTotal.toLocaleString('ar-EG')} ج.م</span>
+                    <span>{formatPrice(cartTotal)}</span>
                   </div>
                   <div className="flex justify-between font-medium text-slate-600">
                     <span>الضريبة (5%)</span>
-                    <span>{tax.toLocaleString('ar-EG')} ج.م</span>
+                    <span>{formatPrice(tax)}</span>
                   </div>
                 </div>
                 
                 <div className="flex justify-between py-6 text-xl font-black text-slate-800">
                   <span>الإجمالي</span>
-                  <span>{total.toLocaleString('ar-EG')} ج.م</span>
+                  <span>{formatPrice(total)}</span>
                 </div>
                 
                 <Link

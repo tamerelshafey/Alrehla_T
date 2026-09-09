@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/utils';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -18,7 +19,7 @@ export default async function PublisherPayoutsPage() {
 
   const data = payouts.map(p => ({
     period: p.period,
-    amount: `${p.amount} ج.م`,
+    amount: `${formatPrice(p.amount)}`,
     status: p.status === 'paid' ? (
       <StatusBadge type="success" label="تم التحويل" />
     ) : (
@@ -43,7 +44,7 @@ export default async function PublisherPayoutsPage() {
               <Wallet className="h-5 w-5" />
               الرصيد المتاح للسحب
             </div>
-            <div className="text-4xl font-black text-emerald-600">{availableBalance} ج.م</div>
+            <div className="text-4xl font-black text-emerald-600">{formatPrice(availableBalance)}</div>
           </div>
           <button className="mt-6 w-full rounded-xl bg-emerald-600 px-4 py-3 font-bold text-white transition-colors hover:bg-emerald-700">
             طلب سحب الرصيد

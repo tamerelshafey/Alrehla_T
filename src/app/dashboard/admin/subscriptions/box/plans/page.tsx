@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getSubscriptionTiers } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { hasAdminPermission , formatPrice } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 
@@ -17,8 +17,8 @@ export default async function Page() {
   
   const formatted = plans.map(p => ({
     ...p,
-    priceMonthlyDisplay: `${p.priceMonthly} ج.م / شهر`,
-    priceTotalDisplay: `${p.priceTotal} ج.م الإجمالي`,
+    priceMonthlyDisplay: `${formatPrice(p.priceMonthly)} / شهر`,
+    priceTotalDisplay: `${formatPrice(p.priceTotal)} الإجمالي`,
     durationDisplay: `${p.durationMonths} أشهر`
   }));
 

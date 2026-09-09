@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState } from 'react';
 import { Instructor, DayOfWeek, WeeklySlot } from '@/types';
 import { Calendar, Clock, Info, CheckCircle2, Save } from 'lucide-react';

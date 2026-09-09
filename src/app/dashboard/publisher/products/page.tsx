@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/utils';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { getPublishers, getPersonalizedProducts } from '@/data/mock';
@@ -18,7 +19,7 @@ export default async function PublisherProductsPage() {
 
   const formattedProducts = myProducts.map(product => ({
     ...product,
-    priceDisplay: `${product.price} ج.م`,
+    priceDisplay: `${formatPrice(product.price)}`,
     categoryDisplay: categoryMap[product.category] || product.category
   }));
 

@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import { getWritingPackages } from '@/data/mock';
 import { Target, Clock, Calendar, CheckCircle2 } from 'lucide-react';
@@ -78,7 +79,7 @@ function PackageCard({ pkg }: { pkg: WritingPackage }) {
       <div className="mb-6 flex items-start justify-between">
         <h3 className="text-2xl font-black text-slate-800">{pkg.name}</h3>
         <div className="rounded-xl bg-amber-50 px-4 py-2 font-black text-amber-700">
-          {pkg.price.toLocaleString('ar-EG')} ج.م
+          {formatPrice(pkg.price)}
         </div>
       </div>
 

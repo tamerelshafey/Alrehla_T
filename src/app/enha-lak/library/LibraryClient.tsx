@@ -1,4 +1,5 @@
 'use client';
+import { formatPrice } from '@/lib/utils';
 
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
@@ -159,7 +160,7 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
                         </span>
                       </div>
                       <span className="font-black text-emerald-600">
-                        {product.price.toLocaleString('ar-EG')} ج.م
+                        {formatPrice(product.price)}
                       </span>
                     </div>
                     {product.electronicPrice && (
@@ -171,7 +172,7 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
                           </span>
                         </div>
                         <span className="font-black text-emerald-600">
-                          {product.electronicPrice.toLocaleString('ar-EG')} ج.م
+                          {formatPrice(product.electronicPrice)}
                         </span>
                       </div>
                     )}

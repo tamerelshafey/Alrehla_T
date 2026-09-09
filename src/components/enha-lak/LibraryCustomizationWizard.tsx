@@ -1,4 +1,5 @@
 'use client';
+import { formatPrice } from '@/lib/utils';
 
 import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
@@ -182,13 +183,13 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
               </div>
               <div>
                 <h4 className="font-bold text-slate-800">{product.name}</h4>
-                <p className="text-sm text-slate-500 mt-1">{product.price} ج.م</p>
+                <p className="text-sm text-slate-500 mt-1">{formatPrice(product.price)}</p>
               </div>
             </div>
 
             <div className="flex justify-between items-center text-lg font-black text-slate-800 mt-4">
               <span>الإجمالي:</span>
-              <span className="text-emerald-500">{product.price} ج.م</span>
+              <span className="text-emerald-500">{formatPrice(product.price)}</span>
             </div>
           </div>
         </div>

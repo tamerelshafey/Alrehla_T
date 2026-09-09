@@ -46,3 +46,7 @@ export function calculateFinalSessionPrice(
 ): number {
   return basePricePerSession * formula.platformMultiplier + formula.fixedAdminFee;
 }
+
+export function formatPrice(amount: number): string {
+  return `${amount.toLocaleString('ar-EG')} ج.م`;
+}

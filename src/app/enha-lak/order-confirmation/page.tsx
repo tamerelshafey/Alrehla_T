@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
 import { CheckCircle, Package, ArrowLeft, Clock } from 'lucide-react';
@@ -56,7 +57,7 @@ export default async function PaymentStatusPage({ searchParams }: { searchParams
             </div>
             <div className="flex justify-between font-medium text-slate-600">
               <span>الإجمالي</span>
-              <span className="font-bold text-amber-600">{order.totalAmount.toLocaleString('ar-EG')} ج.م</span>
+              <span className="font-bold text-amber-600">{formatPrice(order.totalAmount)}</span>
             </div>
           </div>
         </div>

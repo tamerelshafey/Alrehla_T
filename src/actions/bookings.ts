@@ -4,11 +4,12 @@ import { mockServiceOrders, mockBookings } from '@/data/mock';
 import { revalidatePath } from 'next/cache';
 
 // Helper to simulate a booking checkout
-export async function createDummyBookingServiceOrder(amount: number) {
+export async function createDummyBookingServiceOrder(amount: number, packageId: string, instructorId: string) {
   const newOrder = {
     id: `so-${Date.now()}`,
     buyerProfileId: 'current-user',
-    packageId: 'dummy-package',
+    packageId: packageId,
+    instructorId: instructorId,
     status: 'pending' as const,
     amount,
     createdAt: new Date().toISOString(),
@@ -20,7 +21,7 @@ export async function createDummyBookingServiceOrder(amount: number) {
   // with the same ID so we can match them if needed, or pass the booking ID.
   const newBooking = {
     id: newOrder.id, // match IDs for simplicity in mock
-    packageId: 'dummy-package',
+    packageId, instructorId,
     status: 'pending' as const,
     scheduledAt: new Date().toISOString(),
     createdAt: new Date().toISOString(),

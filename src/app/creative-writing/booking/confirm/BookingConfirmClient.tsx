@@ -1,11 +1,15 @@
 'use client';
+import { formatPrice } from '@/lib/utils';
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { Calendar, Clock, User, CheckCircle2, ArrowRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createDummyBookingServiceOrder, submitBookingPaymentProof } from '@/actions/bookings';
 
 export function BookingConfirmClient() {
+  const searchParams = useSearchParams();
+  const packageId = searchParams.get('package') || 'dummy-package';
+  const instructorId = searchParams.get('instructor') || 'dummy-instructor';
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'instapay'>('credit_card');
   const [transactionRef, setTransactionRef] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
@@ -15,7 +19,7 @@ export function BookingConfirmClient() {
   const handlePaymentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     startTransition(async () => {
-      const orderId = await createDummyBookingServiceOrder(250);
+      const orderId = await createDummyBookingServiceOrder(250, packageId, instructorId);
       setOrderIdState(orderId);
       
       if (paymentMethod === 'instapay') {
@@ -85,7 +89,7 @@ export function BookingConfirmClient() {
         <h2 className="mb-4 text-lg font-bold text-slate-800">ملخص الدفع</h2>
         <div className="flex justify-between text-xl font-black text-slate-900">
           <span>قيمة الجلسة الاستشارية</span>
-          <span className="text-emerald-700">250 ج.م</span>
+          <span className="text-emerald-700">{formatPrice(250)}</span>
         </div>
       </div>
 

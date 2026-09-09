@@ -1,4 +1,5 @@
 'use client';
+import { formatPrice } from '@/lib/utils';
 
 import React, { useState } from 'react';
 import { InstructorPayout } from '@/types';
@@ -27,7 +28,7 @@ export function InstructorPayoutsClient({ payouts }: Props) {
         <div className="rounded-3xl border border-blue-200 bg-blue-50 p-6 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-blue-800 mb-1">الرصيد القابل للسحب</h3>
-            <p className="text-3xl font-black text-blue-900">{pendingAmount.toLocaleString('ar-EG')} ج.م</p>
+            <p className="text-3xl font-black text-blue-900">{formatPrice(pendingAmount)}</p>
           </div>
           <button 
             onClick={() => setShowWithdrawForm(true)}
@@ -40,7 +41,7 @@ export function InstructorPayoutsClient({ payouts }: Props) {
         <div className="rounded-3xl border border-slate-200 bg-white p-6">
           <h3 className="text-sm font-bold text-slate-500 mb-1">إجمالي الأرباح المدفوعة</h3>
           <p className="text-3xl font-black text-slate-800">
-            {payouts.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0).toLocaleString('ar-EG')} ج.م
+            {formatPrice(payouts.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0))}
           </p>
         </div>
       </div>
@@ -136,7 +137,7 @@ export function InstructorPayoutsClient({ payouts }: Props) {
             {payouts.map(payout => (
               <tr key={payout.id}>
                 <td className="p-4 font-medium text-slate-800">{payout.period}</td>
-                <td className="p-4 font-black text-blue-600">{payout.amount.toLocaleString('ar-EG')} ج.م</td>
+                <td className="p-4 font-black text-blue-600">{formatPrice(payout.amount)}</td>
                 <td className="p-4">
                   <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${
                     payout.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'

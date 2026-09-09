@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import { getSubscriptionTiers } from '@/data/mock';
 import { PackageOpen, Sparkles, Gift, Activity, Check } from 'lucide-react';
@@ -52,14 +53,14 @@ export default async function SubscriptionPage() {
                 <div className="my-6">
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-black text-slate-900">
-                      {tier.priceMonthly.toLocaleString('ar-EG')}
+                      {formatPrice(tier.priceMonthly)}
                     </span>
                     <span className="font-medium text-slate-500">
-                      ج.م / شهر
+                      / شهر
                     </span>
                   </div>
                   <div className="mt-2 text-sm font-medium text-slate-500">
-                    إجمالي الدفع: {tier.priceTotal.toLocaleString('ar-EG')} ج.م
+                    إجمالي الدفع: {formatPrice(tier.priceTotal)}
                   </div>
                 </div>
 

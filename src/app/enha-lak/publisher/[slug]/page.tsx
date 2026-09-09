@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/utils';
 import { getPublisherBySlug, getPersonalizedProducts } from '@/data/mock';
 import { PageContainer } from '@/components/PageContainer';
 import Image from 'next/image';
@@ -70,7 +71,7 @@ export default async function PublisherPage({ params }: { params: Promise<{ slug
                   <h3 className="text-lg font-bold text-slate-900 line-clamp-1">{product.name}</h3>
                   <div className="mt-4 flex items-center justify-between">
                     <span className="text-lg font-black text-rose-500">
-                      {product.price} ج.م
+                      {formatPrice(product.price)}
                     </span>
                   </div>
                 </div>

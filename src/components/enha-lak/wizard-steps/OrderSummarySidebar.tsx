@@ -1,4 +1,5 @@
 'use client';
+import { formatPrice } from '@/lib/utils';
 
 import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -54,7 +55,7 @@ export function OrderSummarySidebar({ product }: { product: PersonalizedProduct 
         </div>
         <div>
           <h4 className="font-bold text-slate-800">{product.name}</h4>
-          <p className="text-sm text-slate-500 mt-1">{product.price} ج.م</p>
+          <p className="text-sm text-slate-500 mt-1">{formatPrice(product.price)}</p>
         </div>
       </div>
 
@@ -79,14 +80,14 @@ export function OrderSummarySidebar({ product }: { product: PersonalizedProduct 
           <h4 className="font-bold text-slate-700 text-sm mb-2">الإضافات ({selectedAddonIds.length}):</h4>
           <div className="flex justify-between text-sm text-slate-600">
             <span>إضافات مخصصة</span>
-            <span>+{addonsTotal} ج.م</span>
+            <span>+{formatPrice(addonsTotal)}</span>
           </div>
         </div>
       )}
 
       <div className="flex justify-between items-center text-lg font-black text-slate-800 mt-4">
         <span>الإجمالي:</span>
-        <span className="text-rose-500">{total} ج.م</span>
+        <span className="text-rose-500">{formatPrice(total)}</span>
       </div>
     </div>
   );
