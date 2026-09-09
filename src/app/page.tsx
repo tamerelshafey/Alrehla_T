@@ -1,80 +1,78 @@
-import Link from 'next/link';
 import Image from 'next/image';
-import { HeroCarousel } from '@/components/HeroCarousel';
-import { getTestimonials } from '@/data/mock';
-import { Quote } from 'lucide-react';
+import Link from 'next/link';
+import { Star, Quote } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Section } from '@/components/ui/Section';
 
-import { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'منصة الرحلة - الصفحة الرئيسية',
-  description: 'المنصة الرائدة لتعليم وتعزيز مهارات الكتابة الإبداعية وتنمية الخيال.',
-};
-
-
-
-const homeSlides = [
+const testimonials = [
   {
     id: '1',
-    title: 'رحلتان مختلفتان... ومساحة واحدة للحكاية والنمو',
-    description: '«الرحلة» منصة عربية أسرية تجمع مشروعين: «إنها لك» و«بداية الرحلة».',
-    image: 'https://picsum.photos/seed/magicbook/1600/900',
-    ctaText: 'ابدأ الرحلة',
-    ctaLink: '/about',
-    theme: 'amber' as const,
+    authorName: 'أم مريم',
+    authorRole: 'والدة طفلة ٩ سنوات',
+    content: 'قصة "المدينة المفقودة" كانت نقطة تحول في علاقة مريم بالقراءة. لأول مرة تنهي كتاباً كاملاً وتطلب المزيد، فقط لأنها كانت البطلة!',
   },
   {
     id: '2',
-    title: 'إنها لك: حيث يتحول الخيال إلى واقع',
-    description: 'قصص ومنتجات مخصصة تجعل الطفل جزءًا من الحكاية، وتجعل الأسرة شريكةً.',
-    image: 'https://picsum.photos/seed/kidsstory/1600/900',
-    ctaText: 'استكشف إنها لك',
-    ctaLink: '/enha-lak',
-    theme: 'violet' as const,
+    authorName: 'خالد يوسف',
+    authorRole: 'أب لطفلين',
+    content: 'برنامج الكتابة الإبداعية ساعد ابني على التعبير عن مشاعره بطريقة لم أتوقعها. المدربون محترفون والبيئة مشجعة جداً.',
   },
   {
     id: '3',
-    title: 'أكاديمية بداية الرحلة',
-    description: 'برنامج فردي للكتابة الإبداعية يساعد الشباب والأطفال على اكتشاف أصواتهم الخاصة.',
-    image: 'https://picsum.photos/seed/childwriting/1600/900',
-    ctaText: 'تعرف على الأكاديمية',
-    ctaLink: '/creative-writing',
-    theme: 'emerald' as const,
-  }
+    authorName: 'سارة أحمد',
+    authorRole: 'معلمة لغة عربية',
+    content: 'أرشح "الرحلة" لكل أُم تسألني عن كيفية تحبيب أبنائها في لغتنا الجميلة. الفكرة مبتكرة والتنفيذ يفوق التوقعات.',
+  },
 ];
 
-export default async function HomePage() {
-  const testimonials = await getTestimonials();
-
+export default function Home() {
   return (
-    <div className="relative flex w-full flex-1 flex-col items-center justify-start space-y-32 px-6 py-12 font-sans text-slate-800 md:px-12">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "الرحلة",
-  "description": "منصة مخصصة لقصص الأطفال وبرامج الكتابة الإبداعية",
-  "url": "https://www.enhalak.com"
-}) }} />
-      
+    <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative z-10 mx-auto max-w-7xl pt-8 pb-12 w-full">
-        <HeroCarousel slides={homeSlides} />
-      </section>
+      <Section containerClassName="relative overflow-hidden rounded-[3rem] bg-amber-50 shadow-2xl shadow-amber-900/5 p-0">
+        <div className="grid lg:grid-cols-2">
+          <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16">
+            <div className="mb-4 inline-flex w-fit items-center rounded-full bg-amber-100 px-3 py-1 text-sm font-bold text-amber-700">
+              <Star className="ml-1.5 h-4 w-4" />
+              منصة للكتابة والقراءة
+            </div>
+            <h1 className="mb-6 text-4xl leading-tight font-black text-slate-800 md:text-5xl lg:text-6xl">
+              حيث تبدأ <span className="text-amber-500">الحكاية</span>، وتكتشف <span className="text-emerald-500">صوتك</span>
+            </h1>
+            <p className="mb-8 max-w-lg text-lg leading-relaxed font-medium text-slate-600">
+              سواء كنت تبحث عن قصة تُنسج خصيصاً لطفلك ليكون بطلها، أو مساحة آمنة لاكتشاف صوته الإبداعي؛ في "الرحلة" تبدأ كل الحكايات.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Button href="/enha-lak" variant="primary" accentColor="amber">
+                استكشف إنها لك
+              </Button>
+              <Button href="/creative-writing" variant="secondary" accentColor="amber" className="!border-none !bg-white !shadow-sm">
+                بداية الرحلة
+              </Button>
+            </div>
+          </div>
+          <div className="relative hidden lg:block">
+            <Image 
+              src="https://picsum.photos/seed/hero3/800/800" 
+              alt="طفل يقرأ كتاباً" 
+              fill className="object-cover" referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-50 to-transparent"></div>
+          </div>
+        </div>
+      </Section>
 
-
-      {/* Choose Your Journey */}
-      <section className="mx-auto w-full max-w-6xl">
-        <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
-          اختر رحلتك
-        </h2>
-        <div className="grid gap-8 md:grid-cols-2">
+      {/* Pillars Section */}
+      <Section>
+        <div className="grid gap-8 md:grid-cols-2 lg:gap-12">
           <Link
             href="/enha-lak"
             className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 group relative flex flex-col overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white transition-all duration-300 hover:border-violet-300 hover:shadow-2xl hover:shadow-violet-500/10"
           >
             <div className="relative h-64 w-full overflow-hidden bg-slate-100">
               <Image 
-                src="https://picsum.photos/seed/kidsstory/800/600" 
+                src="https://picsum.photos/seed/childreading/800/600" 
                 alt="إنها لك" 
                 fill className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer"
               />
@@ -115,10 +113,10 @@ export default async function HomePage() {
             </div>
           </Link>
         </div>
-      </section>
+      </Section>
 
       {/* Our Story */}
-      <section className="mx-auto w-full max-w-6xl overflow-hidden rounded-[3rem] border border-slate-100 bg-white shadow-xl shadow-slate-200/50">
+      <Section containerClassName="overflow-hidden rounded-[3rem] border border-slate-100 bg-white shadow-xl shadow-slate-200/50 p-0">
         <div className="grid lg:grid-cols-2">
           <div className="relative h-64 lg:h-auto">
             <Image 
@@ -149,28 +147,22 @@ export default async function HomePage() {
               </p>
             </div>
             <div>
-              <Link
-                href="/about"
-                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 inline-flex items-center justify-center rounded-xl border-2 border-slate-200 bg-white px-8 py-3 text-sm font-bold text-slate-700 transition-colors hover:border-amber-400 hover:bg-amber-50"
-              >
+              <Button href="/about" variant="secondary" accentColor="amber" className="!border-slate-200 !text-slate-700 hover:!border-amber-400">
                 تعرّف إلى رحلتنا
-              </Link>
+              </Button>
             </div>
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* Testimonials */}
-      <section className="mx-auto w-full max-w-6xl">
+      <Section>
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
           ماذا يقولون عنا؟
         </h2>
         <div className="grid gap-6 md:grid-cols-3">
           {testimonials.map((testimonial) => (
-            <div
-              key={testimonial.id}
-              className="flex flex-col justify-between rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
-            >
+            <Card key={testimonial.id} className="flex flex-col justify-between p-6">
               <div>
                 <Quote className="mb-4 h-8 w-8 text-blue-200" />
                 <p className="mb-6 leading-relaxed font-medium text-slate-600 italic">
@@ -185,13 +177,13 @@ export default async function HomePage() {
                   {testimonial.authorRole}
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
-      </section>
+      </Section>
 
       {/* Blog Teaser */}
-      <section className="mx-auto w-full max-w-4xl text-center">
+      <Section containerClassName="max-w-4xl text-center">
         <h2 className="mb-6 text-3xl font-black text-slate-800">
           مساحة للإلهام
         </h2>
@@ -199,34 +191,25 @@ export default async function HomePage() {
           نشارككم في مدونتنا مقالات تربوية، نصائح لتطوير الكتابة، وأفكاراً
           لتعزيز حب القراءة لدى الأبناء.
         </p>
-        <Link
-          href="/blog"
-          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 inline-flex items-center justify-center rounded-xl bg-slate-900 px-6 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-slate-800"
-        >
+        <Button href="/blog" variant="primary" accentColor="amber" className="!bg-slate-900 hover:!bg-slate-800">
           تصفح المدونة
-        </Link>
-      </section>
+        </Button>
+      </Section>
 
       {/* Final CTA */}
-      <section className="mx-auto w-full max-w-4xl pb-20 text-center">
+      <Section containerClassName="max-w-4xl pb-20 text-center">
         <h2 className="mb-10 text-4xl font-black text-slate-900">
           هل أنت مستعد لتبدأ الرحلة؟
         </h2>
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
-          <Link
-            href="/enha-lak"
-            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded-2xl bg-blue-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-blue-200 transition-colors hover:bg-blue-700"
-          >
+          <Button href="/enha-lak" variant="primary" accentColor="amber" size="lg" className="!bg-blue-600 hover:!bg-blue-700 !shadow-blue-200">
             استكشف قصص "إنها لك"
-          </Link>
-          <Link
-            href="/creative-writing/booking"
-            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 rounded-2xl bg-amber-500 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-amber-200 transition-colors hover:bg-amber-600"
-          >
+          </Button>
+          <Button href="/creative-writing/booking" variant="primary" accentColor="amber" size="lg">
             احجز مقعداً في "بداية الرحلة"
-          </Link>
+          </Button>
         </div>
-      </section>
+      </Section>
     </div>
   );
 }
