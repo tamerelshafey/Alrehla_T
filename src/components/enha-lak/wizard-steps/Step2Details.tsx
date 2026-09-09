@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 export function Step2Details({ onNext, onPrev }: { onNext: () => void, onPrev: () => void }) {
@@ -7,6 +7,29 @@ export function Step2Details({ onNext, onPrev }: { onNext: () => void, onPrev: (
   
   const facePhotoFile = watch('facePhotoFile');
   const secondPhotoFile = watch('secondPhotoFile');
+
+  const [facePhotoPreviewUrl, setFacePhotoPreviewUrl] = useState<string | null>(null);
+  const [secondPhotoPreviewUrl, setSecondPhotoPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!facePhotoFile) {
+      setFacePhotoPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(facePhotoFile);
+    setFacePhotoPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [facePhotoFile]);
+
+  useEffect(() => {
+    if (!secondPhotoFile) {
+      setSecondPhotoPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(secondPhotoFile);
+    setSecondPhotoPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [secondPhotoFile]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -63,8 +86,8 @@ export function Step2Details({ onNext, onPrev }: { onNext: () => void, onPrev: (
             className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
           {/* TODO: استبدال بمعاينة Cloudinary الفعلية عند ربط الباك إند */}
-          {facePhotoFile && (
-             <Image src={URL.createObjectURL(facePhotoFile)} alt="معاينة صورة الوجه المختارة للطفل" width={128} height={128} unoptimized className="mt-4 h-32 w-32 object-cover rounded-xl border border-slate-200" />
+          {facePhotoPreviewUrl && (
+             <Image src={facePhotoPreviewUrl} alt="معاينة صورة الوجه المختارة للطفل" width={128} height={128} unoptimized className="mt-4 h-32 w-32 object-cover rounded-xl border border-slate-200" />
           )}
           {errors.facePhotoFile && <span className="text-sm text-red-500">{errors.facePhotoFile.message as string}</span>}
         </div>
@@ -78,8 +101,8 @@ export function Step2Details({ onNext, onPrev }: { onNext: () => void, onPrev: (
             onChange={(e) => handleFileChange(e, 'secondPhotoFile')}
             className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
-          {secondPhotoFile && (
-             <Image src={URL.createObjectURL(secondPhotoFile)} alt="معاينة الصورة الإضافية المختارة" width={128} height={128} unoptimized className="mt-4 h-32 w-32 object-cover rounded-xl border border-slate-200" />
+          {secondPhotoPreviewUrl && (
+             <Image src={secondPhotoPreviewUrl} alt="معاينة الصورة الإضافية المختارة" width={128} height={128} unoptimized className="mt-4 h-32 w-32 object-cover rounded-xl border border-slate-200" />
           )}
         </div>
       </div>

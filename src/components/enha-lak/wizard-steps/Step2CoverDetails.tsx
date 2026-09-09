@@ -1,11 +1,23 @@
 import Image from 'next/image';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 export function Step2CoverDetails({ onNext, onPrev }: { onNext: () => void, onPrev: () => void }) {
   const { register, watch, setValue, formState: { errors } } = useFormContext();
   
   const coverPhotoFile = watch('coverPhotoFile');
+
+  const [coverPhotoPreviewUrl, setCoverPhotoPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!coverPhotoFile) {
+      setCoverPhotoPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(coverPhotoFile);
+    setCoverPhotoPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [coverPhotoFile]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -38,8 +50,8 @@ export function Step2CoverDetails({ onNext, onPrev }: { onNext: () => void, onPr
           className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
         />
         {/* TODO: استبدال بمعاينة Cloudinary الفعلية عند ربط الباك إند */}
-        {coverPhotoFile && (
-           <Image src={URL.createObjectURL(coverPhotoFile)} alt="معاينة صورة الغلاف المختارة" width={128} height={128} unoptimized className="mt-4 h-32 w-32 object-cover rounded-xl border border-slate-200" />
+        {coverPhotoPreviewUrl && (
+            <Image src={coverPhotoPreviewUrl} alt="معاينة صورة الغلاف المختارة" width={128} height={128} unoptimized className="mt-4 h-32 w-32 object-cover rounded-xl border border-slate-200" />
         )}
       </div>
 

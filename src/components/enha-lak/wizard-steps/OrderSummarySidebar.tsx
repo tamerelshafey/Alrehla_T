@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { PersonalizedProduct } from '@/types';
 import Image from 'next/image';
@@ -14,6 +14,18 @@ export function OrderSummarySidebar({ product }: { product: PersonalizedProduct 
   const facePhotoFile = watch('facePhotoFile');
   const familyMemberId = watch('familyMemberId');
   const newChildName = watch('newChildName');
+  
+  const [facePhotoPreviewUrl, setFacePhotoPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!facePhotoFile) {
+      setFacePhotoPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(facePhotoFile);
+    setFacePhotoPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [facePhotoFile]);
   
   const childName = newChildName || (familyMemberId ? 'مشارك من العائلة' : null);
 
@@ -51,8 +63,8 @@ export function OrderSummarySidebar({ product }: { product: PersonalizedProduct 
           <h4 className="font-bold text-slate-700 text-sm mb-2">الطفل:</h4>
           <div className="flex items-center gap-3">
             <div className="relative h-10 w-10 overflow-hidden rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
-              {facePhotoFile ? (
-                 <Image src={URL.createObjectURL(facePhotoFile)} alt="صورة وجه الطفل للطلب" fill unoptimized className="object-cover" />
+              {facePhotoPreviewUrl ? (
+                 <Image src={facePhotoPreviewUrl} alt="صورة وجه الطفل للطلب" fill unoptimized className="object-cover" />
               ) : (
                 <span className="text-xl text-slate-400 font-bold">{childName.charAt(0)}</span>
               )}
