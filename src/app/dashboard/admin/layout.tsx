@@ -27,8 +27,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { label: 'الاشتراكات', href: '/dashboard/admin/subscriptions/box', icon: Box, permission: 'canManageSubscriptions' },
     { label: 'الطلبات', href: '/dashboard/admin/orders', icon: ShoppingCart, permission: 'canManageOrders' },
     { label: 'الحجوزات والجلسات', href: '/dashboard/admin/bookings', icon: Calendar, permission: 'canManageBookings' },
-    { label: 'الدعم والتوظيف', href: '/dashboard/admin/support/tickets', icon: LifeBuoy, permission: 'canManageSupport' },
-    { label: 'المحتوى', href: '/dashboard/admin/content/blog', icon: FileText, permission: 'canManageContent' },
+    { label: 'طلبات الانضمام', href: '/dashboard/admin/join-requests', icon: UserCheck, permission: 'canManageSupport' },
+    { label: 'رسائل الدعم الفني', href: '/dashboard/admin/support/tickets', icon: LifeBuoy, permission: 'canManageSupport' },
+    { label: 'المدونة', href: '/dashboard/admin/content/blog', icon: FileText, permission: 'canManageContent' },
+    { label: 'محتوى الموقع', href: '/dashboard/admin/content/pages', icon: LayoutDashboard, permission: 'canManageContent' },
     { label: 'المالية', href: '/dashboard/admin/finance/instructor-payouts', icon: DollarSign, permission: 'canManageFinance' },
     { label: 'السجلات والتدقيق', href: '/dashboard/admin/audit-logs', icon: ShieldAlert, permission: 'canViewAuditLogs' },
   ];
