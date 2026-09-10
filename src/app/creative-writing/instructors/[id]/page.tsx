@@ -4,6 +4,9 @@ import { PageContainer } from '@/components/PageContainer';
 import { ArrowLeft, User, Star, Award, BookOpen, MessageCircle } from 'lucide-react';
 import { getInstructors } from '@/data/mock';
 import { notFound } from 'next/navigation';
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
 export default async function InstructorProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -15,8 +18,8 @@ export default async function InstructorProfilePage({ params }: { params: Promis
   }
 
   return (
-    <PageContainer>
-      <div className="mx-auto w-full max-w-5xl pt-12 pb-24">
+    <PageContainer className="!py-0 !space-y-0">
+      <Section containerClassName="mx-auto w-full max-w-5xl pt-12 pb-24">
         {/* Back link */}
         <Link href="/creative-writing/instructors" className="mb-8 inline-flex items-center gap-2 font-bold text-slate-500 hover:text-emerald-600 transition-colors">
           <ArrowLeft className="h-4 w-4" />
@@ -24,7 +27,7 @@ export default async function InstructorProfilePage({ params }: { params: Promis
         </Link>
 
         {/* Profile Card */}
-        <div className="overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-xl shadow-slate-200/50">
+        <Card accentColor="emerald" className="overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-xl shadow-slate-200/50 p-0">
           <div className="h-48 w-full bg-gradient-to-r from-emerald-100 via-teal-50 to-sky-100"></div>
           
           <div className="relative px-8 pb-12 sm:px-12">
@@ -43,13 +46,14 @@ export default async function InstructorProfilePage({ params }: { params: Promis
                 </div>
               </div>
               <div className="mb-2 shrink-0">
-                <Link
+                <Button
                   href="/creative-writing/booking"
-                  className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-slate-900 px-8 py-4 font-bold text-white shadow-md transition-colors hover:bg-emerald-600"
+                  accentColor="emerald"
+                  className="w-full sm:w-auto !bg-slate-900 !text-white hover:!bg-emerald-600"
                 >
                   احجز جلسة الآن
                   <MessageCircle className="h-5 w-5" />
-                </Link>
+                </Button>
               </div>
             </div>
 
@@ -115,8 +119,8 @@ export default async function InstructorProfilePage({ params }: { params: Promis
             </div>
 
           </div>
-        </div>
-      </div>
+        </Card>
+      </Section>
     </PageContainer>
   );
 }

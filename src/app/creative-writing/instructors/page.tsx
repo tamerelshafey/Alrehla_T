@@ -3,28 +3,32 @@ import { User, Award, CheckCircle } from 'lucide-react';
 
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
-
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
 
 
 export default async function InstructorsPage() {
   const instructors = await getInstructors();
 
   return (
-    <PageContainer>
+    <PageContainer className="!py-0 !space-y-0">
       {/* Header */}
-      <SectionHeader
-        title="مدربو «بداية الرحلة»"
-        
-        description="فريق من الكُتّاب والتربويين المتخصصين في أدب الطفل واليافعين، يجمعون بين الشغف الإبداعي والقدرة على التوجيه بأسلوب داعم ومحفز."
-      />
+      <Section containerClassName="pt-8 pb-12">
+        <SectionHeader
+          title="مدربو «بداية الرحلة»"
+          
+          description="فريق من الكُتّاب والتربويين المتخصصين في أدب الطفل واليافعين، يجمعون بين الشغف الإبداعي والقدرة على التوجيه بأسلوب داعم ومحفز."
+        />
+      </Section>
 
       {/* Instructors Grid */}
-      <section className="mx-auto w-full max-w-6xl">
+      <Section containerClassName="mx-auto w-full max-w-6xl pb-20">
         <div className="grid gap-8 md:grid-cols-2">
           {instructors.map((instructor) => (
-            <div
+            <Card
               key={instructor.id}
-              className="relative flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition-all duration-300 hover:border-slate-300 hover:shadow-xl"
+              accentColor="emerald"
+              className="relative flex flex-col overflow-hidden p-8"
             >
               {instructor.isSample && (
                 <div className="absolute top-4 right-4 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
@@ -67,10 +71,10 @@ export default async function InstructorsPage() {
                   ))}
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
-      </section>
+      </Section>
     </PageContainer>
   );
 }

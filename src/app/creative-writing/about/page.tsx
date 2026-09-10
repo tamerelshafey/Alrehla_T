@@ -2,7 +2,8 @@ import { Sparkles, PenTool, Heart } from 'lucide-react';
 
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
-
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
 
 
 export default function AboutProgramPage() {
@@ -13,7 +14,7 @@ export default function AboutProgramPage() {
         'نبدأ بإشعال شرارة الفضول والخيال قبل الخوض في تقنيات الكتابة المعقدة.',
       icon: Sparkles,
       color: 'text-emerald-600',
-      bg: 'bg-amber-50',
+      bg: 'bg-emerald-50',
     },
     {
       title: 'الممارسة تصنع المبدع',
@@ -34,45 +35,50 @@ export default function AboutProgramPage() {
   ];
 
   return (
-    <PageContainer>
+    <PageContainer className="!py-0 !space-y-0">
       {/* Hero Section */}
-      <SectionHeader
-        title="عن «بداية الرحلة»"
-        titleClassName="md:text-6xl"
-        
-        description="الكتابة مساحة للتعبير والنمو"
-      />
+      <Section containerClassName="pt-8">
+        <SectionHeader
+          title="عن «بداية الرحلة»"
+          titleClassName="md:text-6xl"
+          
+          description="الكتابة مساحة للتعبير والنمو"
+        />
+      </Section>
 
       {/* Why Us Section */}
-      <section className="mx-auto w-full max-w-5xl rounded-3xl border border-slate-100 bg-slate-50 p-8 md:p-16">
-        <h2 className="mb-8 text-center text-3xl font-black text-slate-800">
-          لماذا «بداية الرحلة»؟
-        </h2>
-        <p className="mx-auto mb-12 max-w-2xl text-center text-lg font-medium text-slate-600">
-          لأن الكتابة أكثر من مهمة مدرسية: يمكن أن تكون مساحة للتفكير والتجريب
-          وصناعة المعنى.
-        </p>
-        <div className="space-y-6">
-          {[
-            'مساحة تحتفي بالمحاولة، وتتعامل مع الخطأ باعتباره جزءًا طبيعيًا من التعلم.',
-            'جلسات فردية تتيح اهتمامًا مركزًا بالمشارك واحتياجاته.',
-            'تجربة تتكيف مع العمر والعلاقة الحالية بالكتابة والاهتمامات.',
-          ].map((point, idx) => (
-            <div
-              key={idx}
-              className="flex items-center gap-4 rounded-2xl bg-white p-6 shadow-sm"
-            >
-              <div className="h-3 w-3 shrink-0 rounded-full bg-emerald-500"></div>
-              <p className="text-lg leading-relaxed font-medium text-slate-700">
-                {point}
-              </p>
-            </div>
-          ))}
+      <Section containerClassName="mx-auto w-full max-w-5xl">
+        <div className="rounded-3xl border border-slate-100 bg-slate-50 p-8 md:p-16">
+          <h2 className="mb-8 text-center text-3xl font-black text-slate-800">
+            لماذا «بداية الرحلة»؟
+          </h2>
+          <p className="mx-auto mb-12 max-w-2xl text-center text-lg font-medium text-slate-600">
+            لأن الكتابة أكثر من مهمة مدرسية: يمكن أن تكون مساحة للتفكير والتجريب
+            وصناعة المعنى.
+          </p>
+          <div className="space-y-6">
+            {[
+              'مساحة تحتفي بالمحاولة، وتتعامل مع الخطأ باعتباره جزءًا طبيعيًا من التعلم.',
+              'جلسات فردية تتيح اهتمامًا مركزًا بالمشارك واحتياجاته.',
+              'تجربة تتكيف مع العمر والعلاقة الحالية بالكتابة والاهتمامات.',
+            ].map((point, idx) => (
+              <Card
+                key={idx}
+                accentColor="emerald"
+                className="flex items-center gap-4 p-6"
+              >
+                <div className="h-3 w-3 shrink-0 rounded-full bg-emerald-500"></div>
+                <p className="text-lg leading-relaxed font-medium text-slate-700">
+                  {point}
+                </p>
+              </Card>
+            ))}
+          </div>
         </div>
-      </section>
+      </Section>
 
       {/* Distinctive Features */}
-      <section className="mx-auto w-full max-w-6xl">
+      <Section containerClassName="mx-auto w-full max-w-6xl pb-20">
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
           ما الذي يميزنا؟
         </h2>
@@ -80,9 +86,10 @@ export default function AboutProgramPage() {
           {features.map((feature, idx) => {
             const Icon = feature.icon;
             return (
-              <div
+              <Card
                 key={idx}
-                className="rounded-3xl border border-slate-100 bg-white p-8 text-center shadow-sm"
+                accentColor="emerald"
+                className="p-8 text-center"
               >
                 <div
                   className={`mx-auto flex h-16 w-16 items-center justify-center rounded-2xl ${feature.bg} ${feature.color} mb-6`}
@@ -95,11 +102,11 @@ export default function AboutProgramPage() {
                 <p className="leading-relaxed font-medium text-slate-600">
                   {feature.description}
                 </p>
-              </div>
+              </Card>
             );
           })}
         </div>
-      </section>
+      </Section>
     </PageContainer>
   );
 }

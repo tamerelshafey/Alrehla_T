@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Instructor, WeeklySlot } from '@/types';
 import { Calendar, Clock, User, ArrowRight, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
 interface BookingWizardProps {
   instructors: Instructor[];
@@ -27,7 +29,7 @@ export function BookingWizardClient({ instructors }: BookingWizardProps) {
   };
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50 md:p-10">
+    <Card accentColor="emerald" className="p-6 md:p-10 shadow-xl shadow-slate-200/50">
       <form onSubmit={handleConfirm} className="space-y-8">
         
         {/* Step 1: Package & Instructor */}
@@ -80,15 +82,16 @@ export function BookingWizardClient({ instructors }: BookingWizardProps) {
               </div>
             </div>
             
-            <button
+            <Button
               type="button"
               onClick={handleNext}
               disabled={!selectedInstructorId}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-4 font-bold text-white shadow-md transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              accentColor="emerald"
+              className="w-full py-4 text-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
               متابعة لاختيار الموعد
               <ArrowRight className="h-5 w-5 rotate-180" />
-            </button>
+            </Button>
           </div>
         )}
 
@@ -101,7 +104,7 @@ export function BookingWizardClient({ instructors }: BookingWizardProps) {
                 الموعد الأسبوعي الثابت
               </h2>
               
-              <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
                 <p className="font-bold mb-1">الجدول الأسبوعي:</p>
                 <p>يتم اختيار الموعد مرة واحدة، وسيكون هو <strong>موعدك الثابت في نفس اليوم والساعة أسبوعياً</strong> طوال فترة الباقة.</p>
               </div>
@@ -143,22 +146,25 @@ export function BookingWizardClient({ instructors }: BookingWizardProps) {
             </div>
 
             <div className="flex gap-4">
-              <button
+              <Button
                 type="button"
                 onClick={handlePrev}
-                className="w-1/3 rounded-xl bg-slate-100 py-4 font-bold text-slate-700 transition-colors hover:bg-slate-200"
+                variant="secondary"
+                accentColor="emerald"
+                className="w-1/3 py-4 text-center"
               >
                 رجوع
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleNext}
                 disabled={!selectedSlot}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 py-4 font-bold text-white shadow-md transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                accentColor="emerald"
+                className="flex-1 py-4 text-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 متابعة البيانات
                 <ArrowRight className="h-5 w-5 rotate-180" />
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -203,23 +209,26 @@ export function BookingWizardClient({ instructors }: BookingWizardProps) {
             </div>
 
             <div className="flex gap-4">
-              <button
+              <Button
                 type="button"
                 onClick={handlePrev}
-                className="w-1/3 rounded-xl bg-slate-100 py-4 font-bold text-slate-700 transition-colors hover:bg-slate-200"
+                variant="secondary"
+                accentColor="emerald"
+                className="w-1/3 py-4 text-center"
               >
                 رجوع
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 py-4 font-bold text-white shadow-md transition-colors hover:bg-slate-800"
+                accentColor="emerald"
+                className="flex-1 !bg-slate-900 !text-white hover:!bg-slate-800 py-4 text-center"
               >
                 تأكيد الحجز والدفع
-              </button>
+              </Button>
             </div>
           </div>
         )}
       </form>
-    </div>
+    </Card>
   );
 }

@@ -10,6 +10,7 @@ type ButtonProps = {
   className?: string;
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
 };
 
 export function Button({
@@ -19,6 +20,7 @@ export function Button({
   href,
   className = '',
   children,
+  disabled,
   ...props
 }: ButtonProps) {
   const baseStyles = "inline-flex items-center justify-center font-bold transition-colors rounded-xl min-h-[44px]";
@@ -44,6 +46,13 @@ export function Button({
   const classes = `${baseStyles} ${sizeStyles[size]} ${colorStyles[variant][accentColor]} ${className}`;
 
   if (href) {
+    if (disabled) {
+      return (
+        <span className={`${classes} opacity-50 cursor-not-allowed`}>
+          {children}
+        </span>
+      );
+    }
     return (
       <Link href={href} className={classes}>
         {children}
@@ -52,7 +61,7 @@ export function Button({
   }
 
   return (
-    <button className={classes} {...props}>
+    <button className={classes} disabled={disabled} {...props}>
       {children}
     </button>
   );

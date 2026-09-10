@@ -5,19 +5,13 @@ export const metadata: Metadata = {
   description: 'استكشف برامج ودورات الكتابة الإبداعية المتاحة.',
 };
 
-import Link from 'next/link';
 import { getTestimonials } from '@/data/mock';
-
-
 import { PageContainer } from '@/components/PageContainer';
-import { SectionHeader } from '@/components/SectionHeader';
-
-
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
 import {
-
-
-
   PenTool,
   Target,
   Map,
@@ -28,9 +22,6 @@ import {
   ArrowLeft,
   Quote,
 } from 'lucide-react';
-
-
-
 
 export default async function CreativeWritingPage() {
   const allTestimonials = await getTestimonials();
@@ -44,7 +35,7 @@ export default async function CreativeWritingPage() {
       text: 'لديه أفكار أو صور أو قصص، ويريد أدوات تساعده على تحويلها إلى كتابة أوضح.',
       icon: Sparkles,
       color: 'text-emerald-600',
-      bg: 'bg-amber-50',
+      bg: 'bg-emerald-50',
     },
     {
       text: 'قد لا يعرف من أين يبدأ، أو يتوقف طويلاً أمام الصفحة البيضاء، ويحتاج إلى مساحة تساعده على المحاولة.',
@@ -94,48 +85,49 @@ export default async function CreativeWritingPage() {
   ];
 
   return (
-    <PageContainer className="space-y-32">
-            {/* Hero Section */}
-      <section className="mx-auto max-w-4xl text-center pt-8">
+    <PageContainer className="!py-0 !space-y-0">
+      {/* Hero Section */}
+      <Section containerClassName="mx-auto max-w-4xl text-center pt-8">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 mb-6 leading-tight">
           برامج الكتابة الإبداعية
         </h1>
         <p className="text-xl md:text-2xl font-medium text-slate-600 mb-8 leading-relaxed">
           نساعدك على تحويل أفكارك إلى قصص، من خلال مساحة آمنة للمحاولة وتطوير مهارات الكتابة.
         </p>
-      </section>
-      
-
+      </Section>
 
       {/* Suitable For */}
-      <section className="mx-auto w-full max-w-6xl rounded-3xl border border-slate-100 bg-slate-50/50 p-8 md:p-16">
-        <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
-          قد تكون مناسبة إذا كان المشارك...
-        </h2>
-        <div className="grid gap-8 md:grid-cols-3">
-          {suitableFor.map((item, idx) => {
-            const Icon = item.icon;
-            return (
-              <div
-                key={idx}
-                className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm"
-              >
-                <div
-                  className={`mx-auto flex h-16 w-16 items-center justify-center rounded-2xl ${item.bg} ${item.color} mb-6`}
+      <Section containerClassName="mx-auto w-full max-w-6xl">
+        <div className="rounded-3xl border border-slate-100 bg-slate-50/50 p-8 md:p-16">
+          <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
+            قد تكون مناسبة إذا كان المشارك...
+          </h2>
+          <div className="grid gap-8 md:grid-cols-3">
+            {suitableFor.map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <Card
+                  key={idx}
+                  accentColor="emerald"
+                  className="p-8 text-center"
                 >
-                  <Icon className="h-8 w-8" />
-                </div>
-                <p className="text-lg leading-relaxed font-medium text-slate-600">
-                  {item.text}
-                </p>
-              </div>
-            );
-          })}
+                  <div
+                    className={`mx-auto flex h-16 w-16 items-center justify-center rounded-2xl ${item.bg} ${item.color} mb-6`}
+                  >
+                    <Icon className="h-8 w-8" />
+                  </div>
+                  <p className="text-lg leading-relaxed font-medium text-slate-600">
+                    {item.text}
+                  </p>
+                </Card>
+              );
+            })}
+          </div>
         </div>
-      </section>
+      </Section>
 
       {/* Features */}
-      <section className="mx-auto w-full max-w-5xl">
+      <Section containerClassName="mx-auto w-full max-w-5xl">
         <h2 className="mb-16 text-center text-3xl font-black text-slate-800">
           ماذا يجد المشارك في «بداية الرحلة»؟
         </h2>
@@ -161,19 +153,19 @@ export default async function CreativeWritingPage() {
             );
           })}
         </div>
-      </section>
+      </Section>
 
       {/* Pathways */}
-      <section className="mx-auto w-full max-w-4xl">
+      <Section containerClassName="mx-auto w-full max-w-4xl">
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
           ما يناسبك؟
         </h2>
         <div className="grid gap-6 md:grid-cols-2">
-          <Link
+          <a
             href="/creative-writing/packages"
-            className="group block rounded-3xl border border-slate-200 bg-white p-8 transition-all duration-300 hover:border-amber-300 hover:shadow-xl hover:shadow-amber-500/10"
+            className="group block rounded-3xl border border-slate-200 bg-white p-8 transition-all duration-300 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/10"
           >
-            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-emerald-600">
+            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
               <Map className="h-6 w-6" />
             </div>
             <h3 className="mb-3 text-2xl font-bold text-slate-800">
@@ -185,10 +177,10 @@ export default async function CreativeWritingPage() {
             <span className="flex items-center gap-2 font-bold text-emerald-600 transition-all group-hover:gap-3">
               اكتشف الباقات <ArrowLeft className="h-4 w-4" />
             </span>
-          </Link>
-          <Link
+          </a>
+          <a
             href="/creative-writing/services"
-            className="group block rounded-3xl border border-slate-200 bg-white p-8 transition-all duration-300 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10"
+            className="group block rounded-3xl border border-slate-200 bg-white p-8 transition-all duration-300 hover:border-teal-300 hover:shadow-xl hover:shadow-teal-500/10"
           >
             <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
               <PenTool className="h-6 w-6" />
@@ -202,12 +194,12 @@ export default async function CreativeWritingPage() {
             <span className="flex items-center gap-2 font-bold text-teal-600 transition-all group-hover:gap-3">
               اكتشف الخدمات <ArrowLeft className="h-4 w-4" />
             </span>
-          </Link>
+          </a>
         </div>
-      </section>
+      </Section>
 
       {/* Instructors Teaser */}
-      <section className="relative mx-auto w-full max-w-4xl overflow-hidden rounded-3xl bg-slate-900 p-8 text-center text-white md:p-12">
+      <Section containerClassName="relative mx-auto w-full max-w-4xl overflow-hidden rounded-3xl bg-slate-900 p-8 text-center text-white md:p-12">
         <div className="absolute top-0 right-0 -z-0 h-64 w-64 rounded-full bg-slate-800 blur-3xl"></div>
         <div className="relative z-10">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-800 text-slate-300">
@@ -218,25 +210,27 @@ export default async function CreativeWritingPage() {
             فريق من الكُتّاب والتربويين المتخصصين في أدب الطفل واليافعين، يجمعون
             بين الشغف الإبداعي والقدرة على التوجيه بأسلوب داعم ومحفز.
           </p>
-          <Link
+          <Button
             href="/creative-writing/instructors"
-            className="inline-flex items-center justify-center rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-900 transition-colors hover:bg-slate-100"
+            accentColor="emerald"
+            className="!bg-white !text-slate-900 hover:!bg-slate-100"
           >
             تعرّف إلى المدربين
-          </Link>
+          </Button>
         </div>
-      </section>
+      </Section>
 
       {/* Testimonials */}
-      <section className="mx-auto w-full max-w-5xl">
+      <Section containerClassName="mx-auto w-full max-w-5xl">
         <div className="grid gap-8 md:grid-cols-2">
           {testimonials.slice(0, 2).map((testimonial) => (
-            <div
+            <Card
               key={testimonial.id}
-              className="flex flex-col justify-between rounded-3xl border border-slate-100 bg-white p-8 shadow-sm"
+              accentColor="emerald"
+              className="flex flex-col justify-between p-8"
             >
               <div>
-                <Quote className="mb-6 h-10 w-10 text-amber-200" />
+                <Quote className="mb-6 h-10 w-10 text-emerald-200" />
                 <p className="mb-8 text-lg leading-relaxed font-medium text-slate-700 italic">
                   "{testimonial.content}"
                 </p>
@@ -249,31 +243,32 @@ export default async function CreativeWritingPage() {
                   {testimonial.authorRole}
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
-      </section>
+      </Section>
 
       {/* Final CTA */}
-      <section className="mx-auto w-full max-w-4xl pb-20 text-center">
+      <Section containerClassName="mx-auto w-full max-w-4xl pb-20 text-center">
         <h2 className="mb-10 text-4xl font-black text-slate-900">
           جاهز للبدء؟
         </h2>
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
-          <Link
+          <Button
             href="/creative-writing/packages"
-            className="rounded-2xl bg-emerald-500 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-amber-200 transition-colors hover:bg-emerald-600"
+            accentColor="emerald"
           >
             استعرض الباقات
-          </Link>
-          <Link
+          </Button>
+          <Button
             href="/creative-writing/services"
-            className="rounded-2xl border border-slate-200 bg-white px-8 py-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50"
+            variant="secondary"
+            accentColor="emerald"
           >
             اختر خدمة مستقلة
-          </Link>
+          </Button>
         </div>
-      </section>
+      </Section>
     </PageContainer>
   );
 }

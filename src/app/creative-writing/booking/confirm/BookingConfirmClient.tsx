@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Calendar, Clock, User, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createDummyBookingServiceOrder, submitBookingPaymentProof } from '@/actions/bookings';
+import { Button } from '@/components/ui/Button';
 
 export function BookingConfirmClient() {
   const searchParams = useSearchParams();
@@ -45,12 +46,12 @@ export function BookingConfirmClient() {
             : 'تم استلام الدفعة وتأكيد موعدك بنجاح. تفاصيل الحجز متوفرة في لوحة التحكم.'}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/account/orders/creative-writing" className="rounded-xl bg-slate-900 px-8 py-3 font-bold text-white transition-colors hover:bg-slate-800">
+          <Button href="/account/orders/creative-writing" accentColor="emerald" className="!bg-slate-900 !text-white hover:!bg-slate-800 px-8 py-3">
             تتبع الحجز
-          </Link>
-          <Link href="/creative-writing" className="rounded-xl bg-slate-100 px-8 py-3 font-bold text-slate-700 transition-colors hover:bg-slate-200">
+          </Button>
+          <Button href="/creative-writing" variant="secondary" accentColor="emerald" className="px-8 py-3">
             العودة للرئيسية
-          </Link>
+          </Button>
         </div>
       </div>
     );
@@ -145,21 +146,24 @@ export function BookingConfirmClient() {
         )}
 
         <div className="flex flex-col sm:flex-row gap-4 pt-4">
-          <button
+          <Button
             type="submit"
             disabled={isPending}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 py-4 font-bold text-white shadow-md transition-colors hover:bg-emerald-700 disabled:opacity-70"
+            accentColor="emerald"
+            className="flex-1 py-4 text-center disabled:opacity-70"
           >
             {isPending ? 'جاري التنفيذ...' : (paymentMethod === 'instapay' ? 'لقد قمت بالتحويل' : 'تأكيد الحجز والدفع')}
             {!isPending && <CheckCircle2 className="h-5 w-5" />}
-          </button>
-          <Link
+          </Button>
+          <Button
             href="/creative-writing/booking"
-            className="flex sm:w-1/3 items-center justify-center gap-2 rounded-xl bg-slate-100 py-4 font-bold text-slate-700 transition-colors hover:bg-slate-200"
+            variant="secondary"
+            accentColor="emerald"
+            className="sm:w-1/3 py-4 text-center"
           >
             <ArrowRight className="h-5 w-5" />
             تعديل الموعد
-          </Link>
+          </Button>
         </div>
       </form>
     </>

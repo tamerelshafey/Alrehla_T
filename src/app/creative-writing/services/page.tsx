@@ -5,63 +5,70 @@ import { ArrowLeft } from 'lucide-react';
 
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
-
-
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
 export default async function ServicesPage() {
   const services = await getCreativeServices();
 
   return (
-    <PageContainer>
+    <PageContainer className="!py-0 !space-y-0">
       {/* Header */}
-      <SectionHeader
-        title="الخدمات الإبداعية المستقلة"
-        
-        description="خدمات فردية وسريعة لتطوير مهارات الكتابة، ومراجعة النصوص، وتوليد الأفكار، دون الالتزام ببرنامج طويل."
-      />
+      <Section containerClassName="pt-8 pb-12">
+        <SectionHeader
+          title="الخدمات الإبداعية المستقلة"
+          
+          description="خدمات فردية وسريعة لتطوير مهارات الكتابة، ومراجعة النصوص، وتوليد الأفكار، دون الالتزام ببرنامج طويل."
+        />
+      </Section>
 
       {/* Services Grid */}
-      <section className="mx-auto w-full max-w-5xl">
+      <Section containerClassName="mx-auto w-full max-w-5xl">
         <div className="grid gap-8 md:grid-cols-3">
           {services.map((service) => (
-            <div
+            <Card
               key={service.id}
-              className="flex flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition-all duration-300 hover:border-blue-200 hover:shadow-xl"
+              accentColor="emerald"
+              className="flex flex-col p-8"
             >
               <div className="mb-6 flex flex-col">
                 <h3 className="mb-2 text-2xl font-black text-slate-800">
                   {service.name}
                 </h3>
-                <div className="text-lg font-black text-teal-600">
+                <div className="text-lg font-black text-emerald-600">
                   {formatPrice(service.price)}
                 </div>
               </div>
               <p className="mb-8 flex-1 text-sm leading-relaxed font-medium text-slate-600">
                 {service.description}
               </p>
-              <Link
+              <Button
                 href="/creative-writing/booking"
-                className="mt-auto w-full rounded-xl bg-slate-900 py-3 text-center text-sm font-bold text-white shadow-md transition-colors hover:bg-slate-800"
+                accentColor="emerald"
+                className="mt-auto w-full py-3 text-center"
               >
                 احجز الآن
-              </Link>
-            </div>
+              </Button>
+            </Card>
           ))}
         </div>
-      </section>
+      </Section>
 
       {/* Packages Link */}
-      <div className="mx-auto mt-12 w-full max-w-4xl rounded-3xl border border-slate-100 bg-slate-50 p-8 text-center">
-        <h3 className="mb-4 text-xl font-bold text-slate-800">
-          تبحث عن مسار متكامل بدل خدمة واحدة؟
-        </h3>
-        <Link
-          href="/creative-writing/packages"
-          className="inline-flex items-center gap-2 text-lg font-bold text-emerald-600 transition-all hover:gap-3"
-        >
-          استعرض الباقات <ArrowLeft className="h-5 w-5" />
-        </Link>
-      </div>
+      <Section containerClassName="pb-20">
+        <Card accentColor="emerald" className="mx-auto w-full max-w-4xl p-8 text-center bg-slate-50">
+          <h3 className="mb-4 text-xl font-bold text-slate-800">
+            تبحث عن مسار متكامل بدل خدمة واحدة؟
+          </h3>
+          <Link
+            href="/creative-writing/packages"
+            className="inline-flex items-center gap-2 text-lg font-bold text-emerald-600 transition-all hover:gap-3"
+          >
+            استعرض الباقات <ArrowLeft className="h-5 w-5" />
+          </Link>
+        </Card>
+      </Section>
     </PageContainer>
   );
 }
