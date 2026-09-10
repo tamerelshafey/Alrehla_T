@@ -188,24 +188,46 @@ export const mockInstructors: Instructor[] = [
 
 export const mockCreativeServices: CreativeService[] = [
   {
-    id: 'srv-1',
-    name: 'مراجعة قصة قصيرة',
-    price: 350,
-    description: 'مراجعة لغوية وإبداعية لقصة قصيرة كتبها الطفل.',
+    id: "review-1",
+    name: "مراجعة نص",
+    price: 650,
+    description: "مراجعة لغوية وفنية لقصة الطفل.",
   },
   {
-    id: 'srv-2',
-    name: 'جلسة توليد أفكار',
-    price: 410,
-    description:
-      'لقاء فردي لمن يريد تطوير فكرة قصة أو شخصيات أو إيجاد مدخل للبدء.',
+    id: "video-1",
+    name: "فيديو قصة",
+    price: 1250,
+    description: "فيديو لقصتك",
   },
   {
-    id: 'srv-3',
-    name: 'تقرير على عينة كتابية',
-    price: 290,
-    description:
-      'قراءة مركزة لعينة يرسلها العميل، تتضمن أبرز نقاط القوة وفرص التطوير.',
+    id: "publish-1",
+    name: "نشر قصة",
+    price: 2450,
+    description: "انشر قصتك داخل احد انتجاتنا",
+  },
+  {
+    id: "publish-2",
+    name: "نشر كتابك الخاص",
+    price: 8450,
+    description: "نشر كتابك الخاص",
+  },
+  {
+    id: "consult-1",
+    name: "استشارة تربوية",
+    price: 650,
+    description: "جلسة استشارة لولي الأمر. جلسة استشارة لولي الأمر.",
+  },
+  {
+    id: "adv-1",
+    name: "تهههح",
+    price: 230,
+    description: "مغامرة إبداعية مخصصة",
+  },
+  {
+    id: "audio-1",
+    name: "قصة مسموعة",
+    price: 590,
+    description: "قصة مسموعة",
   },
 ];
 
