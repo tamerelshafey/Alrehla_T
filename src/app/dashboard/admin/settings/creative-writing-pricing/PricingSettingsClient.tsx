@@ -34,7 +34,7 @@ export function PricingSettingsClient({ settings }: { settings: PricingFormulaSe
         </div>
       </div>
 
-      <form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+      <form onSubmit={handleSave} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
         <div className="grid gap-6 sm:grid-cols-2">
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700">مضاعف المنصة</label>
@@ -77,7 +77,7 @@ export function PricingSettingsClient({ settings }: { settings: PricingFormulaSe
         </div>
       </form>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <h3 className="text-lg font-black text-slate-800 mb-4">معاينة حية للأسعار</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-right">

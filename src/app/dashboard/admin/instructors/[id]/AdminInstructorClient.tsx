@@ -102,7 +102,7 @@ export function AdminInstructorClient({ instructor, updateRequests, certificatio
             </div>
             
             {pendingRequests.map(req => (
-              <div key={req.id} className="mb-6 last:mb-0 bg-white rounded-2xl p-6 border border-amber-100">
+              <div key={req.id} className="mb-6 last:mb-0 bg-white rounded-3xl p-6 border border-amber-100">
                 <div className="mb-4">
                   <span className="text-xs font-bold text-slate-500 block mb-2">تاريخ الطلب: {new Date(req.createdAt).toLocaleString('ar-EG')}</span>
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -163,7 +163,7 @@ export function AdminInstructorClient({ instructor, updateRequests, certificatio
                 const daySlots = instructor.weeklySchedule?.filter(s => s.day === dayKey) || [];
                 if (daySlots.length === 0) return null;
                 return (
-                  <div key={dayKey} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                  <div key={dayKey} className="rounded-3xl border border-slate-100 bg-slate-50 p-4">
                     <h4 className="font-bold text-slate-700 mb-2 capitalize">{dayKey}</h4>
                     <div className="flex flex-wrap gap-2">
                       {daySlots.map(s => (
@@ -191,7 +191,7 @@ export function AdminInstructorClient({ instructor, updateRequests, certificatio
             </div>
             <div className="space-y-4">
               {pastRequests.map(req => (
-                <div key={req.id} className="rounded-2xl bg-slate-50 p-4 border border-slate-100">
+                <div key={req.id} className="rounded-3xl bg-slate-50 p-4 border border-slate-100">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-bold text-slate-500">{new Date(req.createdAt).toLocaleString('ar-EG')}</span>
                     <span className={`text-xs font-bold px-2 py-1 rounded-lg ${req.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>

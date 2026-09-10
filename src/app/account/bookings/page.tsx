@@ -8,7 +8,7 @@ export default async function BookingsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-black text-slate-900">المواعيد والجلسات</h1>
-      <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+      <div className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm">
         <table className="w-full text-right text-sm">
           <thead className="bg-slate-50 text-slate-500">
             <tr>

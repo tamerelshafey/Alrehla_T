@@ -21,7 +21,7 @@ export function InstructorRatingsWidget() {
       </div>
       <div className="space-y-4 mb-6 flex-1">
         {mockReviews.map(review => (
-          <div key={review.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+          <div key={review.id} className="rounded-3xl border border-slate-100 bg-slate-50 p-4">
             <div className="flex justify-between items-start mb-2">
               <span className="font-bold text-slate-800">{review.studentName}</span>
               <div className="flex text-amber-500">

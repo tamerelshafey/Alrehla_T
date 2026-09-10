@@ -32,7 +32,7 @@ export default async function SupportPage() {
         </div>
         <div className="space-y-4">
           {tickets.map(ticket => (
-            <div key={ticket.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div key={ticket.id} className="flex items-center justify-between rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
               <div>
                 <p className="font-bold text-slate-800">{ticket.subject}</p>
                 <p className="text-xs text-slate-500">{ticket.category} • {formatDate(ticket.createdAt)}</p>

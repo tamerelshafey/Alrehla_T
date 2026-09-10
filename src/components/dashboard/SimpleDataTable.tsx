@@ -54,7 +54,7 @@ export function SimpleDataTable({ columns, data }: SimpleDataTableProps) {
       {/* Mobile View: Stacked Cards */}
       <div className="flex flex-col gap-4 md:hidden">
         {data.map((row, rowIndex) => (
-          <div key={rowIndex} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div key={rowIndex} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-3">
               {columns.map((col, colIndex) => (
                 <div 
