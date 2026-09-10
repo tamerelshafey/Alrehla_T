@@ -71,3 +71,9 @@ export const logAuditAction = async (data: Omit<import('@/types').AuditLog, 'id'
     ...data,
   });
 };
+
+export const mockPublisherPricingSettings: PricingFormulaSettings[] = [
+  { id: 'publisher-default', platformMultiplier: 1.1, fixedAdminFee: 20, updatedAt: new Date().toISOString() }
+];
+
+export const getPublisherPricingSettings = async (): Promise<PricingFormulaSettings> => mockPublisherPricingSettings[0];

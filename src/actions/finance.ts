@@ -54,3 +54,22 @@ export async function submitWithdrawalRequest(instructorId: string, amount: numb
 
   return newRequest;
 }
+
+import { mockPublisherPricingSettings } from '@/data/domains/admin';
+
+export async function updatePublisherPricingSettings(multiplier: number, fixedFee: number) {
+  const settings = mockPublisherPricingSettings[0];
+  if (!settings) throw new Error('Settings not found');
+  settings.platformMultiplier = multiplier;
+  settings.fixedAdminFee = fixedFee;
+  settings.updatedAt = new Date().toISOString();
+  
+  await logAuditAction({
+    actorProfileId: 'admin', // In a real app, this would be the current admin's ID
+    action: 'publisher_pricing_settings_updated',
+    entityType: 'settings',
+    entityId: settings.id,
+  });
+  
+  return settings;
+}
