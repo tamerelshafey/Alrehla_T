@@ -304,12 +304,6 @@ export interface InstructorStudent {
   totalSessions: number;
 }
 
-export interface AvailabilitySlot {
-  id: string;
-  dayLabel: string;
-  timeLabel: string;
-  isBooked: boolean;
-}
 
 export type AdminPermission = 
   | 'canManageUsers'
@@ -408,19 +402,7 @@ export interface PortfolioDocument {
 export type PaymentMethod = 'credit_card' | 'fawry' | 'wallet';
 
 
-export type SlotChangeRequestedBy = 'guardian' | 'instructor' | 'admin';
-export type SlotChangeRequestStatus = 'pending' | 'approved' | 'rejected';
 
-export interface SlotChangeRequest {
-  id: string;
-  recurringSlotId: string;
-  requestedBy: SlotChangeRequestedBy;
-  requestedDayOfWeek: DayOfWeek;
-  requestedStartTime: string;
-  reason?: string;
-  status: SlotChangeRequestStatus;
-  createdAt: string;
-}
 
 export interface InstructorPricingOption {
   id: string;
@@ -475,15 +457,4 @@ export interface PublisherOrder {
   createdAt: string;
 }
 
-export type RecurringSlotStatus = 'active' | 'change_requested' | 'ended';
 
-export interface RecurringSessionSlot {
-  id: string;
-  courseSubscriptionId: string;
-  instructorId: string;
-  dayOfWeek: DayOfWeek;
-  startTime: string;
-  status: RecurringSlotStatus;
-  effectiveFrom: string;
-  createdAt: string;
-}

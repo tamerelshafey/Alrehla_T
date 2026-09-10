@@ -35,9 +35,6 @@ export default async function InstructorDashboard() {
           <Link href="/dashboard/instructor/students" className="flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200">
             <Users className="h-4 w-4" /> المتدربين
           </Link>
-          <Link href="/dashboard/instructor/schedule" className="flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200">
-            <CalendarDays className="h-4 w-4" /> الجدول
-          </Link>
           <Link href="/dashboard/instructor/profile" className="flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200">
             <User className="h-4 w-4" /> الملف الشخصي
           </Link>

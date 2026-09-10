@@ -2,10 +2,10 @@ import {
   WritingPackage, Instructor, PersonalizedProduct, AddonProduct, SubscriptionTier, 
   Testimonial, CreativeService, BlogPost, UserProfile, Booking, Order, 
   Publisher, InstructorPayout, PublisherPayout, SessionMessage, SessionAttachment, 
-  StudyMaterial, InstructorStudent, AvailabilitySlot, BoxSubscription, SupportTicket, 
+  StudyMaterial, InstructorStudent, BoxSubscription, SupportTicket, 
   JoinRequest, SupportSessionRequest, AuditLog, ServiceOrder, CourseSubscription, 
   SupportTicketMessage, FamilyMember, NotificationItem, UserRole,
-  PublisherOrder, RecurringSessionSlot, SlotChangeRequest,
+  PublisherOrder,
   InstructorPricingOption, PricingFormulaSettings, InstructorCompensationProfile, InstructorCertification
 } from '@/types';
 import { cookies } from 'next/headers';
@@ -321,16 +321,6 @@ export const getInstructorStudents = async (): Promise<InstructorStudent[]> => {
   ];
 };
 
-export const getAvailabilitySlots = async (): Promise<AvailabilitySlot[]> => {
-  return [
-    { id: 'slot-1', dayLabel: 'السبت، 15 أكتوبر', timeLabel: '04:00 عصراً', isBooked: true },
-    { id: 'slot-2', dayLabel: 'السبت، 15 أكتوبر', timeLabel: '05:30 مساءً', isBooked: false },
-    { id: 'slot-3', dayLabel: 'الأحد، 16 أكتوبر', timeLabel: '03:00 عصراً', isBooked: true },
-    { id: 'slot-4', dayLabel: 'الأحد، 16 أكتوبر', timeLabel: '04:30 عصراً', isBooked: false },
-    { id: 'slot-5', dayLabel: 'الإثنين، 17 أكتوبر', timeLabel: '06:00 مساءً', isBooked: false },
-    { id: 'slot-6', dayLabel: 'الإثنين، 17 أكتوبر', timeLabel: '07:30 مساءً', isBooked: true },
-  ];
-};
 
 
 export const mockServiceOrders: ServiceOrder[] = [
@@ -424,41 +414,7 @@ export async function getDocumentById(id: string) {
 
 
 
-export const mockRecurringSessionSlots: import('@/types').RecurringSessionSlot[] = [
-  {
-    id: 'rss-1',
-    courseSubscriptionId: 'csub-1',
-    instructorId: 'inst-1',
-    dayOfWeek: 'saturday',
-    startTime: '10:00',
-    status: 'active',
-    effectiveFrom: '2023-10-05T00:00:00Z',
-    createdAt: '2023-10-02T10:00:00Z'
-  },
-  {
-    id: 'rss-2',
-    courseSubscriptionId: 'csub-2',
-    instructorId: 'inst-2',
-    dayOfWeek: 'sunday',
-    startTime: '14:00',
-    status: 'active',
-    effectiveFrom: '2023-10-10T00:00:00Z',
-    createdAt: '2023-10-08T10:00:00Z'
-  }
-];
 
-export const mockSlotChangeRequests: import('@/types').SlotChangeRequest[] = [
-  {
-    id: 'scr-1',
-    recurringSlotId: 'rss-1',
-    requestedBy: 'guardian',
-    requestedDayOfWeek: 'monday',
-    requestedStartTime: '16:00',
-    reason: 'تغيير مواعيد المدرسة',
-    status: 'pending',
-    createdAt: '2023-10-20T10:00:00Z'
-  }
-];
 
 export const mockInstructorPricingOptions: import('@/types').InstructorPricingOption[] = [
   {
@@ -565,8 +521,6 @@ export const mockInstructorCertifications: import('@/types').InstructorCertifica
 ];
 
 
-export const getRecurringSlotBySubscription = async (courseSubscriptionId: string) =>
-  Promise.resolve(mockRecurringSessionSlots.find(s => s.courseSubscriptionId === courseSubscriptionId) || null);
 
 export const getPricingFormulaSettings = async () =>
   Promise.resolve(mockPricingFormulaSettings[0]);
