@@ -35,7 +35,7 @@ export async function markPublisherPayoutAsPaid(payoutId: string, actorProfileId
 
 export async function submitWithdrawalRequest(instructorId: string, amount: number, method: string) {
   const newRequest = {
-    id: `wr-\${Date.now()}`,
+    id: `wr-${Date.now()}`,
     instructorId,
     amount,
     method,
