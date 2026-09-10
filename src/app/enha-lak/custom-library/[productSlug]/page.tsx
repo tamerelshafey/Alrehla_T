@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getProductBySlug } from '@/data/mock';
 import { PageContainer } from '@/components/PageContainer';
+import { Section } from '@/components/ui/Section';
 import { LibraryCustomizationWizard } from '@/components/enha-lak/LibraryCustomizationWizard';
 
 interface PageProps {
@@ -16,8 +17,10 @@ export default async function CustomLibraryPage({ params }: PageProps) {
   }
 
   return (
-    <PageContainer>
-      <LibraryCustomizationWizard product={product} />
+    <PageContainer className="!py-0 !space-y-0">
+      <Section>
+        <LibraryCustomizationWizard product={product} />
+      </Section>
     </PageContainer>
   );
 }

@@ -1,4 +1,7 @@
 import { Metadata } from 'next';
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
 export const metadata: Metadata = {
   title: 'انضم إلينا كمدرب أو ناشر',
@@ -7,9 +10,6 @@ export const metadata: Metadata = {
 
 import { PageContainer } from '@/components/PageContainer';
 import {
-
-
-
   Heart,
   Users,
   Map,
@@ -75,9 +75,9 @@ export default function JoinUsPage() {
   ];
 
   return (
-    <PageContainer>
+    <PageContainer className="!py-0 !space-y-0">
       {/* Hero Section */}
-      <section className="mx-auto max-w-4xl space-y-6 text-center">
+      <Section containerClassName="max-w-4xl space-y-6 text-center">
         <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-6xl">
           اصنع معنا تجارب تستحق أن تُحكى
         </h1>
@@ -86,10 +86,10 @@ export default function JoinUsPage() {
           ورسّامي قصص، ومتعاونين وأصوات، يساعدوننا على تقديم تجربة عربية عالية
           الجودة.
         </p>
-      </section>
+      </Section>
 
       {/* Why Join Us */}
-      <section className="mx-auto w-full max-w-6xl">
+      <Section containerClassName="max-w-6xl">
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
           لماذا تنضم إلى فريق "الرحلة"؟
         </h2>
@@ -97,9 +97,10 @@ export default function JoinUsPage() {
           {reasons.map((reason, idx) => {
             const Icon = reason.icon;
             return (
-              <div
+              <Card
                 key={idx}
-                className="rounded-3xl border border-slate-100 bg-white p-8 text-center shadow-sm"
+                accentColor="amber"
+                className="p-8 text-center"
               >
                 <div
                   className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl ${reason.bg} ${reason.color} mb-6`}
@@ -112,14 +113,14 @@ export default function JoinUsPage() {
                 <p className="text-sm leading-relaxed font-medium text-slate-600">
                   {reason.description}
                 </p>
-              </div>
+              </Card>
             );
           })}
         </div>
-      </section>
+      </Section>
 
       {/* Available Roles */}
-      <section className="mx-auto w-full max-w-5xl rounded-3xl border border-slate-100 bg-slate-50 p-8 md:p-16">
+      <Section containerClassName="max-w-5xl rounded-3xl border border-slate-100 bg-slate-50 p-8 md:p-16">
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
           الفرص المتاحة
         </h2>
@@ -127,9 +128,10 @@ export default function JoinUsPage() {
           {roles.map((role, idx) => {
             const Icon = role.icon;
             return (
-              <div
+              <Card
                 key={idx}
-                className="flex flex-col items-start gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:flex-row md:p-8"
+                accentColor="amber"
+                className="flex flex-col items-start gap-6 p-6 md:flex-row md:p-8"
               >
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
                   <Icon className="h-6 w-6" />
@@ -142,15 +144,15 @@ export default function JoinUsPage() {
                     {role.description}
                   </p>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>
-      </section>
+      </Section>
 
       {/* Application Form */}
-      <section className="mx-auto w-full max-w-3xl">
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50 md:p-12">
+      <Section containerClassName="max-w-3xl">
+        <Card accentColor="amber" className="p-8 shadow-xl shadow-slate-200/50 md:p-12">
           <h2 className="mb-8 text-center text-3xl font-black text-slate-800">
             نموذج التقديم
           </h2>
@@ -228,15 +230,16 @@ export default function JoinUsPage() {
               ></textarea>
             </div>
 
-            <button
+            <Button
               type="button"
-              className="w-full rounded-xl bg-slate-900 py-4 font-bold text-white shadow-md transition-colors hover:bg-slate-800"
+              accentColor="amber"
+              className="w-full !bg-slate-900 !hover:bg-slate-800"
             >
               إرسال الطلب
-            </button>
+            </Button>
           </form>
-        </div>
-      </section>
+        </Card>
+      </Section>
     </PageContainer>
   );
 }

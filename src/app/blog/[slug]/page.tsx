@@ -5,6 +5,8 @@ import { PageContainer } from '@/components/PageContainer';
 import { ArrowLeft, Calendar, User, BookOpen, Share2, Facebook, Twitter, Linkedin } from 'lucide-react';
 import { getBlogPosts } from '@/data/mock';
 import { notFound } from 'next/navigation';
+import { Section } from '@/components/ui/Section';
+import { Button } from '@/components/ui/Button';
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -25,7 +27,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   }
 
   return (
-    <PageContainer>
+    <PageContainer className="!py-0 !space-y-0">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Article",
@@ -36,7 +38,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       "name": "فريق الرحلة"
     }
   }) }} />
-      <div className="mx-auto w-full max-w-4xl pt-12 pb-24">
+      <Section containerClassName="max-w-4xl pt-12 pb-24">
         {/* Back link */}
         <Link href="/blog" className="mb-8 inline-flex items-center gap-2 font-bold text-slate-500 hover:text-amber-600 transition-colors">
           <ArrowLeft className="h-4 w-4" />
@@ -107,18 +109,18 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <div className="mt-16 flex items-center justify-center gap-4 border-t border-slate-200 pt-8">
           <span className="font-bold text-slate-700">شارك المقال:</span>
           <div className="flex gap-2">
-            <button className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition-colors hover:bg-blue-600 hover:text-white">
+            <Button variant="secondary" accentColor="amber" className="!px-3 !py-3">
               <Facebook className="h-5 w-5" />
-            </button>
-            <button className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition-colors hover:bg-sky-500 hover:text-white">
+            </Button>
+            <Button variant="secondary" accentColor="amber" className="!px-3 !py-3">
               <Twitter className="h-5 w-5" />
-            </button>
-            <button className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition-colors hover:bg-blue-700 hover:text-white">
+            </Button>
+            <Button variant="secondary" accentColor="amber" className="!px-3 !py-3">
               <Linkedin className="h-5 w-5" />
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
+      </Section>
     </PageContainer>
   );
 }

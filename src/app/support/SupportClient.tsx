@@ -2,10 +2,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import {
-
-
-
   Search,
   MessageCircle,
   Mail,
@@ -93,9 +93,9 @@ export default function SupportClient() {
   };
 
   return (
-    <PageContainer>
+    <PageContainer className="!py-0 !space-y-0">
       {/* Hero Section */}
-      <section className="mx-auto max-w-4xl space-y-6 text-center">
+      <Section containerClassName="max-w-4xl space-y-6 text-center">
         <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-6xl">
           كيف يمكننا مساعدتك؟
         </h1>
@@ -110,10 +110,10 @@ export default function SupportClient() {
           />
           <Search className="absolute top-1/2 right-4 h-5 w-5 -translate-y-1/2 text-slate-400" />
         </div>
-      </section>
+      </Section>
 
       {/* FAQs Section */}
-      <section className="mx-auto w-full max-w-4xl">
+      <Section containerClassName="max-w-4xl">
         {/* Tabs */}
         <div className="mb-10 flex flex-wrap justify-center gap-2 rounded-2xl border border-slate-100 bg-slate-50 p-2">
           {tabs.map((tab) => (
@@ -137,9 +137,10 @@ export default function SupportClient() {
         {/* FAQ Accordion */}
         <div className="space-y-4">
           {faqs[activeTab].map((faq, idx) => (
-            <div
+            <Card
               key={idx}
-              className="overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-200"
+              accentColor="amber"
+              className="overflow-hidden transition-all duration-200"
             >
               <button
                 onClick={() =>
@@ -173,19 +174,19 @@ export default function SupportClient() {
                   </Link>
                 )}
               </div>
-            </div>
+            </Card>
           ))}
         </div>
-      </section>
+      </Section>
 
       {/* Contact Section */}
-      <section className="mx-auto w-full max-w-6xl">
+      <Section containerClassName="max-w-6xl">
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
           قنوات التواصل
         </h2>
 
         <div className="grid items-start gap-8 md:grid-cols-3">
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <Card accentColor="amber" className="p-8 text-center">
             <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50 text-green-600">
               <MessageCircle className="h-6 w-6" />
             </div>
@@ -193,12 +194,15 @@ export default function SupportClient() {
             <p className="mb-6 font-medium text-slate-500">
               محادثة فورية 9ص-9م
             </p>
-            <button className="w-full rounded-xl bg-green-500 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-green-600">
+            <Button
+              className="w-full !bg-green-500 !hover:bg-green-600 shadow-md"
+              accentColor="amber"
+            >
               ابدأ المحادثة
-            </button>
-          </div>
+            </Button>
+          </Card>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <Card accentColor="amber" className="p-8 text-center">
             <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
               <Mail className="h-6 w-6" />
             </div>
@@ -208,15 +212,17 @@ export default function SupportClient() {
             <p className="mb-6 font-medium text-slate-500">
               للشكاوى والمقترحات
             </p>
-            <a
+            <Button
               href="mailto:support@alrehla.com"
-              className="block w-full rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200"
+              variant="secondary"
+              accentColor="amber"
+              className="w-full !bg-slate-100 !text-slate-700 !border-0 !hover:bg-slate-200"
             >
               support@alrehla.com
-            </a>
-          </div>
+            </Button>
+          </Card>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:col-span-1 md:row-span-2">
+          <Card accentColor="amber" className="p-8 md:col-span-1 md:row-span-2">
             <div className="mb-6 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                 <Ticket className="h-5 w-5" />
@@ -262,19 +268,20 @@ export default function SupportClient() {
                   placeholder="اشرح مشكلتك أو استفسارك..."
                 ></textarea>
               </div>
-              <button
+              <Button
                 type="button"
-                className="mt-2 w-full rounded-xl bg-slate-900 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-slate-800"
+                accentColor="amber"
+                className="mt-2 w-full !bg-slate-900 !hover:bg-slate-800 shadow-md"
               >
                 إرسال التذكرة
-              </button>
+              </Button>
             </form>
-          </div>
+          </Card>
         </div>
-      </section>
+      </Section>
 
       {/* Join Us Link */}
-      <div className="mt-12 w-full text-center">
+      <div className="mt-12 pb-16 w-full text-center">
         <p className="inline-flex items-center gap-2 text-lg font-medium text-slate-600">
           هل ترغب في الانضمام لفريقنا؟{' '}
           <Link

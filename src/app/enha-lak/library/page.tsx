@@ -10,12 +10,12 @@ export default async function LibraryPage() {
   const publishers = await getPublishers();
 
   return (
-    <PageContainer>
+    <PageContainer className="!py-0 !space-y-0">
       {/* Header */}
       <SectionHeader
         title="المكتبة العامة"
         icon={<BookOpen className="h-8 w-8" />}
-        iconClassName="bg-emerald-50 text-emerald-600"
+        iconClassName="bg-rose-50 text-rose-600"
         description="اختر قصة جاهزة من المكتبة وخصص غلافها فقط، محتوى القصة الأصلي يبقى كما هو. خيار مثالي لمن يبحث عن محتوى قيم بلمسة شخصية بسيطة."
       />
 

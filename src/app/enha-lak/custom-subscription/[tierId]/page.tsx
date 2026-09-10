@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getSubscriptionTiers } from '@/data/mock';
 import { PageContainer } from '@/components/PageContainer';
+import { Section } from '@/components/ui/Section';
 import { PersonalizationWizard } from '@/components/enha-lak/PersonalizationWizard';
 import { PersonalizedProduct } from '@/types';
 
@@ -34,12 +35,14 @@ export default async function CustomSubscriptionPage({ params }: PageProps) {
   };
 
   return (
-    <PageContainer>
-      <div className="mb-4 text-center">
-        <h1 className="text-3xl font-black text-purple-700">تخصيص صندوق الرحلة</h1>
-        <p className="mt-2 text-slate-600">قم بإعداد تفاصيل البطل للاشتراك ({tier.name})</p>
-      </div>
-      <PersonalizationWizard product={product} />
+    <PageContainer className="!py-0 !space-y-0">
+      <Section>
+        <div className="mb-4 text-center">
+          <h1 className="text-3xl font-black text-rose-700">تخصيص صندوق الرحلة</h1>
+          <p className="mt-2 text-slate-600">قم بإعداد تفاصيل البطل للاشتراك ({tier.name})</p>
+        </div>
+        <PersonalizationWizard product={product} />
+      </Section>
     </PageContainer>
   );
 }

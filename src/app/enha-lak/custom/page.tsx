@@ -7,8 +7,9 @@ import { PenTool, Plus, Book, FileText, ShoppingCart } from 'lucide-react';
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
-
-
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
 export default async function CustomPage() {
   const allProducts = await getPersonalizedProducts();
@@ -16,23 +17,23 @@ export default async function CustomPage() {
   const addons = await getAddonProducts();
 
   return (
-    <PageContainer>
+    <PageContainer className="!py-0 !space-y-0">
       {/* Header */}
       <SectionHeader
         title="أنت البطل هنا"
         icon={<PenTool className="h-8 w-8" />}
-        iconClassName="bg-violet-50 text-violet-600"
-        
+        iconClassName="bg-rose-50 text-rose-600"
         description="نصنع محتوى مخصصاً لطفلك من الصفر بعد إتمام الطلب، ليكون هو محور القصة بأدق تفاصيلها."
       />
 
       {/* Custom Products */}
-      <section className="mx-auto w-full max-w-6xl">
+      <Section containerClassName="max-w-6xl">
         <div className="grid gap-8 md:grid-cols-3">
           {customProducts.map((product) => (
-            <div
+            <Card
               key={product.id}
-              className="flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:border-violet-200 hover:shadow-xl"
+              accentColor="rose"
+              className="flex flex-col overflow-hidden relative p-0"
             >
               <div className="relative h-64 w-full bg-slate-100">
                 <Image
@@ -62,7 +63,7 @@ export default async function CustomPage() {
                         نسخة مطبوعة
                       </span>
                     </div>
-                    <span className="font-black text-violet-600">
+                    <span className="font-black text-rose-600">
                       {formatPrice(product.price)}
                     </span>
                   </div>
@@ -74,14 +75,13 @@ export default async function CustomPage() {
                           نسخة إلكترونية
                         </span>
                       </div>
-                      <span className="font-black text-violet-600">
+                      <span className="font-black text-rose-600">
                         {formatPrice(product.electronicPrice)}
                       </span>
                     </div>
                   )}
                 </div>
 
-                
                 <AddToCartButton 
                   product={{
                     id: product.id,
@@ -92,18 +92,18 @@ export default async function CustomPage() {
                     imageUrl: product.coverImageUrl || `https://picsum.photos/seed/${product.id}/600/800`
                   }} 
                 />
-                <Link href={`/enha-lak/product/${product.slug}`} className="mt-3 flex w-full items-center justify-center rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200">
+                <Button href={`/enha-lak/product/${product.slug}`} variant="secondary" className="mt-3 w-full">
                   عرض تفاصيل المنتج
-                </Link>
+                </Button>
 
               </div>
-            </div>
+            </Card>
           ))}
         </div>
-      </section>
+      </Section>
 
       {/* Addons */}
-      <section className="mx-auto w-full max-w-4xl rounded-3xl border border-slate-100 bg-slate-50/50 p-8 md:p-12">
+      <Section containerClassName="max-w-4xl rounded-3xl border border-slate-100 bg-slate-50/50 p-8 md:p-12 pb-24">
         <div className="mb-10 text-center">
           <h2 className="flex items-center justify-center gap-3 text-3xl font-black text-slate-800">
             <Plus className="h-8 w-8 text-rose-500" />
@@ -116,9 +116,10 @@ export default async function CustomPage() {
 
         <div className="grid gap-6 sm:grid-cols-2">
           {addons.map((addon) => (
-            <div
+            <Card
               key={addon.id}
-              className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+              accentColor="rose"
+              className="flex flex-col justify-between p-6 shadow-sm"
             >
               <div>
                 <h3 className="mb-2 text-xl font-bold text-slate-800">
@@ -144,10 +145,10 @@ export default async function CustomPage() {
                   className="w-auto px-4 py-2"
                 />
               </div>
-            </div>
+            </Card>
           ))}
         </div>
-      </section>
+      </Section>
     </PageContainer>
   );
 }

@@ -4,6 +4,9 @@ import { formatPrice } from '@/lib/utils';
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { Book, FileText, Search, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import { PersonalizedProduct, Publisher } from '@/types';
 
@@ -53,9 +56,9 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
   }, [initialProducts, searchQuery, selectedPublisher, bookType, sortBy]);
 
   return (
-    <section className="mx-auto w-full max-w-7xl">
+    <Section containerClassName="max-w-7xl">
       {/* Filters Toolbar */}
-      <div className="mb-8 rounded-3xl bg-white p-4 shadow-sm border border-slate-200 lg:p-6">
+      <Card accentColor="rose" className="mb-8 p-4 shadow-sm lg:p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center">
           
           {/* Search */}
@@ -66,7 +69,7 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
             <input
               type="text"
               placeholder="ابحث عن اسم الكتاب..."
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pr-12 pl-4 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pr-12 pl-4 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -77,7 +80,7 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="h-5 w-5 text-slate-400 hidden sm:block" />
               <select
-                className="rounded-2xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 min-w-[160px]"
+                className="rounded-2xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 min-w-[160px]"
                 value={selectedPublisher}
                 onChange={(e) => setSelectedPublisher(e.target.value)}
               >
@@ -90,7 +93,7 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
 
             {/* Type Filter */}
             <select
-              className="rounded-2xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 min-w-[140px]"
+              className="rounded-2xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 min-w-[140px]"
               value={bookType}
               onChange={(e) => setBookType(e.target.value)}
             >
@@ -103,7 +106,7 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
             <div className="flex items-center gap-2">
               <ArrowUpDown className="h-5 w-5 text-slate-400 hidden sm:block" />
               <select
-                className="rounded-2xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 min-w-[160px]"
+                className="rounded-2xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 min-w-[160px]"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
@@ -114,7 +117,7 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Results Grid */}
       {filteredAndSortedProducts.length > 0 ? (
@@ -122,9 +125,10 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
           {filteredAndSortedProducts.map((product) => {
             const publisher = publishers.find(p => p.id === product.publisherId);
             return (
-              <div
+              <Card
                 key={product.id}
-                className="flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:border-emerald-200 hover:shadow-xl relative"
+                accentColor="rose"
+                className="flex flex-col overflow-hidden relative p-0"
               >
                 <Link href={`/enha-lak/product/${product.slug}`} className="absolute inset-0 z-0" />
                 <div className="relative h-64 w-full bg-slate-100">
@@ -159,7 +163,7 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
                           مطبوعة
                         </span>
                       </div>
-                      <span className="font-black text-emerald-600">
+                      <span className="font-black text-rose-600">
                         {formatPrice(product.price)}
                       </span>
                     </div>
@@ -171,30 +175,31 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
                             إلكترونية
                           </span>
                         </div>
-                        <span className="font-black text-emerald-600">
+                        <span className="font-black text-rose-600">
                           {formatPrice(product.electronicPrice)}
                         </span>
                       </div>
                     )}
                   </div>
-                  <Link
+                  <Button
                     href={`/enha-lak/custom-library/${product.slug}`}
-                    className="flex w-full items-center justify-center rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white transition-colors hover:bg-emerald-700 pointer-events-auto"
+                    accentColor="rose"
+                    className="w-full pointer-events-auto"
                   >
                     تخصيص الغلاف
-                  </Link>
+                  </Button>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-3xl border border-slate-200">
+        <Card accentColor="rose" className="flex flex-col items-center justify-center py-20 text-center">
           <Book className="h-16 w-16 text-slate-300 mb-4" />
           <h3 className="text-2xl font-black text-slate-800 mb-2">لا توجد نتائج</h3>
           <p className="text-slate-500">جرب تغيير كلمات البحث أو استخدام فلاتر مختلفة.</p>
-        </div>
+        </Card>
       )}
-    </section>
+    </Section>
   );
 }

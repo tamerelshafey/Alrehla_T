@@ -6,6 +6,9 @@ import { SVGProps } from 'react';
 
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
 
 
@@ -19,28 +22,29 @@ export default async function SubscriptionPage() {
   ];
 
   return (
-    <PageContainer>
+    <PageContainer className="!py-0 !space-y-0">
       {/* Header */}
       <SectionHeader
         title="صندوق الرحلة"
         icon={<PackageOpen className="h-8 w-8" />}
-        iconClassName="bg-purple-50 text-purple-600"
+        iconClassName="bg-rose-50 text-rose-600"
         
         description="اشتراك يضمن متعة متجددة لطفلك كل شهر، مع مفاجآت تُصنع خصيصًا له وتصله حتى باب المنزل."
       />
 
       {/* Pricing */}
-      <section className="mx-auto w-full max-w-5xl">
+      <Section containerClassName="max-w-5xl">
         <div className="grid gap-8 md:grid-cols-3">
           {tiers.map((tier, index) => {
             const isPopular = index === 1;
             return (
-              <div
+              <Card
                 key={tier.id}
-                className={`relative border bg-white ${isPopular ? 'z-10 scale-105 border-purple-300 shadow-xl shadow-purple-500/10' : 'border-slate-200 shadow-sm'} flex flex-col rounded-3xl p-8`}
+                accentColor="rose"
+                className={`relative flex flex-col p-8 ${isPopular ? 'z-10 scale-105 border-rose-300 shadow-xl shadow-rose-500/10' : 'shadow-sm'}`}
               >
                 {isPopular && (
-                  <div className="absolute -top-4 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-purple-600 px-4 py-1 text-xs font-bold text-white shadow-sm">
+                  <div className="absolute -top-4 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-rose-600 px-4 py-1 text-xs font-bold text-white shadow-sm">
                     <Sparkles className="h-3 w-3" />
                     الأكثر طلباً
                   </div>
@@ -74,7 +78,7 @@ export default async function SubscriptionPage() {
                   {benefits.map((benefit, i) => {
                     return (
                       <li key={i} className="flex items-center gap-3">
-                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-600">
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600">
                           <Check className="h-3 w-3 font-bold" />
                         </div>
                         <span className="font-medium text-slate-700">
@@ -85,20 +89,21 @@ export default async function SubscriptionPage() {
                   })}
                 </ul>
 
-                <Link
+                <Button
                   href={`/enha-lak/custom-subscription/${tier.id}`}
-                  className={`flex w-full justify-center items-center rounded-xl py-4 text-sm font-bold shadow-md transition-colors ${isPopular ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+                  accentColor="rose"
+                  className={`w-full justify-center shadow-md ${isPopular ? '!bg-rose-600 !text-white hover:!bg-rose-700' : '!bg-slate-900 !text-white hover:!bg-slate-800'}`}
                 >
                   اختر الخطة
-                </Link>
-              </div>
+                </Button>
+              </Card>
             );
           })}
         </div>
-      </section>
+      </Section>
 
       {/* What's in the box */}
-      <section className="mx-auto w-full max-w-4xl rounded-3xl border border-slate-100 bg-slate-50/50 p-8 text-center md:p-12">
+      <Section containerClassName="max-w-4xl rounded-3xl border border-slate-100 bg-slate-50/50 p-8 text-center md:p-12 pb-24">
         <h2 className="mb-10 text-3xl font-black text-slate-800">
           ماذا سأحصل عليه شهريًا؟
         </h2>
@@ -117,7 +122,7 @@ export default async function SubscriptionPage() {
             );
           })}
         </div>
-      </section>
+      </Section>
     </PageContainer>
   );
 }

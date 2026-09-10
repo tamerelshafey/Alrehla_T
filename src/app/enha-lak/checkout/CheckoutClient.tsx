@@ -10,6 +10,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { createDummyOrder, submitPaymentProof } from '@/actions/orders';
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
 interface Props {
   user: UserType;
@@ -67,19 +70,19 @@ export function CheckoutClient({ user }: Props) {
 
   if (items.length === 0 && !isSuccess) {
     return (
-      <div className="rounded-3xl border-2 border-dashed border-slate-200 py-16 text-center">
+      <Section containerClassName="py-16 text-center max-w-3xl">
         <h2 className="text-2xl font-bold text-slate-800 mb-4">عربة التسوق فارغة</h2>
         <p className="text-slate-500 mb-8">لم تقم بإضافة أي منتجات لتتمكن من إتمام الدفع.</p>
-        <Link href="/enha-lak" className="rounded-xl bg-blue-600 px-8 py-3 font-bold text-white hover:bg-blue-700 transition-colors">
+        <Button href="/enha-lak" accentColor="rose" className="px-8 py-3">
           تصفح المتجر
-        </Link>
-      </div>
+        </Button>
+      </Section>
     );
   }
 
   if (isSuccess) {
     return (
-      <div className="rounded-3xl bg-white p-8 md:p-12 text-center shadow-lg border border-slate-100 max-w-2xl mx-auto">
+      <Card accentColor="rose" className="p-8 md:p-12 text-center max-w-2xl mx-auto">
         <div className="flex justify-center mb-6">
           <div className="h-24 w-24 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-500">
             <CheckCircle2 className="h-12 w-12" />
@@ -90,27 +93,27 @@ export function CheckoutClient({ user }: Props) {
         <p className="text-slate-600 mb-8">تم إرسال تفاصيل الطلب والفاتورة إلى بريدك الإلكتروني. يمكنك متابعة حالة الطلب من لوحة التحكم الخاصة بك.</p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/dashboard" className="rounded-xl bg-slate-900 px-8 py-3 font-bold text-white hover:bg-slate-800 transition-colors">
+          <Button href="/dashboard" accentColor="rose" className="px-8 py-3 !bg-slate-900 !text-white hover:!bg-slate-800">
             الذهاب للوحة التحكم
-          </Link>
-          <Link href="/enha-lak" className="rounded-xl bg-blue-50 px-8 py-3 font-bold text-blue-700 hover:bg-blue-100 transition-colors">
+          </Button>
+          <Button href="/enha-lak" variant="secondary" className="px-8 py-3 border-none !bg-rose-50 !text-rose-700 hover:!bg-rose-100">
             العودة للمتجر
-          </Link>
+          </Button>
         </div>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+    <Section containerClassName="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-0 pb-24">
       
       {/* Forms Section */}
       <div className="lg:col-span-2 space-y-8">
         
         {/* Step 1: Shipping */}
-        <div className={`rounded-3xl border ${step === 1 ? 'border-blue-200 bg-white shadow-md' : 'border-slate-200 bg-slate-50 opacity-60'} p-6 md:p-8 transition-all`}>
+        <Card accentColor="rose" className={`p-6 md:p-8 transition-all ${step === 1 ? 'border-rose-200 shadow-md' : 'bg-slate-50 opacity-60'}`}>
           <div className="flex items-center gap-4 mb-8">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-full font-black ${step === 1 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>1</div>
+            <div className={`flex h-10 w-10 items-center justify-center rounded-full font-black ${step === 1 ? 'bg-rose-600 text-white' : 'bg-slate-200 text-slate-500'}`}>1</div>
             <h2 className="text-xl font-black text-slate-800">بيانات التوصيل</h2>
           </div>
 
@@ -119,23 +122,23 @@ export function CheckoutClient({ user }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">الاسم بالكامل</label>
-                  <input type="text" required value={shippingInfo.name} onChange={e => setShippingInfo({...shippingInfo, name: e.target.value})} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500 focus:bg-white" />
+                  <input type="text" required value={shippingInfo.name} onChange={e => setShippingInfo({...shippingInfo, name: e.target.value})} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-rose-500 focus:bg-white" />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">رقم الهاتف</label>
-                  <input type="tel" required value={shippingInfo.phone} onChange={e => setShippingInfo({...shippingInfo, phone: e.target.value})} dir="ltr" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500 focus:bg-white text-right" />
+                  <input type="tel" required value={shippingInfo.phone} onChange={e => setShippingInfo({...shippingInfo, phone: e.target.value})} dir="ltr" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-rose-500 focus:bg-white text-right" />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">العنوان بالتفصيل (الشارع، رقم العمارة، الشقة)</label>
-                <input type="text" required value={shippingInfo.address} onChange={e => setShippingInfo({...shippingInfo, address: e.target.value})} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500 focus:bg-white" />
+                <input type="text" required value={shippingInfo.address} onChange={e => setShippingInfo({...shippingInfo, address: e.target.value})} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-rose-500 focus:bg-white" />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">المحافظة</label>
-                  <select required value={shippingInfo.gov} onChange={e => setShippingInfo({...shippingInfo, gov: e.target.value})} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500 focus:bg-white">
+                  <select required value={shippingInfo.gov} onChange={e => setShippingInfo({...shippingInfo, gov: e.target.value})} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-rose-500 focus:bg-white">
                     <option value="">اختر المحافظة...</option>
                     <option value="cairo">القاهرة</option>
                     <option value="giza">الجيزة</option>
@@ -144,7 +147,7 @@ export function CheckoutClient({ user }: Props) {
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">المدينة / المنطقة</label>
-                  <input type="text" required value={shippingInfo.city} onChange={e => setShippingInfo({...shippingInfo, city: e.target.value})} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500 focus:bg-white" />
+                  <input type="text" required value={shippingInfo.city} onChange={e => setShippingInfo({...shippingInfo, city: e.target.value})} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-rose-500 focus:bg-white" />
                 </div>
               </div>
 
@@ -164,41 +167,41 @@ export function CheckoutClient({ user }: Props) {
                   <p className="text-sm text-slate-500">{shippingInfo.address}، {shippingInfo.city}</p>
                 </div>
               </div>
-              <button onClick={() => setStep(1)} className="text-sm font-bold text-blue-600 hover:underline">تعديل</button>
+              <button onClick={() => setStep(1)} className="text-sm font-bold text-rose-600 hover:underline">تعديل</button>
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Step 2: Payment */}
-        <div className={`rounded-3xl border ${step === 2 ? 'border-blue-200 bg-white shadow-md' : 'border-slate-200 bg-white opacity-50 pointer-events-none'} p-6 md:p-8 transition-all`}>
+        <Card accentColor="rose" className={`p-6 md:p-8 transition-all ${step === 2 ? 'border-rose-200 shadow-md' : 'opacity-50 pointer-events-none'}`}>
           <div className="flex items-center gap-4 mb-8">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-full font-black ${step === 2 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>2</div>
+            <div className={`flex h-10 w-10 items-center justify-center rounded-full font-black ${step === 2 ? 'bg-rose-600 text-white' : 'bg-slate-200 text-slate-500'}`}>2</div>
             <h2 className="text-xl font-black text-slate-800">طريقة الدفع</h2>
           </div>
 
           <form onSubmit={handlePaymentSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               
-              <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-3 transition-colors ${paymentMethod === 'credit_card' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white hover:border-blue-300'}`}>
+              <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-3 transition-colors ${paymentMethod === 'credit_card' ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-200 bg-white hover:border-rose-300'}`}>
                 <input type="radio" name="payment" value="credit_card" checked={paymentMethod === 'credit_card'} onChange={() => setPaymentMethod('credit_card')} className="sr-only" />
-                <CreditCard className={`h-8 w-8 ${paymentMethod === 'credit_card' ? 'text-blue-600' : 'text-slate-400'}`} />
+                <CreditCard className={`h-8 w-8 ${paymentMethod === 'credit_card' ? 'text-rose-600' : 'text-slate-400'}`} />
                 <span className="font-bold text-sm">بطاقة بنكية</span>
               </label>
 
-              <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-3 transition-colors ${paymentMethod === 'wallet' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white hover:border-blue-300'}`}>
+              <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-3 transition-colors ${paymentMethod === 'wallet' ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-200 bg-white hover:border-rose-300'}`}>
                 <input type="radio" name="payment" value="wallet" checked={paymentMethod === 'wallet'} onChange={() => setPaymentMethod('wallet')} className="sr-only" />
-                <Wallet className={`h-8 w-8 ${paymentMethod === 'wallet' ? 'text-blue-600' : 'text-slate-400'}`} />
+                <Wallet className={`h-8 w-8 ${paymentMethod === 'wallet' ? 'text-rose-600' : 'text-slate-400'}`} />
                 <span className="font-bold text-sm text-center">محفظة إلكترونية<br/><span className="text-xs font-normal opacity-70">(فودافون كاش وغيرها)</span></span>
               </label>
 
-              <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-3 transition-colors ${paymentMethod === 'fawry' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white hover:border-blue-300'}`}>
+              <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-3 transition-colors ${paymentMethod === 'fawry' ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-200 bg-white hover:border-rose-300'}`}>
                 <input type="radio" name="payment" value="fawry" checked={paymentMethod === 'fawry'} onChange={() => setPaymentMethod('fawry')} className="sr-only" />
                 <div className="h-8 flex items-center justify-center font-black text-lg tracking-wider" style={{color: paymentMethod === 'fawry' ? '#facc15' : '#94a3b8'}}>fawry</div>
                 <span className="font-bold text-sm">كود فوري</span>
               </label>
 
             
-              <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-3 transition-colors ${paymentMethod === 'instapay' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white hover:border-blue-300'}`}>
+              <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-3 transition-colors ${paymentMethod === 'instapay' ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-200 bg-white hover:border-rose-300'}`}>
                 <input type="radio" name="payment" value="instapay" checked={paymentMethod === 'instapay'} onChange={() => setPaymentMethod('instapay')} className="sr-only" />
                 <div className="h-8 flex items-center justify-center font-black text-lg tracking-wider" style={{color: paymentMethod === 'instapay' ? '#8a2be2' : '#94a3b8'}}>InstaPay</div>
                 <span className="font-bold text-sm">إنستاباي</span>
@@ -210,16 +213,16 @@ export function CheckoutClient({ user }: Props) {
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 space-y-4 animate-in fade-in slide-in-from-top-2">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">رقم البطاقة</label>
-                  <input type="text" required placeholder="0000 0000 0000 0000" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-500 font-mono" />
+                  <input type="text" required placeholder="0000 0000 0000 0000" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-rose-500 font-mono" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-2">تاريخ الانتهاء</label>
-                    <input type="text" required placeholder="MM/YY" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-500 font-mono text-center" />
+                    <input type="text" required placeholder="MM/YY" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-rose-500 font-mono text-center" />
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-2">الرقم السري (CVV)</label>
-                    <input type="text" required placeholder="123" dir="ltr" maxLength={4} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-500 font-mono text-center" />
+                    <input type="text" required placeholder="123" dir="ltr" maxLength={4} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-rose-500 font-mono text-center" />
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-slate-500 mt-4">
@@ -232,7 +235,7 @@ export function CheckoutClient({ user }: Props) {
             {paymentMethod === 'wallet' && (
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 animate-in fade-in slide-in-from-top-2">
                 <label className="block text-sm font-bold text-slate-700 mb-2">رقم الهاتف المرتبط بالمحفظة الإلكترونية</label>
-                <input type="tel" required placeholder="01X XXXX XXXX" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-500 font-mono text-right" />
+                <input type="tel" required placeholder="01X XXXX XXXX" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-rose-500 font-mono text-right" />
                 <p className="text-xs text-slate-500 mt-2">ستصلك رسالة لتأكيد الدفع على هذا الرقم.</p>
               </div>
             )}
@@ -253,10 +256,10 @@ export function CheckoutClient({ user }: Props) {
                 <p className="text-sm font-bold text-slate-700 mb-2">تعليمات الدفع عبر إنستاباي</p>
                 <div className="bg-white border border-slate-200 rounded-xl p-4 mb-4">
                   <p className="text-sm text-slate-600 mb-2">قم بتحويل المبلغ إلى رقم المحفظة التالي:</p>
-                  <p className="text-xl font-mono font-black text-blue-700 select-all">01234567890</p>
+                  <p className="text-xl font-mono font-black text-rose-700 select-all">01234567890</p>
                 </div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">رقم العملية / المرجع (Transaction Reference)</label>
-                <input type="text" required value={transactionRef} onChange={e => setTransactionRef(e.target.value)} placeholder="رقم العملية أو المرجع" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-500 font-mono text-right" />
+                <input type="text" required value={transactionRef} onChange={e => setTransactionRef(e.target.value)} placeholder="رقم العملية أو المرجع" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-rose-500 font-mono text-right" />
               </div>
             )}
 
@@ -264,19 +267,19 @@ export function CheckoutClient({ user }: Props) {
               <button 
                 type="submit" 
                 disabled={isProcessing}
-                className="w-full flex justify-center items-center gap-2 rounded-xl bg-blue-600 px-8 py-4 font-black text-white hover:bg-blue-700 transition-colors shadow-lg disabled:opacity-70"
+                className="w-full flex justify-center items-center gap-2 rounded-xl bg-rose-600 px-8 py-4 font-black text-white hover:bg-rose-700 transition-colors shadow-lg disabled:opacity-70"
               >
                 {isPending || isProcessing ? (paymentMethod === 'instapay' ? 'جاري التحقق وإرسال الطلب...' : 'جاري معالجة الدفع...') : (paymentMethod === 'instapay' ? 'لقد قمت بالتحويل' : `تأكيد الدفع (${formatPrice(grandTotal)})`)}
               </button>
             </div>
           </form>
-        </div>
+        </Card>
 
       </div>
 
       {/* Order Summary Sidebar */}
       <div>
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sticky top-8">
+        <Card accentColor="rose" className="p-6 sticky top-8">
           <h3 className="text-lg font-black text-slate-800 mb-6">ملخص الطلب</h3>
           
           <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
@@ -294,7 +297,7 @@ export function CheckoutClient({ user }: Props) {
 
                   <div className="mt-1 flex items-center justify-between">
                     <span className="text-xs text-slate-500">الكمية: {item.quantity}</span>
-                    <span className="text-sm font-bold text-blue-600">{formatPrice((item.price * item.quantity))}</span>
+                    <span className="text-sm font-bold text-rose-600">{formatPrice((item.price * item.quantity))}</span>
                   </div>
                 </div>
               </div>
@@ -314,7 +317,7 @@ export function CheckoutClient({ user }: Props) {
 
           <div className="flex justify-between items-center mb-6">
             <span className="text-lg font-black text-slate-800">الإجمالي</span>
-            <span className="text-2xl font-black text-blue-600">{formatPrice(grandTotal)}</span>
+            <span className="text-2xl font-black text-rose-600">{formatPrice(grandTotal)}</span>
           </div>
 
           <div className="rounded-xl bg-slate-50 p-4 flex items-start gap-3">
@@ -323,9 +326,9 @@ export function CheckoutClient({ user }: Props) {
               تسوق آمن ومحمي. جميع بياناتك مشفرة وفقاً لمعايير الأمان العالمية.
             </p>
           </div>
-        </div>
+        </Card>
       </div>
 
-    </div>
+    </Section>
   );
 }

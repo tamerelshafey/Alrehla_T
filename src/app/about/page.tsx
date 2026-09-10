@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import { Metadata } from 'next';
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
 
 export const metadata: Metadata = {
   title: 'عن منصة الرحلة',
@@ -8,9 +10,6 @@ export const metadata: Metadata = {
 
 import { PageContainer } from '@/components/PageContainer';
 import {
-
-
-
   Sparkles,
   Target,
   Compass,
@@ -61,9 +60,9 @@ export default function AboutPage() {
   ];
 
   return (
-    <PageContainer>
+    <PageContainer className="!py-0 !space-y-0">
       {/* Header */}
-      <section className="mx-auto max-w-4xl space-y-6 text-center">
+      <Section containerClassName="max-w-4xl space-y-6 text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-xs font-bold tracking-widest text-slate-600 uppercase">
           عن المنصة
         </div>
@@ -74,31 +73,33 @@ export default function AboutPage() {
           <Image src="https://picsum.photos/seed/aboutplatform/1200/600" alt="صورة تمثيلية لفريق عمل وإدارة منصة الرحلة" fill priority className="object-cover" referrerPolicy="no-referrer" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent"></div>
         </div>
-      </section>
+      </Section>
 
       {/* The Spark */}
-      <section className="relative mx-auto w-full max-w-4xl overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-12">
-        <div className="absolute top-0 right-0 -z-0 h-32 w-32 rounded-bl-full bg-amber-50"></div>
-        <div className="relative z-10 flex flex-col items-start gap-8 md:flex-row">
-          <div className="shrink-0 rounded-2xl bg-amber-100 p-4 text-amber-600">
-            <Sparkles className="h-8 w-8" />
+      <Section containerClassName="max-w-4xl">
+        <Card accentColor="amber" className="relative overflow-hidden p-8 md:p-12">
+          <div className="absolute top-0 right-0 -z-0 h-32 w-32 rounded-bl-full bg-amber-50"></div>
+          <div className="relative z-10 flex flex-col items-start gap-8 md:flex-row">
+            <div className="shrink-0 rounded-2xl bg-amber-100 p-4 text-amber-600">
+              <Sparkles className="h-8 w-8" />
+            </div>
+            <div className="space-y-4">
+              <h2 className="text-2xl font-black text-slate-800">الشرارة</h2>
+              <p className="text-lg leading-relaxed font-medium text-slate-600">
+                في ظل تسارع الرقمنة وتدفّق المحتوى من حولنا، ازدادت حاجتنا إلى
+                تجارب لا يضيع فيها الإنسان وسط ما يقرأ ويشاهد. ومن هنا انطلقت
+                الشرارة: أن نوظّف الرقمنة لتقريب الحكاية من صاحبها، لا لإبعاده
+                عنها؛ فيكون حاضرًا فيها باسمه وصوته واختياراته، مرةً حين تصل إليه
+                حكاية تحمل شيئًا منه، ومرةً حين تنطلق الحكاية من داخله.
+              </p>
+            </div>
           </div>
-          <div className="space-y-4">
-            <h2 className="text-2xl font-black text-slate-800">الشرارة</h2>
-            <p className="text-lg leading-relaxed font-medium text-slate-600">
-              في ظل تسارع الرقمنة وتدفّق المحتوى من حولنا، ازدادت حاجتنا إلى
-              تجارب لا يضيع فيها الإنسان وسط ما يقرأ ويشاهد. ومن هنا انطلقت
-              الشرارة: أن نوظّف الرقمنة لتقريب الحكاية من صاحبها، لا لإبعاده
-              عنها؛ فيكون حاضرًا فيها باسمه وصوته واختياراته، مرةً حين تصل إليه
-              حكاية تحمل شيئًا منه، ومرةً حين تنطلق الحكاية من داخله.
-            </p>
-          </div>
-        </div>
-      </section>
+        </Card>
+      </Section>
 
       {/* Mission & Vision */}
-      <section className="mx-auto grid w-full max-w-6xl gap-8 md:grid-cols-2">
-        <div className="rounded-3xl border border-blue-100 bg-blue-50/50 p-8 md:p-12">
+      <Section containerClassName="grid max-w-6xl gap-8 md:grid-cols-2">
+        <Card accentColor="amber" className="bg-blue-50/50 p-8 md:p-12 border-blue-100">
           <div className="mb-6 flex items-center gap-4">
             <div className="rounded-xl bg-blue-100 p-3 text-blue-600">
               <Target className="h-6 w-6" />
@@ -110,9 +111,9 @@ export default function AboutPage() {
             لمختلف الأعمار؛ ليكون كل فرد جزءًا من الحكاية، أو تنطلق الحكاية من
             صوته وأفكاره، ضمن تجربة تحترم اختياراته وتدعم تعبيره ونموه.
           </p>
-        </div>
+        </Card>
 
-        <div className="rounded-3xl border border-emerald-100 bg-emerald-50/50 p-8 md:p-12">
+        <Card accentColor="amber" className="bg-emerald-50/50 p-8 md:p-12 border-emerald-100">
           <div className="mb-6 flex items-center gap-4">
             <div className="rounded-xl bg-emerald-100 p-3 text-emerald-600">
               <HeartHandshake className="h-6 w-6" />
@@ -124,11 +125,11 @@ export default function AboutPage() {
             الآمنة والشخصية، يجد فيها كل فرد مساحةً يرى فيها نفسه، ويعبّر عن
             صوته، ويواصل نموه.
           </p>
-        </div>
-      </section>
+        </Card>
+      </Section>
 
       {/* Core Values */}
-      <section className="mx-auto w-full max-w-6xl">
+      <Section>
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
           قيمنا الأساسية
         </h2>
@@ -136,9 +137,10 @@ export default function AboutPage() {
           {values.map((value, index) => {
             const Icon = value.icon;
             return (
-              <div
+              <Card
                 key={index}
-                className={`rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all hover:shadow-md ${index > 2 ? 'md:col-span-1.5' : ''}`}
+                accentColor="amber"
+                className={`p-6 transition-all hover:shadow-md ${index > 2 ? 'md:col-span-1.5' : ''}`}
               >
                 <div
                   className={`flex h-12 w-12 items-center justify-center rounded-xl ${value.bg} ${value.color} mb-4`}
@@ -151,11 +153,11 @@ export default function AboutPage() {
                 <p className="font-medium text-slate-500">
                   {value.description}
                 </p>
-              </div>
+              </Card>
             );
           })}
         </div>
-      </section>
+      </Section>
     </PageContainer>
   );
 }

@@ -1,4 +1,7 @@
 import { Metadata } from 'next';
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
 export const metadata: Metadata = {
   title: 'قسم إنهى لك',
@@ -80,70 +83,76 @@ export default async function EnhaLakPage() {
   ];
 
   return (
-    <PageContainer>
+    <PageContainer className="!py-0 !space-y-0">
             {/* Hero Section */}
-      <section className="mx-auto max-w-4xl text-center py-12 md:py-20">
+      <Section containerClassName="max-w-4xl text-center py-12 md:py-20">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 mb-6 leading-tight">
           إنها لك... حيث يتحول الخيال إلى واقع
         </h1>
         <p className="text-xl md:text-2xl font-medium text-slate-600 mb-8 leading-relaxed">
           قصص ومنتجات مخصصة تجعل الطفل بطل الحكاية، وتعزز ارتباطه بالقراءة والقيم بأسلوب مشوق.
         </p>
-      </section>
+      </Section>
       
 
       {/* Path Selection */}
-      <section className="mx-auto w-full max-w-5xl">
+      <Section containerClassName="max-w-5xl">
         <div className="grid gap-8 md:grid-cols-3">
           <Link
             href="/enha-lak/custom"
-            className="group relative block overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 text-center transition-all duration-300 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10 md:text-right"
+            className="group block h-full"
           >
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 transition-transform group-hover:scale-110 md:mx-0">
-              <PenTool className="h-8 w-8" />
-            </div>
-            <h3 className="mb-3 text-2xl font-bold text-slate-800">
-              أنت البطل هنا
-            </h3>
-            <p className="leading-relaxed font-medium text-slate-600">
-              نصنع محتوى مخصصاً لطفلك من الصفر بعد إتمام الطلب، ليكون هو محور
-              القصة بأدق تفاصيلها.
-            </p>
+            <Card accentColor="rose" className="h-full relative overflow-hidden p-8 text-center transition-all duration-300 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10 md:text-right">
+              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 transition-transform group-hover:scale-110 md:mx-0">
+                <PenTool className="h-8 w-8" />
+              </div>
+              <h3 className="mb-3 text-2xl font-bold text-slate-800">
+                أنت البطل هنا
+              </h3>
+              <p className="leading-relaxed font-medium text-slate-600">
+                نصنع محتوى مخصصاً لطفلك من الصفر بعد إتمام الطلب، ليكون هو محور
+                القصة بأدق تفاصيلها.
+              </p>
+            </Card>
           </Link>
           <Link
             href="/enha-lak/library"
-            className="group relative block overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 text-center transition-all duration-300 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/10 md:text-right"
+            className="group block h-full"
           >
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 transition-transform group-hover:scale-110 md:mx-0">
-              <BookOpen className="h-8 w-8" />
-            </div>
-            <h3 className="mb-3 text-2xl font-bold text-slate-800">
-              المكتبة العامة
-            </h3>
-            <p className="leading-relaxed font-medium text-slate-600">
-              اختر قصة جاهزة من المكتبة وخصص غلافها فقط، محتوى القصة الأصلي يبقى
-              كما هو.
-            </p>
+            <Card accentColor="rose" className="h-full relative overflow-hidden p-8 text-center transition-all duration-300 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/10 md:text-right">
+              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 transition-transform group-hover:scale-110 md:mx-0">
+                <BookOpen className="h-8 w-8" />
+              </div>
+              <h3 className="mb-3 text-2xl font-bold text-slate-800">
+                المكتبة العامة
+              </h3>
+              <p className="leading-relaxed font-medium text-slate-600">
+                اختر قصة جاهزة من المكتبة وخصص غلافها فقط، محتوى القصة الأصلي يبقى
+                كما هو.
+              </p>
+            </Card>
           </Link>
           <Link
             href="/enha-lak/subscription"
-            className="group relative block overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 text-center transition-all duration-300 hover:border-purple-300 hover:shadow-xl hover:shadow-purple-500/10 md:text-right"
+            className="group block h-full"
           >
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 transition-transform group-hover:scale-110 md:mx-0">
-              <Package className="h-8 w-8" />
-            </div>
-            <h3 className="mb-3 text-2xl font-bold text-slate-800">
-              صندوق الرحلة
-            </h3>
-            <p className="leading-relaxed font-medium text-slate-600">
-              اشترك واستقبل قصة جديدة مختارة بعناية كل فترة.
-            </p>
+            <Card accentColor="rose" className="h-full relative overflow-hidden p-8 text-center transition-all duration-300 hover:border-purple-300 hover:shadow-xl hover:shadow-purple-500/10 md:text-right">
+              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 transition-transform group-hover:scale-110 md:mx-0">
+                <Package className="h-8 w-8" />
+              </div>
+              <h3 className="mb-3 text-2xl font-bold text-slate-800">
+                صندوق الرحلة
+              </h3>
+              <p className="leading-relaxed font-medium text-slate-600">
+                اشترك واستقبل قصة جديدة مختارة بعناية كل فترة.
+              </p>
+            </Card>
           </Link>
         </div>
-      </section>
+      </Section>
 
       {/* Power of Personalization */}
-      <section className="mx-auto w-full max-w-6xl rounded-3xl border border-slate-100 bg-slate-50/50 p-8 md:p-12">
+      <Section containerClassName="max-w-6xl rounded-3xl border border-slate-100 bg-slate-50/50 p-8 md:p-12">
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
           قوة القصة الشخصية
         </h2>
@@ -167,10 +176,10 @@ export default async function EnhaLakPage() {
             );
           })}
         </div>
-      </section>
+      </Section>
 
       {/* How it works */}
-      <section className="mx-auto w-full max-w-5xl">
+      <Section containerClassName="max-w-5xl">
         <h2 className="mb-16 text-center text-3xl font-black text-slate-800">
           كيف تعمل؟
         </h2>
@@ -196,18 +205,19 @@ export default async function EnhaLakPage() {
             );
           })}
         </div>
-      </section>
+      </Section>
 
       {/* Testimonials */}
-      <section className="mx-auto w-full max-w-6xl">
+      <Section containerClassName="max-w-6xl pb-24">
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
           ماذا تقول الأسر عنا؟
         </h2>
         <div className="grid gap-6 md:grid-cols-3">
           {testimonials.map((testimonial) => (
-            <div
+            <Card
               key={testimonial.id}
-              className="flex flex-col justify-between rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+              accentColor="rose"
+              className="flex flex-col justify-between p-6 shadow-sm transition-shadow hover:shadow-md"
             >
               <div>
                 <Quote className="mb-4 h-8 w-8 text-blue-200" />
@@ -223,10 +233,10 @@ export default async function EnhaLakPage() {
                   {testimonial.authorRole}
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
-      </section>
+      </Section>
     </PageContainer>
   );
 }

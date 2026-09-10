@@ -1,8 +1,11 @@
 import { formatPrice } from '@/lib/utils';
-import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { CheckCircle, Package, ArrowLeft, Clock } from 'lucide-react';
 import { getOrders } from '@/data/mock';
+
 
 export default async function PaymentStatusPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const { id } = await searchParams;
@@ -11,12 +14,12 @@ export default async function PaymentStatusPage({ searchParams }: { searchParams
 
   if (!order) {
     return (
-      <PageContainer>
-        <div className="mx-auto w-full max-w-2xl pt-24 pb-32 text-center">
+      <PageContainer className="!py-0 !space-y-0">
+        <Section containerClassName="mx-auto w-full max-w-2xl pt-24 pb-32 text-center">
           <h1 className="mb-4 text-4xl font-black text-slate-800 md:text-5xl">طلب غير موجود</h1>
           <p className="mb-12 text-xl font-medium text-slate-500">عفواً، لم نتمكن من العثور على هذا الطلب.</p>
-          <Link href="/" className="inline-block rounded-xl bg-slate-900 px-8 py-4 font-bold text-white">العودة للرئيسية</Link>
-        </div>
+          <Button href="/" accentColor="rose" className="px-8 py-4">العودة للرئيسية</Button>
+        </Section>
       </PageContainer>
     );
   }
@@ -24,8 +27,8 @@ export default async function PaymentStatusPage({ searchParams }: { searchParams
   const isAwaiting = order.status === 'awaiting_verification';
 
   return (
-    <PageContainer>
-      <div className="mx-auto w-full max-w-2xl pt-24 pb-32 text-center">
+    <PageContainer className="!py-0 !space-y-0">
+      <Section containerClassName="mx-auto w-full max-w-2xl pt-24 pb-32 text-center">
         <div className={`mx-auto mb-8 flex h-32 w-32 items-center justify-center rounded-full ${isAwaiting ? 'bg-amber-50 text-amber-500' : 'bg-emerald-50 text-emerald-500'}`}>
           {isAwaiting ? <Clock className="h-16 w-16" /> : <CheckCircle className="h-16 w-16" />}
         </div>
@@ -37,7 +40,7 @@ export default async function PaymentStatusPage({ searchParams }: { searchParams
           {isAwaiting ? 'لقد استلمنا طلبك وجاري مراجعة إيصال الدفع. سنقوم بتأكيد طلبك قريباً.' : 'تم تأكيد طلبك بنجاح، وسنبدأ في تجهيزه على الفور.'}
         </p>
         
-        <div className="mx-auto mb-12 max-w-md rounded-3xl border border-slate-100 bg-slate-50 p-8 text-right shadow-sm">
+        <Card accentColor="rose" className="mx-auto mb-12 max-w-md p-8 text-right bg-slate-50">
           <h2 className="mb-6 border-b border-slate-200 pb-4 text-lg font-bold text-slate-800">تفاصيل الطلب</h2>
           
           <div className="space-y-4">
@@ -60,25 +63,27 @@ export default async function PaymentStatusPage({ searchParams }: { searchParams
               <span className="font-bold text-amber-600">{formatPrice(order.totalAmount)}</span>
             </div>
           </div>
-        </div>
+        </Card>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link
+          <Button
             href="/account/orders/enha-lak"
-            className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-slate-900 px-8 py-4 font-bold text-white shadow-md transition-colors hover:bg-slate-800"
+            accentColor="rose"
+            className="w-full sm:w-auto px-8 py-4 !bg-slate-900 !text-white hover:!bg-slate-800"
           >
             <Package className="h-5 w-5" />
             تتبع الطلب
-          </Link>
-          <Link
+          </Button>
+          <Button
             href="/"
-            className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-slate-100 px-8 py-4 font-bold text-slate-700 transition-colors hover:bg-slate-200"
+            variant="secondary"
+            className="w-full sm:w-auto px-8 py-4 border-none !bg-slate-100 !text-slate-700 hover:!bg-slate-200"
           >
             العودة للرئيسية
             <ArrowLeft className="h-5 w-5" />
-          </Link>
+          </Button>
         </div>
-      </div>
+      </Section>
     </PageContainer>
   );
 }

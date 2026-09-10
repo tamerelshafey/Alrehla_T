@@ -4,6 +4,9 @@ import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PageContainer } from '@/components/PageContainer';
+import { Section } from '@/components/ui/Section';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { ShoppingCart, Trash2, ArrowRight, Package } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
@@ -14,14 +17,14 @@ export default function CartClient() {
   const total = cartTotal + tax;
 
   return (
-    <PageContainer>
-      <div className="mx-auto w-full max-w-5xl pt-12 pb-24">
+    <PageContainer className="!py-0 !space-y-0">
+      <Section containerClassName="max-w-5xl pt-12 pb-24">
         <h1 className="mb-10 text-3xl font-black text-slate-800 md:text-5xl">سلة المشتريات</h1>
         
         <div className="grid gap-12 lg:grid-cols-3">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 md:p-8">
+            <Card accentColor="amber" className="p-6 md:p-8">
               {items.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-slate-50 text-slate-400">
@@ -29,9 +32,9 @@ export default function CartClient() {
                   </div>
                   <h3 className="text-lg font-bold text-slate-800">سلتك فارغة</h3>
                   <p className="mt-2 text-slate-500">تصفح المكتبة وأضف بعض القصص الممتعة!</p>
-                  <Link href="/enha-lak" className="mt-6 inline-block rounded-xl bg-slate-900 px-6 py-3 font-bold text-white hover:bg-slate-800">
+                  <Button href="/enha-lak" accentColor="amber" className="mt-6 !bg-slate-900 !hover:bg-slate-800">
                     تصفح المنتجات
-                  </Link>
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-6 divide-y divide-slate-100">
@@ -56,17 +59,18 @@ export default function CartClient() {
                           <span className="text-lg font-black text-emerald-600">{formatPrice(item.price)}</span>
                         </div>
                       </div>
-                      <button 
+                      <Button 
+                        variant="secondary"
                         onClick={() => removeItem(item.id)}
-                        className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-500 transition-colors hover:bg-red-100"
+                        className="!h-10 !w-10 !p-0 !min-h-0 !bg-red-50 !text-red-500 hover:!bg-red-100"
                       >
                         <Trash2 className="h-5 w-5" />
-                      </button>
+                      </Button>
                     </div>
                   ))}
                 </div>
               )}
-            </div>
+            </Card>
             
             <Link href="/enha-lak" className="inline-flex items-center gap-2 font-bold text-slate-500 hover:text-slate-800">
               <ArrowRight className="h-5 w-5" />
@@ -77,7 +81,7 @@ export default function CartClient() {
           {/* Order Summary */}
           {items.length > 0 && (
             <div className="lg:col-span-1">
-              <div className="sticky top-32 rounded-3xl border border-slate-200 bg-slate-50 p-6 md:p-8">
+              <Card accentColor="amber" className="sticky top-32 bg-slate-50 p-6 md:p-8">
                 <h2 className="mb-6 text-xl font-black text-slate-800">ملخص الطلب</h2>
                 
                 <div className="space-y-4 border-b border-slate-200 pb-6">
@@ -96,18 +100,19 @@ export default function CartClient() {
                   <span>{formatPrice(total)}</span>
                 </div>
                 
-                <Link
+                <Button
                   href="/enha-lak/checkout"
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-4 font-bold text-white shadow-md transition-colors hover:bg-slate-800"
+                  accentColor="amber"
+                  className="w-full !bg-slate-900 !hover:bg-slate-800 shadow-md gap-2"
                 >
                   إتمام الطلب
                   <ShoppingCart className="h-5 w-5" />
-                </Link>
-              </div>
+                </Button>
+              </Card>
             </div>
           )}
         </div>
-      </div>
+      </Section>
     </PageContainer>
   );
 }
