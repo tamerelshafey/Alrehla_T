@@ -3,6 +3,7 @@ import { formatPrice } from '@/lib/utils';
 
 import React, { useState } from 'react';
 import { InstructorPayout, Instructor } from '@/types';
+import { markInstructorPayoutAsPaid } from '@/actions/finance';
 import { CheckCircle2, Building, AlertCircle } from 'lucide-react';
 
 interface Props {
@@ -14,12 +15,17 @@ export function AdminPayoutClient({ payout, instructor }: Props) {
   const [status, setStatus] = useState(payout.status);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleMarkAsPaid = () => {
+  const handleMarkAsPaid = async () => {
     setIsProcessing(true);
-    setTimeout(() => {
+    try {
+      await markInstructorPayoutAsPaid(payout.id, payout.instructorId);
       setStatus('paid');
+    } catch (error) {
+      console.error(error);
+      alert('حدث خطأ');
+    } finally {
       setIsProcessing(false);
-    }, 1500);
+    }
   };
 
   return (

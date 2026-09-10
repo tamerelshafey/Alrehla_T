@@ -2,6 +2,7 @@
 import { formatPrice } from '@/lib/utils';
 import React, { useState } from 'react';
 import { PublisherPayout, Publisher } from '@/types';
+import { markPublisherPayoutAsPaid } from '@/actions/finance';
 import { CheckCircle2, Building, AlertCircle } from 'lucide-react';
 
 interface Props {
@@ -13,12 +14,17 @@ export function AdminPublisherPayoutClient({ payout, publisher }: Props) {
   const [status, setStatus] = useState(payout.status);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleMarkAsPaid = () => {
+  const handleMarkAsPaid = async () => {
     setIsProcessing(true);
-    setTimeout(() => {
+    try {
+      await markPublisherPayoutAsPaid(payout.id, payout.publisherId);
       setStatus('paid');
+    } catch (error) {
+      console.error(error);
+      alert('حدث خطأ');
+    } finally {
       setIsProcessing(false);
-    }, 1500);
+    }
   };
 
   return (

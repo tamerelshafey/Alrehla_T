@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { PortfolioDocument } from '@/types';
+import { submitInstructorFeedback } from '@/actions/portfolio';
 import { Send, MessageSquare, User, Clock, CheckCircle2 } from 'lucide-react';
 
 interface Props {
@@ -14,17 +15,21 @@ export function InstructorDocumentClient({ document, studentName }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     setSaveMessage('');
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await submitInstructorFeedback(document.id, feedback);
       setStatus('reviewed');
-      setIsSaving(false);
       setSaveMessage('تم حفظ الملاحظات بنجاح وإرسالها للمتدرب.');
       setTimeout(() => setSaveMessage(''), 3000);
-    }, 1000);
+    } catch (err) {
+      console.error(err);
+      alert('حدث خطأ أثناء الحفظ');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

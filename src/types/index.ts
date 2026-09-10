@@ -458,3 +458,12 @@ export interface PublisherOrder {
 }
 
 
+
+export interface WithdrawalRequest {
+  id: string;
+  instructorId: string;
+  amount: number;
+  method: string;
+  status: 'pending' | 'processed';
+  createdAt: string;
+}

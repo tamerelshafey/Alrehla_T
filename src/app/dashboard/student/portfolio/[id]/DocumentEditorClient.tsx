@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { PortfolioDocument } from '@/types';
+import { saveDocumentDraft, submitDocumentForReview } from '@/actions/portfolio';
 import { Save, Send, MessageSquare, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface Props {
@@ -14,16 +15,25 @@ export function DocumentEditorClient({ initialDocument }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
-  const handleSave = (newStatus: 'draft' | 'submitted') => {
+  const handleSave = async (newStatus: 'draft' | 'submitted') => {
     setIsSaving(true);
     setSaveMessage('');
-    // Simulate API call
-    setTimeout(() => {
+    if (!initialDocument) return;
+    try {
+      if (newStatus === 'draft') {
+        await saveDocumentDraft(initialDocument.id, content);
+      } else {
+        await submitDocumentForReview(initialDocument.id, content);
+      }
       setStatus(newStatus);
-      setIsSaving(false);
       setSaveMessage(newStatus === 'draft' ? 'تم حفظ المسودة بنجاح' : 'تم الإرسال للمدرب للمراجعة');
       setTimeout(() => setSaveMessage(''), 3000);
-    }, 1000);
+    } catch (err) {
+      console.error(err);
+      alert('حدث خطأ أثناء الحفظ');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const isReviewed = status === 'reviewed';

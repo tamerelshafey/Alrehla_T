@@ -3,6 +3,7 @@ import { formatPrice } from '@/lib/utils';
 
 import React, { useState } from 'react';
 import { InstructorPayout } from '@/types';
+import { submitWithdrawalRequest } from '@/actions/finance';
 import { Wallet, ArrowRight, Building, CreditCard } from 'lucide-react';
 
 interface Props {
@@ -15,10 +16,22 @@ export function InstructorPayoutsClient({ payouts }: Props) {
   
   const pendingAmount = payouts.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0);
 
-  const handleWithdrawSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const handleWithdrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('تم تقديم طلب السحب للمراجعة.');
-    setShowWithdrawForm(false);
+    setIsSubmitting(true);
+    try {
+      // Use the first payout's instructorId as the actor ID
+      const instructorId = payouts[0]?.instructorId || 'unknown';
+      await submitWithdrawalRequest(instructorId, pendingAmount, withdrawMethod);
+      alert('تم تقديم طلب السحب للمراجعة بنجاح.');
+      setShowWithdrawForm(false);
+    } catch (error) {
+      console.error(error);
+      alert('حدث خطأ أثناء تقديم الطلب');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -111,9 +124,10 @@ export function InstructorPayoutsClient({ payouts }: Props) {
               </button>
               <button 
                 type="submit"
-                className="rounded-xl bg-slate-900 px-8 py-3 font-bold text-white hover:bg-slate-800"
+                disabled={isSubmitting}
+                className="rounded-xl bg-slate-900 px-8 py-3 font-bold text-white hover:bg-slate-800 disabled:opacity-50"
               >
-                تأكيد طلب السحب
+                {isSubmitting ? 'جاري التقديم...' : 'تأكيد طلب السحب'}
               </button>
             </div>
           </form>

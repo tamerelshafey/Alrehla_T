@@ -61,3 +61,13 @@ export const getAuditLogs = async (): Promise<AuditLog[]> => mockAuditLogs;
 
 
 
+
+export const mockWithdrawalRequests: import('@/types').WithdrawalRequest[] = [];
+
+export const logAuditAction = async (data: Omit<import('@/types').AuditLog, 'id' | 'createdAt'>) => {
+  mockAuditLogs.unshift({
+    id: `log-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    ...data,
+  });
+};
