@@ -21,7 +21,27 @@ export default async function InstructorProfilePage() {
         title="الملف الشخصي" 
         backHref="/dashboard/instructor"
       />
-      <ProfileFormShell defaultValues={defaultValues} />
+      <ProfileFormShell defaultValues={defaultValues}>
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-700">سنوات الخبرة</label>
+            <input 
+              type="number" 
+              defaultValue={instructor?.yearsExperience || 0} 
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 font-medium outline-none transition-colors focus:border-amber-500 focus:bg-white" 
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-700">التخصصات (مفصولة بفاصلة)</label>
+            <input 
+              type="text" 
+              defaultValue={instructor?.specialties?.join('، ') || ''} 
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 font-medium outline-none transition-colors focus:border-amber-500 focus:bg-white" 
+              placeholder="مثال: الكتابة للأطفال، بناء الشخصيات"
+            />
+          </div>
+        </div>
+      </ProfileFormShell>
     </div>
   );
 }

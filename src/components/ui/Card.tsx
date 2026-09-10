@@ -16,7 +16,7 @@ export function Card({ accentColor, children, className = '' }: CardProps) {
   const accentClass = accentColor ? `border-t-4 ${borderTopColors[accentColor]}` : '';
   
   return (
-    <div className={`bg-white rounded-2xl shadow-sm border border-slate-100 ${accentClass} ${className}`}>
+    <div className={`bg-white rounded-3xl shadow-sm border border-slate-100 ${accentClass} ${className}`}>
       {children}
     </div>
   );

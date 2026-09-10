@@ -13,8 +13,9 @@ import { Button } from '@/components/ui/Button';
 export default async function PackagesPage() {
   const packages = await getWritingPackages();
 
-  const under12 = packages.filter((p) => p.ageGroup === 'under_12');
-  const over12 = packages.filter((p) => p.ageGroup === '12_plus');
+  const activePackages = packages.filter(p => p.isActive);
+  const under12 = activePackages.filter((p) => p.ageGroup === 'under_12');
+  const over12 = activePackages.filter((p) => p.ageGroup === '12_plus');
 
   return (
     <PageContainer className="!py-0 !space-y-0">

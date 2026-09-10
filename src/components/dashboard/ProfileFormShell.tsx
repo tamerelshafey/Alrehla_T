@@ -10,9 +10,10 @@ interface ProfileFormShellProps {
     bio?: string;
     avatarUrl?: string;
   };
+  children?: React.ReactNode;
 }
 
-export function ProfileFormShell({ defaultValues }: ProfileFormShellProps) {
+export function ProfileFormShell({ defaultValues, children }: ProfileFormShellProps) {
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
       <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
@@ -80,6 +81,8 @@ export function ProfileFormShell({ defaultValues }: ProfileFormShellProps) {
             ></textarea>
           </div>
         </div>
+
+        {children}
 
         {/* Submit Button */}
         <div className="flex justify-end pt-4">

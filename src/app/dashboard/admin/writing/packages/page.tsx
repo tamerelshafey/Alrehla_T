@@ -11,6 +11,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function Page() {
   const user = await getCurrentUser();
+
   if (!hasAdminPermission(user, 'canManageCatalog')) {
     return <Unauthorized />;
   }
@@ -36,7 +37,12 @@ export default async function Page() {
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
-      <DashboardPageHeader title="باقات الكتابة الإبداعية" />
+      <div className="flex justify-between items-center mb-8">
+        <DashboardPageHeader title="باقات الكتابة الإبداعية" />
+        <Link href="/dashboard/admin/writing/packages/new" className="rounded-xl bg-blue-600 px-6 py-3 font-bold text-white shadow-md transition-colors hover:bg-blue-700">
+          إضافة باقة جديدة
+        </Link>
+      </div>
       <SimpleDataTable columns={columns} data={formatted} />
     </div>
   );

@@ -84,7 +84,7 @@ export function InstructorSettingsClient({ instructor }: InstructorSettingsClien
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <h3 className="text-lg font-black text-slate-800 mb-4">نموذج العمل والتسعير</h3>
         
         <div className="space-y-6">
@@ -93,7 +93,7 @@ export function InstructorSettingsClient({ instructor }: InstructorSettingsClien
             <select 
               value={workModel} 
               onChange={(e) => setWorkModel(e.target.value as any)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-emerald-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-amber-500 focus:outline-none"
             >
               <option value="per_session">بالجلسة</option>
               <option value="monthly">راتب شهري (يتطلب 60 ساعة التزام على الأقل)</option>
@@ -108,14 +108,14 @@ export function InstructorSettingsClient({ instructor }: InstructorSettingsClien
                 min={60}
                 value={monthlyHours}
                 onChange={(e) => setMonthlyHours(parseInt(e.target.value))}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-amber-500 focus:outline-none"
               />
               <label className="text-sm font-bold text-slate-700 mt-4 block">قيمة الراتب الشهري المقترح (ج.م)</label>
               <input 
                 type="number" 
                 value={requestedPrice}
                 onChange={(e) => setRequestedPrice(Number(e.target.value))}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-amber-500 focus:outline-none"
               />
             </div>
           )}
@@ -126,7 +126,7 @@ export function InstructorSettingsClient({ instructor }: InstructorSettingsClien
               <select
                 value={selectedPricingOptionId}
                 onChange={(e) => setSelectedPricingOptionId(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-amber-500 focus:outline-none"
               >
                 {mockInstructorPricingOptions.map(option => (
                   <option key={option.id} value={option.id}>
@@ -144,7 +144,7 @@ export function InstructorSettingsClient({ instructor }: InstructorSettingsClien
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-4">
           <h3 className="text-lg font-black text-slate-800">الجدول الأسبوعي المتاح</h3>
           <p className="text-sm text-slate-500">
@@ -160,13 +160,13 @@ export function InstructorSettingsClient({ instructor }: InstructorSettingsClien
                   const slot = schedule.find(s => s.day === day.key && s.time === time);
                   const isSelected = !!slot;
                   return (
-                    <div key={time} className={`flex flex-col gap-2 rounded-lg p-2 ${isSelected ? 'bg-emerald-50 border border-emerald-200' : ''}`}>
+                    <div key={time} className={`flex flex-col gap-2 rounded-lg p-2 ${isSelected ? 'bg-amber-50 border border-amber-200' : ''}`}>
                       <button
                         type="button"
                         onClick={() => toggleSlot(day.key, time)}
                         className={`rounded-lg px-4 py-2 text-sm font-bold transition-colors ${
                           isSelected 
-                            ? 'bg-emerald-500 text-white shadow-sm' 
+                            ? 'bg-amber-500 text-white shadow-sm' 
                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                       >
@@ -177,7 +177,7 @@ export function InstructorSettingsClient({ instructor }: InstructorSettingsClien
                           <select
                             value={slot.commitmentType || 'ongoing'}
                             onChange={(e) => updateSlotCommitment(day.key, time, 'commitmentType', e.target.value)}
-                            className="text-xs rounded border border-emerald-200 bg-white py-1 px-2 text-emerald-800 outline-none focus:border-emerald-400"
+                            className="text-xs rounded border border-amber-200 bg-white py-1 px-2 text-amber-800 outline-none focus:border-amber-400"
                           >
                             <option value="ongoing">مستمر</option>
                             <option value="fixed_term">فترة محددة</option>
@@ -186,7 +186,7 @@ export function InstructorSettingsClient({ instructor }: InstructorSettingsClien
                             <select
                               value={slot.commitmentMonths || 3}
                               onChange={(e) => updateSlotCommitment(day.key, time, 'commitmentMonths', e.target.value)}
-                              className="text-xs rounded border border-emerald-200 bg-white py-1 px-2 text-emerald-800 outline-none focus:border-emerald-400"
+                              className="text-xs rounded border border-amber-200 bg-white py-1 px-2 text-amber-800 outline-none focus:border-amber-400"
                             >
                               <option value={3}>٣ شهور</option>
                               <option value={6}>٦ شهور</option>
@@ -205,7 +205,7 @@ export function InstructorSettingsClient({ instructor }: InstructorSettingsClien
 
       <div className="flex justify-end gap-4">
         {isSaved && (
-          <div className="flex items-center gap-2 text-emerald-600 font-bold">
+          <div className="flex items-center gap-2 text-amber-600 font-bold">
             <CheckCircle2 className="h-5 w-5" />
             <span>تم إرسال الطلب للإدارة للمراجعة</span>
           </div>
