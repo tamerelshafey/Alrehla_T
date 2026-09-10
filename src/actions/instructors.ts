@@ -4,6 +4,8 @@ import { ProfileUpdateRequest, BillingModel, WeeklySlot, WorkModel, Instructor }
 import { mockProfileUpdateRequests } from '@/data/domains/writing';
 import { mockInstructors, mockInstructorCertifications } from '@/data/mock';
 import { revalidatePath } from 'next/cache';
+import { logAuditAction } from '@/lib/audit';
+import { getCurrentUser } from '@/data/mock';
 
 export async function submitInstructorProfileUpdate(
   instructorId: string,
@@ -26,9 +28,10 @@ export async function submitInstructorProfileUpdate(
 export async function approveProfileUpdateRequest(requestId: string) {
   const req = mockProfileUpdateRequests.find(r => r.id === requestId);
   if (!req) throw new Error('Request not found');
-
   const instructor = mockInstructors.find(i => i.id === req.instructorId);
   if (!instructor) throw new Error('Instructor not found');
+
+  const currentUser = await getCurrentUser();
 
   // Apply changes
   if (req.requestedChanges.workModel) instructor.workModel = req.requestedChanges.workModel;
@@ -48,6 +51,15 @@ export async function approveProfileUpdateRequest(requestId: string) {
   
   req.status = 'approved';
   
+  await logAuditAction({
+    actorProfileId: currentUser.id,
+    actorName: currentUser.fullName,
+    action: 'instructor_profile_update_approved',
+    entityType: 'ProfileUpdateRequest',
+    entityId: requestId,
+    metadata: { instructorId: req.instructorId }
+  });
+
   revalidatePath(`/dashboard/admin/instructors/${req.instructorId}`);
   revalidatePath(`/dashboard/instructor/settings`);
   return { success: true };
@@ -56,10 +68,20 @@ export async function approveProfileUpdateRequest(requestId: string) {
 export async function rejectProfileUpdateRequest(requestId: string, adminFeedback: string) {
   const req = mockProfileUpdateRequests.find(r => r.id === requestId);
   if (!req) throw new Error('Request not found');
-
+  
+  const currentUser = await getCurrentUser();
   req.status = 'rejected';
   req.adminFeedback = adminFeedback;
   
+  await logAuditAction({
+    actorProfileId: currentUser.id,
+    actorName: currentUser.fullName,
+    action: 'instructor_profile_update_rejected',
+    entityType: 'ProfileUpdateRequest',
+    entityId: requestId,
+    metadata: { instructorId: req.instructorId, adminFeedback }
+  });
+
   revalidatePath(`/dashboard/admin/instructors/${req.instructorId}`);
   revalidatePath(`/dashboard/instructor/settings`);
   return { success: true };
@@ -84,6 +106,16 @@ export async function updateInstructorCertification(instructorId: string, passed
     cert.certifiedAt = undefined;
   }
   
+  const currentUser = await getCurrentUser();
+  await logAuditAction({
+    actorProfileId: currentUser.id,
+    actorName: currentUser.fullName,
+    action: passed ? 'instructor_certification_passed' : 'instructor_certification_failed',
+    entityType: 'InstructorCertification',
+    entityId: cert.id,
+    metadata: { instructorId }
+  });
+
   revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
   return { success: true };
 }
@@ -97,6 +129,16 @@ export async function updatePricingFormulaSettings(
   mockPricingFormulaSettings[0].fixedAdminFee = fixedAdminFee;
   mockPricingFormulaSettings[0].updatedAt = new Date().toISOString();
   
+  const currentUser = await getCurrentUser();
+  await logAuditAction({
+    actorProfileId: currentUser.id,
+    actorName: currentUser.fullName,
+    action: 'pricing_formula_updated',
+    entityType: 'PricingFormulaSettings',
+    entityId: mockPricingFormulaSettings[0].id,
+    metadata: { platformMultiplier, fixedAdminFee }
+  });
+
   revalidatePath('/dashboard/admin/settings/creative-writing-pricing');
   return { success: true };
 }

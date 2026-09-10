@@ -81,6 +81,15 @@ export const mockBlogPosts: BlogPost[] = [
   },
 ];
 
+export const mockSiteSettings = {
+  siteName: 'منصة الرحلة',
+  contactEmail: 'contact@alrehla.com',
+  facebookUrl: 'https://facebook.com/alrehla',
+  instagramUrl: 'https://instagram.com/alrehla',
+};
+
+export const getSiteSettings = async () => mockSiteSettings;
+
 export const getTestimonials = async (): Promise<Testimonial[]> => {
   return Promise.resolve(mockTestimonials);
 };

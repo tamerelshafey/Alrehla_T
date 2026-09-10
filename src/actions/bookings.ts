@@ -2,6 +2,8 @@
 
 import { mockServiceOrders, mockBookings } from '@/data/mock';
 import { revalidatePath } from 'next/cache';
+import { logAuditAction } from '@/lib/audit';
+import { getCurrentUser } from '@/data/mock';
 
 // Helper to simulate a booking checkout
 export async function createDummyBookingServiceOrder(amount: number, packageId: string, instructorId: string) {
@@ -61,6 +63,16 @@ export async function confirmBookingPayment(bookingId: string) {
   if (booking) {
     booking.status = 'confirmed'; // Usually confirmed when paid
   }
+
+  const currentUser = await getCurrentUser();
+  await logAuditAction({
+    actorProfileId: currentUser.id,
+    actorName: currentUser.fullName,
+    action: 'booking_payment_confirmed',
+    entityType: 'ServiceOrder',
+    entityId: bookingId,
+    metadata: { bookingId }
+  });
 
   revalidatePath('/creative-writing/booking/confirm');
   revalidatePath('/account/orders/creative-writing');

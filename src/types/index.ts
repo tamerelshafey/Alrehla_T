@@ -364,9 +364,12 @@ export type SupportSessionRequest = {
 
 export type AuditLog = {
   id: string;
-  actorName: string;
+  actorName?: string;
+  actorProfileId?: string;
   action: string;
   entityType: string;
+  entityId?: string;
+  metadata?: Record<string, unknown>;
   createdAt: string;
 };
 

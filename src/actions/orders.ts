@@ -3,6 +3,8 @@
 import { mockOrders } from '@/data/mock';
 import { revalidatePath } from 'next/cache';
 import { OrderItem } from '@/types';
+import { logAuditAction } from '@/lib/audit';
+import { getCurrentUser } from '@/data/mock';
 
 // Utility to create a dummy order for checkout simulation
 export async function createDummyOrder(items: OrderItem[], totalAmount: number) {
@@ -37,6 +39,16 @@ export async function confirmOrderPayment(orderId: string) {
   if (order) {
     order.status = 'paid';
     
+    const currentUser = await getCurrentUser();
+    await logAuditAction({
+      actorProfileId: currentUser.id,
+      actorName: currentUser.fullName,
+      action: 'order_payment_confirmed',
+      entityType: 'Order',
+      entityId: orderId,
+      metadata: { orderId }
+    });
+
     revalidatePath('/enha-lak/checkout');
     revalidatePath('/account/orders/enha-lak');
     revalidatePath('/dashboard/admin/orders');
