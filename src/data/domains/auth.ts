@@ -1,11 +1,11 @@
 import {
   WritingPackage, Instructor, PersonalizedProduct, AddonProduct, SubscriptionTier, 
-  Testimonial, CreativeService, BlogPost, UserProfile, Booking, Order, PortfolioItem, 
+  Testimonial, CreativeService, BlogPost, UserProfile, Booking, Order, 
   Publisher, InstructorPayout, PublisherPayout, SessionMessage, SessionAttachment, 
   StudyMaterial, InstructorStudent, AvailabilitySlot, BoxSubscription, SupportTicket, 
   JoinRequest, SupportSessionRequest, AuditLog, ServiceOrder, CourseSubscription, 
   SupportTicketMessage, FamilyMember, NotificationItem, UserRole,
-  PublisherOrder, InstructorWeeklyAvailability, RecurringSessionSlot, SlotChangeRequest,
+  PublisherOrder, RecurringSessionSlot, SlotChangeRequest,
   InstructorPricingOption, PricingFormulaSettings, InstructorCompensationProfile, InstructorCertification
 } from '@/types';
 import { cookies } from 'next/headers';

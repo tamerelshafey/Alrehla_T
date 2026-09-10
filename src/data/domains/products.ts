@@ -1,18 +1,19 @@
 import { formatPrice } from '@/lib/utils';
 import {
   WritingPackage, Instructor, PersonalizedProduct, AddonProduct, SubscriptionTier, 
-  Testimonial, CreativeService, BlogPost, UserProfile, Booking, Order, PortfolioItem, 
+  Testimonial, CreativeService, BlogPost, UserProfile, Booking, Order, 
   Publisher, InstructorPayout, PublisherPayout, SessionMessage, SessionAttachment, 
   StudyMaterial, InstructorStudent, AvailabilitySlot, BoxSubscription, SupportTicket, 
   JoinRequest, SupportSessionRequest, AuditLog, ServiceOrder, CourseSubscription, 
   SupportTicketMessage, FamilyMember, NotificationItem, UserRole,
-  PublisherOrder, InstructorWeeklyAvailability, RecurringSessionSlot, SlotChangeRequest,
+  PublisherOrder, RecurringSessionSlot, SlotChangeRequest,
   InstructorPricingOption, PricingFormulaSettings, InstructorCompensationProfile, InstructorCertification
 } from '@/types';
 import { cookies } from 'next/headers';
 
 // Import from auth if needed
 import { mockAllUsers, mockCurrentUser } from './auth';
+import { mockOrders } from "./orders";
 
 export const mockProducts: PersonalizedProduct[] = [
   // Custom Products
@@ -206,43 +207,31 @@ export const getProductBySlug = async (slug: string): Promise<PersonalizedProduc
   return null;
 };
 
-export const mockPublisherOrders: import('@/types').PublisherOrder[] = [
-  {
-    id: 'po-1',
-    orderId: 'ORD-10023',
-    productName: 'قصة خيالية مخصصة',
-    quantity: 1,
-    totalAmount: 150,
-    publisherShare: 105, // 70% share
-    status: 'completed',
-    createdAt: '2023-10-25T14:30:00Z'
-  },
-  {
-    id: 'po-2',
-    orderId: 'ORD-10024',
-    productName: 'كتاب المغامرات العظيم',
-    quantity: 2,
-    totalAmount: 200,
-    publisherShare: 140,
-    status: 'pending',
-    createdAt: '2023-10-26T09:15:00Z'
-  },
-  {
-    id: 'po-3',
-    orderId: 'ORD-10025',
-    productName: 'قصة قبل النوم المخصصة',
-    quantity: 1,
-    totalAmount: 120,
-    publisherShare: 84,
-    status: 'completed',
-    createdAt: '2023-10-27T18:45:00Z'
-  }
-];
 
 export async function getPublisherOrders() {
   await new Promise(resolve => setTimeout(resolve, 600));
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return mockPublisherOrders;
+  
+  const publisherOrders: PublisherOrder[] = [];
+  mockOrders.forEach(order => {
+    order.items.forEach(item => {
+      const product = mockProducts.find(p => p.id === item.productId);
+      if (product && product.ownerType === "publisher" && product.publisherId) {
+        const totalAmount = item.unitPrice * item.quantity;
+        const publisherShare = totalAmount * 0.7;
+        publisherOrders.push({
+          id: `po-${order.id}-${item.productId}`,
+          orderId: order.id,
+          productName: product.name,
+          quantity: item.quantity,
+          totalAmount: totalAmount,
+          publisherShare: publisherShare,
+          status: order.status === "paid" ? "completed" : order.status === "failed" ? "cancelled" : "pending",
+          createdAt: order.createdAt
+        });
+      }
+    });
+  });
+  return publisherOrders;
 }
 
 

@@ -1,20 +1,20 @@
 import { formatDate , formatPrice } from '@/lib/utils';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
-import { getOrders } from '@/data/mock';
+import { getPublisherOrders } from '@/data/mock';
 import { StatusBadge } from '@/components/StatusBadge';
 
 export const dynamic = 'force-dynamic';
 
 export default async function PublisherOrdersPage() {
-  const orders = await getOrders();
+  const orders = await getPublisherOrders();
 
   const formattedOrders = orders.map(order => ({
     ...order,
-    orderIdDisplay: `طلب #${order.id.split('-')[1] || order.id}`,
+    orderIdDisplay: `طلب #${order.orderId.split('-')[1] || order.id}`,
     dateDisplay: formatDate(order.createdAt),
     amountDisplay: `${formatPrice(order.totalAmount)}`,
-    statusDisplay: order.status === 'paid' 
+    statusDisplay: order.status === 'completed' 
       ? <StatusBadge type="success" label="مكتمل الدفع" />
       : <StatusBadge type="warning" label="قيد الانتظار" />
   }));

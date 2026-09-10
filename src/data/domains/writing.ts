@@ -1,11 +1,11 @@
 import {
   WritingPackage, Instructor, PersonalizedProduct, AddonProduct, SubscriptionTier, 
-  Testimonial, CreativeService, BlogPost, UserProfile, Booking, Order, PortfolioItem, 
+  Testimonial, CreativeService, BlogPost, UserProfile, Booking, Order, 
   Publisher, InstructorPayout, PublisherPayout, SessionMessage, SessionAttachment, 
   StudyMaterial, InstructorStudent, AvailabilitySlot, BoxSubscription, SupportTicket, 
   JoinRequest, SupportSessionRequest, AuditLog, ServiceOrder, CourseSubscription, 
   SupportTicketMessage, FamilyMember, NotificationItem, UserRole,
-  PublisherOrder, InstructorWeeklyAvailability, RecurringSessionSlot, SlotChangeRequest,
+  PublisherOrder, RecurringSessionSlot, SlotChangeRequest,
   InstructorPricingOption, PricingFormulaSettings, InstructorCompensationProfile, InstructorCertification
 } from '@/types';
 import { cookies } from 'next/headers';
@@ -289,45 +289,7 @@ export const mockBookings: Booking[] = [
   },
 ];
 
-export const mockPortfolioItems: PortfolioItem[] = [
-  {
-    id: 'port-1',
-    independentParticipantId: 'student-1',
-    title: 'رسالة إلى صديقي الخيالي',
-    excerpt: 'كان يجلس دائماً على حافة النافذة، يخبرني عن أسرار الغيوم...',
-    packageName: 'الكلمات الذهبية',
-    sessionNumber: 3,
-    createdAt: new Date(Date.now() - 86400000 * 14).toISOString(),
-  },
-  {
-    id: 'port-2',
-    independentParticipantId: 'student-1',
-    title: 'قصة الشجرة التي رفضت أن تكبر',
-    excerpt:
-      'في الغابة البعيدة، كانت هناك شجرة صغيرة ترفض أن تمتد جذورها في الأرض...',
-    packageName: 'الكلمات الذهبية',
-    sessionNumber: 6,
-    createdAt: new Date(Date.now() - 86400000 * 7).toISOString(),
-  },
-  {
-    id: 'port-3',
-    independentParticipantId: 'student-1',
-    title: 'حوار مع غيمة',
-    excerpt:
-      'سألتها: لماذا تبكين دائماً في الشتاء؟ فقالت: هذه ليست دموع، بل هدايا للأرض.',
-    packageName: 'السطور السحرية',
-    sessionNumber: 1,
-    createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
-  },
-];
 
-export const getBookings = async (): Promise<Booking[]> => {
-  return Promise.resolve(mockBookings);
-};
-
-export const getPortfolioItems = async (): Promise<PortfolioItem[]> => {
-  return Promise.resolve(mockPortfolioItems);
-};
 
 export const getSessionMessages = async (sessionId: string): Promise<SessionMessage[]> => {
   return [
@@ -461,44 +423,6 @@ export async function getDocumentById(id: string) {
 }
 
 
-export const mockInstructorWeeklyAvailability: import('@/types').InstructorWeeklyAvailability[] = [
-  {
-    id: 'iwa-1',
-    instructorId: 'inst-1',
-    dayOfWeek: 'saturday',
-    startTime: '10:00',
-    endTime: '14:00',
-    isActive: true,
-    createdAt: '2023-10-01T10:00:00Z'
-  },
-  {
-    id: 'iwa-2',
-    instructorId: 'inst-1',
-    dayOfWeek: 'monday',
-    startTime: '16:00',
-    endTime: '20:00',
-    isActive: true,
-    createdAt: '2023-10-01T10:00:00Z'
-  },
-  {
-    id: 'iwa-3',
-    instructorId: 'inst-2',
-    dayOfWeek: 'sunday',
-    startTime: '14:00',
-    endTime: '18:00',
-    isActive: true,
-    createdAt: '2023-10-01T10:00:00Z'
-  },
-  {
-    id: 'iwa-4',
-    instructorId: 'inst-2',
-    dayOfWeek: 'wednesday',
-    startTime: '16:00',
-    endTime: '21:00',
-    isActive: true,
-    createdAt: '2023-10-01T10:00:00Z'
-  }
-];
 
 export const mockRecurringSessionSlots: import('@/types').RecurringSessionSlot[] = [
   {
@@ -640,8 +564,6 @@ export const mockInstructorCertifications: import('@/types').InstructorCertifica
   }
 ];
 
-export const getWeeklyAvailability = async (instructorId: string) =>
-  Promise.resolve(mockInstructorWeeklyAvailability.filter(a => a.instructorId === instructorId));
 
 export const getRecurringSlotBySubscription = async (courseSubscriptionId: string) =>
   Promise.resolve(mockRecurringSessionSlots.find(s => s.courseSubscriptionId === courseSubscriptionId) || null);
@@ -659,4 +581,8 @@ export let mockProfileUpdateRequests: import('@/types').ProfileUpdateRequest[] =
 
 export const getProfileUpdateRequestsByInstructor = async (instructorId: string) => {
   return Promise.resolve(mockProfileUpdateRequests.filter(req => req.instructorId === instructorId));
+};
+
+export const getBookings = async (): Promise<Booking[]> => {
+  return Promise.resolve(mockBookings);
 };

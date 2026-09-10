@@ -46,13 +46,13 @@ export function InstructorSettingsClient({ instructor }: InstructorSettingsClien
       if (field === 'commitmentType') {
         newSchedule[index].commitmentType = value as 'ongoing' | 'fixed_term';
         if (value === 'fixed_term' && !newSchedule[index].commitmentMonths) {
-          newSchedule[index].commitmentMonths = 3;
+          newSchedule[index].commitmentMonths = 1;
         } else if (value === 'ongoing') {
           delete newSchedule[index].commitmentMonths;
           delete newSchedule[index].commitmentEndsAt;
         }
       } else if (field === 'commitmentMonths') {
-        newSchedule[index].commitmentMonths = parseInt(value) as 3 | 6;
+        newSchedule[index].commitmentMonths = parseInt(value) || 1;
       }
       setSchedule(newSchedule);
     }
@@ -183,14 +183,17 @@ export function InstructorSettingsClient({ instructor }: InstructorSettingsClien
                             <option value="fixed_term">فترة محددة</option>
                           </select>
                           {slot.commitmentType === 'fixed_term' && (
-                            <select
-                              value={slot.commitmentMonths || 3}
-                              onChange={(e) => updateSlotCommitment(day.key, time, 'commitmentMonths', e.target.value)}
-                              className="text-xs rounded border border-amber-200 bg-white py-1 px-2 text-amber-800 outline-none focus:border-amber-400"
-                            >
-                              <option value={3}>٣ شهور</option>
-                              <option value={6}>٦ شهور</option>
-                            </select>
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="number"
+                                min="1"
+                                placeholder="الشهور"
+                                value={slot.commitmentMonths || 1}
+                                onChange={(e) => updateSlotCommitment(day.key, time, 'commitmentMonths', e.target.value)}
+                                className="w-16 text-xs rounded border border-amber-200 bg-white py-1 px-2 text-amber-800 outline-none focus:border-amber-400"
+                              />
+                              <span className="text-xs text-amber-700">شهور</span>
+                            </div>
                           )}
                         </div>
                       )}

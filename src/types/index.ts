@@ -44,7 +44,7 @@ export type WeeklySlot = {
   time: string; // HH:mm format, e.g., "10:00"
   isBooked?: boolean;
   commitmentType?: 'ongoing' | 'fixed_term';
-  commitmentMonths?: 3 | 6;
+  commitmentMonths?: number;
   commitmentEndsAt?: string;
 };
 
@@ -178,18 +178,6 @@ export type BlogPost = {
   coverImageUrl?: string;
   publishedAt: string;
   authorName: string;
-};
-
-// عمل في الملف الكتابي للطالب
-export type PortfolioItem = {
-  id: string;
-  dependentParticipantId?: string;
-  independentParticipantId?: string;
-  title: string;
-  excerpt: string;
-  packageName: string;
-  sessionNumber: number;
-  createdAt: string;
 };
 
 // شهادة مستخدم
@@ -417,61 +405,8 @@ export interface PortfolioDocument {
 
 
 
-;
 export type PaymentMethod = 'credit_card' | 'fawry' | 'wallet';
 
-export interface CheckoutSession {
-  id: string;
-  userId: string;
-  items: any[];
-  total: number;
-  status: 'pending' | 'completed' | 'failed';
-  paymentMethod?: PaymentMethod;
-  shippingAddress?: {
-    name: string;
-    phone: string;
-    address: string;
-    city: string;
-    gov: string;
-  };
-}
-
-
-export interface PublisherOrder {
-  id: string;
-  orderId: string;
-  productName: string;
-  quantity: number;
-  totalAmount: number;
-  publisherShare: number;
-  status: 'pending' | 'completed' | 'cancelled';
-  createdAt: string;
-}
-
-
-export interface InstructorWeeklyAvailability {
-  id: string;
-  instructorId: string;
-  dayOfWeek: DayOfWeek;
-  startTime: string; // "10:00"
-  endTime: string;
-  isActive: boolean;
-  createdAt: string;
-}
-
-export type RecurringSlotStatus = 'active' | 'change_requested' | 'ended';
-
-export interface RecurringSessionSlot {
-  id: string;
-  courseSubscriptionId: string;
-  instructorId: string;
-  dayOfWeek: DayOfWeek;
-  startTime: string;
-  status: RecurringSlotStatus;
-  effectiveFrom: string; // تاريخ
-  effectiveUntil?: string;
-  createdAt: string;
-}
 
 export type SlotChangeRequestedBy = 'guardian' | 'instructor' | 'admin';
 export type SlotChangeRequestStatus = 'pending' | 'approved' | 'rejected';
@@ -528,3 +463,27 @@ export interface InstructorCertification {
   certifiedAt?: string;
 }
 
+
+export interface PublisherOrder {
+  id: string;
+  orderId: string;
+  productName: string;
+  quantity: number;
+  totalAmount: number;
+  publisherShare: number;
+  status: string;
+  createdAt: string;
+}
+
+export type RecurringSlotStatus = 'active' | 'change_requested' | 'ended';
+
+export interface RecurringSessionSlot {
+  id: string;
+  courseSubscriptionId: string;
+  instructorId: string;
+  dayOfWeek: DayOfWeek;
+  startTime: string;
+  status: RecurringSlotStatus;
+  effectiveFrom: string;
+  createdAt: string;
+}
