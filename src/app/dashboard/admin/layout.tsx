@@ -20,7 +20,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const sidebarLinks: { label: string; href: string; icon: LucideIcon; permission: AdminPermission }[] = [
     { label: 'المستخدمون والعائلات', href: '/dashboard/admin/users', icon: Users, permission: 'canManageUsers' },
     { label: 'المدربون', href: '/dashboard/admin/instructors', icon: UserCheck, permission: 'canManageInstructors' },
-    { label: 'الناشرون والمنتجات', href: '/dashboard/admin/publishers', icon: BookOpen, permission: 'canManagePublishers' },
+    { label: 'الناشرون', href: '/dashboard/admin/publishers', icon: BookOpen, permission: 'canManagePublishers' },
+    { label: 'المنتجات والمكتبة', href: '/dashboard/admin/products', icon: Box, permission: 'canManagePublishers' },
     { label: 'باقات الكتابة', href: '/dashboard/admin/writing/packages', icon: LayoutDashboard, permission: 'canManageCatalog' },
     { label: 'إعدادات تسعير الكتابة', href: '/dashboard/admin/settings/creative-writing-pricing', icon: Settings, permission: 'canManageCatalog' },
     { label: 'الاشتراكات', href: '/dashboard/admin/subscriptions/box', icon: Box, permission: 'canManageSubscriptions' },

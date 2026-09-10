@@ -1,9 +1,10 @@
 import { formatPrice } from '@/lib/utils';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
-import { BookOpen, DollarSign, ShoppingBag, Star } from 'lucide-react';
+import { BookOpen, DollarSign, ShoppingBag, Star, User } from 'lucide-react';
 import { getCurrentUser, getPublisherOrders } from '@/data/mock';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +22,22 @@ export default async function PublisherDashboard() {
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
       <DashboardPageHeader title={`مرحباً، ${user.fullName} (ناشر)`} />
+
+      {/* Quick Links */}
+      <div className="flex flex-wrap gap-4 mb-8">
+        <Link href="/dashboard/publisher/products" className="flex items-center gap-2 rounded-xl bg-amber-50 px-5 py-3 font-bold text-amber-700 border border-amber-200 transition-colors hover:bg-amber-100">
+          <BookOpen className="h-5 w-5" />
+          إدارة منتجاتي (مكتبة إنها لك)
+        </Link>
+        <Link href="/dashboard/publisher/orders" className="flex items-center gap-2 rounded-xl bg-sky-50 px-5 py-3 font-bold text-sky-700 border border-sky-200 transition-colors hover:bg-sky-100">
+          <ShoppingBag className="h-5 w-5" />
+          طلباتي
+        </Link>
+        <Link href="/dashboard/publisher/profile" className="flex items-center gap-2 rounded-xl bg-slate-100 px-5 py-3 font-bold text-slate-700 border border-slate-200 transition-colors hover:bg-slate-200">
+          <User className="h-5 w-5" />
+          الملف الشخصي
+        </Link>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <StatCard title="إجمالي المبيعات" value={`${formatPrice(totalSales)}`} icon={ShoppingBag} trend="+12% عن الشهر الماضي" trendUp={true} />
@@ -62,11 +79,13 @@ export default async function PublisherDashboard() {
           <div>
             <h3 className="text-xl font-bold mb-2">طلب سحب الأرباح</h3>
             <p className="text-slate-400 text-sm mb-6">يمكنك سحب أرباحك عند وصول الرصيد القابل للسحب إلى الحد الأدنى ({formatPrice(500)}).</p>
+            
             <div className="mb-8">
               <div className="text-sm text-slate-400 mb-1">الرصيد المتاح للسحب</div>
               <div className="text-4xl font-black text-emerald-400">{formatPrice(850)}</div>
             </div>
           </div>
+          
           <button className="w-full rounded-xl bg-white px-4 py-3 font-bold text-slate-900 transition-colors hover:bg-slate-100">
             طلب سحب الرصيد الآن
           </button>
