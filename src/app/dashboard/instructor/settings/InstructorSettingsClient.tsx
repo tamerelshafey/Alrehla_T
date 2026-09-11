@@ -1,13 +1,14 @@
 'use client';
 import React, { useState } from 'react';
-import { Instructor, DayOfWeek, WeeklySlot } from '@/types';
+import { Instructor, DayOfWeek, WeeklySlot, InstructorPricingOption, PricingFormulaSettings } from '@/types';
 import { Calendar, Clock, Info, CheckCircle2, Save } from 'lucide-react';
 import { calculateFinalSessionPrice } from '@/lib/utils';
-import { mockInstructorPricingOptions, mockPricingFormulaSettings } from '@/data/domains/writing';
 import { submitInstructorProfileUpdate } from '@/actions/instructors';
 
 interface InstructorSettingsClientProps {
   instructor: Instructor;
+  pricingOptions: InstructorPricingOption[];
+  formulaSettings: PricingFormulaSettings;
 }
 
 const DAYS: { key: DayOfWeek; label: string }[] = [
@@ -20,11 +21,11 @@ const DAYS: { key: DayOfWeek; label: string }[] = [
   { key: 'friday', label: 'الجمعة' },
 ];
 
-export function InstructorSettingsClient({ instructor }: InstructorSettingsClientProps) {
+export function InstructorSettingsClient({ instructor, pricingOptions, formulaSettings }: InstructorSettingsClientProps) {
   const [workModel, setWorkModel] = useState(instructor.workModel || 'per_session');
   const [monthlyHours, setMonthlyHours] = useState(instructor.monthlyHoursCommitted || 60);
   const [requestedPrice, setRequestedPrice] = useState(instructor.requestedPrice || 100);
-  const [selectedPricingOptionId, setSelectedPricingOptionId] = useState(instructor.selectedPricingOptionId || mockInstructorPricingOptions[0].id);
+  const [selectedPricingOptionId, setSelectedPricingOptionId] = useState(instructor.selectedPricingOptionId || pricingOptions[0].id);
   const [schedule, setSchedule] = useState<WeeklySlot[]>(instructor.weeklySchedule || []);
   const [isSaved, setIsSaved] = useState(false);
 
@@ -71,8 +72,8 @@ export function InstructorSettingsClient({ instructor }: InstructorSettingsClien
     setTimeout(() => setIsSaved(false), 3000);
   };
 
-  const selectedPricingOption = mockInstructorPricingOptions.find(o => o.id === selectedPricingOptionId);
-  const finalPrice = selectedPricingOption ? calculateFinalSessionPrice(selectedPricingOption.basePricePerSession, mockPricingFormulaSettings[0]) : 0;
+  const selectedPricingOption = pricingOptions.find(o => o.id === selectedPricingOptionId);
+  const finalPrice = selectedPricingOption ? calculateFinalSessionPrice(selectedPricingOption.basePricePerSession, formulaSettings) : 0;
 
   return (
     <form onSubmit={handleSave} className="space-y-8">
@@ -128,7 +129,7 @@ export function InstructorSettingsClient({ instructor }: InstructorSettingsClien
                 onChange={(e) => setSelectedPricingOptionId(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-amber-500 focus:outline-none"
               >
-                {mockInstructorPricingOptions.map(option => (
+                {pricingOptions.map(option => (
                   <option key={option.id} value={option.id}>
                     {option.label} ({option.basePricePerSession} ج.م كحصيلة للمدرب)
                   </option>

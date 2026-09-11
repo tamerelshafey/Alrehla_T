@@ -1,6 +1,7 @@
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { InstructorSettingsClient } from './InstructorSettingsClient';
 import { getInstructorById } from '@/data/mock';
+import { mockInstructorPricingOptions, mockPricingFormulaSettings } from '@/data/domains/writing';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +17,11 @@ export default async function InstructorSettingsPage() {
         backHref="/dashboard/instructor"
       />
       
-      <InstructorSettingsClient instructor={instructor} />
+      <InstructorSettingsClient 
+        instructor={instructor} 
+        pricingOptions={mockInstructorPricingOptions}
+        formulaSettings={mockPricingFormulaSettings[0]}
+      />
     </div>
   );
 }

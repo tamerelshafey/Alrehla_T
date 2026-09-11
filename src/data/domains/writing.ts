@@ -9,6 +9,7 @@ import {
   InstructorPricingOption, PricingFormulaSettings, InstructorCompensationProfile, InstructorCertification
 } from '@/types';
 import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase/server';
 
 // Import from auth if needed
 import { mockAllUsers, mockCurrentUser } from './auth';
@@ -232,15 +233,65 @@ export const mockCreativeServices: CreativeService[] = [
 ];
 
 export const getWritingPackages = async (): Promise<WritingPackage[]> => {
-  await new Promise(resolve => setTimeout(resolve, 600));
-  return Promise.resolve(mockWritingPackages);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('creative_writing_packages')
+    .select('*')
+    .order('created_at', { ascending: true });
+
+  if (error || !data || data.length === 0) {
+    return mockWritingPackages;
+  }
+
+  return data.map(p => ({
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    ageGroup: p.age_group,
+    price: p.price,
+    durationText: p.duration_text,
+    sessionsCount: p.sessions_count,
+    sessionDuration: p.session_duration || undefined,
+    targetAudience: p.target_audience,
+    prerequisiteNote: p.prerequisite_note || undefined,
+    prerequisitePackageId: p.prerequisite_package_id || undefined,
+    shortDescription: p.short_description,
+    fullDescription: p.full_description,
+    isActive: p.is_active
+  }));
 };
 
 export const getWritingPackageBySlug = async (
   slug: string
 ): Promise<WritingPackage | null> => {
-  const pkg = mockWritingPackages.find((p) => p.slug === slug);
-  return Promise.resolve(pkg || null);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('creative_writing_packages')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+  if (error || !data) {
+    const pkg = mockWritingPackages.find((p) => p.slug === slug);
+    return pkg || null;
+  }
+
+  return {
+    id: data.id,
+    slug: data.slug,
+    name: data.name,
+    ageGroup: data.age_group,
+    price: data.price,
+    durationText: data.duration_text,
+    sessionsCount: data.sessions_count,
+    sessionDuration: data.session_duration || undefined,
+    targetAudience: data.target_audience,
+    prerequisiteNote: data.prerequisite_note || undefined,
+    prerequisitePackageId: data.prerequisite_package_id || undefined,
+    shortDescription: data.short_description,
+    fullDescription: data.full_description,
+    isActive: data.is_active
+  };
 };
 
 export const getInstructors = async (): Promise<Instructor[]> => {

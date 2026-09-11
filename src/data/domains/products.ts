@@ -150,10 +150,37 @@ export const mockSubscriptionTiers: SubscriptionTier[] = [
   },
 ];
 
-export const getPersonalizedProducts = async (): Promise<
-  PersonalizedProduct[]
-> => {
-  return Promise.resolve(mockProducts);
+import { createClient } from '@/lib/supabase/server';
+
+export const getPersonalizedProducts = async (): Promise<PersonalizedProduct[]> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('personalized_products')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching personalized products:', error);
+    return mockProducts; // Fallback to mock data if table doesn't exist or errors
+  }
+
+  if (!data || data.length === 0) {
+    return mockProducts; // Fallback to mock data if empty
+  }
+
+  return data.map(p => ({
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    category: p.category,
+    price: p.price,
+    electronicPrice: p.electronic_price || undefined,
+    shortDescription: p.short_description,
+    coverImageUrl: p.cover_image_url || undefined,
+    publisherId: p.publisher_id || undefined,
+    ownerType: p.owner_type,
+    features: p.features || undefined
+  }));
 };
 
 export const getAddonProducts = async (): Promise<AddonProduct[]> => {
@@ -200,10 +227,41 @@ export const getPublisherBySlug = async (slug: string): Promise<Publisher | null
 };
 
 export const getProductBySlug = async (slug: string): Promise<PersonalizedProduct | null> => {
-  const product = mockProducts.find(p => p.slug === slug);
-  if (product && product.ownerType === 'platform') {
-    return product;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('personalized_products')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+  if (error || !data) {
+    // Fallback to mock data if not found in db
+    const product = mockProducts.find(p => p.slug === slug);
+    if (product && product.ownerType === 'platform') {
+      return product;
+    }
+    return null;
   }
+
+  // Ensure ownerType matches if the original logic required 'platform'
+  // But maybe it's better to just return the found product.
+  // We'll keep the original logic for fallback, but for DB we can return any found product.
+  if (data.owner_type === 'platform') {
+    return {
+      id: data.id,
+      slug: data.slug,
+      name: data.name,
+      category: data.category,
+      price: data.price,
+      electronicPrice: data.electronic_price || undefined,
+      shortDescription: data.short_description,
+      coverImageUrl: data.cover_image_url || undefined,
+      publisherId: data.publisher_id || undefined,
+      ownerType: data.owner_type,
+      features: data.features || undefined
+    };
+  }
+  
   return null;
 };
 
