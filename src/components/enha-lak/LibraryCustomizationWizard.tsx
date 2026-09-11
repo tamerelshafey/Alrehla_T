@@ -74,7 +74,7 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
       sessionStorage.setItem(`library_wizard_${product.id}`, JSON.stringify(toSave));
     });
     return () => subscription.unsubscribe();
-  }, [methods.watch, product.id]);
+  }, [methods, product.id]);
 
   const goToStep = (step: number) => {
     router.push(`${pathname}?step=${step}`);
