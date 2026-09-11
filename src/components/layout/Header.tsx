@@ -1,13 +1,14 @@
 import Link from 'next/link';
 import { User, Compass } from 'lucide-react';
-import { cookies } from 'next/headers';
 import React from 'react';
 import { CartHeaderButton } from '@/components/cart/CartHeaderButton';
+import { getCurrentUser } from '@/data/domains/auth';
 
 export default async function Header() {
-  const cookieStore = await cookies();
-  const mockRole = cookieStore.get('mockRole')?.value || 'visitor';
-  
+  const user = await getCurrentUser();
+  const mockRole = user.role;
+  const isVisitor = mockRole === 'visitor';
+
   const getAccountLink = () => {
     switch (mockRole) {
       case 'visitor': return '/sign-in';
@@ -44,13 +45,15 @@ export default async function Header() {
 
         <div className="flex items-center gap-3">
           <CartHeaderButton />
+          
           <div className="hidden h-6 w-px bg-slate-200 sm:block"></div>
+          
           <Link
             href={getAccountLink()}
             className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 flex h-10 items-center gap-2 rounded-full bg-slate-900 px-5 text-sm font-bold text-white shadow-md transition-all hover:bg-amber-500 hover:shadow-lg hover:shadow-amber-500/20"
           >
             <User className="h-4 w-4" />
-            <span className="hidden sm:inline">{mockRole === 'visitor' ? 'دخول' : 'حسابي'}</span>
+            <span className="hidden sm:inline">{isVisitor ? 'دخول' : 'حسابي'}</span>
           </Link>
         </div>
       </header>

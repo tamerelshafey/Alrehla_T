@@ -1,6 +1,7 @@
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { ProfileFormShell } from '@/components/dashboard/ProfileFormShell';
 import { getCurrentUser, getPublishers } from '@/data/mock';
+import { LogoutButton } from '@/components/LogoutButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +24,10 @@ export default async function PublisherProfilePage() {
         backHref="/dashboard/publisher"
       />
       <ProfileFormShell defaultValues={defaultValues} />
+      
+      <div className="mt-8 flex justify-end border-t border-slate-200 pt-8">
+        <LogoutButton />
+      </div>
     </div>
   );
 }

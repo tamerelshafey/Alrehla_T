@@ -9,17 +9,48 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      // We will populate this later or use Supabase CLI to generate types
-      [key: string]: any
+      user_profiles: {
+        Row: {
+          id: string
+          full_name: string
+          role: string
+          is_guardian: boolean | null
+          avatar_url: string | null
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          id: string
+          full_name: string
+          role?: string
+          is_guardian?: boolean | null
+          avatar_url?: string | null
+          created_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          full_name?: string
+          role?: string
+          is_guardian?: boolean | null
+          avatar_url?: string | null
+          created_at?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [key: string]: any
+      [_ in never]: never
     }
     Functions: {
-      [key: string]: any
+      [_ in never]: never
     }
     Enums: {
-      [key: string]: any
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
     }
   }
 }

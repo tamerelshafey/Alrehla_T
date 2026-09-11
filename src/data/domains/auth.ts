@@ -1,17 +1,8 @@
 import {
-  WritingPackage, Instructor, PersonalizedProduct, AddonProduct, SubscriptionTier, 
-  Testimonial, CreativeService, BlogPost, UserProfile, Booking, Order, 
-  Publisher, InstructorPayout, PublisherPayout, SessionMessage, SessionAttachment, 
-  StudyMaterial, InstructorStudent, BoxSubscription, SupportTicket, 
-  JoinRequest, SupportSessionRequest, AuditLog, ServiceOrder, CourseSubscription, 
-  SupportTicketMessage, FamilyMember, NotificationItem, UserRole,
-  PublisherOrder,
-  InstructorPricingOption, PricingFormulaSettings, InstructorCompensationProfile, InstructorCertification
+  UserProfile, UserRole, AdminPermission
 } from '@/types';
 import { cookies } from 'next/headers';
-
-// Import from auth if needed
-
+import { createClient } from '@/lib/supabase/server';
 
 export const mockCurrentUser: UserProfile = {
   id: 'current-user',
@@ -21,14 +12,57 @@ export const mockCurrentUser: UserProfile = {
   createdAt: '2023-01-01T00:00:00Z',
 };
 
-// Simulated Database Access Functions
+// Database Access Functions
 export const getCurrentUser = async (): Promise<UserProfile> => {
-  await new Promise(resolve => setTimeout(resolve, 600));
-  const cookieStore = await cookies();
-  const mockRoleCookie = cookieStore.get('mockRole');
-  const role = (mockRoleCookie?.value as UserRole) || 'visitor';
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  let permissions: import('@/types').AdminPermission[] = [];
+  // If no user is logged in, use the mock role cookie for local development UI testing
+  if (!user) {
+    const cookieStore = await cookies();
+    const mockRoleCookie = cookieStore.get('mockRole');
+    const role = (mockRoleCookie?.value as UserRole) || 'visitor';
+    
+    let permissions: AdminPermission[] = [];
+    if (role === 'super_admin') {
+      permissions = [
+        'canManageUsers', 'canManageInstructors', 'canManagePublishers', 
+        'canManageCatalog', 'canManageSubscriptions', 'canManageOrders', 
+        'canManageBookings', 'canManageSupport', 'canManageContent', 
+        'canManageFinance', 'canViewAuditLogs'
+      ];
+    } else if (role === 'general_supervisor') {
+      permissions = [
+        'canManageUsers', 'canManageInstructors', 'canManagePublishers', 
+        'canManageCatalog', 'canManageSubscriptions', 'canManageOrders', 
+        'canManageBookings', 'canManageSupport', 'canManageContent'
+      ];
+    }
+
+    return {
+      id: 'current-user',
+      fullName: role === 'visitor' ? 'زائر تجريبي' : `مستخدم تجريبي (${role})`,
+      email: `${role}@example.com`,
+      role: role,
+      createdAt: '2023-01-01T00:00:00Z',
+      ...(permissions.length > 0 ? { permissions } : {})
+    };
+  }
+
+  // Fetch actual profile from Supabase
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  let role: UserRole = 'student';
+  let permissions: AdminPermission[] = [];
+  
+  if (profile) {
+    role = profile.role as UserRole || 'student';
+  }
+  
   if (role === 'super_admin') {
     permissions = [
       'canManageUsers', 'canManageInstructors', 'canManagePublishers', 
@@ -44,14 +78,16 @@ export const getCurrentUser = async (): Promise<UserProfile> => {
     ];
   }
 
-  return Promise.resolve({
-    id: 'current-user',
-    fullName: role === 'visitor' ? 'زائر تجريبي' : `مستخدم تجريبي (${role})`,
-    email: `${role}@example.com`,
+  return {
+    id: user.id,
+    fullName: profile?.full_name || user.user_metadata?.full_name || 'مستخدم',
+    email: user.email || '',
     role: role,
-    createdAt: '2023-01-01T00:00:00Z',
+    isGuardian: profile?.is_guardian || false,
+    avatarUrl: profile?.avatar_url || undefined,
+    createdAt: profile?.created_at || user.created_at,
     ...(permissions.length > 0 ? { permissions } : {})
-  });
+  };
 };
 
 export const mockAllUsers: UserProfile[] = [
@@ -66,7 +102,24 @@ export const mockAllUsers: UserProfile[] = [
 ];
 
 export const getAllUsers = async (): Promise<UserProfile[]> => {
-  return Promise.resolve(mockAllUsers);
+  const supabase = await createClient();
+  const { data: profiles, error } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error || !profiles || profiles.length === 0) {
+    console.error("Error fetching users or none found, falling back to mock", error);
+    return mockAllUsers;
+  }
+
+  return profiles.map(profile => ({
+    id: profile.id,
+    fullName: profile.full_name,
+    email: '', // Requires Admin API to fetch emails for all users
+    role: profile.role as UserRole,
+    isGuardian: profile.is_guardian || false,
+    avatarUrl: profile.avatar_url || undefined,
+    createdAt: profile.created_at || new Date().toISOString(),
+  }));
 };
-
-

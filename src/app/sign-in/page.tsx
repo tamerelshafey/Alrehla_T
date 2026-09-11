@@ -1,14 +1,13 @@
 import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
-import { Mail, Lock, LogIn, ArrowRight } from 'lucide-react';
-
+import { LogIn } from 'lucide-react';
 import { Metadata } from 'next';
+import { SignInForm } from '@/components/SignInForm';
 
 export const metadata: Metadata = {
   title: 'تسجيل الدخول',
   description: 'سجل دخولك إلى حسابك في منصة الرحلة.',
 };
-
 
 export default function SignInPage() {
   return (
@@ -23,44 +22,7 @@ export default function SignInPage() {
         </div>
 
         <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50">
-          <form className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">البريد الإلكتروني</label>
-              <div className="relative">
-                <Mail className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="email"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-12 pl-4 font-medium transition-all outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                  placeholder="example@email.com"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-bold text-slate-700">كلمة المرور</label>
-                <Link href="/forgot-password" className="text-xs font-bold text-amber-600 hover:text-amber-700">
-                  نسيت كلمة المرور؟
-                </Link>
-              </div>
-              <div className="relative">
-                <Lock className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="password"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-12 pl-4 font-medium transition-all outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-4 font-bold text-white shadow-md transition-colors hover:bg-slate-800"
-            >
-              تسجيل الدخول
-              <ArrowRight className="h-5 w-5 rotate-180" />
-            </button>
-          </form>
+          <SignInForm />
 
           <div className="mt-8 text-center text-sm font-medium text-slate-600">
             ليس لديك حساب؟{' '}

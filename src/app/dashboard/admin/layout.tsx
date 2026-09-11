@@ -4,15 +4,16 @@ import { getCurrentUser } from '@/data/mock';
 import { hasAdminPermission } from '@/lib/utils';
 import { AdminPermission } from '@/types';
 import { 
-  Users, UserCheck, LayoutDashboard, Settings, 
-  BookOpen, Box, ShoppingCart, Calendar, 
-  LifeBuoy, FileText, DollarSign, ShieldAlert 
-, LucideIcon } from 'lucide-react';
+  Users, UserCheck, LayoutDashboard, Settings,
+  BookOpen, Box, ShoppingCart, Calendar,
+  LifeBuoy, FileText, DollarSign, ShieldAlert , LucideIcon 
+} from 'lucide-react';
 import { redirect } from 'next/navigation';
+import { LogoutButton } from '@/components/LogoutButton';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
-
+  
   if (user.role !== 'super_admin' && user.role !== 'general_supervisor') {
     redirect('/dashboard');
   }
@@ -23,8 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { label: 'الناشرون', href: '/dashboard/admin/publishers', icon: BookOpen, permission: 'canManagePublishers' },
     { label: 'المنتجات والمكتبة', href: '/dashboard/admin/products', icon: Box, permission: 'canManagePublishers' },
     { label: 'باقات الكتابة', href: '/dashboard/admin/writing/packages', icon: LayoutDashboard, permission: 'canManageCatalog' },
-    { label: 'الخدمات الإبداعية', href: '/dashboard/admin/writing/services', icon: LayoutDashboard, permission: 'canManageCatalog' },
-    
+    { label: 'الخدمات الإبداعية', href: '/dashboard/admin/writing/services', icon: LayoutDashboard, permission: 'canManageCatalog' },    
     { label: 'إعدادات تسعير الكتابة', href: '/dashboard/admin/settings/creative-writing-pricing', icon: Settings, permission: 'canManageCatalog' },
     { label: 'إعدادات تسعير الناشرين', href: '/dashboard/admin/settings/publisher-pricing', icon: Settings, permission: 'canManagePublishers' },
     { label: 'الاشتراكات', href: '/dashboard/admin/subscriptions/box', icon: Box, permission: 'canManageSubscriptions' },
@@ -41,13 +41,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-slate-50 w-full">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-white border-l border-slate-200 shrink-0 md:min-h-screen">
+      <aside className="w-full md:w-64 bg-white border-l border-slate-200 shrink-0 md:min-h-screen flex flex-col">
         <div className="p-6">
           <Link href="/dashboard/admin" className="text-xl font-black text-slate-800 hover:text-amber-500 transition-colors">
             لوحة الإدارة
           </Link>
         </div>
-        <nav className="flex flex-col gap-1 px-4 pb-6">
+        <nav className="flex flex-col gap-1 px-4 flex-1">
           {sidebarLinks.map((link) => {
             if (!hasAdminPermission(user, link.permission)) return null;
             const Icon = link.icon;
@@ -63,6 +63,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             );
           })}
         </nav>
+        
+        <div className="p-4 border-t border-slate-200">
+          <LogoutButton className="w-full" />
+        </div>
       </aside>
 
       {/* Main Content */}

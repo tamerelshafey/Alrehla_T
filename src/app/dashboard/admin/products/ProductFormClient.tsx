@@ -5,6 +5,7 @@ import { Publisher, PricingFormulaSettings } from '@/types';
 import { calculateFinalSessionPrice } from '@/lib/utils';
 import { saveProduct } from '@/actions/products';
 
+
 interface Props {
   publishers: Publisher[];
   pricingSettings: PricingFormulaSettings;
@@ -15,7 +16,6 @@ export function ProductFormClient({ publishers, pricingSettings }: Props) {
   const [basePrice, setBasePrice] = useState(0);
   const [finalPrice, setFinalPrice] = useState(0);
 
-  // تحديث السعر النهائي عند تغيير المالك أو السعر الأساسي
   useEffect(() => {
     if (ownerType === 'publisher' && basePrice > 0) {
       setFinalPrice(calculateFinalSessionPrice(basePrice, pricingSettings));
@@ -88,19 +88,16 @@ export function ProductFormClient({ publishers, pricingSettings }: Props) {
               />
               <span className="absolute left-4 top-3 text-slate-400 font-bold">ج.م</span>
             </div>
-            {ownerType === 'publisher' && (
-              <p className="text-xs text-slate-500 mt-2">هذا هو السعر الذي يطلبه الناشر (أساس حساب مستحقاته).</p>
-            )}
           </div>
           
           {ownerType === 'publisher' && basePrice > 0 && (
             <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-600">نسبة المنصة (× {pricingSettings.platformMultiplier}) + رسوم ثابتة ({pricingSettings.fixedAdminFee} ج):</span>
+                <span className="text-slate-600">نسبة المنصة:</span>
                 <span className="font-bold text-blue-700">+{finalPrice - basePrice} ج.م</span>
               </div>
               <div className="flex justify-between font-black text-lg border-t border-blue-200 pt-2 mt-2">
-                <span className="text-slate-800">السعر النهائي للعميل:</span>
+                <span className="text-slate-800">السعر النهائي:</span>
                 <span className="text-emerald-600">{finalPrice} ج.م</span>
               </div>
             </div>
@@ -114,7 +111,7 @@ export function ProductFormClient({ publishers, pricingSettings }: Props) {
       </div>
       
       <div>
-        <label className="block text-sm font-bold text-slate-700 mb-2">رابط صورة الغلاف (اختياري)</label>
+        <label className="block text-sm font-bold text-slate-700 mb-2">صورة الغلاف (رابط)</label>
         <input type="text" name="coverImageUrl" className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-amber-500 focus:outline-none text-left" dir="ltr" />
       </div>
       

@@ -1,14 +1,13 @@
 import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
-import { Mail, Lock, User, UserPlus, ArrowRight } from 'lucide-react';
-
+import { UserPlus } from 'lucide-react';
 import { Metadata } from 'next';
+import { SignUpForm } from '@/components/SignUpForm';
 
 export const metadata: Metadata = {
   title: 'إنشاء حساب جديد',
   description: 'أنشئ حساباً جديداً في منصة الرحلة وابدأ رحلتك.',
 };
-
 
 export default function SignUpPage() {
   return (
@@ -23,51 +22,7 @@ export default function SignUpPage() {
         </div>
 
         <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50">
-          <form className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">الاسم الكامل</label>
-              <div className="relative">
-                <User className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-12 pl-4 font-medium transition-all outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                  placeholder="الاسم"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">البريد الإلكتروني</label>
-              <div className="relative">
-                <Mail className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="email"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-12 pl-4 font-medium transition-all outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                  placeholder="example@email.com"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">كلمة المرور</label>
-              <div className="relative">
-                <Lock className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="password"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-12 pl-4 font-medium transition-all outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-4 font-bold text-white shadow-md transition-colors hover:bg-slate-800"
-            >
-              إنشاء الحساب
-              <ArrowRight className="h-5 w-5 rotate-180" />
-            </button>
-          </form>
+          <SignUpForm />
 
           <div className="mt-8 text-center text-sm font-medium text-slate-600">
             لديك حساب بالفعل؟{' '}

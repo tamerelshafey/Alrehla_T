@@ -1,6 +1,7 @@
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { ProfileFormShell } from '@/components/dashboard/ProfileFormShell';
 import { getCurrentUser, getInstructorById } from '@/data/mock';
+import { LogoutButton } from '@/components/LogoutButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,6 +43,10 @@ export default async function InstructorProfilePage() {
           </div>
         </div>
       </ProfileFormShell>
+      
+      <div className="mt-8 flex justify-end border-t border-slate-200 pt-8">
+        <LogoutButton />
+      </div>
     </div>
   );
 }
