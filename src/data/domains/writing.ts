@@ -295,15 +295,69 @@ export const getWritingPackageBySlug = async (
 };
 
 export const getInstructors = async (): Promise<Instructor[]> => {
-  await new Promise(resolve => setTimeout(resolve, 600));
-  return Promise.resolve(mockInstructors);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('instructors')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    return mockInstructors;
+  }
+
+  return data.map((inst: any) => ({
+    id: inst.id,
+    userId: inst.user_id,
+    displayName: inst.display_name,
+    bio: inst.bio,
+    specialties: inst.specialties,
+    yearsExperience: inst.years_experience,
+    isSample: inst.is_sample,
+    status: inst.status,
+    trainingPassed: inst.training_passed,
+    workModel: inst.work_model,
+    requestedPrice: inst.requested_price || undefined,
+    selectedPricingOptionId: inst.selected_pricing_option_id || undefined,
+    approvedPrice: inst.approved_price || undefined,
+    weeklySchedule: (inst.weekly_schedule as any[]) || [],
+    pendingSchedule: (inst.pending_schedule as any[]) || undefined,
+    monthlyHoursCommitted: inst.monthly_hours_committed || undefined
+  }));
 };
 
 export const getInstructorById = async (
   id: string
 ): Promise<Instructor | null> => {
-  const inst = mockInstructors.find((i) => i.id === id);
-  return Promise.resolve(inst || null);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('instructors')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error || !data) {
+    const inst = mockInstructors.find((i) => i.id === id);
+    return inst || null;
+  }
+
+  return {
+    id: data.id,
+    userId: data.user_id,
+    displayName: data.display_name,
+    bio: data.bio,
+    specialties: data.specialties,
+    yearsExperience: data.years_experience,
+    isSample: data.is_sample,
+    status: data.status,
+    trainingPassed: data.training_passed,
+    workModel: data.work_model,
+    requestedPrice: data.requested_price || undefined,
+    selectedPricingOptionId: data.selected_pricing_option_id || undefined,
+    approvedPrice: data.approved_price || undefined,
+    weeklySchedule: (data.weekly_schedule as any[]) || [],
+    pendingSchedule: (data.pending_schedule as any[]) || undefined,
+    monthlyHoursCommitted: data.monthly_hours_committed || undefined
+  };
 };
 
 export const getCreativeServices = async (): Promise<CreativeService[]> => {
@@ -589,5 +643,25 @@ export const getProfileUpdateRequestsByInstructor = async (instructorId: string)
 };
 
 export const getBookings = async (): Promise<Booking[]> => {
-  return Promise.resolve(mockBookings);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .order('scheduled_at', { ascending: true });
+
+  if (error || !data || data.length === 0) {
+    return mockBookings;
+  }
+
+  return data.map((bkg: any) => ({
+    id: bkg.id,
+    dependentParticipantId: bkg.dependent_participant_id || undefined,
+    independentParticipantId: bkg.independent_participant_id || undefined,
+    packageId: bkg.package_id,
+    instructorId: bkg.instructor_id || undefined,
+    courseSubscriptionId: bkg.course_subscription_id || undefined,
+    status: bkg.status,
+    scheduledAt: bkg.scheduled_at,
+    createdAt: bkg.created_at
+  }));
 };

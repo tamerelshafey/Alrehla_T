@@ -32,7 +32,28 @@ export const mockAllSupportTickets: SupportTicket[] = [
   { id: 'tkt-3', requesterName: 'محمد طارق', subject: 'تأخر الشحنة', category: 'shipping', status: 'closed', createdAt: '2023-10-20T00:00:00Z' },
 ];
 
-export const getAllSupportTickets = async (): Promise<SupportTicket[]> => mockAllSupportTickets;
+import { createClient } from '@/lib/supabase/server';
+
+export const getAllSupportTickets = async (): Promise<SupportTicket[]> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('support_tickets')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    return mockAllSupportTickets;
+  }
+
+  return data.map((t: any) => ({
+    id: t.id,
+    requesterName: t.requester_name,
+    subject: t.subject,
+    category: t.category,
+    status: t.status,
+    createdAt: t.created_at
+  }));
+};
 
 export const mockJoinRequests: JoinRequest[] = [
   { id: 'req-1', applicantName: 'منى سعيد', requestedRole: 'instructor', status: 'approved', createdAt: '2023-10-21T00:00:00Z' },
@@ -40,14 +61,51 @@ export const mockJoinRequests: JoinRequest[] = [
   { id: 'req-3', applicantName: 'عماد كمال', requestedRole: 'instructor', status: 'rejected', createdAt: '2023-10-22T00:00:00Z' },
 ];
 
-export const getJoinRequests = async (): Promise<JoinRequest[]> => mockJoinRequests;
+export const getJoinRequests = async (): Promise<JoinRequest[]> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('join_requests')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    return mockJoinRequests;
+  }
+
+  return data.map((r: any) => ({
+    id: r.id,
+    applicantName: r.applicant_name,
+    requestedRole: r.requested_role,
+    status: r.status,
+    createdAt: r.created_at
+  }));
+};
 
 export const mockSupportSessionRequests: SupportSessionRequest[] = [
   { id: 'ssr-1', contactName: 'أحمد محمود', contactPhone: '01000000000', message: 'تقييم مستوى الكتابة', status: 'pending', createdAt: '2023-10-26T00:00:00Z' },
   { id: 'ssr-2', contactName: 'سارة خالد', contactPhone: '01111111111', message: 'جلسة توجيه استثنائية', status: 'contacted', createdAt: '2023-10-25T00:00:00Z' },
 ];
 
-export const getSupportSessionRequests = async (): Promise<SupportSessionRequest[]> => mockSupportSessionRequests;
+export const getSupportSessionRequests = async (): Promise<SupportSessionRequest[]> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('support_session_requests')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    return mockSupportSessionRequests;
+  }
+
+  return data.map((r: any) => ({
+    id: r.id,
+    contactName: r.contact_name,
+    contactPhone: r.contact_phone,
+    message: r.message,
+    status: r.status,
+    createdAt: r.created_at
+  }));
+};
 
 export const mockAuditLogs: AuditLog[] = [
   { id: 'log-1', action: 'تسجيل دخول ناجح', actorName: 'محمد طارق (مدير)', createdAt: '2023-10-27T08:00:00Z', entityType: 'User' },

@@ -34,7 +34,42 @@ export const mockOrders: Order[] = [
   },
 ];
 
+import { createClient } from '@/lib/supabase/server';
+
 export const getOrders = async (): Promise<Order[]> => {
-  return Promise.resolve(mockOrders);
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) return mockOrders; // Fallback for dev
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select(`
+      *,
+      order_items (*)
+    `)
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    return mockOrders;
+  }
+
+  return data.map((order: any) => ({
+    id: order.id,
+    userId: order.user_id,
+    dependentParticipantId: order.dependent_participant_id || undefined,
+    independentParticipantId: order.independent_participant_id || undefined,
+    totalAmount: order.total_amount,
+    status: order.status,
+    transactionReference: order.transaction_reference || undefined,
+    createdAt: order.created_at,
+    items: (order.order_items || []).map((item: any) => ({
+      productId: item.product_id,
+      quantity: item.quantity,
+      unitPrice: item.unit_price,
+      customizationData: item.customization_data || undefined
+    }))
+  }));
 };
 

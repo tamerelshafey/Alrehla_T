@@ -144,6 +144,419 @@ export interface Database {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          id: string
+          user_id: string
+          dependent_participant_id: string | null
+          independent_participant_id: string | null
+          total_amount: number
+          status: 'pending' | 'awaiting_verification' | 'paid' | 'failed' | 'refunded'
+          transaction_reference: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          dependent_participant_id?: string | null
+          independent_participant_id?: string | null
+          total_amount: number
+          status?: 'pending' | 'awaiting_verification' | 'paid' | 'failed' | 'refunded'
+          transaction_reference?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          dependent_participant_id?: string | null
+          independent_participant_id?: string | null
+          total_amount?: number
+          status?: 'pending' | 'awaiting_verification' | 'paid' | 'failed' | 'refunded'
+          transaction_reference?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      order_items: {
+        Row: {
+          id: string
+          order_id: string
+          product_id: string
+          quantity: number
+          unit_price: number
+          customization_data: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          product_id: string
+          quantity: number
+          unit_price: number
+          customization_data?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          product_id?: string
+          quantity?: number
+          unit_price?: number
+          customization_data?: Json | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      instructors: {
+        Row: {
+          id: string
+          user_id: string
+          display_name: string
+          bio: string
+          specialties: string[]
+          years_experience: number
+          is_sample: boolean
+          status: 'pending_training' | 'pending_approval' | 'active' | 'suspended'
+          training_passed: boolean
+          work_model: 'per_session' | 'monthly'
+          requested_price: number | null
+          selected_pricing_option_id: string | null
+          approved_price: number | null
+          weekly_schedule: Json | null
+          pending_schedule: Json | null
+          monthly_hours_committed: number | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          user_id: string
+          display_name: string
+          bio: string
+          specialties: string[]
+          years_experience: number
+          is_sample?: boolean
+          status?: 'pending_training' | 'pending_approval' | 'active' | 'suspended'
+          training_passed?: boolean
+          work_model?: 'per_session' | 'monthly'
+          requested_price?: number | null
+          selected_pricing_option_id?: string | null
+          approved_price?: number | null
+          weekly_schedule?: Json | null
+          pending_schedule?: Json | null
+          monthly_hours_committed?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          display_name?: string
+          bio?: string
+          specialties?: string[]
+          years_experience?: number
+          is_sample?: boolean
+          status?: 'pending_training' | 'pending_approval' | 'active' | 'suspended'
+          training_passed?: boolean
+          work_model?: 'per_session' | 'monthly'
+          requested_price?: number | null
+          selected_pricing_option_id?: string | null
+          approved_price?: number | null
+          weekly_schedule?: Json | null
+          pending_schedule?: Json | null
+          monthly_hours_committed?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructors_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      bookings: {
+        Row: {
+          id: string
+          dependent_participant_id: string | null
+          independent_participant_id: string | null
+          package_id: string
+          instructor_id: string | null
+          course_subscription_id: string | null
+          status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled'
+          scheduled_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          dependent_participant_id?: string | null
+          independent_participant_id?: string | null
+          package_id: string
+          instructor_id?: string | null
+          course_subscription_id?: string | null
+          status?: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled'
+          scheduled_at: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          dependent_participant_id?: string | null
+          independent_participant_id?: string | null
+          package_id?: string
+          instructor_id?: string | null
+          course_subscription_id?: string | null
+          status?: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled'
+          scheduled_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      testimonials: {
+        Row: {
+          id: string
+          author_name: string
+          author_role: string
+          content: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          author_name: string
+          author_role: string
+          content: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          author_name?: string
+          author_role?: string
+          content?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      blog_posts: {
+        Row: {
+          id: string
+          slug: string
+          title: string
+          excerpt: string
+          content: string
+          cover_image_url: string | null
+          author_name: string
+          published_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          slug: string
+          title: string
+          excerpt: string
+          content: string
+          cover_image_url?: string | null
+          author_name?: string
+          published_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          slug?: string
+          title?: string
+          excerpt?: string
+          content?: string
+          cover_image_url?: string | null
+          author_name?: string
+          published_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      box_subscriptions: {
+        Row: {
+          id: string
+          user_id: string | null
+          customer_name: string
+          plan_name: string
+          status: 'active' | 'cancelled' | 'paused'
+          next_shipment_date: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          customer_name: string
+          plan_name: string
+          status?: 'active' | 'cancelled' | 'paused'
+          next_shipment_date?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          customer_name?: string
+          plan_name?: string
+          status?: 'active' | 'cancelled' | 'paused'
+          next_shipment_date?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "box_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      support_tickets: {
+        Row: {
+          id: string
+          user_id: string | null
+          requester_name: string
+          subject: string
+          category: string
+          status: 'open' | 'answered' | 'closed'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          requester_name: string
+          subject: string
+          category: string
+          status?: 'open' | 'answered' | 'closed'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          requester_name?: string
+          subject?: string
+          category?: string
+          status?: 'open' | 'answered' | 'closed'
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      join_requests: {
+        Row: {
+          id: string
+          applicant_name: string
+          requested_role: 'instructor' | 'publisher'
+          status: 'pending' | 'approved' | 'rejected'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          applicant_name: string
+          requested_role: 'instructor' | 'publisher'
+          status?: 'pending' | 'approved' | 'rejected'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          applicant_name?: string
+          requested_role?: 'instructor' | 'publisher'
+          status?: 'pending' | 'approved' | 'rejected'
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      support_session_requests: {
+        Row: {
+          id: string
+          user_id: string | null
+          contact_name: string
+          contact_phone: string
+          message: string
+          status: 'pending' | 'contacted' | 'resolved'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          contact_name: string
+          contact_phone: string
+          message: string
+          status?: 'pending' | 'contacted' | 'resolved'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          contact_name?: string
+          contact_phone?: string
+          message?: string
+          status?: 'pending' | 'contacted' | 'resolved'
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_session_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

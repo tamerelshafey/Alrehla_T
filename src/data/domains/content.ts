@@ -90,18 +90,74 @@ export const mockSiteSettings = {
 
 export const getSiteSettings = async () => mockSiteSettings;
 
+import { createClient } from '@/lib/supabase/server';
+
 export const getTestimonials = async (): Promise<Testimonial[]> => {
-  return Promise.resolve(mockTestimonials);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('testimonials')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    return mockTestimonials;
+  }
+
+  return data.map((t: any) => ({
+    id: t.id,
+    authorName: t.author_name,
+    authorRole: t.author_role,
+    content: t.content
+  }));
 };
 
 export const getBlogPosts = async (): Promise<BlogPost[]> => {
-  return Promise.resolve(mockBlogPosts);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .order('published_at', { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    return mockBlogPosts;
+  }
+
+  return data.map((p: any) => ({
+    id: p.id,
+    slug: p.slug,
+    title: p.title,
+    excerpt: p.excerpt,
+    content: p.content,
+    coverImageUrl: p.cover_image_url || undefined,
+    authorName: p.author_name || 'فريق الرحلة',
+    publishedAt: p.published_at
+  }));
 };
 
 export const getBlogPostBySlug = async (
   slug: string
 ): Promise<BlogPost | null> => {
-  const post = mockBlogPosts.find((p) => p.slug === slug);
-  return Promise.resolve(post || null);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+  if (error || !data) {
+    const post = mockBlogPosts.find((p) => p.slug === slug);
+    return post || null;
+  }
+
+  return {
+    id: data.id,
+    slug: data.slug,
+    title: data.title,
+    excerpt: data.excerpt,
+    content: data.content,
+    coverImageUrl: data.cover_image_url || undefined,
+    authorName: data.author_name || 'فريق الرحلة',
+    publishedAt: data.published_at
+  };
 };
 
