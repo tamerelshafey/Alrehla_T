@@ -539,7 +539,7 @@ export async function getStudentDocuments(studentId: string) {
     if (process.env.NODE_ENV === 'development') {
       return mockDocuments.filter(d => d.studentId === studentId);
     }
-    return []; // Fallback for single item or array based on return type; TS might complain if it expects array but gets null. Actually let's not touch complex ones unless we know the return type.
+    return [];
   }
 
   return data.map((d: any) => ({
@@ -565,7 +565,7 @@ export async function getDocumentById(id: string) {
     if (process.env.NODE_ENV === 'development') {
       return mockDocuments.find(d => d.id === id);
     }
-    return null; // Fallback for single item or array based on return type; TS might complain if it expects array but gets null. Actually let's not touch complex ones unless we know the return type.
+    return null;
   }
 
   return {

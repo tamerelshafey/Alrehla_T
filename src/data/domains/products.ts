@@ -257,7 +257,7 @@ export const getPublisherBySlug = async (slug: string): Promise<Publisher | null
     if (process.env.NODE_ENV === 'development') {
       return mockPublishers.find(p => p.slug === slug) || null;
     }
-    return null; // Fallback for single item or array based on return type; TS might complain if it expects array but gets null. Actually let's not touch complex ones unless we know the return type.
+    return null;
   }
 
   return {
