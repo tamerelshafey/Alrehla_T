@@ -47,7 +47,7 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
   const pathname = usePathname();
   const { addItem } = useCart();
   
-  const currentStep = parseInt(searchParams.get('step') || '1', 10);
+  const currentStep = parseInt(searchParams?.get('step') || '1', 10);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const methods = useForm<WizardFormValues>({

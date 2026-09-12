@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/Button';
 
 export function BookingConfirmClient() {
   const searchParams = useSearchParams();
-  const packageId = searchParams.get('package') || 'dummy-package';
-  const instructorId = searchParams.get('instructor') || 'dummy-instructor';
+  const packageId = searchParams?.get('package') || 'dummy-package';
+  const instructorId = searchParams?.get('instructor') || 'dummy-instructor';
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'instapay'>('credit_card');
   const [participantType, setParticipantType] = useState<'self' | 'child'>('self');
   const [childId, setChildId] = useState<string>('');

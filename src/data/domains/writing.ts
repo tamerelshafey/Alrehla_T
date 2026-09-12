@@ -490,12 +490,18 @@ export const mockCourseSubscriptions: CourseSubscription[] = [
 
 export async function getServiceOrders(): Promise<ServiceOrder[]> {
   await new Promise(resolve => setTimeout(resolve, 600));
-  return mockServiceOrders;
+  if (process.env.NODE_ENV === 'development') {
+    return mockServiceOrders;
+  }
+  return [];
 }
 
 export async function getCourseSubscriptions(): Promise<CourseSubscription[]> {
   await new Promise(resolve => setTimeout(resolve, 600));
-  return mockCourseSubscriptions;
+  if (process.env.NODE_ENV === 'development') {
+    return mockCourseSubscriptions;
+  }
+  return [];
 }
 
 

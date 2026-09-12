@@ -159,13 +159,14 @@ export const getPersonalizedProducts = async (): Promise<PersonalizedProduct[]> 
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching personalized products:', error);
-    return mockProducts; // Fallback to mock data if table doesn't exist or errors
-  }
-
-  if (!data || data.length === 0) {
-    return mockProducts; // Fallback to mock data if empty
+  if (error || !data || data.length === 0) {
+    if (error) {
+      console.error('Error fetching personalized products:', error);
+    }
+    if (process.env.NODE_ENV === 'development') {
+      return mockProducts; // Fallback to mock data in development
+    }
+    return [];
   }
 
   return data.map(p => ({

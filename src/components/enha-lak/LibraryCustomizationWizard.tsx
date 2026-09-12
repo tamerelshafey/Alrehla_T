@@ -36,7 +36,7 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
   const pathname = usePathname();
   const { addItem } = useCart();
   
-  const currentStep = parseInt(searchParams.get('step') || '1', 10);
+  const currentStep = parseInt(searchParams?.get('step') || '1', 10);
   
   const methods = useForm<LibraryFormValues>({
     resolver: zodResolver(librarySchema),
