@@ -33,8 +33,13 @@ ALTER TABLE personalized_products ENABLE ROW LEVEL SECURITY;
 
 -- Create policies
 -- 1. Anyone can view products (public read access)
-CREATE POLICY "Products are viewable by everyone" ON personalized_products
+DO $$
+BEGIN
+    CREATE POLICY "Products are viewable by everyone" ON personalized_products
     FOR SELECT USING (true);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- 2. Only admins can insert/update/delete products
 -- We assume auth.users has some metadata or we will handle this via service role on the server for now.

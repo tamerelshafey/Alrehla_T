@@ -12,7 +12,7 @@ EXCEPTION
 END $$;
 
 -- Instructors Table
-CREATE TABLE instructors (
+CREATE TABLE IF NOT EXISTS instructors (
     id TEXT PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
     display_name TEXT NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE instructors (
 );
 
 -- Bookings Table
-CREATE TABLE bookings (
+CREATE TABLE IF NOT EXISTS bookings (
     id TEXT PRIMARY KEY,
     dependent_participant_id TEXT,
     independent_participant_id TEXT,
@@ -52,15 +52,35 @@ ALTER TABLE instructors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 
 -- Policies for Instructors
-CREATE POLICY "Instructors are viewable by everyone" ON instructors
+DO $$
+BEGIN
+    CREATE POLICY "Instructors are viewable by everyone" ON instructors
     FOR SELECT USING (true);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Instructors can update their own profile" ON instructors
+DO $$
+BEGIN
+    CREATE POLICY "Instructors can update their own profile" ON instructors
     FOR UPDATE USING (auth.uid() = user_id);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Policies for Bookings
-CREATE POLICY "Users can view their own bookings" ON bookings
+DO $$
+BEGIN
+    CREATE POLICY "Users can view their own bookings" ON bookings
     FOR SELECT USING (true);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Users can create bookings" ON bookings
+DO $$
+BEGIN
+    CREATE POLICY "Users can create bookings" ON bookings
     FOR INSERT WITH CHECK (true);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;

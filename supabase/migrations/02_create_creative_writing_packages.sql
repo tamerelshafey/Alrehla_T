@@ -29,5 +29,10 @@ CREATE TABLE IF NOT EXISTS creative_writing_packages (
 ALTER TABLE creative_writing_packages ENABLE ROW LEVEL SECURITY;
 
 -- Policies
-CREATE POLICY "Packages are viewable by everyone" ON creative_writing_packages
+DO $$
+BEGIN
+    CREATE POLICY "Packages are viewable by everyone" ON creative_writing_packages
     FOR SELECT USING (true);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;

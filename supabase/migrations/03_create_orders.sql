@@ -35,29 +35,49 @@ ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 
 -- Policies for orders
 -- 1. Users can view their own orders
-CREATE POLICY "Users can view their own orders" ON orders
+DO $$
+BEGIN
+    CREATE POLICY "Users can view their own orders" ON orders
     FOR SELECT USING (auth.uid() = user_id);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- 2. Admins can view all orders
 -- (Assuming we will bypass via service role for admin reads or add an admin check)
 
 -- 3. Users can insert their own orders
-CREATE POLICY "Users can create their own orders" ON orders
+DO $$
+BEGIN
+    CREATE POLICY "Users can create their own orders" ON orders
     FOR INSERT WITH CHECK (auth.uid() = user_id);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Policies for order_items
 -- 1. Users can view their own order items
-CREATE POLICY "Users can view their own order items" ON order_items
+DO $$
+BEGIN
+    CREATE POLICY "Users can view their own order items" ON order_items
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM orders WHERE orders.id = order_items.order_id AND orders.user_id = auth.uid()
         )
     );
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- 2. Users can insert their own order items
-CREATE POLICY "Users can create their own order items" ON order_items
+DO $$
+BEGIN
+    CREATE POLICY "Users can create their own order items" ON order_items
     FOR INSERT WITH CHECK (
         EXISTS (
             SELECT 1 FROM orders WHERE orders.id = order_items.order_id AND orders.user_id = auth.uid()
         )
     );
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;

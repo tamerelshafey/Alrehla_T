@@ -48,20 +48,45 @@ ALTER TABLE support_session_requests ENABLE ROW LEVEL SECURITY;
 
 -- Policies for Support Tickets
 -- Users can view their own tickets
-CREATE POLICY "Users can view their own tickets" ON support_tickets
+DO $$
+BEGIN
+    CREATE POLICY "Users can view their own tickets" ON support_tickets
     FOR SELECT USING (auth.uid() = user_id);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Users can create tickets
-CREATE POLICY "Users can create tickets" ON support_tickets
+DO $$
+BEGIN
+    CREATE POLICY "Users can create tickets" ON support_tickets
     FOR INSERT WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Policies for Join Requests (usually anyone can submit, only admins view/edit)
-CREATE POLICY "Anyone can create join requests" ON join_requests
+DO $$
+BEGIN
+    CREATE POLICY "Anyone can create join requests" ON join_requests
     FOR INSERT WITH CHECK (true);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Policies for Support Session Requests
-CREATE POLICY "Anyone can create support session requests" ON support_session_requests
+DO $$
+BEGIN
+    CREATE POLICY "Anyone can create support session requests" ON support_session_requests
     FOR INSERT WITH CHECK (true);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
     
-CREATE POLICY "Users can view their own support session requests" ON support_session_requests
+DO $$
+BEGIN
+    CREATE POLICY "Users can view their own support session requests" ON support_session_requests
     FOR SELECT USING (auth.uid() = user_id);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;

@@ -19,7 +19,7 @@ EXCEPTION
 END $$;
 
 -- Publishers Table
-CREATE TABLE publishers (
+CREATE TABLE IF NOT EXISTS publishers (
     id TEXT PRIMARY KEY,
     user_id UUID REFERENCES user_profiles(id) ON DELETE SET NULL,
     slug TEXT UNIQUE NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE publishers (
 );
 
 -- Portfolio Documents Table (Student's Writing)
-CREATE TABLE portfolio_documents (
+CREATE TABLE IF NOT EXISTS portfolio_documents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE portfolio_documents (
 );
 
 -- Instructor Payouts Table
-CREATE TABLE instructor_payouts (
+CREATE TABLE IF NOT EXISTS instructor_payouts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     instructor_id TEXT NOT NULL REFERENCES instructors(id) ON DELETE CASCADE,
     period TEXT NOT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE instructor_payouts (
 );
 
 -- Publisher Payouts Table
-CREATE TABLE publisher_payouts (
+CREATE TABLE IF NOT EXISTS publisher_payouts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     publisher_id TEXT NOT NULL REFERENCES publishers(id) ON DELETE CASCADE,
     period TEXT NOT NULL,
@@ -73,30 +73,60 @@ ALTER TABLE instructor_payouts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE publisher_payouts ENABLE ROW LEVEL SECURITY;
 
 -- Policies for Publishers
-CREATE POLICY "Publishers are viewable by everyone" ON publishers
+DO $$
+BEGIN
+    CREATE POLICY "Publishers are viewable by everyone" ON publishers
     FOR SELECT USING (true);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Policies for Portfolio Documents
-CREATE POLICY "Users can view their own documents" ON portfolio_documents
+DO $$
+BEGIN
+    CREATE POLICY "Users can view their own documents" ON portfolio_documents
     FOR SELECT USING (auth.uid() = student_id);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Users can create their own documents" ON portfolio_documents
+DO $$
+BEGIN
+    CREATE POLICY "Users can create their own documents" ON portfolio_documents
     FOR INSERT WITH CHECK (auth.uid() = student_id);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
     
-CREATE POLICY "Users can update their own documents" ON portfolio_documents
+DO $$
+BEGIN
+    CREATE POLICY "Users can update their own documents" ON portfolio_documents
     FOR UPDATE USING (auth.uid() = student_id);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Policies for Payouts
-CREATE POLICY "Instructors can view their own payouts" ON instructor_payouts
+DO $$
+BEGIN
+    CREATE POLICY "Instructors can view their own payouts" ON instructor_payouts
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM instructors WHERE instructors.id = instructor_payouts.instructor_id AND instructors.user_id = auth.uid()
         )
     );
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Publishers can view their own payouts" ON publisher_payouts
+DO $$
+BEGIN
+    CREATE POLICY "Publishers can view their own payouts" ON publisher_payouts
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM publishers WHERE publishers.id = publisher_payouts.publisher_id AND publishers.user_id = auth.uid()
         )
     );
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;

@@ -46,11 +46,26 @@ ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE box_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Policies
-CREATE POLICY "Testimonials are viewable by everyone" ON testimonials
+DO $$
+BEGIN
+    CREATE POLICY "Testimonials are viewable by everyone" ON testimonials
     FOR SELECT USING (true);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Blog posts are viewable by everyone" ON blog_posts
+DO $$
+BEGIN
+    CREATE POLICY "Blog posts are viewable by everyone" ON blog_posts
     FOR SELECT USING (true);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Users can view their own subscriptions" ON box_subscriptions
+DO $$
+BEGIN
+    CREATE POLICY "Users can view their own subscriptions" ON box_subscriptions
     FOR SELECT USING (auth.uid() = user_id);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;

@@ -20,22 +20,42 @@ SET
 -- Set up Storage Policies for the 'Rehla' bucket
 
 -- 1. Public Read Access
-CREATE POLICY "Public Access" 
+DO $$
+BEGIN
+    CREATE POLICY "Public Access" 
 ON storage.objects FOR SELECT
 USING (bucket_id = 'Rehla');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- 2. Authenticated Upload Access
-CREATE POLICY "Authenticated users can upload" 
+DO $$
+BEGIN
+    CREATE POLICY "Authenticated users can upload" 
 ON storage.objects FOR INSERT
 WITH CHECK (bucket_id = 'Rehla' AND auth.role() = 'authenticated');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- 3. Users can update their own files
-CREATE POLICY "Users can update their own files" 
+DO $$
+BEGIN
+    CREATE POLICY "Users can update their own files" 
 ON storage.objects FOR UPDATE
 USING (bucket_id = 'Rehla' AND auth.uid() = owner)
 WITH CHECK (bucket_id = 'Rehla' AND auth.uid() = owner);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- 4. Users can delete their own files
-CREATE POLICY "Users can delete their own files" 
+DO $$
+BEGIN
+    CREATE POLICY "Users can delete their own files" 
 ON storage.objects FOR DELETE
 USING (bucket_id = 'Rehla' AND auth.uid() = owner);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
