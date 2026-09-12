@@ -14,17 +14,7 @@ export async function createDummyOrder(items: OrderItem[], totalAmount: number) 
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    // Fallback if not logged in just for testing in mock UI
-    const newOrder = {
-      id: `ord-${Date.now()}`,
-      userId: 'current-user',
-      items,
-      totalAmount,
-      status: 'pending' as const,
-      createdAt: new Date().toISOString(),
-    };
-    mockOrders.push(newOrder as any);
-    return newOrder.id;
+    throw new Error('Unauthorized');
   }
 
   const { data: order, error: orderError } = await supabase
@@ -94,14 +84,7 @@ export async function submitPaymentProof(orderId: string, transactionReference: 
 
   if (error) {
     console.error('Error updating payment proof:', error);
-    // Fallback logic
-    const order = mockOrders.find(o => o.id === orderId);
-    if (order) {
-      order.status = 'awaiting_verification';
-      order.transactionReference = transactionReference;
-    } else {
-      return { success: false, error: 'Order not found' };
-    }
+    return { success: false, error: 'Order not found or update failed' };
   }
 
   revalidatePath('/enha-lak/checkout');
@@ -119,13 +102,7 @@ export async function confirmOrderPayment(orderId: string) {
 
   if (error) {
     console.error('Error confirming payment:', error);
-    // Fallback logic
-    const order = mockOrders.find(o => o.id === orderId);
-    if (order) {
-      order.status = 'paid';
-    } else {
-      return { success: false, error: 'Order not found' };
-    }
+    return { success: false, error: 'Order not found or update failed' };
   }
 
   const currentUser = await getCurrentUser();

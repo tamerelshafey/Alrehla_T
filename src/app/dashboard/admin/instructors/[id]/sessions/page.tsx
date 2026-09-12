@@ -1,6 +1,6 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getInstructors, getBookings } from '@/data/mock';
+import { getCurrentUser, getInstructors, getSessions } from '@/data/mock';
 import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
@@ -19,7 +19,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const instructors = await getInstructors();
   const target = instructors.find(i => i.id === id) || instructors[0];
   
-  const allBookings = await getBookings();
+  const allBookings = await getSessions();
   const instructorBookings = allBookings.filter(b => b.instructorId === target.id);
 
   const formattedBookings = instructorBookings.map(b => ({

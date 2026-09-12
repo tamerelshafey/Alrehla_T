@@ -1,4 +1,4 @@
-import { getCurrentUser, getBookings } from '@/data/mock';
+import { getCurrentUser, getSessions } from '@/data/mock';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Users, Calendar, Video, Clock, Wallet, User, CalendarDays, Settings } from 'lucide-react';
@@ -13,7 +13,7 @@ export default async function InstructorDashboard() {
     redirect('/dashboard');
   }
 
-  const allBookings = await getBookings();
+  const allBookings = await getSessions();
   const confirmedBookings = allBookings.filter((b) => b.status === 'confirmed');
 
   // Sort by date closest first

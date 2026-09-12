@@ -3,7 +3,7 @@ import {
   getCurrentUser,
   getWritingPackages,
   getOrders,
-  getBookings,
+  getSessions,
   getInstructors,
 } from '@/data/mock';
 import { redirect } from 'next/navigation';
@@ -28,7 +28,7 @@ export default async function AdminDashboard() {
 
   const packages = await getWritingPackages();
   const orders = await getOrders();
-  const bookings = await getBookings();
+  const bookings = await getSessions();
   const instructors = await getInstructors();
 
   const activePackages = packages.filter((p) => p.isActive).length;

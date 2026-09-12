@@ -1,6 +1,6 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getBookings, getServiceOrders } from '@/data/mock';
+import { getCurrentUser, getSessions, getServiceOrders } from '@/data/mock';
 import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import Link from 'next/link';
@@ -14,7 +14,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     return <Unauthorized />;
   }
   const { id } = await params;
-  const allBookings = await getBookings();
+  const allBookings = await getSessions();
   const target = allBookings.find(b => b.id === id) || allBookings[0];
   
   const allServiceOrders = await getServiceOrders();

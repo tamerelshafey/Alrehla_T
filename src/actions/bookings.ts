@@ -15,6 +15,19 @@ export async function createDummyBookingServiceOrder(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
 
+  if (participantType === 'child' && childId) {
+    const { data: validChild, error: childError } = await supabase
+      .from('child_profiles')
+      .select('id')
+      .eq('user_profile_id', user.id)
+      .eq('id', childId)
+      .single();
+      
+    if (childError || !validChild) {
+      throw new Error(`Invalid child ID: ${childId}. It does not belong to the current user.`);
+    }
+  }
+
   // Insert course subscription
   const { data: subscription, error: subError } = await supabase
     .from('course_subscriptions')

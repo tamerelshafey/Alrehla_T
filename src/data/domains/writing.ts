@@ -1,6 +1,6 @@
 import {
   WritingPackage, Instructor, PersonalizedProduct, AddonProduct, SubscriptionTier, 
-  Testimonial, CreativeService, BlogPost, UserProfile, Booking, Order, 
+  Testimonial, CreativeService, BlogPost, UserProfile, Booking, SessionWithDetails, Order, 
   Publisher, InstructorPayout, PublisherPayout, SessionMessage, SessionAttachment, 
   StudyMaterial, InstructorStudent, BoxSubscription, SupportTicket, 
   JoinRequest, SupportSessionRequest, AuditLog, ServiceOrder, CourseSubscription, 
@@ -364,37 +364,46 @@ export const getCreativeServices = async (): Promise<CreativeService[]> => {
   return Promise.resolve(mockCreativeServices);
 };
 
-export const mockBookings: Booking[] = [
+export const mockSessions: SessionWithDetails[] = [
   {
-    id: 'bkg-1',
+    id: 'sess-1',
+    courseSubscriptionId: 'csub-1',
+    sessionNumber: 1,
     userId: 'student-1',
     participantType: 'self',
     packageId: 'pkg-1',
     instructorId: 'inst-1',
     status: 'confirmed',
-    scheduledAt: new Date(Date.now() + 86400000 * 2).toISOString(), // +2 days
+    scheduledAt: new Date(Date.now() + 86400000 * 2).toISOString(),
     createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
-    id: 'bkg-2',
+    id: 'sess-2',
+    courseSubscriptionId: 'csub-2',
+    sessionNumber: 1,
     userId: 'current-user',
     participantType: 'child',
     childId: 'dep-child-2',
     packageId: 'pkg-2',
     instructorId: 'inst-2',
     status: 'completed',
-    scheduledAt: new Date(Date.now() - 86400000 * 3).toISOString(), // -3 days
+    scheduledAt: new Date(Date.now() - 86400000 * 3).toISOString(),
     createdAt: new Date(Date.now() - 86400000 * 10).toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
-    id: 'bkg-3',
+    id: 'sess-3',
+    courseSubscriptionId: 'csub-3',
+    sessionNumber: 1,
     userId: 'student-3',
     participantType: 'self',
     packageId: 'pkg-1',
     instructorId: 'inst-1',
     status: 'pending',
-    scheduledAt: new Date(Date.now() + 86400000 * 5).toISOString(), // +5 days
+    scheduledAt: new Date(Date.now() + 86400000 * 5).toISOString(),
     createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ];
 
@@ -683,27 +692,47 @@ export const getProfileUpdateRequestsByInstructor = async (instructorId: string)
   return Promise.resolve(mockProfileUpdateRequests.filter(req => req.instructorId === instructorId));
 };
 
+export const getSessions = async (): Promise<SessionWithDetails[]> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('sessions')
+    .select('*, course_subscriptions(*)')
+    .order('scheduled_at', { ascending: true });
+
+  if (error || !data || data.length === 0) {
+    return mockSessions;
+  }
+
+  return data.map((sess: any) => {
+    const sub = sess.course_subscriptions;
+    return {
+      id: sess.id,
+      courseSubscriptionId: sess.course_subscription_id,
+      sessionNumber: sess.session_number,
+      instructorId: sess.instructor_id || undefined,
+      status: sess.status as any,
+      scheduledAt: sess.scheduled_at,
+      createdAt: sess.created_at,
+      updatedAt: sess.updated_at || sess.created_at,
+      // joined details
+      userId: sub?.user_id || 'unknown',
+      participantType: sub?.participant_type || 'self',
+      childId: sub?.child_id || undefined,
+      packageId: sub?.package_id || 'unknown',
+    };
+  });
+};
+
 export const getBookings = async (): Promise<Booking[]> => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('bookings')
-    .select('*')
-    .order('scheduled_at', { ascending: true });
-
-  if (error || !data || data.length === 0) {
-    return mockBookings;
-  }
-
-  return data.map((bkg: any) => ({
-    id: bkg.id,
-    userId: bkg.user_id || 'unknown',
-    participantType: bkg.participant_type || 'self',
-    childId: bkg.child_id || undefined,
-    packageId: bkg.package_id,
-    instructorId: bkg.instructor_id || undefined,
-    courseSubscriptionId: bkg.course_subscription_id || undefined,
-    status: bkg.status,
-    scheduledAt: bkg.scheduled_at,
-    createdAt: bkg.created_at
+    .select('*');
+  if (error || !data) return [];
+  return data.map((b: any) => ({
+    id: b.id,
+    sessionId: b.session_id,
+    status: b.status as any,
+    bookedAt: b.booked_at
   }));
 };

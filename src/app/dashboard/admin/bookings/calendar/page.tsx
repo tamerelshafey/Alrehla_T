@@ -1,6 +1,6 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getBookings, getParticipantName } from '@/data/mock';
+import { getCurrentUser, getSessions, getParticipantName } from '@/data/mock';
 import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
@@ -14,7 +14,7 @@ export default async function Page() {
     return <Unauthorized />;
   }
 
-  const allBookings = await getBookings();
+  const allBookings = await getSessions();
   
   // Sort by date ascending to simulate a timeline/calendar view
   const sorted = [...allBookings].sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());

@@ -1,11 +1,11 @@
 'use client';
 import React, { useState } from 'react';
-import { Booking } from '@/types';
+import { SessionWithDetails } from '@/types';
 import { Video, Clock, User, CheckCircle2, AlertCircle, FileText, Send } from 'lucide-react';
 import Link from 'next/link';
 
 interface Props {
-  session: Booking;
+  session: SessionWithDetails;
 }
 
 export function InstructorSessionClient({ session }: Props) {

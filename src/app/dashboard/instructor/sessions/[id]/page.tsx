@@ -1,4 +1,4 @@
-import { getCurrentUser, getBookings } from '@/data/mock';
+import { getCurrentUser, getSessions } from '@/data/mock';
 import { redirect } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { InstructorSessionClient } from './InstructorSessionClient';
@@ -12,7 +12,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
   }
 
   const { id } = await params;
-  const bookings = await getBookings();
+  const bookings = await getSessions();
   const session = bookings[0]; // Just mock first booking for demo
 
   return (

@@ -1,10 +1,10 @@
-import { getBookings, getServiceOrders } from '@/data/mock';
+import { getSessions, getServiceOrders } from '@/data/mock';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { StatusBadge } from '@/components/StatusBadge';
 
 export default async function CreativeWritingOrdersPage() {
-  const allBookings = await getBookings();
+  const allBookings = await getSessions();
   const allServiceOrders = await getServiceOrders();
     
   const bookings = allBookings.map(b => {

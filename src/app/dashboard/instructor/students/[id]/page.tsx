@@ -2,7 +2,7 @@ import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
-import { getInstructorStudents, getBookings, getStudentDocuments } from '@/data/mock';
+import { getInstructorStudents, getSessions, getStudentDocuments } from '@/data/mock';
 import { User, Calendar, FileText } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
 
@@ -16,7 +16,7 @@ export default async function StudentDetailsPage({ params }: { params: Promise<{
   const student = students.find(s => s.id === studentId) || students[0];
   
   // We mock the sessions list based on bookings
-  const bookings = await getBookings();
+  const bookings = await getSessions();
 
   const sessions = bookings.map((b, index) => ({
     sessionNumber: `الجلسة ${index + 1}`,

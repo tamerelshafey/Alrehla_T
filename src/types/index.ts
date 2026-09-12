@@ -111,15 +111,9 @@ export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 // عملية الحجز لباقة معينة
 export type Booking = {
   id: string;
-  userId: string;
-  participantType: 'self' | 'child';
-  childId?: string;
-  packageId: string;
-  instructorId?: string;
-  courseSubscriptionId?: string;
+  sessionId: string;
   status: BookingStatus;
-  scheduledAt: string;
-  createdAt: string;
+  bookedAt: string;
 };
 
 // فئة المنتج المخصص
@@ -489,3 +483,10 @@ export interface Session {
   createdAt: string;
   updatedAt: string;
 }
+
+export type SessionWithDetails = Session & {
+  userId: string;
+  participantType: 'self' | 'child';
+  childId?: string;
+  packageId: string;
+};

@@ -179,8 +179,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          dependent_participant_id: string | null
-          independent_participant_id: string | null
+          
           total_amount: number
           status: 'pending' | 'awaiting_verification' | 'paid' | 'failed' | 'refunded'
           transaction_reference: string | null
@@ -190,8 +189,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id: string
-          dependent_participant_id?: string | null
-          independent_participant_id?: string | null
+          
           total_amount: number
           status?: 'pending' | 'awaiting_verification' | 'paid' | 'failed' | 'refunded'
           transaction_reference?: string | null
@@ -201,8 +199,7 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
-          dependent_participant_id?: string | null
-          independent_participant_id?: string | null
+          
           total_amount?: number
           status?: 'pending' | 'awaiting_verification' | 'paid' | 'failed' | 'refunded'
           transaction_reference?: string | null
@@ -331,8 +328,7 @@ export interface Database {
       bookings: {
         Row: {
           id: string
-          dependent_participant_id: string | null
-          independent_participant_id: string | null
+          
           package_id: string
           instructor_id: string | null
           course_subscription_id: string | null
@@ -343,8 +339,7 @@ export interface Database {
         }
         Insert: {
           id: string
-          dependent_participant_id?: string | null
-          independent_participant_id?: string | null
+          
           package_id: string
           instructor_id?: string | null
           course_subscription_id?: string | null
@@ -355,8 +350,7 @@ export interface Database {
         }
         Update: {
           id?: string
-          dependent_participant_id?: string | null
-          independent_participant_id?: string | null
+          
           package_id?: string
           instructor_id?: string | null
           course_subscription_id?: string | null

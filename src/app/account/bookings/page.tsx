@@ -1,10 +1,10 @@
 import { formatDate } from '@/lib/utils';
-import { getBookings } from '@/data/mock';
+import { getSessions } from '@/data/mock';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 
 export default async function BookingsPage() {
-  const bookings = await getBookings();
+  const bookings = await getSessions();
   
   const formattedBookings = bookings.map(booking => ({
     ...booking,
