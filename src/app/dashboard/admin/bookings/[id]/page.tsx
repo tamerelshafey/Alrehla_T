@@ -41,7 +41,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
           <div>
             <div className="text-sm text-slate-500 mb-1">معرف الطالب</div>
-            <div className="font-bold text-slate-800 text-lg">{target?.independentParticipantId}</div>
+            <div className="font-bold text-slate-800 text-lg">{target?.userId}</div>
           </div>
           <div>
             <div className="text-sm text-slate-500 mb-1">معرف المدرب</div>

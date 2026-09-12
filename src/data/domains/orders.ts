@@ -18,7 +18,7 @@ export const mockOrders: Order[] = [
     id: 'ord-1',
     userId: 'student-1',
     items: [{ productId: 'prod-1', quantity: 1, unitPrice: 350, customizationData: { childName: 'علي' } }, { productId: 'addon-1', quantity: 1, unitPrice: 45 }],
-    independentParticipantId: 'student-1',
+    
     totalAmount: 395,
     status: 'paid',
     createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
@@ -27,7 +27,7 @@ export const mockOrders: Order[] = [
     id: 'ord-2',
     userId: 'student-2',
     items: [{ productId: 'prod-2', quantity: 1, unitPrice: 50 }],
-    dependentParticipantId: 'dep-child-2',
+    
     totalAmount: 120,
     status: 'pending',
     createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
@@ -58,8 +58,8 @@ export const getOrders = async (): Promise<Order[]> => {
   return data.map((order: any) => ({
     id: order.id,
     userId: order.user_id,
-    dependentParticipantId: order.dependent_participant_id || undefined,
-    independentParticipantId: order.independent_participant_id || undefined,
+    
+    
     totalAmount: order.total_amount,
     status: order.status,
     transactionReference: order.transaction_reference || undefined,

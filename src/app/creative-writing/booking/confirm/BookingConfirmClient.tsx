@@ -12,6 +12,14 @@ export function BookingConfirmClient() {
   const packageId = searchParams.get('package') || 'dummy-package';
   const instructorId = searchParams.get('instructor') || 'dummy-instructor';
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'instapay'>('credit_card');
+  const [participantType, setParticipantType] = useState<'self' | 'child'>('self');
+  const [childId, setChildId] = useState<string>('');
+  const [children, setChildren] = useState<{id:string, name:string}[]>([]);
+
+  React.useEffect(() => {
+    import('@/app/actions/family').then(mod => mod.fetchFamilyMembers()).then(data => setChildren(data || []));
+  }, []);
+
   const [transactionRef, setTransactionRef] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderIdState, setOrderIdState] = useState('');
@@ -20,7 +28,8 @@ export function BookingConfirmClient() {
   const handlePaymentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     startTransition(async () => {
-      const orderId = await createDummyBookingServiceOrder(250, packageId, instructorId);
+      if (participantType === 'child' && !childId) { alert('الرجاء اختيار الطفل'); return; }
+const orderId = await createDummyBookingServiceOrder(250, packageId, instructorId, participantType, childId);
       setOrderIdState(orderId);
       
       if (paymentMethod === 'instapay') {

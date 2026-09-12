@@ -1,24 +1,16 @@
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
+import { FamilyClient } from './FamilyClient';
+import { fetchFamilyMembers } from '@/app/actions/family';
 
-export default function FamilyManagementPage() {
-  const familyMembers = [
-    { id: 1, name: 'ياسمين طارق', age: 14, role: 'مشارك مستقل' },
-    { id: 2, name: 'عمر طارق', age: 8, role: 'مشارك تابع' },
-  ];
-
-  const columns = [
-    { header: 'الاسم', accessorKey: 'name' },
-    { header: 'العمر (سنوات)', accessorKey: 'age' },
-    { header: 'المسار', accessorKey: 'role' }
-  ];
+export default async function FamilyManagementPage() {
+  const familyMembers = await fetchFamilyMembers();
 
   return (
     <div className="space-y-6">
-      <DashboardPageHeader title="أفراد العائلة" action={{ label: 'إضافة فرد', href: '#' }} />
+      <DashboardPageHeader title="أفراد العائلة" />
       <p className="mt-2 text-slate-500 font-medium">أضف أطفالك لإدارة حجوزاتهم وتخصيص منتجاتهم بسهولة.</p>
       
-      <SimpleDataTable columns={columns} data={familyMembers} />
+      <FamilyClient initialMembers={familyMembers} />
 
       {/* Helper Card */}
       <div className="mt-8 rounded-2xl bg-amber-50 p-6 border border-amber-100">

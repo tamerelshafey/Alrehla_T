@@ -21,7 +21,7 @@ export default async function Page() {
   
   const formatted = await Promise.all(sorted.map(async b => ({
     ...b,
-    studentName: await getParticipantName(b.dependentParticipantId, b.independentParticipantId),
+    studentName: await getParticipantName(b.childId || b.userId, b.userId),
     idDisplay: <Link href={`/dashboard/admin/bookings/${b.id}`} className="font-bold text-blue-600 hover:underline">#{b.id.split('-')[1]}</Link>,
     dateDisplay: formatDate(b.scheduledAt),
     timeDisplay: new Date(b.scheduledAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })

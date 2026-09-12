@@ -18,7 +18,7 @@ export default async function Page() {
   
   const formatted = await Promise.all(allSubscriptions.map(async s => ({
     ...s,
-    studentName: await getParticipantName(s.dependentParticipantId, s.independentParticipantId),
+    studentName: await getParticipantName(s.childId, s.userId),
     idDisplay: <span className="font-bold text-slate-700">#{s.id.split('-')[1]}</span>,
     dateDisplay: formatDate(s.startedAt),
     statusDisplay: (

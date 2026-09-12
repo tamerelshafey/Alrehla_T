@@ -367,7 +367,8 @@ export const getCreativeServices = async (): Promise<CreativeService[]> => {
 export const mockBookings: Booking[] = [
   {
     id: 'bkg-1',
-    independentParticipantId: 'student-1',
+    userId: 'student-1',
+    participantType: 'self',
     packageId: 'pkg-1',
     instructorId: 'inst-1',
     status: 'confirmed',
@@ -376,7 +377,9 @@ export const mockBookings: Booking[] = [
   },
   {
     id: 'bkg-2',
-    dependentParticipantId: 'dep-child-2',
+    userId: 'current-user',
+    participantType: 'child',
+    childId: 'dep-child-2',
     packageId: 'pkg-2',
     instructorId: 'inst-2',
     status: 'completed',
@@ -385,7 +388,8 @@ export const mockBookings: Booking[] = [
   },
   {
     id: 'bkg-3',
-    independentParticipantId: 'student-3',
+    userId: 'student-3',
+    participantType: 'self',
     packageId: 'pkg-1',
     instructorId: 'inst-1',
     status: 'pending',
@@ -398,15 +402,15 @@ export const mockBookings: Booking[] = [
 
 export const getSessionMessages = async (sessionId: string): Promise<SessionMessage[]> => {
   return [
-    { id: '1', senderName: 'سارة أحمد', message: 'مرحباً، أهلاً بك في الجلسة القادمة.', createdAt: '2024-06-14T10:00:00Z' },
-    { id: '2', senderName: 'ياسمين طارق', message: 'أهلاً بك أستاذة، أنا متحمسة جداً!', createdAt: '2024-06-14T10:05:00Z' }
+    { id: '1', sessionId, senderName: 'سارة أحمد', message: 'مرحباً، أهلاً بك في الجلسة القادمة.', createdAt: '2024-06-14T10:00:00Z' },
+    { id: '2', sessionId, senderName: 'ياسمين طارق', message: 'أهلاً بك أستاذة، أنا متحمسة جداً!', createdAt: '2024-06-14T10:05:00Z' }
   ];
 };
 
 export const getSessionAttachments = async (sessionId: string): Promise<SessionAttachment[]> => {
   return [
-    { id: '1', fileName: 'ملخص_الأساسيات.pdf', fileUrl: '#' },
-    { id: '2', fileName: 'تدريب_الخيال.docx', fileUrl: '#' }
+    { id: '1', sessionId, fileName: 'ملخص_الأساسيات.pdf', fileUrl: '#' },
+    { id: '2', sessionId, fileName: 'تدريب_الخيال.docx', fileUrl: '#' }
   ];
 };
 
@@ -451,8 +455,9 @@ export const mockCourseSubscriptions: CourseSubscription[] = [
   {
     id: 'csub-1',
     packageId: 'pkg-1',
-    guardianProfileId: 'parent-1',
-    dependentParticipantId: 'dep-child-1',
+    userId: 'parent-1',
+    participantType: 'child',
+    childId: 'dep-child-1',
     status: 'active',
     startedAt: new Date(Date.now() - 86400000 * 10).toISOString(),
     createdAt: new Date(Date.now() - 86400000 * 12).toISOString(),
@@ -460,7 +465,8 @@ export const mockCourseSubscriptions: CourseSubscription[] = [
   {
     id: 'csub-2',
     packageId: 'pkg-2',
-    independentParticipantId: 'student-1',
+    userId: 'student-1',
+    participantType: 'self',
     status: 'completed',
     startedAt: new Date(Date.now() - 86400000 * 40).toISOString(),
     createdAt: new Date(Date.now() - 86400000 * 45).toISOString(),
@@ -690,8 +696,9 @@ export const getBookings = async (): Promise<Booking[]> => {
 
   return data.map((bkg: any) => ({
     id: bkg.id,
-    dependentParticipantId: bkg.dependent_participant_id || undefined,
-    independentParticipantId: bkg.independent_participant_id || undefined,
+    userId: bkg.user_id || 'unknown',
+    participantType: bkg.participant_type || 'self',
+    childId: bkg.child_id || undefined,
     packageId: bkg.package_id,
     instructorId: bkg.instructor_id || undefined,
     courseSubscriptionId: bkg.course_subscription_id || undefined,

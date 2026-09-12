@@ -94,9 +94,13 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
   const onSubmit = async (data: WizardFormValues) => {
     // 1. Create family member if new
     let childName = data.newChildName || '';
+    let finalChildId = data.familyMemberId || '';
     if (data.newChildName && data.newChildBirthDate && data.newChildGender && !data.familyMemberId) {
       const newMember = await createFamilyMember(data.newChildName, parseInt(data.newChildBirthDate || '0', 10), data.newChildGender);
-      childName = newMember.name;
+      if (newMember) {
+        childName = newMember.name;
+        finalChildId = newMember.id;
+      }
     } else if (data.familyMemberId) {
        // In real app, we fetch the name. For now let's just use placeholder
        childName = 'مشارك موجود'; 
@@ -123,6 +127,8 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
       type: product.category === 'subscription' ? 'subscription' : 'custom',
       imageUrl: product.coverImageUrl || `https://picsum.photos/seed/${product.id}/600/800`,
       customizationData: {
+        recipientType: 'child',
+        childId: finalChildId || undefined,
         childName,
         childPhotoFile: data.facePhotoFile ? data.facePhotoFile.name : undefined,
         heroDescription: data.heroDescription,

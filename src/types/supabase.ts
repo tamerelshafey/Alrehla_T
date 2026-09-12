@@ -9,6 +9,37 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      child_profiles: {
+        Row: { id: string; user_profile_id: string; name: string; age: number; created_at: string; }
+        Insert: { id?: string; user_profile_id: string; name: string; age: number; created_at?: string; }
+        Update: { id?: string; user_profile_id?: string; name?: string; age?: number; created_at?: string; }
+        Relationships: []
+      }
+      course_subscriptions: {
+        Row: { id: string; package_id: string; user_id: string; participant_type: string; child_id: string | null; status: string; started_at: string; created_at: string; }
+        Insert: { id?: string; package_id: string; user_id: string; participant_type: string; child_id?: string | null; status?: string; started_at?: string; created_at?: string; }
+        Update: { id?: string; package_id?: string; user_id?: string; participant_type?: string; child_id?: string | null; status?: string; started_at?: string; created_at?: string; }
+        Relationships: []
+      }
+      sessions: {
+        Row: { id: string; course_subscription_id: string; instructor_id: string | null; session_number: number; scheduled_at: string; status: string; created_at: string; updated_at: string; }
+        Insert: { id?: string; course_subscription_id: string; instructor_id?: string | null; session_number: number; scheduled_at: string; status?: string; created_at?: string; updated_at?: string; }
+        Update: { id?: string; course_subscription_id?: string; instructor_id?: string | null; session_number?: number; scheduled_at?: string; status?: string; created_at?: string; updated_at?: string; }
+        Relationships: []
+      }
+      session_messages: {
+        Row: { id: string; session_id: string; sender_name: string; message: string; created_at: string; }
+        Insert: { id?: string; session_id: string; sender_name: string; message: string; created_at?: string; }
+        Update: { id?: string; session_id?: string; sender_name?: string; message?: string; created_at?: string; }
+        Relationships: []
+      }
+      session_attachments: {
+        Row: { id: string; session_id: string; file_name: string; file_url: string; created_at: string; }
+        Insert: { id?: string; session_id: string; file_name: string; file_url: string; created_at?: string; }
+        Update: { id?: string; session_id?: string; file_name?: string; file_url?: string; created_at?: string; }
+        Relationships: []
+      }
+
       user_profiles: {
         Row: {
           id: string

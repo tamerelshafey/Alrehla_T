@@ -18,7 +18,7 @@ export function InstructorSessionClient({ session }: Props) {
     setIsSubmitted(true);
   };
 
-  const studentId = session.independentParticipantId || session.dependentParticipantId;
+  const studentId = session.childId || session.userId;
 
   return (
     <div className="space-y-8">
