@@ -220,10 +220,49 @@ export const mockPublishers: Publisher[] = [
   },
 ];
 
-export const getPublishers = async (): Promise<Publisher[]> => mockPublishers;
+export const getPublishers = async (): Promise<Publisher[]> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('publishers')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    return mockPublishers;
+  }
+
+  return data.map((p: any) => ({
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    logoUrl: p.logo_url || undefined,
+    bio: p.bio,
+    isSample: p.is_sample,
+    status: p.status
+  }));
+};
 
 export const getPublisherBySlug = async (slug: string): Promise<Publisher | null> => {
-  return mockPublishers.find(p => p.slug === slug) || null;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('publishers')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+  if (error || !data) {
+    return mockPublishers.find(p => p.slug === slug) || null;
+  }
+
+  return {
+    id: data.id,
+    slug: data.slug,
+    name: data.name,
+    logoUrl: data.logo_url || undefined,
+    bio: data.bio,
+    isSample: data.is_sample,
+    status: data.status
+  };
 };
 
 export const getProductBySlug = async (slug: string): Promise<PersonalizedProduct | null> => {

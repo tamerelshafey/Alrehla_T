@@ -557,6 +557,170 @@ export interface Database {
           }
         ]
       }
+      publishers: {
+        Row: {
+          id: string
+          user_id: string | null
+          slug: string
+          name: string
+          logo_url: string | null
+          bio: string
+          is_sample: boolean
+          status: 'pending' | 'active' | 'suspended'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          user_id?: string | null
+          slug: string
+          name: string
+          logo_url?: string | null
+          bio: string
+          is_sample?: boolean
+          status?: 'pending' | 'active' | 'suspended'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          slug?: string
+          name?: string
+          logo_url?: string | null
+          bio?: string
+          is_sample?: boolean
+          status?: 'pending' | 'active' | 'suspended'
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "publishers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      portfolio_documents: {
+        Row: {
+          id: string
+          student_id: string
+          title: string
+          content: string
+          status: 'draft' | 'submitted' | 'reviewed'
+          instructor_feedback: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          student_id: string
+          title: string
+          content: string
+          status?: 'draft' | 'submitted' | 'reviewed'
+          instructor_feedback?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          student_id?: string
+          title?: string
+          content?: string
+          status?: 'draft' | 'submitted' | 'reviewed'
+          instructor_feedback?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_documents_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      instructor_payouts: {
+        Row: {
+          id: string
+          instructor_id: string
+          period: string
+          amount: number
+          status: 'pending' | 'paid'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          instructor_id: string
+          period: string
+          amount: number
+          status?: 'pending' | 'paid'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          instructor_id?: string
+          period?: string
+          amount?: number
+          status?: 'pending' | 'paid'
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_payouts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      publisher_payouts: {
+        Row: {
+          id: string
+          publisher_id: string
+          period: string
+          amount: number
+          status: 'pending' | 'paid'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          publisher_id: string
+          period: string
+          amount: number
+          status?: 'pending' | 'paid'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          publisher_id?: string
+          period?: string
+          amount?: number
+          status?: 'pending' | 'paid'
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "publisher_payouts_publisher_id_fkey"
+            columns: ["publisher_id"]
+            isOneToOne: false
+            referencedRelation: "publishers"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

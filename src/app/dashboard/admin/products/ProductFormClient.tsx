@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Publisher, PricingFormulaSettings } from '@/types';
 import { calculateFinalSessionPrice } from '@/lib/utils';
 import { saveProduct } from '@/actions/products';
-
+import { FileUpload } from '@/components/ui/file-upload';
 
 interface Props {
   publishers: Publisher[];
@@ -15,6 +15,7 @@ export function ProductFormClient({ publishers, pricingSettings }: Props) {
   const [ownerType, setOwnerType] = useState('platform');
   const [basePrice, setBasePrice] = useState(0);
   const [finalPrice, setFinalPrice] = useState(0);
+  const [coverImageUrl, setCoverImageUrl] = useState('');
 
   useEffect(() => {
     if (ownerType === 'publisher' && basePrice > 0) {
@@ -28,6 +29,8 @@ export function ProductFormClient({ publishers, pricingSettings }: Props) {
     <form action={saveProduct} className="space-y-6">
       <input type="hidden" name="id" value="" />
       <input type="hidden" name="slug" value="" />
+      {/* Hidden input to include the image URL in the form submission */}
+      <input type="hidden" name="coverImageUrl" value={coverImageUrl} />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
@@ -111,8 +114,13 @@ export function ProductFormClient({ publishers, pricingSettings }: Props) {
       </div>
       
       <div>
-        <label className="block text-sm font-bold text-slate-700 mb-2">صورة الغلاف (رابط)</label>
-        <input type="text" name="coverImageUrl" className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-amber-500 focus:outline-none text-left" dir="ltr" />
+        <label className="block text-sm font-bold text-slate-700 mb-2">صورة الغلاف</label>
+        <FileUpload 
+          folder="products" 
+          label="اضغط هنا لرفع صورة الغلاف الخاصة بالمنتج"
+          onUploadSuccess={(url) => setCoverImageUrl(url)}
+          currentFileUrl={coverImageUrl}
+        />
       </div>
       
       <div className="pt-6 border-t border-slate-100 flex justify-end">

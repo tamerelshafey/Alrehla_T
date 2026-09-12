@@ -23,8 +23,45 @@ export const mockPublisherPayouts: PublisherPayout[] = [
   { id: 'pp-2', publisherId: 'pub-1', period: 'الربع الرابع 2023', amount: 14200, status: 'pending' },
 ];
 
-export const getInstructorPayouts = async (): Promise<InstructorPayout[]> => mockInstructorPayouts;
-export const getPublisherPayouts = async (): Promise<PublisherPayout[]> => mockPublisherPayouts;
+export const getInstructorPayouts = async (): Promise<InstructorPayout[]> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('instructor_payouts')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    return mockInstructorPayouts;
+  }
+
+  return data.map((p: any) => ({
+    id: p.id,
+    instructorId: p.instructor_id,
+    period: p.period,
+    amount: p.amount,
+    status: p.status
+  }));
+};
+
+export const getPublisherPayouts = async (): Promise<PublisherPayout[]> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('publisher_payouts')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    return mockPublisherPayouts;
+  }
+
+  return data.map((p: any) => ({
+    id: p.id,
+    publisherId: p.publisher_id,
+    period: p.period,
+    amount: p.amount,
+    status: p.status
+  }));
+};
 
 export const mockAllSupportTickets: SupportTicket[] = [
   { id: 'tkt-1', requesterName: 'أحمد محمود', subject: 'مشكلة في الدفع', category: 'billing', status: 'open', createdAt: '2023-10-25T00:00:00Z' },
