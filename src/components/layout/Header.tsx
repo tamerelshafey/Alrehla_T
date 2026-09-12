@@ -6,11 +6,11 @@ import { getCurrentUser } from '@/data/domains/auth';
 
 export default async function Header() {
   const user = await getCurrentUser();
-  const mockRole = user.role;
-  const isVisitor = mockRole === 'visitor';
+  const userRole = user.role;
+  const isVisitor = userRole === 'visitor';
 
   const getAccountLink = () => {
-    switch (mockRole) {
+    switch (userRole) {
       case 'visitor': return '/sign-in';
       case 'customer': return '/account';
       case 'student': return '/dashboard/student';

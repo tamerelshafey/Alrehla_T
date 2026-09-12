@@ -28,8 +28,11 @@ export const getBoxSubscriptions = async (): Promise<BoxSubscription[]> => {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error || !data || data.length === 0) {
-    return mockBoxSubscriptions;
+  if ((error || !data || data.length === 0)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockBoxSubscriptions;
+    }
+    return [];
   }
 
   return data.map((sub: any) => ({

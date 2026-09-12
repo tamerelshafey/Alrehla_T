@@ -239,8 +239,11 @@ export const getWritingPackages = async (): Promise<WritingPackage[]> => {
     .select('*')
     .order('created_at', { ascending: true });
 
-  if (error || !data || data.length === 0) {
-    return mockWritingPackages;
+  if ((error || !data || data.length === 0)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockWritingPackages;
+    }
+    return [];
   }
 
   return data.map(p => ({
@@ -301,8 +304,11 @@ export const getInstructors = async (): Promise<Instructor[]> => {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error || !data || data.length === 0) {
-    return mockInstructors;
+  if ((error || !data || data.length === 0)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockInstructors;
+    }
+    return [];
   }
 
   return data.map((inst: any) => ({
@@ -529,8 +535,11 @@ export async function getStudentDocuments(studentId: string) {
     .eq('student_id', studentId)
     .order('created_at', { ascending: false });
 
-  if (error || !data || data.length === 0) {
-    return mockDocuments.filter(d => d.studentId === studentId);
+  if ((error || !data || data.length === 0)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockDocuments.filter(d => d.studentId === studentId);
+    }
+    return []; // Fallback for single item or array based on return type; TS might complain if it expects array but gets null. Actually let's not touch complex ones unless we know the return type.
   }
 
   return data.map((d: any) => ({
@@ -552,8 +561,11 @@ export async function getDocumentById(id: string) {
     .eq('id', id)
     .single();
 
-  if (error || !data) {
-    return mockDocuments.find(d => d.id === id);
+  if ((error || !data)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockDocuments.find(d => d.id === id);
+    }
+    return null; // Fallback for single item or array based on return type; TS might complain if it expects array but gets null. Actually let's not touch complex ones unless we know the return type.
   }
 
   return {
@@ -699,8 +711,11 @@ export const getSessions = async (): Promise<SessionWithDetails[]> => {
     .select('*, course_subscriptions(*)')
     .order('scheduled_at', { ascending: true });
 
-  if (error || !data || data.length === 0) {
-    return mockSessions;
+  if ((error || !data || data.length === 0)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockSessions;
+    }
+    return [];
   }
 
   return data.map((sess: any) => {

@@ -99,8 +99,11 @@ export const getTestimonials = async (): Promise<Testimonial[]> => {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error || !data || data.length === 0) {
-    return mockTestimonials;
+  if ((error || !data || data.length === 0)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockTestimonials;
+    }
+    return [];
   }
 
   return data.map((t: any) => ({
@@ -118,8 +121,11 @@ export const getBlogPosts = async (): Promise<BlogPost[]> => {
     .select('*')
     .order('published_at', { ascending: false });
 
-  if (error || !data || data.length === 0) {
-    return mockBlogPosts;
+  if ((error || !data || data.length === 0)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockBlogPosts;
+    }
+    return [];
   }
 
   return data.map((p: any) => ({

@@ -227,8 +227,11 @@ export const getPublishers = async (): Promise<Publisher[]> => {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error || !data || data.length === 0) {
-    return mockPublishers;
+  if ((error || !data || data.length === 0)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockPublishers;
+    }
+    return [];
   }
 
   return data.map((p: any) => ({
@@ -250,8 +253,11 @@ export const getPublisherBySlug = async (slug: string): Promise<Publisher | null
     .eq('slug', slug)
     .single();
 
-  if (error || !data) {
-    return mockPublishers.find(p => p.slug === slug) || null;
+  if ((error || !data)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockPublishers.find(p => p.slug === slug) || null;
+    }
+    return null; // Fallback for single item or array based on return type; TS might complain if it expects array but gets null. Actually let's not touch complex ones unless we know the return type.
   }
 
   return {

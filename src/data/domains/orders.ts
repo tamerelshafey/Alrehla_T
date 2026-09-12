@@ -40,7 +40,7 @@ export const getOrders = async (): Promise<Order[]> => {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
-  if (!user) return mockOrders; // Fallback for dev
+  if (!user) { if (process.env.NODE_ENV === 'development') return mockOrders; return []; }
 
   const { data, error } = await supabase
     .from('orders')
@@ -51,8 +51,11 @@ export const getOrders = async (): Promise<Order[]> => {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
-  if (error || !data || data.length === 0) {
-    return mockOrders;
+  if ((error || !data || data.length === 0)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockOrders;
+    }
+    return [];
   }
 
   return data.map((order: any) => ({

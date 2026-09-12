@@ -30,8 +30,11 @@ export const getInstructorPayouts = async (): Promise<InstructorPayout[]> => {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error || !data || data.length === 0) {
-    return mockInstructorPayouts;
+  if ((error || !data || data.length === 0)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockInstructorPayouts;
+    }
+    return [];
   }
 
   return data.map((p: any) => ({
@@ -50,8 +53,11 @@ export const getPublisherPayouts = async (): Promise<PublisherPayout[]> => {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error || !data || data.length === 0) {
-    return mockPublisherPayouts;
+  if ((error || !data || data.length === 0)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockPublisherPayouts;
+    }
+    return [];
   }
 
   return data.map((p: any) => ({
@@ -78,8 +84,11 @@ export const getAllSupportTickets = async (): Promise<SupportTicket[]> => {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error || !data || data.length === 0) {
-    return mockAllSupportTickets;
+  if ((error || !data || data.length === 0)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockAllSupportTickets;
+    }
+    return [];
   }
 
   return data.map((t: any) => ({
@@ -105,8 +114,11 @@ export const getJoinRequests = async (): Promise<JoinRequest[]> => {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error || !data || data.length === 0) {
-    return mockJoinRequests;
+  if ((error || !data || data.length === 0)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockJoinRequests;
+    }
+    return [];
   }
 
   return data.map((r: any) => ({
@@ -130,8 +142,11 @@ export const getSupportSessionRequests = async (): Promise<SupportSessionRequest
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error || !data || data.length === 0) {
-    return mockSupportSessionRequests;
+  if ((error || !data || data.length === 0)) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockSupportSessionRequests;
+    }
+    return [];
   }
 
   return data.map((r: any) => ({
