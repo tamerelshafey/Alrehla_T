@@ -2,19 +2,29 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { syncUserProfile } from '@/data/domains/auth'
 
 export async function signIn(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   const supabase = await createClient()
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   })
 
   if (error) {
     return { error: error.message }
+  }
+
+  try {
+    if (data.user) {
+      await syncUserProfile(data.user)
+    }
+  } catch (syncError: any) {
+    await supabase.auth.signOut()
+    return { error: syncError.message || 'Authentication error: Failed to synchronize user profile.' }
   }
 
   // Determine where to redirect based on role, or fallback to dashboard
@@ -47,7 +57,8 @@ export async function signUp(formData: FormData) {
     await supabase.from('user_profiles').insert({
       id: data.user.id,
       full_name: fullName,
-      role: 'student' // Default role
+      role: 'customer', // Default role
+      is_guardian: false
     })
   }
 

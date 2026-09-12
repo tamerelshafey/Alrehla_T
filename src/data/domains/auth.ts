@@ -3,6 +3,7 @@ import {
 } from '@/types';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
+import { User } from '@supabase/supabase-js';
 
 export const mockCurrentUser: UserProfile = {
   id: 'current-user',
@@ -11,6 +12,42 @@ export const mockCurrentUser: UserProfile = {
   role: 'visitor',
   createdAt: '2023-01-01T00:00:00Z',
 };
+
+// Safe profile synchronization helper
+export async function syncUserProfile(user: User) {
+  const supabase = await createClient();
+  
+  const { data: existingProfile } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  if (existingProfile) {
+    return existingProfile;
+  }
+
+  // Profile does not exist: create the missing user_profiles row safely
+  const fullName = user.user_metadata?.full_name || 'مستخدم';
+  
+  const { data: newProfile, error: insertError } = await supabase
+    .from('user_profiles')
+    .insert({
+      id: user.id,
+      full_name: fullName,
+      role: 'customer',
+      is_guardian: false
+    })
+    .select('*')
+    .single();
+
+  if (insertError || !newProfile) {
+    console.error('Profile synchronization failed:', insertError);
+    throw new Error('Authentication error: Failed to synchronize user profile.');
+  }
+
+  return newProfile;
+}
 
 // Database Access Functions
 export const getCurrentUser = async (): Promise<UserProfile> => {
@@ -49,19 +86,11 @@ export const getCurrentUser = async (): Promise<UserProfile> => {
     };
   }
 
-  // Fetch actual profile from Supabase
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
+  // Fetch or synchronize actual profile from Supabase
+  const profile = await syncUserProfile(user);
 
-  let role: UserRole = 'student';
+  let role: UserRole = (profile.role as UserRole) || 'customer';
   let permissions: AdminPermission[] = [];
-  
-  if (profile) {
-    role = profile.role as UserRole || 'student';
-  }
   
   if (role === 'super_admin') {
     permissions = [
@@ -80,12 +109,12 @@ export const getCurrentUser = async (): Promise<UserProfile> => {
 
   return {
     id: user.id,
-    fullName: profile?.full_name || user.user_metadata?.full_name || 'مستخدم',
+    fullName: profile.full_name || user.user_metadata?.full_name || 'مستخدم',
     email: user.email || '',
     role: role,
-    isGuardian: profile?.is_guardian || false,
-    avatarUrl: profile?.avatar_url || undefined,
-    createdAt: profile?.created_at || user.created_at,
+    isGuardian: profile.is_guardian || false,
+    avatarUrl: profile.avatar_url || undefined,
+    createdAt: profile.created_at || user.created_at,
     ...(permissions.length > 0 ? { permissions } : {})
   };
 };
