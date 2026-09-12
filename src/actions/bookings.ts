@@ -1,8 +1,10 @@
+
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
+import { getCurrentUser } from '@/data/domains/auth';
 
 export async function createDummyBookingServiceOrder(
   amount: number, 
@@ -13,6 +15,7 @@ export async function createDummyBookingServiceOrder(
 ) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+
   if (!user) throw new Error('Unauthorized');
 
   if (participantType === 'child' && childId) {
@@ -22,7 +25,7 @@ export async function createDummyBookingServiceOrder(
       .eq('user_profile_id', user.id)
       .eq('id', childId)
       .single();
-      
+    
     if (childError || !validChild) {
       throw new Error(`Invalid child ID: ${childId}. It does not belong to the current user.`);
     }
@@ -67,6 +70,21 @@ export async function createDummyBookingServiceOrder(
 
 export async function submitBookingPaymentProof(subscriptionId: string, transactionReference: string) {
   const supabase = await createClient();
+  const user = await getCurrentUser();
+
+  if (user.role === 'visitor') {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  const { data: sub } = await supabase
+    .from('course_subscriptions')
+    .select('user_id')
+    .eq('id', subscriptionId)
+    .single();
+
+  if (!sub || sub.user_id !== user.id) {
+    return { success: false, error: 'Unauthorized' };
+  }
   
   // We don't have transactionReference on course_subscriptions in the types, but we'll just update status
   const { error } = await supabase
@@ -87,6 +105,11 @@ export async function submitBookingPaymentProof(subscriptionId: string, transact
 }
 
 export async function confirmBookingPayment(subscriptionId: string) {
+  const user = await getCurrentUser();
+  if (user.role !== 'super_admin' && user.role !== 'general_supervisor') {
+    return { success: false, error: 'Unauthorized' };
+  }
+
   const supabase = await createClient();
   
   const { error } = await supabase
@@ -99,17 +122,14 @@ export async function confirmBookingPayment(subscriptionId: string) {
     return { success: false };
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    await logAuditAction({
-      actorProfileId: user.id,
-      actorName: user.user_metadata?.full_name || 'Admin',
-      action: 'booking_payment_confirmed',
-      entityType: 'CourseSubscription',
-      entityId: subscriptionId,
-      metadata: { subscriptionId }
-    });
-  }
+  await logAuditAction({
+    actorProfileId: user.id,
+    actorName: user.fullName || 'Admin',
+    action: 'booking_payment_confirmed',
+    entityType: 'CourseSubscription',
+    entityId: subscriptionId,
+    metadata: { subscriptionId }
+  });
 
   revalidatePath('/creative-writing/booking/confirm');
   revalidatePath('/account/orders/creative-writing');

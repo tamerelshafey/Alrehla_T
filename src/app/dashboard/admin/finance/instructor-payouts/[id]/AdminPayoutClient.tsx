@@ -18,7 +18,7 @@ export function AdminPayoutClient({ payout, instructor }: Props) {
   const handleMarkAsPaid = async () => {
     setIsProcessing(true);
     try {
-      await markInstructorPayoutAsPaid(payout.id, payout.instructorId);
+      await markInstructorPayoutAsPaid(payout.id);
       setStatus('paid');
     } catch (error) {
       console.error(error);

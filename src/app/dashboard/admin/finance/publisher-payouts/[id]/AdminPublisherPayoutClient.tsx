@@ -17,7 +17,7 @@ export function AdminPublisherPayoutClient({ payout, publisher }: Props) {
   const handleMarkAsPaid = async () => {
     setIsProcessing(true);
     try {
-      await markPublisherPayoutAsPaid(payout.id, payout.publisherId);
+      await markPublisherPayoutAsPaid(payout.id);
       setStatus('paid');
     } catch (error) {
       console.error(error);
