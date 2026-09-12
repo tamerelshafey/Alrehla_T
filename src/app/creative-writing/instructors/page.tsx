@@ -24,7 +24,9 @@ export default async function InstructorsPage() {
       {/* Instructors Grid */}
       <Section containerClassName="mx-auto w-full max-w-6xl pb-20">
         <div className="grid gap-8 md:grid-cols-2">
-          {instructors.map((instructor) => (
+          {instructors.length === 0 ? (
+          <div className="col-span-full py-16 text-center text-slate-500 font-medium text-lg">قريبًا</div>
+        ) : instructors.map((instructor) => (
             <Card
               key={instructor.id}
               accentColor="emerald"

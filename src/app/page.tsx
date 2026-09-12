@@ -7,26 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Section } from '@/components/ui/Section';
 
-const testimonials = [
-  {
-    id: '1',
-    authorName: 'أم مريم',
-    authorRole: 'والدة طفلة ٩ سنوات',
-    content: 'قصة "المدينة المفقودة" كانت نقطة تحول في علاقة مريم بالقراءة. لأول مرة تنهي كتاباً كاملاً وتطلب المزيد، فقط لأنها كانت البطلة!',
-  },
-  {
-    id: '2',
-    authorName: 'خالد يوسف',
-    authorRole: 'أب لطفلين',
-    content: 'برنامج الكتابة الإبداعية ساعد ابني على التعبير عن مشاعره بطريقة لم أتوقعها. المدربون محترفون والبيئة مشجعة جداً.',
-  },
-  {
-    id: '3',
-    authorName: 'سارة أحمد',
-    authorRole: 'معلمة لغة عربية',
-    content: 'أرشح "الرحلة" لكل أُم تسألني عن كيفية تحبيب أبنائها في لغتنا الجميلة. الفكرة مبتكرة والتنفيذ يفوق التوقعات.',
-  },
-];
+const testimonials: any[] = [];
 
 export default async function Home() {
   const publishers = await getPublishers();
@@ -133,7 +114,9 @@ export default async function Home() {
         </div>
         
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {topInstructors.map((instructor: any) => (
+          {topInstructors.length === 0 ? (
+          <div className="col-span-full py-12 text-center text-slate-500 font-medium">قريبًا</div>
+        ) : topInstructors.map((instructor: any) => (
             <div key={instructor.id} className="group relative rounded-3xl border border-slate-200 bg-white p-6 transition-all hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/10">
               <div className="flex flex-col items-center text-center">
                 <div className="mb-4 relative h-24 w-24 overflow-hidden rounded-full border-4 border-emerald-50">
@@ -166,7 +149,9 @@ export default async function Home() {
         </div>
         
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {activePublishers.map((publisher: any) => (
+          {activePublishers.length === 0 ? (
+          <div className="col-span-full py-12 text-center text-slate-500 font-medium">قريبًا</div>
+        ) : activePublishers.map((publisher: any) => (
             <Link href={`/enha-lak/publisher/${publisher.slug}`} key={publisher.id} className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 transition-all hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10 flex flex-col items-center text-center">
               <div className="mb-4 relative h-20 w-20 flex items-center justify-center">
                 {publisher.logoUrl ? (
@@ -235,7 +220,9 @@ export default async function Home() {
           ماذا يقولون عنا؟
         </h2>
         <div className="grid gap-6 md:grid-cols-3">
-          {testimonials.map((testimonial) => (
+          {testimonials.length === 0 ? (
+          <div className="col-span-full py-12 text-center text-slate-500 font-medium">قريبًا</div>
+        ) : testimonials.map((testimonial) => (
             <Card key={testimonial.id} className="flex flex-col justify-between p-6">
               <div>
                 <Quote className="mb-4 h-8 w-8 text-blue-200" />
