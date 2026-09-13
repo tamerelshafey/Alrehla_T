@@ -1,6 +1,6 @@
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, FileEdit, Video, BookOpen, MessageCircle, Compass, Headphones } from 'lucide-react';
+import { ArrowLeft, ArrowRight, FileEdit, Video, BookOpen, MessageCircle, Headphones } from 'lucide-react';
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
 import { Section } from '@/components/ui/Section';
@@ -75,28 +75,11 @@ const serviceCategories = [
       {
         id: 'consult-1',
         title: 'استشارة تربوية',
-        description: 'جلسة استشارة لولي الأمر. جلسة استشارة لولي الأمر.',
+        description: 'جلسة استشارة لولي الأمر.',
         price: 650,
         priceType: 'starts_from',
         ctaText: 'عرض مقدمي الخدمة',
         ctaLink: '/creative-writing/instructors',
-      }
-    ]
-  },
-  {
-    title: 'مغامرات',
-    icon: Compass,
-    color: 'bg-purple-50 text-purple-600',
-    borderColor: 'border-purple-100',
-    services: [
-      {
-        id: 'adv-1',
-        title: 'تهههح',
-        description: 'مغامرة إبداعية مخصصة',
-        price: 230,
-        priceType: 'fixed',
-        ctaText: 'اطلب الآن',
-        ctaLink: '/creative-writing/booking/confirm',
       }
     ]
   },
