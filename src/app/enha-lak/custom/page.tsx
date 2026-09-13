@@ -1,7 +1,7 @@
 import { formatPrice } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getPersonalizedProducts, getAddonProducts } from '@/data/mock';
+import { getAddonProducts, getPersonalizedProducts } from '@/data/domains/products';
 import { PenTool, Plus, Book, FileText, ShoppingCart } from 'lucide-react';
 
 import { PageContainer } from '@/components/PageContainer';

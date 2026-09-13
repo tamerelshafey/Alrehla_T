@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser } from '@/data/mock';
-import { mockPricingFormulaSettings } from '@/data/domains/writing';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getPricingFormulaSettings } from '@/data/domains/writing';
 import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { PricingSettingsClient } from './PricingSettingsClient';
@@ -14,7 +14,7 @@ export default async function Page() {
     return <Unauthorized />;
   }
 
-  const settings = mockPricingFormulaSettings[0];
+  const settings = await getPricingFormulaSettings();
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">

@@ -1,7 +1,7 @@
 import { formatPrice } from '@/lib/utils';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
-import { getPublishers, getPersonalizedProducts } from '@/data/mock';
+import { getPersonalizedProducts, getPublishers } from '@/data/domains/products';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';

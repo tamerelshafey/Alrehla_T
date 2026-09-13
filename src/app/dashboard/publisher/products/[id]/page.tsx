@@ -1,6 +1,6 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getPublishers, getPersonalizedProducts } from '@/data/mock';
+import { getPersonalizedProducts, getPublishers } from '@/data/domains/products';
 import { saveProduct } from '@/actions/products';
 
 export const dynamic = 'force-dynamic';

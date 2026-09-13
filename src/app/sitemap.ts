@@ -1,5 +1,7 @@
 import { MetadataRoute } from 'next';
-import { getBlogPosts, getPersonalizedProducts, getPublishers, getInstructors } from '@/data/mock';
+import { getBlogPosts } from '@/data/domains/content';
+import { getPersonalizedProducts, getPublishers } from '@/data/domains/products';
+import { getInstructors } from '@/data/domains/writing';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://alrehlat.vercel.app';

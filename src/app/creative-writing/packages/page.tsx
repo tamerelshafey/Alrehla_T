@@ -1,6 +1,6 @@
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
-import { getWritingPackages } from '@/data/mock';
+import { getWritingPackages } from '@/data/domains/writing';
 import { Target, Clock, Calendar, CheckCircle2 } from 'lucide-react';
 import { WritingPackage } from '@/types';
 

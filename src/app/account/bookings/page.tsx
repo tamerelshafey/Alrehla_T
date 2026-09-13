@@ -1,5 +1,5 @@
 import { formatDate } from '@/lib/utils';
-import { getSessions } from '@/data/mock';
+import { getSessions } from '@/data/domains/writing';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 

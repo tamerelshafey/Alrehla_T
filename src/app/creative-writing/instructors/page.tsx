@@ -1,4 +1,4 @@
-import { getInstructors } from '@/data/mock';
+import { getInstructors } from '@/data/domains/writing';
 import { User, Award, CheckCircle } from 'lucide-react';
 
 import { PageContainer } from '@/components/PageContainer';

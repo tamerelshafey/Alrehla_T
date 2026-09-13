@@ -1,6 +1,8 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getOrders, getPersonalizedProducts } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getOrders } from '@/data/domains/orders';
+import { getPersonalizedProducts } from '@/data/domains/products';
 import { hasAdminPermission, formatDate , formatPrice } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';

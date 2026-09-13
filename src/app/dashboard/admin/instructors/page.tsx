@@ -1,6 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getInstructors } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getInstructors } from '@/data/domains/writing';
 import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { InstructorsClient } from './InstructorsClient';

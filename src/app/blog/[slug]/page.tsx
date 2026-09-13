@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { PageContainer } from '@/components/PageContainer';
 import { ArrowLeft, Calendar, User, BookOpen, Share2, Facebook, Twitter, Linkedin } from 'lucide-react';
-import { getBlogPosts } from '@/data/mock';
+import { getBlogPosts } from '@/data/domains/content';
 import { notFound } from 'next/navigation';
 import { Section } from '@/components/ui/Section';
 import { Button } from '@/components/ui/Button';

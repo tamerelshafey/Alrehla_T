@@ -1,6 +1,7 @@
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { ProfileFormShell } from '@/components/dashboard/ProfileFormShell';
-import { getCurrentUser, getPublishers } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getPublishers } from '@/data/domains/products';
 import { LogoutButton } from '@/components/LogoutButton';
 
 export const dynamic = 'force-dynamic';

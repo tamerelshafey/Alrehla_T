@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getCurrentUser } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();

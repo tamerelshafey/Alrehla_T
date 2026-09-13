@@ -1,4 +1,5 @@
-import { getCurrentUser, getStudentDocuments } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getStudentDocuments } from '@/data/domains/writing';
 import { redirect } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { PortfolioListClient } from './PortfolioListClient';

@@ -1,4 +1,4 @@
-import { getMyTickets } from '@/data/mock';
+import { getMyTickets } from '@/data/domains/account';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { StatusBadge } from '@/components/StatusBadge';

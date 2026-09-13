@@ -1,6 +1,6 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
 import { getSiteSettings } from '@/data/domains/content';
 import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';

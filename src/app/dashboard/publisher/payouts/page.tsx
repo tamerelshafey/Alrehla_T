@@ -2,7 +2,8 @@ import { formatPrice } from '@/lib/utils';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { StatusBadge } from '@/components/StatusBadge';
-import { getCurrentUser, getPublisherPayouts } from '@/data/mock';
+import { getPublisherPayouts } from '@/data/domains/admin';
+import { getCurrentUser } from '@/data/domains/auth';
 import { redirect } from 'next/navigation';
 import { Wallet, Landmark, AlertCircle } from 'lucide-react';
 

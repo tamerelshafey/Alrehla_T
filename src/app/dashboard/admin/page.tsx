@@ -1,11 +1,7 @@
 import { formatPrice } from '@/lib/utils';
-import {
-  getCurrentUser,
-  getWritingPackages,
-  getOrders,
-  getSessions,
-  getInstructors,
-} from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getOrders } from '@/data/domains/orders';
+import { getInstructors, getSessions, getWritingPackages } from '@/data/domains/writing';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { StatusBadge } from '@/components/StatusBadge';

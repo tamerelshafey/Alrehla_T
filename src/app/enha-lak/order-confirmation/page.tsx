@@ -4,7 +4,7 @@ import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CheckCircle, Package, ArrowLeft, Clock } from 'lucide-react';
-import { getOrders } from '@/data/mock';
+import { getOrders } from '@/data/domains/orders';
 
 
 export default async function PaymentStatusPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {

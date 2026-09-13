@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getProductBySlug } from '@/data/mock';
+import { getProductBySlug } from '@/data/domains/products';
 import { PageContainer } from '@/components/PageContainer';
 import { Section } from '@/components/ui/Section';
 import { LibraryCustomizationWizard } from '@/components/enha-lak/LibraryCustomizationWizard';

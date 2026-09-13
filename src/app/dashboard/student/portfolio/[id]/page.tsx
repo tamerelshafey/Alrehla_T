@@ -1,4 +1,5 @@
-import { getCurrentUser, getDocumentById } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getDocumentById } from '@/data/domains/writing';
 import { redirect } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { DocumentEditorClient } from './DocumentEditorClient';

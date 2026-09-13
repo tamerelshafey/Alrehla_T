@@ -1,5 +1,5 @@
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getSessionMessages, getSessionAttachments } from '@/data/mock';
+import { getSessionAttachments, getSessionMessages } from '@/data/domains/writing';
 import { FileText, Download, Upload } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';

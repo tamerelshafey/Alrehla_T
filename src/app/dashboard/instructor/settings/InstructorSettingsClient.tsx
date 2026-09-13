@@ -25,7 +25,7 @@ export function InstructorSettingsClient({ instructor, pricingOptions, formulaSe
   const [workModel, setWorkModel] = useState(instructor.workModel || 'per_session');
   const [monthlyHours, setMonthlyHours] = useState(instructor.monthlyHoursCommitted || 60);
   const [requestedPrice, setRequestedPrice] = useState(instructor.requestedPrice || 100);
-  const [selectedPricingOptionId, setSelectedPricingOptionId] = useState(instructor.selectedPricingOptionId || pricingOptions[0].id);
+  const [selectedPricingOptionId, setSelectedPricingOptionId] = useState(instructor.selectedPricingOptionId || pricingOptions[0]?.id || '');
   const [schedule, setSchedule] = useState<WeeklySlot[]>(instructor.weeklySchedule || []);
   const [isSaved, setIsSaved] = useState(false);
 

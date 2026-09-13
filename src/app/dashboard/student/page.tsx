@@ -1,5 +1,7 @@
 import { formatDate , formatPrice } from '@/lib/utils';
-import { getCurrentUser, getWritingPackages, getOrders } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getOrders } from '@/data/domains/orders';
+import { getWritingPackages } from '@/data/domains/writing';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Book, ShoppingBag, ArrowLeft, FileText, User, FileBox } from 'lucide-react';

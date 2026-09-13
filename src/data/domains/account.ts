@@ -9,7 +9,7 @@ import {
   InstructorCompensationProfile, InstructorCertification, ChildProfile
 } from '@/types';
 import { cookies } from 'next/headers';
-import { mockAllUsers, mockCurrentUser } from './auth';
+import { mockAllUsers, mockCurrentUser } from '../fixtures/auth';
 import { createClient } from '@/lib/supabase/server';
 
 export async function getNotifications(): Promise<NotificationItem[]> {

@@ -2,7 +2,7 @@ import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
-import { getInstructorStudents, getSessions, getStudentDocuments } from '@/data/mock';
+import { getInstructorStudents, getSessions, getStudentDocuments } from '@/data/domains/writing';
 import { User, Calendar, FileText } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
 

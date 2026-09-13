@@ -1,7 +1,7 @@
 import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getBlogPosts } from '@/data/mock';
+import { getBlogPosts } from '@/data/domains/content';
 import { BookOpen, Calendar, ArrowLeft } from 'lucide-react';
 import { PageContainer } from '@/components/PageContainer';
 import { Section } from '@/components/ui/Section';

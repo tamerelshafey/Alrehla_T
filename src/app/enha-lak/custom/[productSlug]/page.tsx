@@ -1,4 +1,4 @@
-import { getProductBySlug } from '@/data/mock';
+import { getProductBySlug } from '@/data/domains/products';
 import { PageContainer } from '@/components/PageContainer';
 import Link from 'next/link';
 import { PersonalizationWizard } from '@/components/enha-lak/PersonalizationWizard';

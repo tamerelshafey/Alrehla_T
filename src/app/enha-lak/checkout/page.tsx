@@ -1,4 +1,4 @@
-import { getCurrentUser } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
 import { CheckoutClient } from './CheckoutClient';
 import { redirect } from 'next/navigation';
 

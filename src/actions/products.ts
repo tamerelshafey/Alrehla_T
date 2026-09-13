@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
-import { getCurrentUser } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
 
 export async function saveProduct(formData: FormData) {
   const supabase = await createClient();

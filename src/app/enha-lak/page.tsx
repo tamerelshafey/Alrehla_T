@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 import Link from 'next/link';
 
-import { getTestimonials } from '@/data/mock';
+import { getTestimonials } from '@/data/domains/content';
 
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';

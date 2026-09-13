@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { PageContainer } from '@/components/PageContainer';
 import { ArrowLeft, User, Star, Award, BookOpen, MessageCircle } from 'lucide-react';
-import { getInstructors } from '@/data/mock';
+import { getInstructors } from '@/data/domains/writing';
 import { notFound } from 'next/navigation';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';

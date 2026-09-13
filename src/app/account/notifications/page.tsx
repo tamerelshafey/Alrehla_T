@@ -1,4 +1,5 @@
-import { getNotifications, getCurrentUser } from '@/data/mock';
+import { getNotifications } from '@/data/domains/account';
+import { getCurrentUser } from '@/data/domains/auth';
 import { redirect } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';

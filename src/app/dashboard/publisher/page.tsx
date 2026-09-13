@@ -2,7 +2,8 @@ import { formatPrice } from '@/lib/utils';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { BookOpen, DollarSign, ShoppingBag, Star, User } from 'lucide-react';
-import { getCurrentUser, getPublisherOrders } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getPublisherOrders } from '@/data/domains/products';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 

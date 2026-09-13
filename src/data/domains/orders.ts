@@ -11,30 +11,11 @@ import {
 import { cookies } from 'next/headers';
 
 // Import from auth if needed
-import { mockAllUsers, mockCurrentUser } from './auth';
+import { mockAllUsers, mockCurrentUser } from '../fixtures/auth';
 
-export const mockOrders: Order[] = [
-  {
-    id: 'ord-1',
-    userId: 'student-1',
-    items: [{ productId: 'prod-1', quantity: 1, unitPrice: 350, customizationData: { childName: 'علي' } }, { productId: 'addon-1', quantity: 1, unitPrice: 45 }],
-    
-    totalAmount: 395,
-    status: 'paid',
-    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-  },
-  {
-    id: 'ord-2',
-    userId: 'student-2',
-    items: [{ productId: 'prod-2', quantity: 1, unitPrice: 50 }],
-    
-    totalAmount: 120,
-    status: 'pending',
-    createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
-  },
-];
 
 import { createClient } from '@/lib/supabase/server';
+import { mockOrders } from '@/data/fixtures/orders';
 
 export const getOrders = async (): Promise<Order[]> => {
   const supabase = await createClient();

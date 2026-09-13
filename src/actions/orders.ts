@@ -1,10 +1,9 @@
 'use server';
 
-import { mockOrders } from '@/data/mock';
 import { revalidatePath } from 'next/cache';
 import { OrderItem } from '@/types';
 import { logAuditAction } from '@/lib/audit';
-import { getCurrentUser } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
 
 import { createClient } from '@/lib/supabase/server';
 

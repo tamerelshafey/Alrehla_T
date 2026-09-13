@@ -1,6 +1,6 @@
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
-import { getSubscriptionTiers } from '@/data/mock';
+import { getSubscriptionTiers } from '@/data/domains/products';
 import { PackageOpen, Sparkles, Gift, Activity, Check } from 'lucide-react';
 import { SVGProps } from 'react';
 

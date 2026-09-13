@@ -1,7 +1,7 @@
 import { BookOpen } from 'lucide-react';
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
-import { getPersonalizedProducts, getPublishers } from '@/data/mock';
+import { getPersonalizedProducts, getPublishers } from '@/data/domains/products';
 import { LibraryClient } from './LibraryClient';
 
 export default async function LibraryPage() {

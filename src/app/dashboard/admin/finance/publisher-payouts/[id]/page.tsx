@@ -1,6 +1,8 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getPublishers, getPublisherPayouts } from '@/data/mock';
+import { getPublisherPayouts } from '@/data/domains/admin';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getPublishers } from '@/data/domains/products';
 import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { AdminPublisherPayoutClient } from './AdminPublisherPayoutClient';

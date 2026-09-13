@@ -1,6 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getReviewsByInstructor } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getReviewsByInstructor } from '@/data/domains/writing';
 import { Star } from 'lucide-react';
 import { redirect } from 'next/navigation';
 

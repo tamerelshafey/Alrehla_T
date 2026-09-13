@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { getCurrentUser } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
 import { hasAdminPermission } from '@/lib/utils';
 import { AdminPermission } from '@/types';
 import { 

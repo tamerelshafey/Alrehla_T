@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: 'استكشف برامج ودورات الكتابة الإبداعية المتاحة.',
 };
 
-import { getTestimonials } from '@/data/mock';
+import { getTestimonials } from '@/data/domains/content';
 import { PageContainer } from '@/components/PageContainer';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';

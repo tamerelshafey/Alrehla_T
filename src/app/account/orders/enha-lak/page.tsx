@@ -1,5 +1,5 @@
 import { formatPrice } from '@/lib/utils';
-import { getOrders } from '@/data/mock';
+import { getOrders } from '@/data/domains/orders';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { StatusBadge } from '@/components/StatusBadge';

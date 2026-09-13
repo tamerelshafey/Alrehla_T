@@ -1,10 +1,10 @@
 import { PageContainer } from '@/components/PageContainer';
 import { BookingWizardClient } from '@/components/creative-writing/BookingWizardClient';
-import { mockInstructors } from '@/data/mock';
+import { getInstructors } from '@/data/domains/writing';
 import { Section } from '@/components/ui/Section';
 
 export default async function BookingPage() {
-  const instructors = mockInstructors;
+  const instructors = await getInstructors();
   return (
     <PageContainer className="!py-0 !space-y-0">
       <Section containerClassName="mx-auto w-full max-w-4xl pt-12 pb-24">

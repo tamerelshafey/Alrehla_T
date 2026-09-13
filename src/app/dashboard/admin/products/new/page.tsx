@@ -1,6 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getPersonalizedProducts, getPublishers } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getPersonalizedProducts, getPublishers } from '@/data/domains/products';
 import { getPublisherPricingSettings } from '@/data/domains/admin';
 import { ProductFormClient } from '../ProductFormClient';
 import { hasAdminPermission } from '@/lib/utils';

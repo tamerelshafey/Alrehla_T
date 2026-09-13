@@ -1,5 +1,5 @@
 import { formatPrice } from '@/lib/utils';
-import { getProductBySlug } from '@/data/mock';
+import { getProductBySlug } from '@/data/domains/products';
 import { PageContainer } from '@/components/PageContainer';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';

@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getSubscriptionTiers } from '@/data/mock';
+import { getSubscriptionTiers } from '@/data/domains/products';
 import { PageContainer } from '@/components/PageContainer';
 import { Section } from '@/components/ui/Section';
 import { PersonalizationWizard } from '@/components/enha-lak/PersonalizationWizard';

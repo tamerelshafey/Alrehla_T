@@ -1,7 +1,7 @@
 import { formatDate , formatPrice } from '@/lib/utils';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
-import { getPublisherOrders } from '@/data/mock';
+import { getPublisherOrders } from '@/data/domains/products';
 import { StatusBadge } from '@/components/StatusBadge';
 
 export const dynamic = 'force-dynamic';

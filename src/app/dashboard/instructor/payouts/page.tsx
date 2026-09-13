@@ -1,4 +1,5 @@
-import { getCurrentUser, getInstructorPayouts } from '@/data/mock';
+import { getInstructorPayouts } from '@/data/domains/admin';
+import { getCurrentUser } from '@/data/domains/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Wallet, ArrowRight } from 'lucide-react';

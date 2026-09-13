@@ -1,6 +1,6 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getAllUsers } from '@/data/mock';
+import { getAllUsers, getCurrentUser } from '@/data/domains/auth';
 import { hasAdminPermission, calculateAge } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';

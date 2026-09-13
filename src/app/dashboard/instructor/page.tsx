@@ -1,4 +1,5 @@
-import { getCurrentUser, getSessions } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getSessions } from '@/data/domains/writing';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Users, Calendar, Video, Clock, Wallet, User, CalendarDays, Settings, Sparkles } from 'lucide-react';

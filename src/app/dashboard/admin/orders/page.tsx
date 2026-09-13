@@ -1,6 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getOrders } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getOrders } from '@/data/domains/orders';
 import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { OrdersClient } from './OrdersClient';

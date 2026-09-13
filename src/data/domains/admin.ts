@@ -11,17 +11,9 @@ import {
 import { cookies } from 'next/headers';
 
 // Import from auth if needed
-import { mockAllUsers, mockCurrentUser } from './auth';
+import { mockAllUsers, mockCurrentUser } from '../fixtures/auth';
 
-export const mockInstructorPayouts: InstructorPayout[] = [
-  { id: 'ip-1', instructorId: 'inst-1', period: 'أكتوبر 2023', amount: 4500, status: 'paid' },
-  { id: 'ip-2', instructorId: 'inst-1', period: 'نوفمبر 2023', amount: 5200, status: 'pending' },
-];
 
-export const mockPublisherPayouts: PublisherPayout[] = [
-  { id: 'pp-1', publisherId: 'pub-1', period: 'الربع الثالث 2023', amount: 12500, status: 'paid' },
-  { id: 'pp-2', publisherId: 'pub-1', period: 'الربع الرابع 2023', amount: 14200, status: 'pending' },
-];
 
 export const getInstructorPayouts = async (): Promise<InstructorPayout[]> => {
   const supabase = await createClient();
@@ -67,13 +59,9 @@ export const getPublisherPayouts = async (): Promise<PublisherPayout[]> => {
   }));
 };
 
-export const mockAllSupportTickets: SupportTicket[] = [
-  { id: 'tkt-1', requesterName: 'أحمد محمود', subject: 'مشكلة في الدفع', category: 'billing', status: 'open', createdAt: '2023-10-25T00:00:00Z' },
-  { id: 'tkt-2', requesterName: 'سارة خالد', subject: 'استفسار عن باقة', category: 'general', status: 'answered', createdAt: '2023-10-26T00:00:00Z' },
-  { id: 'tkt-3', requesterName: 'محمد طارق', subject: 'تأخر الشحنة', category: 'shipping', status: 'closed', createdAt: '2023-10-20T00:00:00Z' },
-];
 
 import { createClient } from '@/lib/supabase/server';
+import { mockAllSupportTickets, mockInstructorPayouts, mockJoinRequests, mockPublisherPayouts, mockPublisherPricingSettings, mockSupportSessionRequests, mockWithdrawalRequests } from '@/data/fixtures/admin';
 
 export const getAllSupportTickets = async (): Promise<SupportTicket[]> => {
   const supabase = await createClient();
@@ -98,11 +86,6 @@ export const getAllSupportTickets = async (): Promise<SupportTicket[]> => {
   }));
 };
 
-export const mockJoinRequests: JoinRequest[] = [
-  { id: 'req-1', applicantName: 'منى سعيد', requestedRole: 'instructor', status: 'approved', createdAt: '2023-10-21T00:00:00Z' },
-  { id: 'req-2', applicantName: 'دار النشر الحديثة', requestedRole: 'publisher', status: 'pending', createdAt: '2023-10-25T00:00:00Z' },
-  { id: 'req-3', applicantName: 'عماد كمال', requestedRole: 'instructor', status: 'rejected', createdAt: '2023-10-22T00:00:00Z' },
-];
 
 export const getJoinRequests = async (): Promise<JoinRequest[]> => {
   const supabase = await createClient();
@@ -126,10 +109,6 @@ export const getJoinRequests = async (): Promise<JoinRequest[]> => {
   }));
 };
 
-export const mockSupportSessionRequests: SupportSessionRequest[] = [
-  { id: 'ssr-1', contactName: 'أحمد محمود', contactPhone: '01000000000', message: 'تقييم مستوى الكتابة', status: 'pending', createdAt: '2023-10-26T00:00:00Z' },
-  { id: 'ssr-2', contactName: 'سارة خالد', contactPhone: '01111111111', message: 'جلسة توجيه استثنائية', status: 'contacted', createdAt: '2023-10-25T00:00:00Z' },
-];
 
 export const getSupportSessionRequests = async (): Promise<SupportSessionRequest[]> => {
   const supabase = await createClient();
@@ -175,7 +154,6 @@ export async function getAuditLogs(): Promise<AuditLog[]> {
   }));
 }
 
-export const mockWithdrawalRequests: import('@/types').WithdrawalRequest[] = [];
 
 /**
  * Writes a real audit entry. This used to push onto an in-memory array, which
@@ -196,9 +174,6 @@ export async function logAuditAction(
   if (error) console.error('Error writing audit log', error);
 }
 
-export const mockPublisherPricingSettings: PricingFormulaSettings[] = [
-  { id: 'publisher-default', platformMultiplier: 1.1, fixedAdminFee: 20, updatedAt: new Date().toISOString() }
-];
 
 export const getPublisherPricingSettings = async (): Promise<PricingFormulaSettings> => {
   const supabase = await createClient();

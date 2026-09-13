@@ -1,4 +1,5 @@
-import { getCurrentUser, getDocumentById, getInstructorStudents } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getDocumentById, getInstructorStudents } from '@/data/domains/writing';
 import { redirect } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { InstructorDocumentClient } from './InstructorDocumentClient';

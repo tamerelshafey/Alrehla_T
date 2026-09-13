@@ -1,6 +1,8 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getAllSupportTickets, getMessagesForTicket } from '@/data/mock';
+import { getMessagesForTicket } from '@/data/domains/account';
+import { getAllSupportTickets } from '@/data/domains/admin';
+import { getCurrentUser } from '@/data/domains/auth';
 import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { Paperclip, Send, CheckCircle, Clock, Archive } from 'lucide-react';
