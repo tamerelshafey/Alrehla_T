@@ -38,7 +38,7 @@ export default async function StudentDetailsPage({ params }: { params: Promise<{
 
   
   const documents = await getStudentDocuments(studentId);
-  const docsData = documents.map(doc => ({
+  const docsData = documents.map((doc: any) => ({
     title: doc.title,
     date: formatDate(doc.updatedAt),
     status: doc.status === 'reviewed' ? (

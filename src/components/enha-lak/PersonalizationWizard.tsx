@@ -96,9 +96,9 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
     let childName = data.newChildName || '';
     let finalChildId = data.familyMemberId || '';
     if (data.newChildName && data.newChildBirthDate && data.newChildGender && !data.familyMemberId) {
-      const newMember = await createFamilyMember(data.newChildName, parseInt(data.newChildBirthDate || '0', 10), data.newChildGender);
+      const newMember = await createFamilyMember(data.newChildName, `${data.newChildBirthDate}-01-01`);
       if (newMember) {
-        childName = newMember.name;
+        childName = newMember.fullName;
         finalChildId = newMember.id;
       }
     } else if (data.familyMemberId) {

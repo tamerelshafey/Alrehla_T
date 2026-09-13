@@ -1,9 +1,11 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getFamilyMembers, getAllUsers } from '@/data/mock';
-import { hasAdminPermission } from '@/lib/utils';
+import { getCurrentUser, getAllUsers } from '@/data/mock';
+import { hasAdminPermission, calculateAge } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
+import { createClient } from '@/lib/supabase/server';
+import { ChildProfile } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,17 +18,24 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const { id } = await params;
   const allUsers = await getAllUsers();
   const targetUser = allUsers.find(u => u.id === id) || allUsers[0];
-  const children = await getFamilyMembers();
 
-  const formattedChildren = children.map(child => ({
-    ...child,
-    ageDisplay: `${child.age} سنوات`
-  }));
+  const supabase = await createClient();
+  const { data: childrenData } = await (supabase as any).from('child_profiles')
+    .select('*')
+    .eq('user_profile_id', id)
+    .order('created_at', { ascending: true });
+
+  const formattedChildren = (childrenData || []).map((child: any) => {
+    const age = calculateAge(child.birth_date);
+    return {
+      name: child.full_name,
+      ageDisplay: age !== null ? `${age} سنوات` : '-'
+    };
+  });
 
   const columns = [
     { header: 'الاسم', accessorKey: 'name' },
     { header: 'العمر', accessorKey: 'ageDisplay' },
-    { header: 'الاهتمامات', accessorKey: 'interests' },
   ];
 
   return (

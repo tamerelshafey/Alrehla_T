@@ -50,9 +50,9 @@ export function Step1ChildInfo({ onNext }: { onNext: () => void }) {
                   ${familyMemberId === m.id ? 'border-blue-600 bg-blue-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}
               >
                 <div className="h-16 w-16 bg-slate-200 rounded-full mb-3 flex items-center justify-center text-2xl font-bold text-slate-500">
-                  {m.name.charAt(0)}
+                  {m.fullName.charAt(0)}
                 </div>
-                <span className="font-bold text-slate-800">{m.name}</span>
+                <span className="font-bold text-slate-800">{m.fullName}</span>
               </button>
             ))}
           </div>

@@ -88,14 +88,28 @@ export const mockSiteSettings = {
   instagramUrl: 'https://instagram.com/alrehla',
 };
 
-export const getSiteSettings = async () => mockSiteSettings;
+export const getSiteSettings = async () => {
+  const supabase = await createClient();
+  const { data, error } = await (supabase as any).from('site_settings')
+    .select('value')
+    .eq('key', 'general')
+    .single();
+
+  if (error || !data) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockSiteSettings;
+    }
+    return { siteName: "", contactEmail: "", facebookUrl: "", instagramUrl: "" };
+  }
+
+  return data.value;
+};
 
 import { createClient } from '@/lib/supabase/server';
 
 export const getTestimonials = async (): Promise<Testimonial[]> => {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('testimonials')
+  const { data, error } = await (supabase as any).from('testimonials')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -116,8 +130,7 @@ export const getTestimonials = async (): Promise<Testimonial[]> => {
 
 export const getBlogPosts = async (): Promise<BlogPost[]> => {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('blog_posts')
+  const { data, error } = await (supabase as any).from('blog_posts')
     .select('*')
     .order('published_at', { ascending: false });
 
@@ -144,8 +157,7 @@ export const getBlogPostBySlug = async (
   slug: string
 ): Promise<BlogPost | null> => {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('blog_posts')
+  const { data, error } = await (supabase as any).from('blog_posts')
     .select('*')
     .eq('slug', slug)
     .single();

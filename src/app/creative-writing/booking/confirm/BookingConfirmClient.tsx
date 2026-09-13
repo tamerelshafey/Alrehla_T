@@ -17,7 +17,7 @@ export function BookingConfirmClient() {
   const [children, setChildren] = useState<{id:string, name:string}[]>([]);
 
   React.useEffect(() => {
-    import('@/app/actions/family').then(mod => mod.fetchFamilyMembers()).then(data => setChildren(data || []));
+    import('@/app/actions/family').then(mod => mod.fetchFamilyMembers()).then(data => setChildren(data ? data.map((d: any) => ({id: d.id, name: d.fullName})) : []));
   }, []);
 
   const [transactionRef, setTransactionRef] = useState('');

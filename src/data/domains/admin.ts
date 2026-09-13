@@ -25,8 +25,7 @@ export const mockPublisherPayouts: PublisherPayout[] = [
 
 export const getInstructorPayouts = async (): Promise<InstructorPayout[]> => {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('instructor_payouts')
+  const { data, error } = await (supabase as any).from('instructor_payouts')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -48,8 +47,7 @@ export const getInstructorPayouts = async (): Promise<InstructorPayout[]> => {
 
 export const getPublisherPayouts = async (): Promise<PublisherPayout[]> => {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('publisher_payouts')
+  const { data, error } = await (supabase as any).from('publisher_payouts')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -79,8 +77,7 @@ import { createClient } from '@/lib/supabase/server';
 
 export const getAllSupportTickets = async (): Promise<SupportTicket[]> => {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('support_tickets')
+  const { data, error } = await (supabase as any).from('support_tickets')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -109,8 +106,7 @@ export const mockJoinRequests: JoinRequest[] = [
 
 export const getJoinRequests = async (): Promise<JoinRequest[]> => {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('join_requests')
+  const { data, error } = await (supabase as any).from('join_requests')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -137,8 +133,7 @@ export const mockSupportSessionRequests: SupportSessionRequest[] = [
 
 export const getSupportSessionRequests = async (): Promise<SupportSessionRequest[]> => {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('support_session_requests')
+  const { data, error } = await (supabase as any).from('support_session_requests')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -186,4 +181,24 @@ export const mockPublisherPricingSettings: PricingFormulaSettings[] = [
   { id: 'publisher-default', platformMultiplier: 1.1, fixedAdminFee: 20, updatedAt: new Date().toISOString() }
 ];
 
-export const getPublisherPricingSettings = async (): Promise<PricingFormulaSettings> => mockPublisherPricingSettings[0];
+export const getPublisherPricingSettings = async (): Promise<PricingFormulaSettings> => {
+  const supabase = await createClient();
+  const { data, error } = await (supabase as any).from('pricing_formula_settings')
+    .select('*')
+    .eq('id', 'publisher-default')
+    .single();
+
+  if (error || !data) {
+    if (process.env.NODE_ENV === 'development') {
+      return mockPublisherPricingSettings[0];
+    }
+    return { id: 'publisher-default', platformMultiplier: 1, fixedAdminFee: 0, updatedAt: new Date().toISOString() };
+  }
+
+  return {
+    id: data.id,
+    platformMultiplier: data.platform_multiplier,
+    fixedAdminFee: data.fixed_admin_fee,
+    updatedAt: data.updated_at
+  };
+};

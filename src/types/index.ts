@@ -204,9 +204,9 @@ export type SubscriptionTier = {
 // أفراد العائلة المرتبطين بحساب
 export interface FamilyMember {
   id: string;
-  name: string;
-  age: number;
-  avatarUrl?: string;
+  fullName: string;
+  birthDate: string | null;
+  avatarUrl?: string | null;
 }
 
 // الإشعارات
@@ -468,8 +468,9 @@ export interface WithdrawalRequest {
 export interface ChildProfile {
   id: string;
   userProfileId: string;
-  name: string;
-  age: number;
+  fullName: string;
+  birthDate: string | null;
+  avatarUrl?: string | null;
   createdAt: string;
 }
 

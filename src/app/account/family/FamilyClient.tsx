@@ -5,6 +5,7 @@ import { createFamilyMember, updateFamilyMember, deleteFamilyMember } from '@/ap
 import { Button } from '@/components/ui/Button';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { Trash2, Edit2, Plus, X } from 'lucide-react';
+import { calculateAge } from '@/lib/utils';
 
 export function FamilyClient({ initialMembers }: { initialMembers: ChildProfile[] }) {
   const [members, setMembers] = useState<ChildProfile[]>(initialMembers);
@@ -12,16 +13,16 @@ export function FamilyClient({ initialMembers }: { initialMembers: ChildProfile[
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   
-  const [formData, setFormData] = useState({ name: '', age: '' });
+  const [formData, setFormData] = useState({ fullName: '', birthDate: '' });
 
   const resetForm = () => {
-    setFormData({ name: '', age: '' });
+    setFormData({ fullName: '', birthDate: '' });
     setEditingId(null);
     setShowForm(false);
   };
 
   const handleEdit = (child: ChildProfile) => {
-    setFormData({ name: child.name, age: child.age.toString() });
+    setFormData({ fullName: child.fullName, birthDate: child.birthDate || '' });
     setEditingId(child.id);
     setShowForm(true);
   };
@@ -38,18 +39,17 @@ export function FamilyClient({ initialMembers }: { initialMembers: ChildProfile[
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const age = parseInt(formData.age);
-    if (!formData.name || isNaN(age)) return;
+    if (!formData.fullName || !formData.birthDate) return;
 
     startTransition(async () => {
       if (editingId) {
-        const success = await updateFamilyMember(editingId, formData.name, age);
+        const success = await updateFamilyMember(editingId, formData.fullName, formData.birthDate);
         if (success) {
-          setMembers(prev => prev.map(m => m.id === editingId ? { ...m, name: formData.name, age } : m));
+          setMembers(prev => prev.map(m => m.id === editingId ? { ...m, fullName: formData.fullName, birthDate: formData.birthDate } : m));
           resetForm();
         }
       } else {
-        const newChild = await createFamilyMember(formData.name, age, 'male');
+        const newChild = await createFamilyMember(formData.fullName, formData.birthDate);
         if (newChild) {
           setMembers(prev => [...prev, newChild]);
           resetForm();
@@ -59,8 +59,15 @@ export function FamilyClient({ initialMembers }: { initialMembers: ChildProfile[
   };
 
   const columns = [
-    { header: 'الاسم', accessorKey: 'name' },
-    { header: 'العمر (سنوات)', accessorKey: 'age' },
+    { header: 'الاسم', accessorKey: 'fullName' },
+    { 
+      header: 'العمر (سنوات)', 
+      accessorKey: 'age',
+      cell: (child: ChildProfile) => {
+        const age = calculateAge(child.birthDate);
+        return age !== null ? age.toString() : '-';
+      }
+    },
     { 
       header: 'الإجراءات', 
       accessorKey: 'actions',
@@ -90,20 +97,18 @@ export function FamilyClient({ initialMembers }: { initialMembers: ChildProfile[
               type="text" 
               required 
               className="w-full rounded-xl border-slate-200" 
-              value={formData.name}
-              onChange={e => setFormData({ ...formData, name: e.target.value })}
+              value={formData.fullName}
+              onChange={e => setFormData({ ...formData, fullName: e.target.value })}
             />
           </div>
-          <div className="w-32">
-            <label className="block text-sm font-bold text-slate-700 mb-2">العمر</label>
+          <div className="w-48">
+            <label className="block text-sm font-bold text-slate-700 mb-2">تاريخ الميلاد</label>
             <input 
-              type="number" 
+              type="date" 
               required 
-              min="1"
-              max="18"
               className="w-full rounded-xl border-slate-200" 
-              value={formData.age}
-              onChange={e => setFormData({ ...formData, age: e.target.value })}
+              value={formData.birthDate}
+              onChange={e => setFormData({ ...formData, birthDate: e.target.value })}
             />
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
