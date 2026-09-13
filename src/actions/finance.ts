@@ -1,20 +1,44 @@
-
 'use server';
 
-import { mockInstructorPayouts, mockPublisherPayouts, mockWithdrawalRequests } from '@/data/domains/admin';
-import { logAuditAction } from '@/data/domains/admin';
+import { revalidatePath } from 'next/cache';
+import { logAuditAction } from '@/lib/audit';
+import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser } from '@/data/domains/auth';
+import { getMyInstructorId } from '@/data/domains/services';
 
-export async function markInstructorPayoutAsPaid(payoutId: string) {
+/**
+ * Money operations: marking a payout as paid, an instructor's withdrawal
+ * request, and the publisher pricing formula.
+ *
+ * Every action here used to change an in-memory object and return success, so
+ * "تم الدفع" was never recorded anywhere and a withdrawal request reached
+ * nobody. They now write to the database, and row-level security is the real
+ * guard behind the checks made here.
+ */
+
+async function requireSuperAdmin() {
   const user = await getCurrentUser();
   if (user.role !== 'super_admin') {
-    throw new Error('Unauthorized');
+    throw new Error('غير مصرح لك بإدارة المدفوعات');
   }
+  return user;
+}
 
-  const payout = mockInstructorPayouts.find((p) => p.id === payoutId);
-  if (!payout) throw new Error('Payout not found');
+export async function markInstructorPayoutAsPaid(payoutId: string) {
+  const user = await requireSuperAdmin();
+  const supabase = await createClient();
 
-  payout.status = 'paid';
+  const { data, error } = await supabase
+    .from('instructor_payouts')
+    .update({ status: 'paid', updated_at: new Date().toISOString() })
+    .eq('id', payoutId)
+    .select('id, instructor_id, amount, status')
+    .single();
+
+  if (error || !data) {
+    console.error('Error marking instructor payout as paid', error);
+    throw new Error('تعذّر تسجيل الدفع');
+  }
 
   await logAuditAction({
     actorName: user.fullName,
@@ -22,21 +46,30 @@ export async function markInstructorPayoutAsPaid(payoutId: string) {
     action: 'instructor_payout_marked_paid',
     entityType: 'instructor_payout',
     entityId: payoutId,
+    metadata: { instructorId: data.instructor_id, amount: data.amount },
   });
 
-  return payout;
+  revalidatePath('/dashboard/admin/finance/instructor-payouts');
+  revalidatePath(`/dashboard/admin/finance/instructor-payouts/${payoutId}`);
+  revalidatePath('/dashboard/instructor/payouts');
+  return { success: true };
 }
 
 export async function markPublisherPayoutAsPaid(payoutId: string) {
-  const user = await getCurrentUser();
-  if (user.role !== 'super_admin') {
-    throw new Error('Unauthorized');
+  const user = await requireSuperAdmin();
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('publisher_payouts')
+    .update({ status: 'paid', updated_at: new Date().toISOString() })
+    .eq('id', payoutId)
+    .select('id, publisher_id, amount, status')
+    .single();
+
+  if (error || !data) {
+    console.error('Error marking publisher payout as paid', error);
+    throw new Error('تعذّر تسجيل الدفع');
   }
-
-  const payout = mockPublisherPayouts.find((p) => p.id === payoutId);
-  if (!payout) throw new Error('Payout not found');
-
-  payout.status = 'paid';
 
   await logAuditAction({
     actorName: user.fullName,
@@ -44,64 +77,89 @@ export async function markPublisherPayoutAsPaid(payoutId: string) {
     action: 'publisher_payout_marked_paid',
     entityType: 'publisher_payout',
     entityId: payoutId,
+    metadata: { publisherId: data.publisher_id, amount: data.amount },
   });
 
-  return payout;
+  revalidatePath('/dashboard/admin/finance/publisher-payouts');
+  revalidatePath(`/dashboard/admin/finance/publisher-payouts/${payoutId}`);
+  return { success: true };
 }
 
-export async function submitWithdrawalRequest(instructorId: string, amount: number, method: string) {
+/**
+ * An instructor asking to withdraw what they have earned.
+ *
+ * The instructor is resolved here from the signed-in user rather than taken
+ * from the browser, so a request can only ever be filed for oneself.
+ */
+export async function submitWithdrawalRequest(amount: number, method: string) {
   const user = await getCurrentUser();
   if (user.role !== 'instructor') {
-    throw new Error('Unauthorized');
-  }
-  if (user.id !== instructorId) {
-    throw new Error('Unauthorized');
+    throw new Error('غير مصرح لك بتقديم طلب سحب');
   }
 
-  const newRequest = {
-    id: `wr-${Date.now()}`,
-    instructorId,
-    amount,
-    method,
-    status: 'pending' as const,
-    createdAt: new Date().toISOString(),
-  };
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error('المبلغ غير صحيح');
+  }
 
-  mockWithdrawalRequests.push(newRequest);
+  const instructorId = await getMyInstructorId();
+  if (!instructorId) {
+    throw new Error('لم يتم العثور على ملف المدرب');
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('withdrawal_requests')
+    .insert({ instructor_id: instructorId, amount, method, status: 'pending' })
+    .select('id')
+    .single();
+
+  if (error || !data) {
+    console.error('Error submitting withdrawal request', error);
+    throw new Error('تعذّر إرسال طلب السحب');
+  }
 
   await logAuditAction({
     actorName: user.fullName,
     actorProfileId: user.id,
     action: 'instructor_withdrawal_requested',
     entityType: 'withdrawal_request',
-    entityId: newRequest.id,
+    entityId: data.id,
+    metadata: { instructorId, amount, method },
   });
 
-  return newRequest;
+  revalidatePath('/dashboard/instructor/payouts');
+  revalidatePath('/dashboard/admin/finance');
+  return { success: true };
 }
 
-import { mockPublisherPricingSettings } from '@/data/domains/admin';
-
 export async function updatePublisherPricingSettings(multiplier: number, fixedFee: number) {
-  const user = await getCurrentUser();
-  if (user.role !== 'super_admin') {
-    throw new Error('Unauthorized');
+  const user = await requireSuperAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from('pricing_formula_settings')
+    .update({
+      platform_multiplier: multiplier,
+      fixed_admin_fee: fixedFee,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', 'publisher-default');
+
+  if (error) {
+    console.error('Error updating publisher pricing settings', error);
+    throw new Error('تعذّر حفظ إعدادات التسعير');
   }
 
-  const settings = mockPublisherPricingSettings[0];
-  if (!settings) throw new Error('Settings not found');
-
-  settings.platformMultiplier = multiplier;
-  settings.fixedAdminFee = fixedFee;
-  settings.updatedAt = new Date().toISOString();
-  
   await logAuditAction({
     actorName: user.fullName,
     actorProfileId: user.id,
     action: 'publisher_pricing_settings_updated',
     entityType: 'settings',
-    entityId: settings.id,
+    entityId: 'publisher-default',
+    metadata: { multiplier, fixedFee },
   });
-  
-  return settings;
+
+  revalidatePath('/dashboard/admin/settings/publisher-pricing');
+  revalidatePath('/dashboard/admin/products');
+  return { success: true };
 }

@@ -1241,6 +1241,39 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawal_requests: {
+        Row: {
+          id: string
+          instructor_id: string
+          amount: number
+          method: string
+          status: string
+          admin_notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          instructor_id: string
+          amount: number
+          method: string
+          status?: string
+          admin_notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          instructor_id?: string
+          amount?: number
+          method?: string
+          status?: string
+          admin_notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

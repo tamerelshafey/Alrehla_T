@@ -21,9 +21,8 @@ export function InstructorPayoutsClient({ payouts }: Props) {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // Use the first payout's instructorId as the actor ID
-      const instructorId = payouts[0]?.instructorId || 'unknown';
-      await submitWithdrawalRequest(instructorId, pendingAmount, withdrawMethod);
+      // The instructor is resolved on the server from the signed-in user.
+      await submitWithdrawalRequest(pendingAmount, withdrawMethod);
       alert('تم تقديم طلب السحب للمراجعة بنجاح.');
       setShowWithdrawForm(false);
     } catch (error) {

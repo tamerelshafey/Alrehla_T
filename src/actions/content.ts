@@ -1,30 +1,63 @@
 'use server';
 
-import { mockSiteSettings } from '@/data/domains/content';
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
-import { getCurrentUser } from '@/data/mock';
+import { createClient } from '@/lib/supabase/server';
+import { getCurrentUser } from '@/data/domains/auth';
+import { hasAdminPermission } from '@/lib/utils';
 
+/**
+ * Site-wide settings (contact email, social links).
+ *
+ * This used to assign onto an in-memory object, so an admin could change the
+ * contact email, see it saved, and find it reverted after the next restart.
+ * It now updates the single `site_settings` row the footer reads.
+ */
 export async function updateSiteSettings(formData: FormData) {
-  const siteName = formData.get('siteName') as string;
-  const contactEmail = formData.get('contactEmail') as string;
-  const facebookUrl = formData.get('facebookUrl') as string;
-  const instagramUrl = formData.get('instagramUrl') as string;
+  const user = await getCurrentUser();
+  if (!hasAdminPermission(user, 'canManageContent')) {
+    throw new Error('غير مصرح لك بتعديل إعدادات الموقع');
+  }
 
-  if (siteName) mockSiteSettings.siteName = siteName;
-  if (contactEmail) mockSiteSettings.contactEmail = contactEmail;
-  if (facebookUrl) mockSiteSettings.facebookUrl = facebookUrl;
-  if (instagramUrl) mockSiteSettings.instagramUrl = instagramUrl;
+  const supabase = await createClient();
 
-  const currentUser = await getCurrentUser();
+  const { data: existing } = await supabase
+    .from('site_settings')
+    .select('value')
+    .eq('key', 'general')
+    .single();
+
+  const current = (existing?.value ?? {}) as Record<string, unknown>;
+
+  // Only overwrite a field the form actually supplied, so a partial save
+  // cannot blank out settings it did not include.
+  const next: Record<string, unknown> = { ...current };
+  for (const field of ['siteName', 'contactEmail', 'facebookUrl', 'instagramUrl']) {
+    const value = formData.get(field);
+    if (typeof value === 'string' && value.trim() !== '') {
+      next[field] = value.trim();
+    }
+  }
+
+  const { error } = await supabase
+    .from('site_settings')
+    .update({ value: next as never })
+    .eq('key', 'general');
+
+  if (error) {
+    console.error('Error updating site settings', error);
+    throw new Error('تعذّر حفظ الإعدادات');
+  }
+
   await logAuditAction({
-    actorProfileId: currentUser.id,
-    actorName: currentUser.fullName,
+    actorProfileId: user.id,
+    actorName: user.fullName,
     action: 'site_settings_updated',
     entityType: 'SiteSettings',
-    entityId: 'global',
-    metadata: { siteName, contactEmail, facebookUrl, instagramUrl }
+    entityId: 'general',
+    metadata: next,
   });
 
   revalidatePath('/dashboard/admin/content/settings');
+  revalidatePath('/', 'layout');
 }
