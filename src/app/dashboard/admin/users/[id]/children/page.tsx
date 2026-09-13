@@ -20,7 +20,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const targetUser = allUsers.find(u => u.id === id) || allUsers[0];
 
   const supabase = await createClient();
-  const { data: childrenData } = await (supabase as any).from('child_profiles')
+  const { data: childrenData } = await supabase.from('child_profiles')
     .select('*')
     .eq('user_profile_id', id)
     .order('created_at', { ascending: true });

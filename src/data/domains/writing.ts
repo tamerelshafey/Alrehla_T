@@ -234,7 +234,7 @@ export const mockCreativeServices: CreativeService[] = [
 
 export const getWritingPackages = async (): Promise<WritingPackage[]> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('creative_writing_packages')
+  const { data, error } = await supabase.from('creative_writing_packages')
     .select('*')
     .order('created_at', { ascending: true });
 
@@ -267,7 +267,7 @@ export const getWritingPackageBySlug = async (
   slug: string
 ): Promise<WritingPackage | null> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('creative_writing_packages')
+  const { data, error } = await supabase.from('creative_writing_packages')
     .select('*')
     .eq('slug', slug)
     .single();
@@ -283,21 +283,21 @@ export const getWritingPackageBySlug = async (
     name: data.name,
     ageGroup: data.age_group,
     price: data.price,
-    durationText: data.duration_text,
-    sessionsCount: data.sessions_count,
+    durationText: data.duration_text ?? '',
+    sessionsCount: data.sessions_count ?? 0,
     sessionDuration: data.session_duration || undefined,
-    targetAudience: data.target_audience,
+    targetAudience: data.target_audience ?? '',
     prerequisiteNote: data.prerequisite_note || undefined,
     prerequisitePackageId: data.prerequisite_package_id || undefined,
-    shortDescription: data.short_description,
-    fullDescription: data.full_description,
+    shortDescription: data.short_description ?? '',
+    fullDescription: data.full_description ?? '',
     isActive: data.is_active
   };
 };
 
 export const getInstructors = async (): Promise<Instructor[]> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('instructors')
+  const { data, error } = await supabase.from('instructors')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -332,7 +332,7 @@ export const getInstructorById = async (
   id: string
 ): Promise<Instructor | null> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('instructors')
+  const { data, error } = await supabase.from('instructors')
     .select('*')
     .eq('id', id)
     .single();
@@ -349,9 +349,9 @@ export const getInstructorById = async (
     bio: data.bio,
     specialties: data.specialties,
     yearsExperience: data.years_experience,
-    isSample: data.is_sample,
+    isSample: data.is_sample ?? undefined,
     status: data.status,
-    trainingPassed: data.training_passed,
+    trainingPassed: data.training_passed ?? false,
     workModel: data.work_model,
     requestedPrice: data.requested_price || undefined,
     selectedPricingOptionId: data.selected_pricing_option_id || undefined,
@@ -364,7 +364,7 @@ export const getInstructorById = async (
 
 export const getCreativeServices = async (): Promise<CreativeService[]> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('standalone_services')
+  const { data, error } = await supabase.from('standalone_services')
     .select('id, name, price, description')
     .order('name', { ascending: true });
 
@@ -375,7 +375,12 @@ export const getCreativeServices = async (): Promise<CreativeService[]> => {
     return [];
   }
 
-  return data;
+  return data.map((row) => ({
+    id: row.id,
+    name: row.name,
+    price: row.price,
+    description: row.description ?? '',
+  }));
 };
 
 export const mockSessions: SessionWithDetails[] = [
@@ -543,7 +548,7 @@ export const mockDocuments: import('@/types').PortfolioDocument[] = [
 
 export async function getStudentDocuments(studentId: string) {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('portfolio_documents')
+  const { data, error } = await supabase.from('portfolio_documents')
     .select('*')
     .eq('student_id', studentId)
     .order('created_at', { ascending: false });
@@ -568,7 +573,7 @@ export async function getStudentDocuments(studentId: string) {
 
 export async function getDocumentById(id: string) {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('portfolio_documents')
+  const { data, error } = await supabase.from('portfolio_documents')
     .select('*')
     .eq('id', id)
     .single();
@@ -703,7 +708,7 @@ export const mockInstructorCertifications: import('@/types').InstructorCertifica
 
 export const getPricingFormulaSettings = async () => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('pricing_formula_settings')
+  const { data, error } = await supabase.from('pricing_formula_settings')
     .select('*')
     .eq('id', 'default')
     .single();
@@ -737,7 +742,7 @@ export const getProfileUpdateRequestsByInstructor = async (instructorId: string)
 
 export const getSessions = async (): Promise<SessionWithDetails[]> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('sessions')
+  const { data, error } = await supabase.from('sessions')
     .select('*, course_subscriptions(*)')
     .order('scheduled_at', { ascending: true });
 
@@ -770,7 +775,7 @@ export const getSessions = async (): Promise<SessionWithDetails[]> => {
 
 export const getBookings = async (): Promise<Booking[]> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('bookings')
+  const { data, error } = await supabase.from('bookings')
     .select('*');
   if (error || !data) return [];
   return data.map((b: any) => ({

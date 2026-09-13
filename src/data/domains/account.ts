@@ -51,7 +51,7 @@ export const getParticipantName = async (dependentId?: string, independentId?: s
   const supabase = await createClient();
 
   if (independentId) {
-    const { data } = await (supabase as any).from('user_profiles')
+    const { data } = await supabase.from('user_profiles')
       .select('full_name')
       .eq('id', independentId)
       .single();
@@ -59,7 +59,7 @@ export const getParticipantName = async (dependentId?: string, independentId?: s
   }
   
   if (dependentId) {
-    const { data } = await (supabase as any).from('child_profiles')
+    const { data } = await supabase.from('child_profiles')
       .select('full_name')
       .eq('id', dependentId)
       .single();

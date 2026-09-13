@@ -5,3 +5,16 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# TypeScript incremental build cache — regenerated on every build,
+# should never have been tracked.
+tsconfig.tsbuildinfo
+
+# This project installs with bun. Keeping a second, npm lockfile beside
+# bun.lock lets the two drift apart and produce different dependency
+# trees locally vs on Vercel.
+package-lock.json
+
+# Working documents from Claude sessions; they live in the Claude
+# Project, not in the application repository.
+Claude outputs/

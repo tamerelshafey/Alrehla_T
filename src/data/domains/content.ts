@@ -88,9 +88,16 @@ export const mockSiteSettings = {
   instagramUrl: 'https://instagram.com/alrehla',
 };
 
-export const getSiteSettings = async () => {
+export interface SiteSettings {
+  siteName: string;
+  contactEmail: string;
+  facebookUrl: string;
+  instagramUrl: string;
+}
+
+export const getSiteSettings = async (): Promise<SiteSettings> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('site_settings')
+  const { data, error } = await supabase.from('site_settings')
     .select('value')
     .eq('key', 'general')
     .single();
@@ -102,14 +109,14 @@ export const getSiteSettings = async () => {
     return { siteName: "", contactEmail: "", facebookUrl: "", instagramUrl: "" };
   }
 
-  return data.value;
+  return data.value as unknown as SiteSettings;
 };
 
 import { createClient } from '@/lib/supabase/server';
 
 export const getTestimonials = async (): Promise<Testimonial[]> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('testimonials')
+  const { data, error } = await supabase.from('testimonials')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -130,7 +137,7 @@ export const getTestimonials = async (): Promise<Testimonial[]> => {
 
 export const getBlogPosts = async (): Promise<BlogPost[]> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('blog_posts')
+  const { data, error } = await supabase.from('blog_posts')
     .select('*')
     .order('published_at', { ascending: false });
 
@@ -157,7 +164,7 @@ export const getBlogPostBySlug = async (
   slug: string
 ): Promise<BlogPost | null> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('blog_posts')
+  const { data, error } = await supabase.from('blog_posts')
     .select('*')
     .eq('slug', slug)
     .single();

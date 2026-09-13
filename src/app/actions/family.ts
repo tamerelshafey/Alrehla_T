@@ -8,7 +8,7 @@ export async function fetchFamilyMembers(): Promise<ChildProfile[]> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data, error } = await (supabase as any).from('child_profiles')
+  const { data, error } = await supabase.from('child_profiles')
     .select('*')
     .eq('user_profile_id', user.id)
     .order('created_at', { ascending: true });
@@ -30,7 +30,7 @@ export async function createFamilyMember(fullName: string, birthDate: string): P
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
 
-  const { data, error } = await (supabase as any).from('child_profiles')
+  const { data, error } = await supabase.from('child_profiles')
     .insert({
       user_profile_id: user.id,
       full_name: fullName,
@@ -61,7 +61,7 @@ export async function updateFamilyMember(id: string, fullName: string, birthDate
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
 
-  const { error } = await (supabase as any).from('child_profiles')
+  const { error } = await supabase.from('child_profiles')
     .update({ full_name: fullName, birth_date: birthDate })
     .eq('id', id)
     .eq('user_profile_id', user.id);
@@ -80,7 +80,7 @@ export async function deleteFamilyMember(id: string): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
 
-  const { error } = await (supabase as any).from('child_profiles')
+  const { error } = await supabase.from('child_profiles')
     .delete()
     .eq('id', id)
     .eq('user_profile_id', user.id);

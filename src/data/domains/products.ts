@@ -154,7 +154,7 @@ import { createClient } from '@/lib/supabase/server';
 
 export const getPersonalizedProducts = async (): Promise<PersonalizedProduct[]> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('personalized_products')
+  const { data, error } = await supabase.from('personalized_products')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -189,7 +189,7 @@ export const getAddonProducts = async (): Promise<AddonProduct[]> => {
 
 export const getSubscriptionTiers = async (): Promise<SubscriptionTier[]> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('box_subscription_plans')
+  const { data, error } = await supabase.from('box_subscription_plans')
     .select('id, name, price_total, price_monthly, duration_months, savings_note')
     .order('duration_months', { ascending: true });
 
@@ -241,7 +241,7 @@ export const mockPublishers: Publisher[] = [
 
 export const getPublishers = async (): Promise<Publisher[]> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('publishers')
+  const { data, error } = await supabase.from('publishers')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -265,7 +265,7 @@ export const getPublishers = async (): Promise<Publisher[]> => {
 
 export const getPublisherBySlug = async (slug: string): Promise<Publisher | null> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('publishers')
+  const { data, error } = await supabase.from('publishers')
     .select('*')
     .eq('slug', slug)
     .single();
@@ -283,14 +283,14 @@ export const getPublisherBySlug = async (slug: string): Promise<Publisher | null
     name: data.name,
     logoUrl: data.logo_url || undefined,
     bio: data.bio,
-    isSample: data.is_sample,
+    isSample: data.is_sample ?? false,
     status: data.status
   };
 };
 
 export const getProductBySlug = async (slug: string): Promise<PersonalizedProduct | null> => {
   const supabase = await createClient();
-  const { data, error } = await (supabase as any).from('personalized_products')
+  const { data, error } = await supabase.from('personalized_products')
     .select('*')
     .eq('slug', slug)
     .single();
@@ -315,7 +315,7 @@ export const getProductBySlug = async (slug: string): Promise<PersonalizedProduc
       category: data.category,
       price: data.price,
       electronicPrice: data.electronic_price || undefined,
-      shortDescription: data.short_description,
+      shortDescription: data.short_description ?? '',
       coverImageUrl: data.cover_image_url || undefined,
       publisherId: data.publisher_id || undefined,
       ownerType: data.owner_type,
