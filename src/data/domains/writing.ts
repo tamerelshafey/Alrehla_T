@@ -187,50 +187,6 @@ export const mockInstructors: Instructor[] = [
   }
 ];
 
-export const mockCreativeServices: CreativeService[] = [
-  {
-    id: "review-1",
-    name: "مراجعة نص",
-    price: 650,
-    description: "مراجعة لغوية وفنية لقصة الطفل.",
-  },
-  {
-    id: "video-1",
-    name: "فيديو قصة",
-    price: 1250,
-    description: "فيديو لقصتك",
-  },
-  {
-    id: "publish-1",
-    name: "نشر قصة",
-    price: 2450,
-    description: "انشر قصتك داخل احد انتجاتنا",
-  },
-  {
-    id: "publish-2",
-    name: "نشر كتابك الخاص",
-    price: 8450,
-    description: "نشر كتابك الخاص",
-  },
-  {
-    id: "consult-1",
-    name: "استشارة تربوية",
-    price: 650,
-    description: "جلسة استشارة لولي الأمر. جلسة استشارة لولي الأمر.",
-  },
-  {
-    id: "adv-1",
-    name: "تهههح",
-    price: 230,
-    description: "مغامرة إبداعية مخصصة",
-  },
-  {
-    id: "audio-1",
-    name: "قصة مسموعة",
-    price: 590,
-    description: "قصة مسموعة",
-  },
-];
 
 export const getWritingPackages = async (): Promise<WritingPackage[]> => {
   const supabase = await createClient();
@@ -362,26 +318,6 @@ export const getInstructorById = async (
   };
 };
 
-export const getCreativeServices = async (): Promise<CreativeService[]> => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from('standalone_services')
-    .select('id, name, price, description')
-    .order('name', { ascending: true });
-
-  if (error || !data || data.length === 0) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockCreativeServices;
-    }
-    return [];
-  }
-
-  return data.map((row) => ({
-    id: row.id,
-    name: row.name,
-    price: row.price,
-    description: row.description ?? '',
-  }));
-};
 
 export const mockSessions: SessionWithDetails[] = [
   {

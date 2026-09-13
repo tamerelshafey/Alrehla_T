@@ -1,6 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getCreativeServices } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getStandaloneServices } from '@/data/domains/services';
 import { hasAdminPermission , formatPrice } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
@@ -13,7 +14,7 @@ export default async function Page() {
     return <Unauthorized />;
   }
 
-  const services = await getCreativeServices();
+  const services = await getStandaloneServices();
   
   const formatted = services.map(s => ({
     ...s,

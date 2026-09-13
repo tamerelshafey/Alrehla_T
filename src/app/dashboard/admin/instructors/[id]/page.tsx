@@ -5,6 +5,8 @@ import { getProfileUpdateRequestsByInstructor, getInstructorCertification } from
 import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { AdminInstructorClient } from './AdminInstructorClient';
+import { InstructorServicesSection } from './InstructorServicesSection';
+import { getStandaloneServices, getInstructorServiceOffers } from '@/data/domains/services';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +21,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const target = instructors.find(i => i.id === id) || instructors[0];
   const updateRequests = await getProfileUpdateRequestsByInstructor(target.id);
   const certification = await getInstructorCertification(target.id);
+  const services = await getStandaloneServices();
+  const serviceOffers = await getInstructorServiceOffers(target.id);
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
@@ -28,6 +32,13 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         updateRequests={updateRequests} 
         certification={certification} 
       />
+      <div className="mt-8">
+        <InstructorServicesSection
+          instructorId={target.id}
+          services={services}
+          offers={serviceOffers}
+        />
+      </div>
     </div>
   );
 }

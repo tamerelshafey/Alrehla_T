@@ -103,6 +103,35 @@ export type CreativeService = {
   name: string;
   price: number;
   description: string;
+  /** Grouping shown on the public services page, e.g. 'مراجعات'. */
+  category?: string;
+  /** 'fixed' = one platform price. 'starts_from' = depends on the instructor. */
+  priceType: 'fixed' | 'starts_from';
+  sortOrder?: number;
+};
+
+/** One instructor's offer to provide one creative service, at a price. */
+export type InstructorServiceOffer = {
+  id: string;
+  instructorId: string;
+  serviceId: string;
+  requestedPrice?: number;
+  approvedPrice?: number;
+  status: 'pending' | 'approved' | 'rejected';
+  isActive: boolean;
+  adminNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** A provider row as shown to a visitor choosing who will do the work. */
+export type ServiceProvider = {
+  offerId: string;
+  instructorId: string;
+  displayName: string;
+  bio: string;
+  yearsExperience: number;
+  price: number;
 };
 
 // حالة الحجز

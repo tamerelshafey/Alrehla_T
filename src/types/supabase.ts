@@ -8,7 +8,7 @@ export type Json =
 
 /**
  * Generated from the live Supabase database (project xxptugdbtzkjyydveprp)
- * on 13 September 2026, read directly from information_schema and pg_enum.
+ * on 14 September 2026, read directly from information_schema and pg_enum.
  *
  * Do NOT hand-edit. Regenerate whenever the schema changes. A stale version of
  * this file is what previously allowed code to be written against columns that
@@ -28,7 +28,7 @@ export type Database = {
           created_at: string
         }
         Insert: {
-          id: string
+          id?: string
           actor_profile_id?: string | null
           action: string
           entity_type?: string | null
@@ -100,7 +100,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          id: string
+          id?: string
           dependent_participant_id?: string | null
           independent_participant_id?: string | null
           package_id: string
@@ -135,7 +135,7 @@ export type Database = {
           savings_note: string | null
         }
         Insert: {
-          id: string
+          id?: string
           name: string
           price_total: number
           price_monthly: number
@@ -313,7 +313,7 @@ export type Database = {
           certified_at: string | null
         }
         Insert: {
-          id: string
+          id?: string
           instructor_id: string
           training_completed_at?: string | null
           training_meeting_link?: string | null
@@ -347,7 +347,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          id: string
+          id?: string
           instructor_id: string
           billing_model: Database["public"]["Enums"]["compensation_billing_model"]
           selected_pricing_option_id?: string | null
@@ -412,7 +412,7 @@ export type Database = {
           is_active: boolean
         }
         Insert: {
-          id: string
+          id?: string
           label: string
           base_price_per_session: number
           is_active?: boolean
@@ -422,6 +422,45 @@ export type Database = {
           label?: string
           base_price_per_session?: number
           is_active?: boolean
+        }
+        Relationships: []
+      }
+      instructor_services: {
+        Row: {
+          id: string
+          instructor_id: string
+          service_id: string
+          requested_price: number | null
+          approved_price: number | null
+          status: string
+          is_active: boolean
+          admin_notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          instructor_id: string
+          service_id: string
+          requested_price?: number | null
+          approved_price?: number | null
+          status?: string
+          is_active?: boolean
+          admin_notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          instructor_id?: string
+          service_id?: string
+          requested_price?: number | null
+          approved_price?: number | null
+          status?: string
+          is_active?: boolean
+          admin_notes?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -438,7 +477,7 @@ export type Database = {
           is_pending_change: boolean
         }
         Insert: {
-          id: string
+          id?: string
           instructor_id: string
           day_of_week: Database["public"]["Enums"]["day_of_week"]
           time: string
@@ -483,7 +522,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          id: string
+          id?: string
           user_id: string
           display_name: string
           bio: string
@@ -561,7 +600,7 @@ export type Database = {
           created_at: string
         }
         Insert: {
-          id: string
+          id?: string
           recipient_profile_id: string
           title: string
           message?: string | null
@@ -756,7 +795,7 @@ export type Database = {
           created_at: string
         }
         Insert: {
-          id: string
+          id?: string
           instructor_id: string
           requested_changes: Json
           status?: Database["public"]["Enums"]["update_request_status"]
@@ -817,7 +856,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          id: string
+          id?: string
           user_id?: string | null
           slug: string
           name: string
@@ -854,7 +893,7 @@ export type Database = {
           created_at: string
         }
         Insert: {
-          id: string
+          id?: string
           dependent_participant_id?: string | null
           independent_participant_id?: string | null
           instructor_id: string
@@ -885,9 +924,10 @@ export type Database = {
           amount: number
           transaction_reference: string | null
           created_at: string
+          instructor_id: string | null
         }
         Insert: {
-          id: string
+          id?: string
           buyer_profile_id: string
           package_id?: string | null
           standalone_service_id?: string | null
@@ -895,6 +935,7 @@ export type Database = {
           amount: number
           transaction_reference?: string | null
           created_at?: string
+          instructor_id?: string | null
         }
         Update: {
           id?: string
@@ -905,6 +946,7 @@ export type Database = {
           amount?: number
           transaction_reference?: string | null
           created_at?: string
+          instructor_id?: string | null
         }
         Relationships: []
       }
@@ -916,7 +958,7 @@ export type Database = {
           file_url: string
         }
         Insert: {
-          id: string
+          id?: string
           booking_id: string
           file_name: string
           file_url: string
@@ -938,7 +980,7 @@ export type Database = {
           created_at: string
         }
         Insert: {
-          id: string
+          id?: string
           booking_id: string
           sender_profile_id: string
           message: string
@@ -993,7 +1035,7 @@ export type Database = {
           value: Json
         }
         Insert: {
-          id: string
+          id?: string
           key: string
           value: Json
         }
@@ -1010,18 +1052,27 @@ export type Database = {
           name: string
           price: number
           description: string | null
+          category: string | null
+          sort_order: number | null
+          price_type: string
         }
         Insert: {
-          id: string
+          id?: string
           name: string
           price: number
           description?: string | null
+          category?: string | null
+          sort_order?: number | null
+          price_type?: string
         }
         Update: {
           id?: string
           name?: string
           price?: number
           description?: string | null
+          category?: string | null
+          sort_order?: number | null
+          price_type?: string
         }
         Relationships: []
       }
@@ -1033,7 +1084,7 @@ export type Database = {
           package_id: string | null
         }
         Insert: {
-          id: string
+          id?: string
           title: string
           description?: string | null
           package_id?: string | null
@@ -1088,7 +1139,7 @@ export type Database = {
           created_at: string
         }
         Insert: {
-          id: string
+          id?: string
           ticket_id: string
           sender_profile_id: string
           message: string
