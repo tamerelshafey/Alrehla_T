@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'الكتابة الإبداعية',
@@ -161,7 +162,7 @@ export default async function CreativeWritingPage() {
           ما يناسبك؟
         </h2>
         <div className="grid gap-6 md:grid-cols-2">
-          <a
+          <Link
             href="/creative-writing/packages"
             className="group block rounded-3xl border border-slate-200 bg-white p-8 transition-all duration-300 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/10"
           >
@@ -177,8 +178,8 @@ export default async function CreativeWritingPage() {
             <span className="flex items-center gap-2 font-bold text-emerald-600 transition-all group-hover:gap-3">
               اكتشف الباقات <ArrowLeft className="h-4 w-4" />
             </span>
-          </a>
-          <a
+          </Link>
+          <Link
             href="/creative-writing/services"
             className="group block rounded-3xl border border-slate-200 bg-white p-8 transition-all duration-300 hover:border-teal-300 hover:shadow-xl hover:shadow-teal-500/10"
           >
@@ -194,7 +195,7 @@ export default async function CreativeWritingPage() {
             <span className="flex items-center gap-2 font-bold text-teal-600 transition-all group-hover:gap-3">
               اكتشف الخدمات <ArrowLeft className="h-4 w-4" />
             </span>
-          </a>
+          </Link>
         </div>
       </Section>
 

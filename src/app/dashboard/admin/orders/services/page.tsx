@@ -1,6 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getServiceOrders } from '@/data/mock';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getAllServiceOrders } from '@/data/domains/services';
 import { hasAdminPermission , formatPrice } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import Link from 'next/link';
@@ -16,17 +17,17 @@ export default async function Page() {
     return <Unauthorized />;
   }
 
-  const orders = await getServiceOrders();
+  const orders = await getAllServiceOrders();
 
   const formatted = orders.map(order => ({
     ...order,
-    idDisplay: <span className="font-bold text-blue-600">#{order.id.split('-')[1]}</span>,
+    idDisplay: <span className="font-mono text-xs font-bold text-blue-600">#{order.id.slice(0, 8)}</span>,
     dateDisplay: formatDate(order.createdAt),
     amountDisplay: `${formatPrice(order.amount)}`,
     statusDisplay: (
       <StatusBadge 
         type={order.status === 'paid' ? 'success' : order.status === 'refunded' ? 'neutral' : 'warning'}
-        label={order.status === 'paid' ? 'مدفوع' : order.status === 'refunded' ? 'مسترجع' : 'قيد الانتظار'}
+        label={order.status === 'paid' ? 'مدفوع' : order.status === 'refunded' ? 'مسترجع' : order.status === 'awaiting_verification' ? 'بانتظار تأكيد الدفع' : 'قيد الانتظار'}
       />
     )
   }));
@@ -34,7 +35,8 @@ export default async function Page() {
   const columns = [
     { header: 'رقم الطلب', accessorKey: 'idDisplay' },
     { header: 'معرّف المشتري', accessorKey: 'buyerProfileId' },
-    { header: 'الباقة المرتبطة', accessorKey: 'packageId' },
+    { header: 'الخدمة', accessorKey: 'serviceName' },
+    { header: 'المدرب', accessorKey: 'instructorName' },
     { header: 'تاريخ الدفع', accessorKey: 'dateDisplay' },
     { header: 'المبلغ الإجمالي', accessorKey: 'amountDisplay' },
     { header: 'الحالة', accessorKey: 'statusDisplay' }

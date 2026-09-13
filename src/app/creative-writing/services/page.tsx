@@ -1,108 +1,87 @@
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, FileEdit, Video, BookOpen, MessageCircle, Headphones } from 'lucide-react';
+import { ArrowLeft, FileEdit, Video, BookOpen, MessageCircle, Headphones, Sparkles } from 'lucide-react';
+import { getStandaloneServices, getProvidersForService } from '@/data/domains/services';
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
 import { Section } from '@/components/ui/Section';
 
-const serviceCategories = [
-  {
-    title: 'مراجعات',
-    icon: FileEdit,
-    color: 'bg-blue-50 text-blue-600',
-    borderColor: 'border-blue-100',
-    services: [
-      {
-        id: 'review-1',
-        title: 'مراجعة نص',
-        description: 'مراجعة لغوية وفنية لقصة الطفل.',
-        price: 650,
-        priceType: 'starts_from',
-        ctaText: 'عرض مقدمي الخدمة',
-        ctaLink: '/creative-writing/instructors',
-      }
-    ]
-  },
-  {
-    title: 'قصص فيديو',
-    icon: Video,
-    color: 'bg-rose-50 text-rose-600',
-    borderColor: 'border-rose-100',
-    services: [
-      {
-        id: 'video-1',
-        title: 'فيديو قصة',
-        description: 'فيديو لقصتك',
-        price: 1250,
-        priceType: 'fixed',
-        ctaText: 'اطلب الآن',
-        ctaLink: '/creative-writing/booking/confirm',
-      }
-    ]
-  },
-  {
-    title: 'نشر',
-    icon: BookOpen,
-    color: 'bg-emerald-50 text-emerald-600',
-    borderColor: 'border-emerald-100',
-    services: [
-      {
-        id: 'publish-1',
-        title: 'نشر قصة',
-        description: 'انشر قصتك داخل احد انتجاتنا',
-        price: 2450,
-        priceType: 'fixed',
-        ctaText: 'اطلب الآن',
-        ctaLink: '/creative-writing/booking/confirm',
-      },
-      {
-        id: 'publish-2',
-        title: 'نشر كتابك الخاص',
-        description: 'نشر كتابك الخاص',
-        price: 8450,
-        priceType: 'fixed',
-        ctaText: 'اطلب الآن',
-        ctaLink: '/creative-writing/booking/confirm',
-      }
-    ]
-  },
-  {
-    title: 'استشارات',
-    icon: MessageCircle,
-    color: 'bg-amber-50 text-amber-600',
-    borderColor: 'border-amber-100',
-    services: [
-      {
-        id: 'consult-1',
-        title: 'استشارة تربوية',
-        description: 'جلسة استشارة لولي الأمر.',
-        price: 650,
-        priceType: 'starts_from',
-        ctaText: 'عرض مقدمي الخدمة',
-        ctaLink: '/creative-writing/instructors',
-      }
-    ]
-  },
-  {
-    title: 'قصص مسموعة',
-    icon: Headphones,
-    color: 'bg-sky-50 text-sky-600',
-    borderColor: 'border-sky-100',
-    services: [
-      {
-        id: 'audio-1',
-        title: 'قصة مسموعة',
-        description: 'قصة مسموعة',
-        price: 590,
-        priceType: 'starts_from',
-        ctaText: 'عرض مقدمي الخدمة',
-        ctaLink: '/creative-writing/instructors',
-      }
-    ]
-  }
-];
+/**
+ * The catalogue itself now comes from the database. Only presentation —
+ * which icon and colour a category wears — stays in code. This page used to
+ * hold its own copy of the services; the two lists drifted apart and a
+ * placeholder entry ended up live on the site.
+ */
+const CATEGORY_STYLE: Record<string, { icon: typeof FileEdit; color: string; borderColor: string }> = {
+  'مراجعات': { icon: FileEdit, color: 'bg-blue-50 text-blue-600', borderColor: 'border-blue-100' },
+  'قصص فيديو': { icon: Video, color: 'bg-purple-50 text-purple-600', borderColor: 'border-purple-100' },
+  'نشر': { icon: BookOpen, color: 'bg-emerald-50 text-emerald-600', borderColor: 'border-emerald-100' },
+  'استشارات': { icon: MessageCircle, color: 'bg-amber-50 text-amber-600', borderColor: 'border-amber-100' },
+  'قصص مسموعة': { icon: Headphones, color: 'bg-rose-50 text-rose-600', borderColor: 'border-rose-100' },
+};
 
-export default function ServicesPage() {
+const DEFAULT_STYLE = { icon: Sparkles, color: 'bg-slate-50 text-slate-600', borderColor: 'border-slate-100' };
+
+type ServiceCard = {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  priceType: 'fixed' | 'starts_from';
+  ctaText: string;
+  ctaLink: string;
+  available: boolean;
+};
+
+async function buildCategories() {
+  const services = await getStandaloneServices();
+
+  const cards: (ServiceCard & { category: string })[] = await Promise.all(
+    services.map(async (service) => {
+      const byProvider = service.priceType === 'starts_from';
+
+      // For a "starts from" service the honest price is the cheapest approved
+      // provider, not a number typed into the code.
+      const providers = byProvider ? await getProvidersForService(service.id) : [];
+      const available = !byProvider || providers.length > 0;
+      const price = byProvider && providers.length > 0 ? providers[0].price : service.price;
+
+      return {
+        id: service.id,
+        category: service.category ?? 'خدمات أخرى',
+        title: service.name,
+        description: service.description,
+        price,
+        priceType: service.priceType,
+        ctaText: byProvider
+          ? available
+            ? 'عرض مقدمي الخدمة'
+            : 'قريباً'
+          : 'اطلب الآن',
+        ctaLink: byProvider
+          ? `/creative-writing/services/${service.id}`
+          : `/creative-writing/services/${service.id}/order`,
+        available,
+      };
+    })
+  );
+
+  const grouped: { title: string; icon: typeof FileEdit; color: string; borderColor: string; services: ServiceCard[] }[] = [];
+  for (const card of cards) {
+    const { category, ...rest } = card;
+    const existing = grouped.find((g) => g.title === category);
+    if (existing) {
+      existing.services.push(rest);
+    } else {
+      const style = CATEGORY_STYLE[category] ?? DEFAULT_STYLE;
+      grouped.push({ title: category, ...style, services: [rest] });
+    }
+  }
+  return grouped;
+}
+
+export default async function ServicesPage() {
+  const serviceCategories = await buildCategories();
   return (
     <PageContainer className="!py-0 !space-y-0">
       {/* Header */}
@@ -156,7 +135,8 @@ export default function ServicesPage() {
                       </div>
                       
                       <Link 
-                        href={service.ctaLink}
+                        href={service.available ? service.ctaLink : '#'}
+                        aria-disabled={!service.available}
                         className={`group flex w-full items-center justify-center gap-2 rounded-xl py-4 font-bold transition-colors ${
                           service.priceType === 'starts_from' 
                             ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' 

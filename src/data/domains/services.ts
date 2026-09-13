@@ -118,3 +118,69 @@ export async function getStartingPriceForService(
   const providers = await getProvidersForService(serviceId);
   return providers.length > 0 ? providers[0].price : null;
 }
+
+/** A service order enriched with the names needed to display it. */
+export type ServiceOrderRow = {
+  id: string;
+  buyerProfileId: string;
+  serviceId: string | null;
+  serviceName: string;
+  instructorId: string | null;
+  instructorName: string | null;
+  amount: number;
+  status: string;
+  transactionReference: string | null;
+  createdAt: string;
+};
+
+async function mapServiceOrders(rows: any[]): Promise<ServiceOrderRow[]> {
+  return rows.map((row) => {
+    const service = row.standalone_services as { name: string } | null;
+    const instructor = row.instructors as { display_name: string } | null;
+    return {
+      id: row.id,
+      buyerProfileId: row.buyer_profile_id,
+      serviceId: row.standalone_service_id,
+      serviceName: service?.name ?? 'خدمة غير معروفة',
+      instructorId: row.instructor_id,
+      instructorName: instructor?.display_name ?? null,
+      amount: row.amount,
+      status: row.status,
+      transactionReference: row.transaction_reference,
+      createdAt: row.created_at,
+    };
+  });
+}
+
+const SERVICE_ORDER_SELECT =
+  'id, buyer_profile_id, standalone_service_id, instructor_id, amount, status, transaction_reference, created_at, standalone_services(name), instructors(display_name)';
+
+/** Every service order — row-level security limits this to admins. */
+export async function getAllServiceOrders(): Promise<ServiceOrderRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('service_orders')
+    .select(SERVICE_ORDER_SELECT)
+    .order('created_at', { ascending: false });
+
+  if (error || !data) return [];
+  return mapServiceOrders(data);
+}
+
+/** The signed-in customer's own service orders. */
+export async function getMyServiceOrders(): Promise<ServiceOrderRow[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from('service_orders')
+    .select(SERVICE_ORDER_SELECT)
+    .eq('buyer_profile_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (error || !data) return [];
+  return mapServiceOrders(data);
+}

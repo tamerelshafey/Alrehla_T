@@ -1,40 +1,90 @@
-import { getSessions, getServiceOrders } from '@/data/mock';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { StatusBadge } from '@/components/StatusBadge';
+import { formatDate, formatPrice } from '@/lib/utils';
+import { getSessions } from '@/data/domains/writing';
+import { getMyServiceOrders } from '@/data/domains/services';
+
+export const dynamic = 'force-dynamic';
+
+const SERVICE_STATUS: Record<string, { label: string; type: 'success' | 'warning' | 'neutral' }> = {
+  paid: { label: 'مدفوع', type: 'success' },
+  awaiting_verification: { label: 'بانتظار تأكيد الدفع', type: 'warning' },
+  pending: { label: 'قيد الانتظار', type: 'warning' },
+  refunded: { label: 'مسترجع', type: 'neutral' },
+};
+
+const SESSION_STATUS: Record<string, { label: string; type: 'success' | 'warning' | 'neutral' }> = {
+  confirmed: { label: 'مؤكد', type: 'success' },
+  completed: { label: 'مكتمل', type: 'neutral' },
+  scheduled: { label: 'مجدولة', type: 'warning' },
+  cancelled: { label: 'ملغاة', type: 'neutral' },
+};
 
 export default async function CreativeWritingOrdersPage() {
-  const allBookings = await getSessions();
-  const allServiceOrders = await getServiceOrders();
-    
-  const bookings = allBookings.map(b => {
-    const so = allServiceOrders.find(o => o.id === b.id);
-    const displayStatus = so?.status === 'awaiting_verification' ? 'awaiting_verification' : b.status;
+  const [sessions, serviceOrders] = await Promise.all([
+    getSessions(),
+    getMyServiceOrders(),
+  ]);
+
+  const serviceRows = serviceOrders.map((order) => {
+    const status = SERVICE_STATUS[order.status] ?? { label: order.status, type: 'warning' as const };
     return {
-      id: b.id,
-      date: new Date(b.scheduledAt).toLocaleDateString('ar-EG'),
-      time: new Date(b.scheduledAt).toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'}),
-      statusDisplay: <StatusBadge type={displayStatus === 'confirmed' ? 'success' : displayStatus === 'awaiting_verification' ? 'warning' : displayStatus === 'completed' ? 'neutral' : 'warning'} label={displayStatus === 'confirmed' ? 'مؤكد' : displayStatus === 'awaiting_verification' ? 'بانتظار تأكيد الدفع' : displayStatus === 'completed' ? 'مكتمل' : 'قيد الانتظار'} />,
-      instructor: 'سارة أحمد',
-      studentName: 'الطالب',
-      packageName: 'باقة تدريبية'
+      id: order.id,
+      serviceName: order.serviceName,
+      instructor: order.instructorName ?? '—',
+      date: formatDate(order.createdAt),
+      amount: formatPrice(order.amount),
+      statusDisplay: <StatusBadge type={status.type} label={status.label} />,
     };
   });
 
-  const columns = [
-    { header: 'الباقة', accessorKey: 'packageName' },
+  const serviceColumns = [
+    { header: 'الخدمة', accessorKey: 'serviceName' },
     { header: 'المدرب', accessorKey: 'instructor' },
-    { header: 'المتدرب', accessorKey: 'studentName' },
+    { header: 'تاريخ الطلب', accessorKey: 'date' },
+    { header: 'المبلغ', accessorKey: 'amount' },
+    { header: 'الحالة', accessorKey: 'statusDisplay' },
+  ];
+
+  const sessionRows = sessions.map((session) => {
+    const status = SESSION_STATUS[session.status] ?? { label: session.status, type: 'warning' as const };
+    return {
+      id: session.id,
+      sessionNumber: session.sessionNumber,
+      date: formatDate(session.scheduledAt),
+      time: new Date(session.scheduledAt).toLocaleTimeString('ar-EG', {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      statusDisplay: <StatusBadge type={status.type} label={status.label} />,
+    };
+  });
+
+  const sessionColumns = [
+    { header: 'رقم الجلسة', accessorKey: 'sessionNumber' },
     { header: 'التاريخ', accessorKey: 'date' },
     { header: 'الوقت', accessorKey: 'time' },
-    { header: 'الحالة', accessorKey: 'statusDisplay' }
+    { header: 'الحالة', accessorKey: 'statusDisplay' },
   ];
 
   return (
-    <div className="space-y-6">
-      <DashboardPageHeader title="الجلسات والباقات" />
-      <p className="mt-2 text-slate-500 font-medium">إدارة ومتابعة حجوزات برامج الكتابة الإبداعية.</p>
-      <SimpleDataTable columns={columns} data={bookings} />
+    <div className="space-y-10">
+      <div>
+        <DashboardPageHeader title="الخدمات الإبداعية" />
+        <p className="mt-2 font-medium text-slate-500">طلباتك من الخدمات الإبداعية المنفردة.</p>
+        <div className="mt-4">
+          <SimpleDataTable columns={serviceColumns} data={serviceRows} />
+        </div>
+      </div>
+
+      <div>
+        <DashboardPageHeader title="الجلسات" />
+        <p className="mt-2 font-medium text-slate-500">جلسات باقات الكتابة الإبداعية.</p>
+        <div className="mt-4">
+          <SimpleDataTable columns={sessionColumns} data={sessionRows} />
+        </div>
+      </div>
     </div>
   );
 }
