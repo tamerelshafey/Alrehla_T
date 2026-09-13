@@ -1,15 +1,20 @@
 import React from 'react';
 import { Inbox } from 'lucide-react';
 
-interface Column {
+export interface Column {
   header: string;
   accessorKey: string;
+  /** Optional custom renderer. When present it wins over accessorKey. */
+  cell?: (row: any) => React.ReactNode;
 }
 
 interface SimpleDataTableProps {
   columns: Column[];
   data: Record<string, any>[];
 }
+
+const renderCell = (col: Column, row: Record<string, any>): React.ReactNode =>
+  col.cell ? col.cell(row) : row[col.accessorKey];
 
 export function SimpleDataTable({ columns, data }: SimpleDataTableProps) {
   if (!data || data.length === 0) {
@@ -41,7 +46,7 @@ export function SimpleDataTable({ columns, data }: SimpleDataTableProps) {
                 <tr key={rowIndex} className="transition-colors hover:bg-slate-50/50">
                   {columns.map((col, colIndex) => (
                     <td key={colIndex} className="px-6 py-4 font-medium text-slate-700">
-                      {row[col.accessorKey]}
+                      {renderCell(col, row)}
                     </td>
                   ))}
                 </tr>
@@ -62,7 +67,7 @@ export function SimpleDataTable({ columns, data }: SimpleDataTableProps) {
                   className="flex justify-between gap-4 border-b border-slate-50 pb-3 last:border-0 last:pb-0"
                 >
                   <span className="text-sm font-bold text-slate-500 shrink-0">{col.header}</span>
-                  <span className="text-sm font-medium text-slate-800 text-left">{row[col.accessorKey]}</span>
+                  <span className="text-sm font-medium text-slate-800 text-left">{renderCell(col, row)}</span>
                 </div>
               ))}
             </div>

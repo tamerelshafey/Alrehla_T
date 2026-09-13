@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { Trash2, Edit2, Plus, X } from 'lucide-react';
 import { calculateAge } from '@/lib/utils';
+import { BirthDatePicker } from '@/components/ui/BirthDatePicker';
 
 export function FamilyClient({ initialMembers }: { initialMembers: ChildProfile[] }) {
   const [members, setMembers] = useState<ChildProfile[]>(initialMembers);
@@ -101,14 +102,11 @@ export function FamilyClient({ initialMembers }: { initialMembers: ChildProfile[
               onChange={e => setFormData({ ...formData, fullName: e.target.value })}
             />
           </div>
-          <div className="w-48">
+          <div className="w-56">
             <label className="block text-sm font-bold text-slate-700 mb-2">تاريخ الميلاد</label>
-            <input 
-              type="date" 
-              required 
-              className="w-full rounded-xl border-slate-200" 
+            <BirthDatePicker
               value={formData.birthDate}
-              onChange={e => setFormData({ ...formData, birthDate: e.target.value })}
+              onChange={(v) => setFormData({ ...formData, birthDate: v })}
             />
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
