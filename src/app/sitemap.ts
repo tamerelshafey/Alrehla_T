@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { getBlogPosts, getPersonalizedProducts, getPublishers, getInstructors } from '@/data/mock';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.enhalak.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://alrehlat.vercel.app';
 
   // Static routes
   const staticRoutes = [
@@ -13,7 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/creative-writing',
     '/creative-writing/instructors',
     '/creative-writing/packages',
-    '/join',
+    '/join-us',
     '/support',
     '/privacy',
     '/terms'
