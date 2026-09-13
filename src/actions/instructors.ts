@@ -1,119 +1,211 @@
-'use server'
+'use server';
 
-import { ProfileUpdateRequest, BillingModel, WeeklySlot, WorkModel, Instructor } from '@/types';
-import { mockProfileUpdateRequests } from '@/data/domains/writing';
-import { mockInstructors, mockInstructorCertifications } from '@/data/mock';
+import { Instructor } from '@/types';
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
-import { getCurrentUser } from '@/data/mock';
+import { createClient } from '@/lib/supabase/server';
+import type { Database } from '@/types/supabase';
+import { getCurrentUser } from '@/data/domains/auth';
+import { hasAdminPermission } from '@/lib/utils';
+
+/**
+ * Instructor profile changes, certification and pricing settings.
+ *
+ * Every action in this file used to mutate an in-memory array: the admin saw a
+ * success message, and nothing was written anywhere. A restart erased it all.
+ * These now write to the database, with the authorisation check done here for a
+ * clear error and again by row-level security, which is the real guard.
+ */
+
+async function requireInstructorAdmin() {
+  const user = await getCurrentUser();
+  if (!hasAdminPermission(user, 'canManageInstructors')) {
+    throw new Error('غير مصرح لك بإدارة المدربين');
+  }
+  return user;
+}
+
+/** The instructor must be asking about their own profile. */
+async function requireOwnInstructorProfile(instructorId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error('يجب تسجيل الدخول أولاً');
+
+  const { data } = await supabase
+    .from('instructors')
+    .select('id')
+    .eq('id', instructorId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (!data) throw new Error('غير مصرح لك بتعديل هذا الملف');
+  return user;
+}
 
 export async function submitInstructorProfileUpdate(
   instructorId: string,
   changes: Partial<Instructor>
 ) {
-  const newRequest: ProfileUpdateRequest = {
-    id: `req-${Date.now()}`,
-    instructorId,
-    requestedChanges: changes,
+  await requireOwnInstructorProfile(instructorId);
+  const supabase = await createClient();
+
+  const { error } = await supabase.from('profile_update_requests').insert({
+    instructor_id: instructorId,
+    requested_changes: changes as never,
     status: 'pending',
-    createdAt: new Date().toISOString(),
-  };
-  
-  mockProfileUpdateRequests.push(newRequest);
-  revalidatePath(`/dashboard/instructor/settings`);
+  });
+
+  if (error) {
+    console.error('Error submitting profile update request', error);
+    throw new Error('تعذّر إرسال الطلب');
+  }
+
+  revalidatePath('/dashboard/instructor/settings');
   revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
   return { success: true };
 }
 
 export async function approveProfileUpdateRequest(requestId: string) {
-  const req = mockProfileUpdateRequests.find(r => r.id === requestId);
-  if (!req) throw new Error('Request not found');
-  const instructor = mockInstructors.find(i => i.id === req.instructorId);
-  if (!instructor) throw new Error('Instructor not found');
+  const currentUser = await requireInstructorAdmin();
+  const supabase = await createClient();
 
-  const currentUser = await getCurrentUser();
+  const { data: request, error: readError } = await supabase
+    .from('profile_update_requests')
+    .select('id, instructor_id, requested_changes, status')
+    .eq('id', requestId)
+    .single();
 
-  // Apply changes
-  if (req.requestedChanges.workModel) instructor.workModel = req.requestedChanges.workModel;
-  if (req.requestedChanges.monthlyHoursCommitted !== undefined) instructor.monthlyHoursCommitted = req.requestedChanges.monthlyHoursCommitted;
-  if (req.requestedChanges.requestedPrice) {
-    instructor.requestedPrice = req.requestedChanges.requestedPrice;
-    instructor.approvedPrice = req.requestedChanges.requestedPrice;
+  if (readError || !request) throw new Error('الطلب غير موجود');
+  if (request.status !== 'pending') throw new Error('تم البتّ في هذا الطلب من قبل');
+
+  const changes = (request.requested_changes ?? {}) as Partial<Instructor>;
+
+  // Build the update from the requested changes only — never trust the payload
+  // to carry fields the instructor is not allowed to change.
+  const update: Database['public']['Tables']['instructors']['Update'] = {};
+  if (changes.workModel) update.work_model = changes.workModel;
+  if (changes.monthlyHoursCommitted !== undefined) {
+    update.monthly_hours_committed = changes.monthlyHoursCommitted;
   }
-  if (req.requestedChanges.selectedPricingOptionId) {
-    instructor.selectedPricingOptionId = req.requestedChanges.selectedPricingOptionId;
-    // Mock deriving approved price:
-    const { mockInstructorPricingOptions } = require('@/data/domains/writing');
-    const option = mockInstructorPricingOptions.find((o: any) => o.id === req.requestedChanges.selectedPricingOptionId);
-    if (option) instructor.approvedPrice = option.basePricePerSession;
+  if (changes.weeklySchedule) update.weekly_schedule = changes.weeklySchedule as never;
+
+  if (changes.requestedPrice) {
+    update.requested_price = changes.requestedPrice;
+    update.approved_price = changes.requestedPrice;
   }
-  if (req.requestedChanges.weeklySchedule) instructor.weeklySchedule = req.requestedChanges.weeklySchedule;
-  
-  req.status = 'approved';
-  
+
+  if (changes.selectedPricingOptionId) {
+    update.selected_pricing_option_id = changes.selectedPricingOptionId;
+    const { data: option } = await supabase
+      .from('instructor_pricing_options')
+      .select('base_price_per_session')
+      .eq('id', changes.selectedPricingOptionId)
+      .maybeSingle();
+    if (option) update.approved_price = option.base_price_per_session;
+  }
+
+  if (Object.keys(update).length > 0) {
+    update.updated_at = new Date().toISOString();
+    const { error: updateError } = await supabase
+      .from('instructors')
+      .update(update)
+      .eq('id', request.instructor_id);
+    if (updateError) {
+      console.error('Error applying approved changes', updateError);
+      throw new Error('تعذّر تطبيق التعديلات');
+    }
+  }
+
+  const { error: statusError } = await supabase
+    .from('profile_update_requests')
+    .update({ status: 'approved' })
+    .eq('id', requestId);
+  if (statusError) throw new Error('تعذّر تحديث حالة الطلب');
+
   await logAuditAction({
     actorProfileId: currentUser.id,
     actorName: currentUser.fullName,
     action: 'instructor_profile_update_approved',
     entityType: 'ProfileUpdateRequest',
     entityId: requestId,
-    metadata: { instructorId: req.instructorId }
+    metadata: { instructorId: request.instructor_id },
   });
 
-  revalidatePath(`/dashboard/admin/instructors/${req.instructorId}`);
-  revalidatePath(`/dashboard/instructor/settings`);
+  revalidatePath(`/dashboard/admin/instructors/${request.instructor_id}`);
+  revalidatePath('/dashboard/instructor/settings');
   return { success: true };
 }
 
 export async function rejectProfileUpdateRequest(requestId: string, adminFeedback: string) {
-  const req = mockProfileUpdateRequests.find(r => r.id === requestId);
-  if (!req) throw new Error('Request not found');
-  
-  const currentUser = await getCurrentUser();
-  req.status = 'rejected';
-  req.adminFeedback = adminFeedback;
-  
+  const currentUser = await requireInstructorAdmin();
+  const supabase = await createClient();
+
+  const { data: request, error: readError } = await supabase
+    .from('profile_update_requests')
+    .select('id, instructor_id')
+    .eq('id', requestId)
+    .single();
+
+  if (readError || !request) throw new Error('الطلب غير موجود');
+
+  const { error } = await supabase
+    .from('profile_update_requests')
+    .update({ status: 'rejected', admin_feedback: adminFeedback })
+    .eq('id', requestId);
+
+  if (error) throw new Error('تعذّر تحديث حالة الطلب');
+
   await logAuditAction({
     actorProfileId: currentUser.id,
     actorName: currentUser.fullName,
     action: 'instructor_profile_update_rejected',
     entityType: 'ProfileUpdateRequest',
     entityId: requestId,
-    metadata: { instructorId: req.instructorId, adminFeedback }
+    metadata: { instructorId: request.instructor_id, adminFeedback },
   });
 
-  revalidatePath(`/dashboard/admin/instructors/${req.instructorId}`);
-  revalidatePath(`/dashboard/instructor/settings`);
+  revalidatePath(`/dashboard/admin/instructors/${request.instructor_id}`);
+  revalidatePath('/dashboard/instructor/settings');
   return { success: true };
 }
 
 export async function updateInstructorCertification(instructorId: string, passed: boolean) {
-  let cert = mockInstructorCertifications.find(c => c.instructorId === instructorId);
-  if (!cert) {
-    cert = {
-      id: `cert-${Date.now()}`,
-      instructorId,
-      examPassed: passed,
-    };
-    mockInstructorCertifications.push(cert);
-  } else {
-    cert.examPassed = passed;
+  const currentUser = await requireInstructorAdmin();
+  const supabase = await createClient();
+
+  const { data: saved, error } = await supabase
+    .from('instructor_certifications')
+    .upsert(
+      {
+        instructor_id: instructorId,
+        exam_passed: passed,
+        certified_at: passed ? new Date().toISOString() : null,
+      },
+      { onConflict: 'instructor_id' }
+    )
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error('Error saving certification', error);
+    throw new Error('تعذّر حفظ حالة الاعتماد');
   }
-  
-  if (passed) {
-    cert.certifiedAt = new Date().toISOString();
-  } else {
-    cert.certifiedAt = undefined;
-  }
-  
-  const currentUser = await getCurrentUser();
+
+  // The instructor record carries the same flag, so keep the two in step.
+  await supabase
+    .from('instructors')
+    .update({ training_passed: passed, updated_at: new Date().toISOString() })
+    .eq('id', instructorId);
+
   await logAuditAction({
     actorProfileId: currentUser.id,
     actorName: currentUser.fullName,
     action: passed ? 'instructor_certification_passed' : 'instructor_certification_failed',
     entityType: 'InstructorCertification',
-    entityId: cert.id,
-    metadata: { instructorId }
+    entityId: saved?.id ?? instructorId,
+    metadata: { instructorId },
   });
 
   revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
@@ -124,19 +216,36 @@ export async function updatePricingFormulaSettings(
   platformMultiplier: number,
   fixedAdminFee: number
 ) {
-  const { mockPricingFormulaSettings } = require('@/data/domains/writing');
-  mockPricingFormulaSettings[0].platformMultiplier = platformMultiplier;
-  mockPricingFormulaSettings[0].fixedAdminFee = fixedAdminFee;
-  mockPricingFormulaSettings[0].updatedAt = new Date().toISOString();
-  
-  const currentUser = await getCurrentUser();
+  const user = await getCurrentUser();
+  if (
+    !hasAdminPermission(user, 'canManageCatalog') &&
+    !hasAdminPermission(user, 'canManageInstructors')
+  ) {
+    throw new Error('غير مصرح لك بتعديل إعدادات التسعير');
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('pricing_formula_settings')
+    .update({
+      platform_multiplier: platformMultiplier,
+      fixed_admin_fee: fixedAdminFee,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', 'default');
+
+  if (error) {
+    console.error('Error updating pricing formula', error);
+    throw new Error('تعذّر حفظ إعدادات التسعير');
+  }
+
   await logAuditAction({
-    actorProfileId: currentUser.id,
-    actorName: currentUser.fullName,
+    actorProfileId: user.id,
+    actorName: user.fullName,
     action: 'pricing_formula_updated',
     entityType: 'PricingFormulaSettings',
-    entityId: mockPricingFormulaSettings[0].id,
-    metadata: { platformMultiplier, fixedAdminFee }
+    entityId: 'default',
+    metadata: { platformMultiplier, fixedAdminFee },
   });
 
   revalidatePath('/dashboard/admin/settings/creative-writing-pricing');

@@ -1,6 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getCurrentUser, getSessions, getServiceOrders } from '@/data/mock';
+import { getCurrentUser, getSessions } from '@/data/mock';
+import { getAllServiceOrders } from '@/data/domains/services';
 import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import Link from 'next/link';
@@ -17,7 +18,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const allBookings = await getSessions();
   const target = allBookings.find(b => b.id === id) || allBookings[0];
   
-  const allServiceOrders = await getServiceOrders();
+  const allServiceOrders = await getAllServiceOrders();
   const serviceOrder = allServiceOrders.find(so => so.id === target.id); // Assuming 1:1 mapping by ID for now based on dummy logic
 
   const confirmPaymentAction = async () => {

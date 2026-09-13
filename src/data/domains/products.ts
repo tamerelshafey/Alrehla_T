@@ -183,8 +183,17 @@ export const getPersonalizedProducts = async (): Promise<PersonalizedProduct[]> 
   }));
 };
 
+/**
+ * Add-on products have no table in the database yet — the shape and business
+ * rules still need deciding. Until then a customer must never be offered one:
+ * they would be selecting, and paying for, something that does not exist.
+ * Sample data is kept for local development only.
+ */
 export const getAddonProducts = async (): Promise<AddonProduct[]> => {
-  return Promise.resolve(mockAddonProducts);
+  if (process.env.NODE_ENV === 'development') {
+    return mockAddonProducts;
+  }
+  return [];
 };
 
 export const getSubscriptionTiers = async (): Promise<SubscriptionTier[]> => {

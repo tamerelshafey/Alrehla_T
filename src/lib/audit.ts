@@ -1,5 +1,16 @@
-import { mockAuditLogs } from '@/data/domains/admin';
+import { logAuditAction as writeAuditLog } from '@/data/domains/admin';
 
+/**
+ * Record an action in the audit trail.
+ *
+ * This used to push onto an in-memory array, so every entry vanished when the
+ * server restarted — the audit log was not actually an audit log. It now
+ * writes a row to `audit_logs`.
+ *
+ * `actorName` is still accepted so existing call sites keep working, but it is
+ * not stored: the name is resolved from the actor's profile when the log is
+ * read, so renaming a user does not leave a stale name behind in the record.
+ */
 export async function logAuditAction(params: {
   actorProfileId?: string;
   actorName?: string;
@@ -8,14 +19,11 @@ export async function logAuditAction(params: {
   entityId?: string;
   metadata?: Record<string, unknown>;
 }): Promise<void> {
-  mockAuditLogs.unshift({
-    id: `log-${Date.now()}`,
+  await writeAuditLog({
     actorProfileId: params.actorProfileId,
-    actorName: params.actorName,
     action: params.action,
     entityType: params.entityType,
     entityId: params.entityId,
-    metadata: params.metadata ?? {},
-    createdAt: new Date().toISOString(),
+    metadata: params.metadata,
   });
 }

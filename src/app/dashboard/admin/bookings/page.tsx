@@ -1,6 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser, getSessions, getParticipantName } from '@/data/mock';
+import { getAllServiceOrders } from '@/data/domains/services';
 import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
@@ -16,7 +17,7 @@ export default async function Page() {
   }
 
   const allBookings = await getSessions();
-  const allServiceOrders = await import('@/data/mock').then(m => m.getServiceOrders());
+  const allServiceOrders = await getAllServiceOrders();
   
   const formatted = allBookings.map(b => {
     const so = allServiceOrders.find(o => o.id === b.id);

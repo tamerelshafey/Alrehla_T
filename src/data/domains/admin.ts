@@ -154,28 +154,47 @@ export const getSupportSessionRequests = async (): Promise<SupportSessionRequest
   }));
 };
 
-export const mockAuditLogs: AuditLog[] = [
-  { id: 'log-1', action: 'تسجيل دخول ناجح', actorName: 'محمد طارق (مدير)', createdAt: '2023-10-27T08:00:00Z', entityType: 'User' },
-  { id: 'log-2', action: 'تعديل صلاحيات مستخدم', actorName: 'نور مصطفى (مشرف)', createdAt: '2023-10-27T09:15:00Z', entityType: 'User' },
-  { id: 'log-3', action: 'إيقاف حساب مدرب', actorName: 'محمد طارق (مدير)', createdAt: '2023-10-26T14:30:00Z', entityType: 'Instructor' },
-  { id: 'log-4', action: 'الموافقة على طلب انضمام', actorName: 'نور مصطفى (مشرف)', createdAt: '2023-10-26T11:20:00Z', entityType: 'JoinRequest' },
-  { id: 'log-5', action: 'تصدير تقرير مالي', actorName: 'محمد طارق (مدير)', createdAt: '2023-10-25T16:45:00Z', entityType: 'Report' },
-];
+export async function getAuditLogs(): Promise<AuditLog[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('audit_logs')
+    .select('id, actor_profile_id, action, entity_type, entity_id, metadata, created_at')
+    .order('created_at', { ascending: false })
+    .limit(200);
 
-export const getAuditLogs = async (): Promise<AuditLog[]> => mockAuditLogs;
+  if (error || !data) return [];
 
-
-
+  return data.map((row) => ({
+    id: row.id,
+    actorProfileId: row.actor_profile_id ?? undefined,
+    action: row.action,
+    entityType: row.entity_type ?? '',
+    entityId: row.entity_id ?? undefined,
+    metadata: (row.metadata as Record<string, unknown> | null) ?? undefined,
+    createdAt: row.created_at,
+  }));
+}
 
 export const mockWithdrawalRequests: import('@/types').WithdrawalRequest[] = [];
 
-export const logAuditAction = async (data: Omit<import('@/types').AuditLog, 'id' | 'createdAt'>) => {
-  mockAuditLogs.unshift({
-    id: `log-${Date.now()}`,
-    createdAt: new Date().toISOString(),
-    ...data,
+/**
+ * Writes a real audit entry. This used to push onto an in-memory array, which
+ * meant every recorded action was lost the moment the server restarted — the
+ * audit log was, in effect, not an audit log.
+ */
+export async function logAuditAction(
+  data: Omit<import('@/types').AuditLog, 'id' | 'createdAt'>
+) {
+  const supabase = await createClient();
+  const { error } = await supabase.from('audit_logs').insert({
+    actor_profile_id: data.actorProfileId ?? null,
+    action: data.action,
+    entity_type: data.entityType ?? null,
+    entity_id: data.entityId ?? null,
+    metadata: (data.metadata as never) ?? null,
   });
-};
+  if (error) console.error('Error writing audit log', error);
+}
 
 export const mockPublisherPricingSettings: PricingFormulaSettings[] = [
   { id: 'publisher-default', platformMultiplier: 1.1, fixedAdminFee: 20, updatedAt: new Date().toISOString() }

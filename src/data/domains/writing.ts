@@ -437,20 +437,25 @@ export const mockCourseSubscriptions: CourseSubscription[] = [
   }
 ];
 
-export async function getServiceOrders(): Promise<ServiceOrder[]> {
-  await new Promise(resolve => setTimeout(resolve, 600));
-  if (process.env.NODE_ENV === 'development') {
-    return mockServiceOrders;
-  }
-  return [];
-}
-
 export async function getCourseSubscriptions(): Promise<CourseSubscription[]> {
-  await new Promise(resolve => setTimeout(resolve, 600));
-  if (process.env.NODE_ENV === 'development') {
-    return mockCourseSubscriptions;
-  }
-  return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('course_subscriptions')
+    .select('id, package_id, user_id, participant_type, child_id, status, started_at, created_at')
+    .order('created_at', { ascending: false });
+
+  if (error || !data) return [];
+
+  return data.map((row) => ({
+    id: row.id,
+    packageId: row.package_id,
+    userId: row.user_id,
+    participantType: row.participant_type as CourseSubscription['participantType'],
+    childId: row.child_id ?? undefined,
+    status: row.status as CourseSubscription['status'],
+    startedAt: row.started_at ?? row.created_at,
+    createdAt: row.created_at,
+  }));
 }
 
 
@@ -664,17 +669,77 @@ export const getPricingFormulaSettings = async () => {
   };
 };
 
-export const getInstructorCompensationProfile = async (instructorId: string) =>
-  Promise.resolve(mockInstructorCompensationProfiles.find(c => c.instructorId === instructorId) || null);
+export async function getInstructorCompensationProfile(
+  instructorId: string
+): Promise<InstructorCompensationProfile | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('instructor_compensation_profiles')
+    .select('*')
+    .eq('instructor_id', instructorId)
+    .maybeSingle();
 
-export const getInstructorCertification = async (instructorId: string) =>
-  Promise.resolve(mockInstructorCertifications.find(c => c.instructorId === instructorId) || null);
+  if (error || !data) return null;
 
-export let mockProfileUpdateRequests: import('@/types').ProfileUpdateRequest[] = [];
+  return {
+    id: data.id,
+    instructorId: data.instructor_id,
+    billingModel: data.billing_model as InstructorCompensationProfile['billingModel'],
+    selectedPricingOptionId: data.selected_pricing_option_id ?? '',
+    monthlyMinimumHours: data.monthly_minimum_hours ?? 0,
+    overtimeRatePerHour: data.overtime_rate_per_hour ?? undefined,
+    approvalStatus: data.approval_status as InstructorCompensationProfile['approvalStatus'],
+    adminNotes: data.admin_notes ?? undefined,
+    reviewedByProfileId: data.reviewed_by_profile_id ?? undefined,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  };
+}
 
-export const getProfileUpdateRequestsByInstructor = async (instructorId: string) => {
-  return Promise.resolve(mockProfileUpdateRequests.filter(req => req.instructorId === instructorId));
-};
+export async function getInstructorCertification(
+  instructorId: string
+): Promise<InstructorCertification | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('instructor_certifications')
+    .select('*')
+    .eq('instructor_id', instructorId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  return {
+    id: data.id,
+    instructorId: data.instructor_id,
+    trainingCompletedAt: data.training_completed_at ?? undefined,
+    trainingMeetingLink: data.training_meeting_link ?? undefined,
+    examPassed: data.exam_passed,
+    examScore: data.exam_score ?? undefined,
+    certifiedAt: data.certified_at ?? undefined,
+  };
+}
+
+export async function getProfileUpdateRequestsByInstructor(
+  instructorId: string
+): Promise<import('@/types').ProfileUpdateRequest[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('profile_update_requests')
+    .select('*')
+    .eq('instructor_id', instructorId)
+    .order('created_at', { ascending: false });
+
+  if (error || !data) return [];
+
+  return data.map((row) => ({
+    id: row.id,
+    instructorId: row.instructor_id,
+    requestedChanges: (row.requested_changes ?? {}) as import('@/types').ProfileUpdateRequest['requestedChanges'],
+    status: row.status as import('@/types').ProfileUpdateRequest['status'],
+    adminFeedback: row.admin_feedback ?? undefined,
+    createdAt: row.created_at,
+  }));
+}
 
 export const getSessions = async (): Promise<SessionWithDetails[]> => {
   const supabase = await createClient();
