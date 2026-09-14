@@ -383,6 +383,9 @@ export type Database = {
           status: Database["public"]["Enums"]["payout_status_enum"]
           created_at: string
           updated_at: string
+          source_type: string | null
+          source_id: string | null
+          description: string | null
         }
         Insert: {
           id?: string
@@ -392,6 +395,9 @@ export type Database = {
           status?: Database["public"]["Enums"]["payout_status_enum"]
           created_at?: string
           updated_at?: string
+          source_type?: string | null
+          source_id?: string | null
+          description?: string | null
         }
         Update: {
           id?: string
@@ -401,6 +407,9 @@ export type Database = {
           status?: Database["public"]["Enums"]["payout_status_enum"]
           created_at?: string
           updated_at?: string
+          source_type?: string | null
+          source_id?: string | null
+          description?: string | null
         }
         Relationships: []
       }
@@ -891,6 +900,12 @@ export type Database = {
           comment: string | null
           booking_id: string | null
           created_at: string
+          reviewer_profile_id: string | null
+          service_order_id: string | null
+          standalone_service_id: string | null
+          service_rating: number | null
+          is_hidden: boolean
+          hidden_reason: string | null
         }
         Insert: {
           id?: string
@@ -901,6 +916,12 @@ export type Database = {
           comment?: string | null
           booking_id?: string | null
           created_at?: string
+          reviewer_profile_id?: string | null
+          service_order_id?: string | null
+          standalone_service_id?: string | null
+          service_rating?: number | null
+          is_hidden?: boolean
+          hidden_reason?: string | null
         }
         Update: {
           id?: string
@@ -910,6 +931,39 @@ export type Database = {
           rating?: number
           comment?: string | null
           booking_id?: string | null
+          created_at?: string
+          reviewer_profile_id?: string | null
+          service_order_id?: string | null
+          standalone_service_id?: string | null
+          service_rating?: number | null
+          is_hidden?: boolean
+          hidden_reason?: string | null
+        }
+        Relationships: []
+      }
+      service_order_messages: {
+        Row: {
+          id: string
+          order_id: string
+          sender_profile_id: string
+          body: string
+          is_delivery: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          sender_profile_id: string
+          body: string
+          is_delivery?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          sender_profile_id?: string
+          body?: string
+          is_delivery?: boolean
           created_at?: string
         }
         Relationships: []
@@ -925,6 +979,9 @@ export type Database = {
           transaction_reference: string | null
           created_at: string
           instructor_id: string | null
+          delivered_at: string | null
+          completed_at: string | null
+          instructor_earning: number | null
         }
         Insert: {
           id?: string
@@ -936,6 +993,9 @@ export type Database = {
           transaction_reference?: string | null
           created_at?: string
           instructor_id?: string | null
+          delivered_at?: string | null
+          completed_at?: string | null
+          instructor_earning?: number | null
         }
         Update: {
           id?: string
@@ -947,6 +1007,9 @@ export type Database = {
           transaction_reference?: string | null
           created_at?: string
           instructor_id?: string | null
+          delivered_at?: string | null
+          completed_at?: string | null
+          instructor_earning?: number | null
         }
         Relationships: []
       }
@@ -1319,7 +1382,7 @@ export type Database = {
       publisher_status: "pending" | "active" | "suspended"
       publisher_status_enum: "pending" | "active" | "suspended"
       requested_role: "instructor" | "publisher"
-      service_order_status: "pending" | "awaiting_verification" | "paid" | "refunded"
+      service_order_status: "pending" | "awaiting_verification" | "paid" | "refunded" | "in_progress" | "delivered" | "completed" | "cancelled"
       session_request_status: "pending" | "contacted" | "closed"
       sub_status_enum: "active" | "cancelled" | "paused"
       support_session_status_enum: "pending" | "contacted" | "resolved"

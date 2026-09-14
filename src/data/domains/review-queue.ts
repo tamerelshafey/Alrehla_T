@@ -35,6 +35,7 @@ export async function getReviewQueue(): Promise<ReviewQueueItem[]> {
     openTickets,
     sessionRequests,
     withdrawals,
+    stalledOrders,
   ] = await Promise.all([
     supabase.from('orders').select('id', head).eq('status', 'awaiting_verification'),
     supabase.from('service_orders').select('id', head).eq('status', 'awaiting_verification'),
@@ -49,6 +50,13 @@ export async function getReviewQueue(): Promise<ReviewQueueItem[]> {
     supabase.from('support_tickets').select('id', head).eq('status', 'open'),
     supabase.from('support_session_requests').select('id', head).eq('status', 'pending'),
     supabase.from('withdrawal_requests').select('id', head).eq('status', 'pending'),
+    // Delivered more than 7 days ago and still unconfirmed by the customer.
+    // No scheduled job: the cutoff is computed when this page is opened.
+    supabase
+      .from('service_orders')
+      .select('id', head)
+      .eq('status', 'delivered')
+      .lt('delivered_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
   ]);
 
   // A count the current admin is not allowed to read comes back as an error or
@@ -82,6 +90,14 @@ export async function getReviewQueue(): Promise<ReviewQueueItem[]> {
       count: n(withdrawals),
       href: '/dashboard/admin/finance/instructor-payouts',
       permission: 'canManageFinance',
+      urgent: true,
+    },
+    {
+      key: 'stalled_orders',
+      label: 'طلبات سلّمت ولم يؤكدها العميل',
+      count: n(stalledOrders),
+      href: '/dashboard/admin/orders/services',
+      permission: 'canManageOrders',
       urgent: true,
     },
     {

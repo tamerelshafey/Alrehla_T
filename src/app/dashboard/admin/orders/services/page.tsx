@@ -11,6 +11,17 @@ import { StatusBadge } from '@/components/StatusBadge';
 
 export const dynamic = 'force-dynamic';
 
+const ORDER_STATUS: Record<string, { label: string; type: 'success' | 'warning' | 'neutral' }> = {
+  pending: { label: 'بانتظار الدفع', type: 'warning' },
+  awaiting_verification: { label: 'بانتظار تأكيد الدفع', type: 'warning' },
+  paid: { label: 'مدفوع', type: 'success' },
+  in_progress: { label: 'جاري التنفيذ', type: 'warning' },
+  delivered: { label: 'تم التسليم', type: 'warning' },
+  completed: { label: 'مكتمل', type: 'success' },
+  refunded: { label: 'مسترجع', type: 'neutral' },
+  cancelled: { label: 'ملغي', type: 'neutral' },
+};
+
 export default async function Page() {
   const user = await getCurrentUser();
   if (!hasAdminPermission(user, 'canManageOrders')) {
@@ -21,13 +32,20 @@ export default async function Page() {
 
   const formatted = orders.map(order => ({
     ...order,
-    idDisplay: <span className="font-mono text-xs font-bold text-blue-600">#{order.id.slice(0, 8)}</span>,
+    idDisplay: (
+      <Link
+        href={`/dashboard/admin/orders/services/${order.id}`}
+        className="font-mono text-xs font-bold text-blue-600 hover:underline"
+      >
+        #{order.id.slice(0, 8)}
+      </Link>
+    ),
     dateDisplay: formatDate(order.createdAt),
     amountDisplay: `${formatPrice(order.amount)}`,
     statusDisplay: (
-      <StatusBadge 
-        type={order.status === 'paid' ? 'success' : order.status === 'refunded' ? 'neutral' : 'warning'}
-        label={order.status === 'paid' ? 'مدفوع' : order.status === 'refunded' ? 'مسترجع' : order.status === 'awaiting_verification' ? 'بانتظار تأكيد الدفع' : 'قيد الانتظار'}
+      <StatusBadge
+        type={ORDER_STATUS[order.status]?.type ?? 'warning'}
+        label={ORDER_STATUS[order.status]?.label ?? order.status}
       />
     )
   }));

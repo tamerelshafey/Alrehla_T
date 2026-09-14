@@ -1,6 +1,7 @@
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { StatusBadge } from '@/components/StatusBadge';
+import Link from 'next/link';
 import { formatDate, formatPrice } from '@/lib/utils';
 import { getSessions } from '@/data/domains/writing';
 import { getMyServiceOrders } from '@/data/domains/services';
@@ -8,10 +9,14 @@ import { getMyServiceOrders } from '@/data/domains/services';
 export const dynamic = 'force-dynamic';
 
 const SERVICE_STATUS: Record<string, { label: string; type: 'success' | 'warning' | 'neutral' }> = {
-  paid: { label: 'مدفوع', type: 'success' },
+  pending: { label: 'بانتظار الدفع', type: 'warning' },
   awaiting_verification: { label: 'بانتظار تأكيد الدفع', type: 'warning' },
-  pending: { label: 'قيد الانتظار', type: 'warning' },
+  paid: { label: 'مدفوع', type: 'success' },
+  in_progress: { label: 'جاري التنفيذ', type: 'warning' },
+  delivered: { label: 'تم التسليم', type: 'warning' },
+  completed: { label: 'مكتمل', type: 'success' },
   refunded: { label: 'مسترجع', type: 'neutral' },
+  cancelled: { label: 'ملغي', type: 'neutral' },
 };
 
 const SESSION_STATUS: Record<string, { label: string; type: 'success' | 'warning' | 'neutral' }> = {
@@ -31,7 +36,14 @@ export default async function CreativeWritingOrdersPage() {
     const status = SERVICE_STATUS[order.status] ?? { label: order.status, type: 'warning' as const };
     return {
       id: order.id,
-      serviceName: order.serviceName,
+      serviceName: (
+        <Link
+          href={`/account/orders/creative-writing/${order.id}`}
+          className="font-bold text-amber-600 hover:underline"
+        >
+          {order.serviceName}
+        </Link>
+      ),
       instructor: order.instructorName ?? '—',
       date: formatDate(order.createdAt),
       amount: formatPrice(order.amount),

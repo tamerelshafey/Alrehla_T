@@ -131,6 +131,9 @@ export type ServiceOrderRow = {
   status: string;
   transactionReference: string | null;
   createdAt: string;
+  deliveredAt: string | null;
+  completedAt: string | null;
+  instructorEarning: number | null;
 };
 
 async function mapServiceOrders(rows: any[]): Promise<ServiceOrderRow[]> {
@@ -148,12 +151,15 @@ async function mapServiceOrders(rows: any[]): Promise<ServiceOrderRow[]> {
       status: row.status,
       transactionReference: row.transaction_reference,
       createdAt: row.created_at,
+      deliveredAt: row.delivered_at ?? null,
+      completedAt: row.completed_at ?? null,
+      instructorEarning: row.instructor_earning ?? null,
     };
   });
 }
 
 const SERVICE_ORDER_SELECT =
-  'id, buyer_profile_id, standalone_service_id, instructor_id, amount, status, transaction_reference, created_at, standalone_services(name), instructors(display_name)';
+  'id, buyer_profile_id, standalone_service_id, instructor_id, amount, status, transaction_reference, created_at, delivered_at, completed_at, instructor_earning, standalone_services(name), instructors(display_name)';
 
 /** Every service order — row-level security limits this to admins. */
 export async function getAllServiceOrders(): Promise<ServiceOrderRow[]> {
@@ -216,6 +222,89 @@ export async function getServiceOrdersForInstructor(
     .select(SERVICE_ORDER_SELECT)
     .eq('instructor_id', instructorId)
     .order('created_at', { ascending: false });
+
+  if (error || !data) return [];
+  return mapServiceOrders(data);
+}
+
+/**
+ * One service order, for the order screen.
+ *
+ * Row-level security decides who may read it: the buyer, the assigned
+ * instructor, or an admin. Anyone else gets null, so the page itself does not
+ * have to repeat the authorisation rule.
+ */
+export async function getServiceOrderDetail(orderId: string): Promise<ServiceOrderRow | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('service_orders')
+    .select(SERVICE_ORDER_SELECT)
+    .eq('id', orderId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  const [row] = await mapServiceOrders([data]);
+  return row ?? null;
+}
+
+export type ServiceOrderMessage = {
+  id: string;
+  orderId: string;
+  senderProfileId: string;
+  senderName: string;
+  body: string;
+  isDelivery: boolean;
+  createdAt: string;
+};
+
+/** The conversation on one order, oldest first. */
+export async function getServiceOrderMessages(
+  orderId: string
+): Promise<ServiceOrderMessage[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('service_order_messages')
+    .select('id, order_id, sender_profile_id, body, is_delivery, created_at')
+    .eq('order_id', orderId)
+    .order('created_at', { ascending: true });
+
+  if (error || !data || data.length === 0) return [];
+
+  const senderIds = Array.from(new Set(data.map((m) => m.sender_profile_id)));
+  const { data: profiles } = await supabase
+    .from('user_profiles')
+    .select('id, full_name')
+    .in('id', senderIds);
+
+  const nameById = new Map((profiles ?? []).map((p) => [p.id, p.full_name]));
+
+  return data.map((m) => ({
+    id: m.id,
+    orderId: m.order_id,
+    senderProfileId: m.sender_profile_id,
+    senderName: nameById.get(m.sender_profile_id) ?? 'مستخدم',
+    body: m.body,
+    isDelivery: m.is_delivery,
+    createdAt: m.created_at,
+  }));
+}
+
+/**
+ * Orders delivered more than `days` ago that the customer has not confirmed.
+ *
+ * There is no scheduled job behind this: the condition is evaluated when an
+ * admin opens their dashboard, which is the only moment it matters.
+ */
+export async function getStalledServiceOrders(days = 7): Promise<ServiceOrderRow[]> {
+  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('service_orders')
+    .select(SERVICE_ORDER_SELECT)
+    .eq('status', 'delivered')
+    .lt('delivered_at', cutoff)
+    .order('delivered_at', { ascending: true });
 
   if (error || !data) return [];
   return mapServiceOrders(data);
