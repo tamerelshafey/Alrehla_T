@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { PageContainer } from '@/components/PageContainer';
 import { ArrowLeft, User, Star, Award, BookOpen, MessageCircle } from 'lucide-react';
 import { getInstructors } from '@/data/domains/writing';
+import { getInstructorRatingSummary, getReviewsForInstructor } from '@/data/domains/reviews';
+import { formatDate } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
@@ -11,11 +13,16 @@ import { Button } from '@/components/ui/Button';
 export default async function InstructorProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const instructors = await getInstructors();
-  const instructor = instructors.find(i => i.id === resolvedParams.id) || instructors[0];
+  const instructor = instructors.find(i => i.id === resolvedParams.id);
 
   if (!instructor) {
     notFound();
   }
+
+  const [rating, reviews] = await Promise.all([
+    getInstructorRatingSummary(instructor.id),
+    getReviewsForInstructor(instructor.id),
+  ]);
 
   return (
     <PageContainer className="!py-0 !space-y-0">
@@ -42,7 +49,7 @@ export default async function InstructorProfilePage({ params }: { params: Promis
                 </div>
                 <div className="mb-2">
                   <h1 className="text-3xl font-black text-slate-900">{instructor.displayName}</h1>
-                  <p className="text-lg font-medium text-emerald-600 mt-1">{instructor.specialties[0] || "مدرب معتمد"}</p>
+                  <p className="text-lg font-medium text-emerald-600 mt-1">{instructor.specialties?.[0] || "مدرب معتمد"}</p>
                 </div>
               </div>
               <div className="mb-2 shrink-0">
@@ -65,11 +72,10 @@ export default async function InstructorProfilePage({ params }: { params: Promis
                     <User className="h-6 w-6 text-emerald-500" />
                     النبذة الشخصية
                   </h2>
+                  {/* Only what the instructor actually wrote. A second,
+                      invented paragraph used to be printed here for everyone. */}
                   <p className="text-lg leading-relaxed font-medium text-slate-600">
-                    {instructor.bio}
-                  </p>
-                  <p className="text-lg leading-relaxed font-medium text-slate-600 mt-4">
-                    يمتلك خبرة واسعة في العمل مع الأطفال واليافعين، حيث يسعى دائماً لاكتشاف الصوت الداخلي لكل متدرب وتنميته من خلال ورش عمل تفاعلية وجلسات فردية تركز على بناء الثقة والخيال قبل التركيز على القواعد الصارمة للكتابة.
+                    {instructor.bio || 'لم تُضف نبذة بعد.'}
                   </p>
                 </section>
 
@@ -78,19 +84,64 @@ export default async function InstructorProfilePage({ params }: { params: Promis
                     <Award className="h-6 w-6 text-emerald-500" />
                     الخبرات والمنهجية
                   </h2>
+                  {/* The instructor's own specialties — this list used to be
+                      the same four invented lines on every profile. */}
                   <ul className="grid gap-4 sm:grid-cols-2">
-                    {[
-                      'تطوير القصص التفاعلية',
-                      'التحفيز الإبداعي للأطفال',
-                      'كتابة السيناريو والقصة القصيرة',
-                      'بناء شخصيات روائية معقدة',
-                    ].map((item, idx) => (
+                    {(instructor.specialties ?? []).map((item, idx) => (
                       <li key={idx} className="flex items-center gap-3 rounded-2xl bg-slate-50 p-4 font-bold text-slate-700">
                         <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
                         {item}
                       </li>
                     ))}
+                    {(instructor.specialties ?? []).length === 0 && (
+                      <li className="font-medium text-slate-400">لم تُضف التخصصات بعد.</li>
+                    )}
                   </ul>
+                </section>
+
+                <section>
+                  <h2 className="mb-4 flex items-center gap-2 text-2xl font-black text-slate-800">
+                    <Star className="h-6 w-6 text-emerald-500" />
+                    تقييمات المتدربين
+                  </h2>
+                  {reviews.length === 0 ? (
+                    <p className="rounded-2xl bg-slate-50 p-6 font-medium text-slate-500">
+                      لا توجد تقييمات بعد.
+                    </p>
+                  ) : (
+                    <div className="space-y-4">
+                      {reviews.map((review) => (
+                        <div
+                          key={review.id}
+                          className="rounded-2xl border border-slate-200 bg-white p-5"
+                        >
+                          <div className="mb-2 flex items-center justify-between gap-3">
+                            <span className="font-bold text-slate-800">{review.reviewerName}</span>
+                            <span className="text-xs font-bold text-slate-400">
+                              {formatDate(review.createdAt)}
+                            </span>
+                          </div>
+                          <div className="mb-3 flex gap-1">
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <Star
+                                key={n}
+                                className={`h-4 w-4 ${
+                                  n <= review.rating
+                                    ? 'fill-amber-400 text-amber-400'
+                                    : 'text-slate-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          {review.comment && (
+                            <p className="leading-relaxed font-medium whitespace-pre-wrap text-slate-600">
+                              {review.comment}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </section>
               </div>
 
@@ -98,23 +149,34 @@ export default async function InstructorProfilePage({ params }: { params: Promis
               <div className="space-y-6">
                 <div className="rounded-3xl border border-emerald-100 bg-emerald-50 p-6 text-center">
                   <Star className="mx-auto mb-2 h-8 w-8 text-emerald-600" />
-                  <div className="text-3xl font-black text-emerald-700">4.9/5</div>
-                  <p className="font-bold text-emerald-600/80">تقييم المتدربين</p>
-                </div>
-                
-                <div className="rounded-3xl border border-blue-100 bg-blue-50 p-6 text-center">
-                  <BookOpen className="mx-auto mb-2 h-8 w-8 text-blue-600" />
-                  <div className="text-3xl font-black text-blue-700">+120</div>
-                  <p className="font-bold text-blue-600/80">جلسة استشارية</p>
+                  {/* Was hard-coded "4.9/5" for every instructor. */}
+                  {rating.average == null ? (
+                    <>
+                      <div className="text-2xl font-black text-emerald-700">مدرب جديد</div>
+                      <p className="font-bold text-emerald-600/80">لا توجد تقييمات بعد</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-3xl font-black text-emerald-700">
+                        {rating.average.toFixed(1)}/5
+                      </div>
+                      <p className="font-bold text-emerald-600/80">
+                        من {rating.count} تقييم
+                      </p>
+                    </>
+                  )}
                 </div>
 
-                <div className="rounded-3xl border border-slate-100 bg-slate-50 p-6">
-                  <h3 className="mb-4 text-lg font-bold text-slate-800">التخصص العمري</h3>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full bg-white px-3 py-1 text-sm font-bold text-slate-600 shadow-sm border border-slate-200">الأطفال (6-12)</span>
-                    <span className="rounded-full bg-white px-3 py-1 text-sm font-bold text-slate-600 shadow-sm border border-slate-200">اليافعين (13-17)</span>
+                <div className="rounded-3xl border border-blue-100 bg-blue-50 p-6 text-center">
+                  <BookOpen className="mx-auto mb-2 h-8 w-8 text-blue-600" />
+                  <div className="text-3xl font-black text-blue-700">
+                    {instructor.yearsExperience}
                   </div>
+                  <p className="font-bold text-blue-600/80">
+                    {instructor.yearsExperience === 1 ? 'سنة خبرة' : 'سنوات خبرة'}
+                  </p>
                 </div>
+
               </div>
             </div>
 

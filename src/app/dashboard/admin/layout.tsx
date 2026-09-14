@@ -6,7 +6,7 @@ import { AdminPermission } from '@/types';
 import { 
   Users, UserCheck, LayoutDashboard, Settings,
   BookOpen, Box, ShoppingCart, Calendar,
-  LifeBuoy, FileText, DollarSign, ShieldAlert , LucideIcon 
+  LifeBuoy, FileText, DollarSign, ShieldAlert, Star, LucideIcon 
 } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { LogoutButton } from '@/components/LogoutButton';
@@ -32,6 +32,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { label: 'الحجوزات والجلسات', href: '/dashboard/admin/bookings', icon: Calendar, permission: 'canManageBookings' },
     { label: 'طلبات الانضمام', href: '/dashboard/admin/join-requests', icon: UserCheck, permission: 'canManageSupport' },
     { label: 'رسائل الدعم الفني', href: '/dashboard/admin/support/tickets', icon: LifeBuoy, permission: 'canManageSupport' },
+    { label: 'التقييمات', href: '/dashboard/admin/reviews', icon: Star, permission: 'canManageContent' },
     { label: 'المدونة', href: '/dashboard/admin/content/blog', icon: FileText, permission: 'canManageContent' },
     { label: 'محتوى الموقع', href: '/dashboard/admin/content/pages', icon: LayoutDashboard, permission: 'canManageContent' },
     { label: 'المالية', href: '/dashboard/admin/finance/instructor-payouts', icon: DollarSign, permission: 'canManageFinance' },

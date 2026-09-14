@@ -3,6 +3,8 @@ import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader'
 import { ServiceOrderDetail } from '@/components/services/ServiceOrderDetail';
 import { getCurrentUser } from '@/data/domains/auth';
 import { getServiceOrderDetail, getServiceOrderMessages } from '@/data/domains/services';
+import { hasReviewForOrder } from '@/data/domains/reviews';
+import { ReviewForm } from '@/components/services/ReviewForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,10 +18,19 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   if (!order || order.buyerProfileId !== user.id) notFound();
 
   const messages = await getServiceOrderMessages(id);
+  const alreadyReviewed =
+    order.status === 'completed' ? await hasReviewForOrder(id) : true;
 
   return (
     <div className="space-y-6">
       <DashboardPageHeader title="تفاصيل الطلب" backHref="/account/orders/creative-writing" />
+      {order.status === 'completed' && !alreadyReviewed && (
+        <ReviewForm
+          orderId={order.id}
+          serviceName={order.serviceName}
+          instructorName={order.instructorName}
+        />
+      )}
       <ServiceOrderDetail
         order={order}
         messages={messages}

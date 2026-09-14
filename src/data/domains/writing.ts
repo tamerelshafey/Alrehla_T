@@ -409,17 +409,6 @@ export const getBookings = async (): Promise<Booking[]> => {
   }));
 };
 
-/**
- * Reviews for one instructor.
- *
- * The `reviews` table exists but has no real rows and no submission flow is
- * built yet, so this returns empty rather than inventing reviews.
- */
-export const getReviewsByInstructor = async (
-  _instructorId: string
-): Promise<import('@/types').Review[]> => {
-  return [];
-};
 
 /** The pricing tiers an instructor can choose from. */
 export async function getInstructorPricingOptions(): Promise<InstructorPricingOption[]> {

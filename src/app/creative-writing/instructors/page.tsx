@@ -1,4 +1,6 @@
 import { getInstructors } from '@/data/domains/writing';
+import { getInstructorRatingSummaries } from '@/data/domains/reviews';
+import { RatingStars } from '@/components/services/RatingStars';
 import { User, Award, CheckCircle } from 'lucide-react';
 
 import { PageContainer } from '@/components/PageContainer';
@@ -9,6 +11,7 @@ import { Card } from '@/components/ui/Card';
 
 export default async function InstructorsPage() {
   const instructors = await getInstructors();
+  const ratings = await getInstructorRatingSummaries(instructors.map((i) => i.id));
 
   return (
     <PageContainer className="!py-0 !space-y-0">
@@ -46,9 +49,16 @@ export default async function InstructorsPage() {
                   <h2 className="mb-2 text-2xl font-black text-slate-800">
                     {instructor.displayName}
                   </h2>
-                  <div className="flex items-center gap-2 text-sm font-bold text-emerald-600">
-                    <Award className="h-4 w-4" />
-                    خبرة {instructor.yearsExperience} سنوات
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <div className="flex items-center gap-2 text-sm font-bold text-emerald-600">
+                      <Award className="h-4 w-4" />
+                      خبرة {instructor.yearsExperience}{' '}
+                      {instructor.yearsExperience === 1 ? 'سنة' : 'سنوات'}
+                    </div>
+                    <RatingStars
+                      summary={ratings.get(instructor.id) ?? { average: null, count: 0 }}
+                      size="sm"
+                    />
                   </div>
                 </div>
               </div>
