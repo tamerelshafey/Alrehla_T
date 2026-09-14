@@ -6,7 +6,7 @@ import { AdminPermission } from '@/types';
 import { 
   Users, UserCheck, LayoutDashboard, Settings,
   BookOpen, Box, ShoppingCart, Calendar,
-  LifeBuoy, FileText, DollarSign, ShieldAlert, Star, Truck, Quote, LucideIcon 
+  LifeBuoy, FileText, DollarSign, ShieldAlert, Star, Truck, Quote, Package, LucideIcon 
 } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { LogoutButton } from '@/components/LogoutButton';
@@ -28,6 +28,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { label: 'إعدادات تسعير الكتابة', href: '/dashboard/admin/settings/creative-writing-pricing', icon: Settings, permission: 'canManageCatalog' },
     { label: 'إعدادات تسعير الناشرين', href: '/dashboard/admin/settings/publisher-pricing', icon: Settings, permission: 'canManagePublishers' },
     { label: 'الاشتراكات', href: '/dashboard/admin/subscriptions/box', icon: Box, permission: 'canManageSubscriptions' },
+    // كانت شاشة الخطط مدفونة جوّه شاشة الاشتراكات وللعرض فقط.
+    { label: 'خطط صندوق الرحلة', href: '/dashboard/admin/subscriptions/box/plans', icon: Package, permission: 'canManageSubscriptions' },
     { label: 'الطلبات', href: '/dashboard/admin/orders', icon: ShoppingCart, permission: 'canManageOrders' },
     { label: 'أسعار الشحن', href: '/dashboard/admin/settings/shipping', icon: Truck, permission: 'canManageOrders' },
     { label: 'الحجوزات والجلسات', href: '/dashboard/admin/bookings', icon: Calendar, permission: 'canManageBookings' },

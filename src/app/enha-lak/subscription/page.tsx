@@ -1,3 +1,5 @@
+import Image from 'next/image';
+import { optimizedImageUrl } from '@/lib/cloudinary';
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import { getSubscriptionTiers } from '@/data/domains/products';
@@ -35,26 +37,51 @@ export default async function SubscriptionPage() {
       {/* Pricing */}
       <Section containerClassName="max-w-5xl">
         <div className="grid gap-8 md:grid-cols-3">
-          {tiers.map((tier, index) => {
-            // "الأكثر طلباً" used to be given to whichever plan happened to be second
-  // in the list. Nothing measures demand, so the badge is gone.
-  const isPopular = false;
+          {tiers.map((tier) => {
+            // شارة «الأكثر طلبًا» كانت بتتحط على الباقة التانية في القايمة
+            // مهما كانت. دلوقتي الإدارة هي اللي بتحددها من لوحة التحكم،
+            // وقاعدة البيانات بتمنع إن اتنين ياخدوها في نفس الوقت.
+            const isPopular = tier.isHighlighted;
+            // مزايا الباقة نفسها لو الإدارة كتبتها؛ وإلا المزايا المشتركة.
+            // الأول هو اللي بيفرّق باقة عن التانية للعميل.
+            const perks = tier.features.length > 0
+              ? tier.features
+              : benefits.map((b) => b.title);
             return (
               <Card
                 key={tier.id}
                 accentColor="rose"
-                className={`relative flex flex-col p-8 ${isPopular ? 'z-10 scale-105 border-rose-300 shadow-xl shadow-rose-500/10' : 'shadow-sm'}`}
+                className={`relative flex flex-col overflow-hidden p-8 ${isPopular ? 'z-10 border-rose-300 shadow-xl shadow-rose-500/10 md:scale-105' : 'shadow-sm'}`}
               >
                 {isPopular && (
                   <div className="absolute -top-4 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-rose-600 px-4 py-1 text-xs font-bold text-white shadow-sm">
                     <Sparkles className="h-3 w-3" />
-                    الأكثر طلباً
+                    الأكثر اختيارًا
+                  </div>
+                )}
+
+                {tier.imageUrl && (
+                  <div className="relative -mx-8 -mt-8 mb-6 h-40 w-[calc(100%+4rem)] overflow-hidden bg-slate-100">
+                    <Image
+                      src={optimizedImageUrl(tier.imageUrl, 700)}
+                      alt={tier.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 360px"
+                      className="object-cover"
+                      referrerPolicy="no-referrer"
+                    />
                   </div>
                 )}
 
                 <h3 className="mb-2 text-2xl font-bold text-slate-800">
                   {tier.name}
                 </h3>
+
+                {tier.description && (
+                  <p className="mb-4 text-sm leading-relaxed font-medium text-slate-500">
+                    {tier.description}
+                  </p>
+                )}
 
                 <div className="my-6">
                   <div className="flex items-baseline gap-1">
@@ -77,18 +104,14 @@ export default async function SubscriptionPage() {
                 )}
 
                 <ul className="mb-8 flex-1 space-y-4">
-                  {benefits.map((benefit, i) => {
-                    return (
-                      <li key={i} className="flex items-center gap-3">
-                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600">
-                          <Check className="h-3 w-3 font-bold" />
-                        </div>
-                        <span className="font-medium text-slate-700">
-                          {benefit.title}
-                        </span>
-                      </li>
-                    );
-                  })}
+                  {perks.map((perk, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600">
+                        <Check className="h-3 w-3 font-bold" />
+                      </div>
+                      <span className="font-medium text-slate-700">{perk}</span>
+                    </li>
+                  ))}
                 </ul>
 
                 <Button

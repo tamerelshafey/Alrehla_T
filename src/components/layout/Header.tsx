@@ -4,6 +4,7 @@ import { Compass } from 'lucide-react';
 import React from 'react';
 import { CartHeaderButton } from '@/components/cart/CartHeaderButton';
 import { HeaderAccount } from '@/components/layout/HeaderAccount';
+import { NavLinks, NavLinksMobile } from '@/components/layout/NavLinks';
 import { getSiteSettings } from '@/data/domains/content';
 import { slotImageUrl } from '@/lib/cloudinary';
 
@@ -56,14 +57,7 @@ export default async function Header() {
             )}
           </Link>
 
-          <nav className="hidden gap-1 text-[14px] font-bold text-slate-600 lg:flex">
-            <NavLink href="/">الرئيسية</NavLink>
-            <NavLink href="/enha-lak">إنها لك</NavLink>
-            <NavLink href="/creative-writing">بداية الرحلة</NavLink>
-            <NavLink href="/about">رحلتنا</NavLink>
-            <NavLink href="/blog">المدونة</NavLink>
-            <NavLink href="/join-us">انضم إلينا</NavLink>
-          </nav>
+          <NavLinks />
         </div>
 
         <div className="flex items-center gap-3">
@@ -71,17 +65,10 @@ export default async function Header() {
           <HeaderAccount />
         </div>
       </header>
-    </div>
-  );
-}
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="rounded-full px-4 py-2 transition-all hover:bg-white hover:text-slate-900 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:outline-none"
-    >
-      {children}
-    </Link>
+      {/* القائمة كانت مخفية تمامًا تحت 1024 بكسل، ومفيش زرار يفتحها —
+          الزائر على التليفون مكانش يقدر يتنقّل بين الأقسام من الهيدر. */}
+      <NavLinksMobile />
+    </div>
   );
 }

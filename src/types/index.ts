@@ -249,6 +249,15 @@ export type SubscriptionTier = {
   priceMonthly: number;
   durationMonths: number;
   savingsNote?: string;
+  /** صورة الباقة — تُرفع من لوحة الإدارة. */
+  imageUrl?: string;
+  description?: string;
+  /** ما يميّز الباقة عن غيرها، سطر لكل ميزة. */
+  features: string[];
+  /** باقة واحدة فقط تحمل شارة «الأكثر اختيارًا» — مضمون بفهرس في قاعدة البيانات. */
+  isHighlighted: boolean;
+  isActive: boolean;
+  sortOrder: number;
 };
 
 // أفراد العائلة المرتبطين بحساب

@@ -66,11 +66,24 @@ export const getAddonProducts = async (): Promise<AddonProduct[]> => {
   return [];
 };
 
-export const getSubscriptionTiers = async (): Promise<SubscriptionTier[]> => {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase.from('box_subscription_plans')
-    .select('id, name, price_total, price_monthly, duration_months, savings_note')
+export const getSubscriptionTiers = async (
+  options: { includeInactive?: boolean } = {},
+): Promise<SubscriptionTier[]> => {
+  // الإدارة بتحتاج تشوف الخطط المقفولة عشان تعدّلها، والزائر لأ.
+  // القراءة العامة بلا كوكيز عشان صفحة الاشتراك تفضل مخزّنة مسبقًا.
+  const supabase = options.includeInactive
+    ? await createClient()
+    : createPublicClient();
+
+  const query = supabase
+    .from('box_subscription_plans')
+    .select('*')
+    .order('sort_order', { ascending: true })
     .order('duration_months', { ascending: true });
+
+  if (!options.includeInactive) query.eq('is_active', true);
+
+  const { data, error } = await query;
 
   if (error || !data || data.length === 0) {
     if (process.env.NODE_ENV === 'development') {
@@ -79,16 +92,21 @@ export const getSubscriptionTiers = async (): Promise<SubscriptionTier[]> => {
     return [];
   }
 
-  return data.map((plan: any) => ({
+  return data.map((plan) => ({
     id: plan.id,
     name: plan.name,
     priceTotal: plan.price_total,
     priceMonthly: plan.price_monthly,
     durationMonths: plan.duration_months,
-    savingsNote: plan.savings_note
+    savingsNote: plan.savings_note ?? undefined,
+    imageUrl: plan.image_url ?? undefined,
+    description: plan.description ?? undefined,
+    features: plan.features ?? [],
+    isHighlighted: plan.is_highlighted ?? false,
+    isActive: plan.is_active ?? true,
+    sortOrder: plan.sort_order ?? 0,
   }));
 };
-
 
 export const getPublishers = async (): Promise<Publisher[]> => {
   const supabase = createPublicClient();

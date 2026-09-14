@@ -134,6 +134,10 @@ export const mockSubscriptionTiers: SubscriptionTier[] = [
     priceTotal: 450,
     priceMonthly: 450,
     durationMonths: 1,
+    features: [],
+    isHighlighted: false,
+    isActive: true,
+    sortOrder: 0,
   },
   {
     id: 'sub-2',
@@ -142,6 +146,10 @@ export const mockSubscriptionTiers: SubscriptionTier[] = [
     priceMonthly: 400,
     durationMonths: 3,
     savingsNote: `وفر ${formatPrice(150)}`,
+    features: [],
+    isHighlighted: false,
+    isActive: true,
+    sortOrder: 0,
   },
   {
     id: 'sub-3',
@@ -150,6 +158,10 @@ export const mockSubscriptionTiers: SubscriptionTier[] = [
     priceMonthly: 350,
     durationMonths: 6,
     savingsNote: `وفر ${formatPrice(600)}`,
+    features: [],
+    isHighlighted: false,
+    isActive: true,
+    sortOrder: 0,
   },
 ];
 

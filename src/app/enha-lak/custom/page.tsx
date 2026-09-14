@@ -85,16 +85,18 @@ export default async function CustomPage() {
                   )}
                 </div>
 
-                <AddToCartButton 
-                  product={{
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    quantity: 1,
-                    type: 'custom',
-                    imageUrl: product.coverImageUrl || undefined
-                  }} 
-                />
+                {/* كان هنا زرار «أضف للسلة» مباشر — والمنتجات دي مخصصة
+                    بطبيعتها. يعني العميل كان يقدر يدفع تمن قصة بطلها
+                    طفله من غير ما يدخل اسم الطفل ولا صورته ولا هواياته،
+                    فيوصل للإدارة طلب **مستحيل تنفيذه**. الشراء دلوقتي
+                    بيبدأ من التخصيص، والسلة بتتملى من آخر خطوة فيه. */}
+                <Button
+                  href={`/enha-lak/custom/${product.slug}`}
+                  accentColor="rose"
+                  className="w-full justify-center !bg-slate-900 !text-white hover:!bg-slate-800"
+                >
+                  ابدأ التخصيص
+                </Button>
                 <Button href={`/enha-lak/product/${product.slug}`} variant="secondary" className="mt-3 w-full">
                   عرض تفاصيل المنتج
                 </Button>

@@ -143,6 +143,13 @@ export type Database = {
           price_monthly: number
           duration_months: number
           savings_note: string | null
+          image_url: string | null
+          description: string | null
+          features: string[]
+          is_highlighted: boolean
+          is_active: boolean
+          sort_order: number
+          updated_at: string
         }
         Insert: {
           id?: string
@@ -151,6 +158,13 @@ export type Database = {
           price_monthly: number
           duration_months: number
           savings_note?: string | null
+          image_url?: string | null
+          description?: string | null
+          features?: string[]
+          is_highlighted?: boolean
+          is_active?: boolean
+          sort_order?: number
+          updated_at?: string
         }
         Update: {
           id?: string
@@ -159,6 +173,13 @@ export type Database = {
           price_monthly?: number
           duration_months?: number
           savings_note?: string | null
+          image_url?: string | null
+          description?: string | null
+          features?: string[]
+          is_highlighted?: boolean
+          is_active?: boolean
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
