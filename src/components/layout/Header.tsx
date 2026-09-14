@@ -2,12 +2,25 @@ import Link from 'next/link';
 import { User, Compass } from 'lucide-react';
 import React from 'react';
 import { CartHeaderButton } from '@/components/cart/CartHeaderButton';
+import { AccountMenu } from '@/components/layout/AccountMenu';
 import { getCurrentUser } from '@/data/domains/auth';
 
 export default async function Header() {
   const user = await getCurrentUser();
   const userRole = user.role;
   const isVisitor = userRole === 'visitor';
+
+  const getDashboardLabel = () => {
+    switch (userRole) {
+      case 'customer': return 'حسابي';
+      case 'student': return 'لوحة المتدرب';
+      case 'instructor': return 'لوحة المدرب';
+      case 'publisher': return 'لوحة الناشر';
+      case 'super_admin':
+      case 'general_supervisor': return 'لوحة الإدارة';
+      default: return 'حسابي';
+    }
+  };
 
   const getAccountLink = () => {
     switch (userRole) {
@@ -48,13 +61,23 @@ export default async function Header() {
           
           <div className="hidden h-6 w-px bg-slate-200 sm:block"></div>
           
-          <Link
-            href={getAccountLink()}
-            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 flex h-10 items-center gap-2 rounded-full bg-slate-900 px-5 text-sm font-bold text-white shadow-md transition-all hover:bg-amber-500 hover:shadow-lg hover:shadow-amber-500/20"
-          >
-            <User className="h-4 w-4" />
-            <span className="hidden sm:inline">{isVisitor ? 'دخول' : 'حسابي'}</span>
-          </Link>
+          {isVisitor ? (
+            <Link
+              href="/sign-in"
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 flex h-10 items-center gap-2 rounded-full bg-slate-900 px-5 text-sm font-bold text-white shadow-md transition-all hover:bg-amber-500 hover:shadow-lg hover:shadow-amber-500/20"
+            >
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">دخول</span>
+            </Link>
+          ) : (
+            /* Signing out used to be reachable only from a few dashboard
+               pages — a customer had no way to sign out at all. */
+            <AccountMenu
+              accountHref={getAccountLink()}
+              dashboardLabel={getDashboardLabel()}
+              displayName={user.fullName}
+            />
+          )}
         </div>
       </header>
     </div>

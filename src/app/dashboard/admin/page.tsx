@@ -1,5 +1,7 @@
 import { formatPrice } from '@/lib/utils';
 import { getCurrentUser } from '@/data/domains/auth';
+import { getReviewQueue } from '@/data/domains/review-queue';
+import { hasAdminPermission } from '@/lib/utils';
 import { getOrders } from '@/data/domains/orders';
 import { getInstructors, getSessions, getWritingPackages } from '@/data/domains/writing';
 import { redirect } from 'next/navigation';
@@ -11,6 +13,9 @@ import {
   Calendar,
   Users,
   Activity,
+  AlertCircle,
+  CheckCircle2,
+  ArrowLeft,
 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -26,6 +31,9 @@ export default async function AdminDashboard() {
   const orders = await getOrders();
   const bookings = await getSessions();
   const instructors = await getInstructors();
+  const reviewQueue = (await getReviewQueue()).filter((item) =>
+    hasAdminPermission(user, item.permission)
+  );
 
   const activePackages = packages.filter((p) => p.isActive).length;
 
@@ -43,6 +51,52 @@ export default async function AdminDashboard() {
         <Activity className="h-8 w-8 text-amber-500" />
         لوحة تحكم الإدارة
       </h1>
+
+      {/* What needs a decision. Nothing here used to be surfaced anywhere. */}
+      <section className="mb-8">
+        {reviewQueue.length === 0 ? (
+          <div className="flex items-center gap-3 rounded-3xl border border-emerald-200 bg-emerald-50 p-6">
+            <CheckCircle2 className="h-6 w-6 shrink-0 text-emerald-600" />
+            <p className="font-bold text-emerald-900">لا يوجد ما يحتاج مراجعة الآن.</p>
+          </div>
+        ) : (
+          <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6">
+            <div className="mb-5 flex items-center gap-2">
+              <AlertCircle className="h-6 w-6 text-amber-600" />
+              <h2 className="text-xl font-black text-amber-900">
+                بحاجة إلى مراجعة ({reviewQueue.reduce((sum, i) => sum + i.count, 0)})
+              </h2>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {[...reviewQueue]
+                .sort((a, b) => Number(b.urgent) - Number(a.urgent) || b.count - a.count)
+                .map((item) => (
+                  <Link
+                    key={item.key}
+                    href={item.href}
+                    className={`group flex items-center justify-between gap-3 rounded-2xl border bg-white p-4 transition-all hover:shadow-md ${
+                      item.urgent
+                        ? 'border-red-200 hover:border-red-400'
+                        : 'border-slate-200 hover:border-amber-400'
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-slate-700">{item.label}</p>
+                      <p
+                        className={`mt-1 text-2xl font-black ${
+                          item.urgent ? 'text-red-600' : 'text-slate-800'
+                        }`}
+                      >
+                        {item.count}
+                      </p>
+                    </div>
+                    <ArrowLeft className="h-5 w-5 shrink-0 text-slate-300 transition-transform group-hover:-translate-x-1 group-hover:text-slate-500" />
+                  </Link>
+                ))}
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* Stats */}
       <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
