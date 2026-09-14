@@ -13,8 +13,9 @@ import { useCart } from '@/context/CartContext';
 export default function CartClient() {
   const { items, removeItem, updateQuantity, cartTotal } = useCart();
   
-  const tax = cartTotal * 0.05;
-  const total = cartTotal + tax;
+  // A 5% "tax" used to be invented here and added to what the customer paid.
+  // There is no tax configured anywhere in the platform.
+  const total = cartTotal;
 
   return (
     <PageContainer className="!py-0 !space-y-0">
@@ -88,10 +89,6 @@ export default function CartClient() {
                   <div className="flex justify-between font-medium text-slate-600">
                     <span>المجموع الفرعي</span>
                     <span>{formatPrice(cartTotal)}</span>
-                  </div>
-                  <div className="flex justify-between font-medium text-slate-600">
-                    <span>الضريبة (5%)</span>
-                    <span>{formatPrice(tax)}</span>
                   </div>
                 </div>
                 

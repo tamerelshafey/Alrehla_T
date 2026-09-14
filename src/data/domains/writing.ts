@@ -58,7 +58,10 @@ export const getWritingPackageBySlug = async (
     .eq('slug', slug)
     .single();
 
+  // Sample data is for local development only — it must never stand in for
+  // a real record on the live site.
   if (error || !data) {
+    if (process.env.NODE_ENV !== 'development') return null;
     const pkg = mockWritingPackages.find((p) => p.slug === slug);
     return pkg || null;
   }
@@ -123,7 +126,10 @@ export const getInstructorById = async (
     .eq('id', id)
     .single();
 
+  // Sample data is for local development only — it must never stand in for
+  // a real record on the live site.
   if (error || !data) {
+    if (process.env.NODE_ENV !== 'development') return null;
     const inst = mockInstructors.find((i) => i.id === id);
     return inst || null;
   }

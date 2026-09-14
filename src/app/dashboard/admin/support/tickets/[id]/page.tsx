@@ -7,6 +7,7 @@ import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { Paperclip, Send, CheckCircle, Clock, Archive } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
+import { TicketReplyBox, CloseTicketButton } from './TicketActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,10 +41,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             label={target.status === 'open' ? 'مفتوحة (تحتاج لرد)' : target.status === 'answered' ? 'تم الرد' : 'مغلقة'}
           />
           {target.status !== 'closed' && (
-            <button className="flex items-center gap-2 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors">
-              <Archive className="h-4 w-4" />
-              إغلاق التذكرة
-            </button>
+            <CloseTicketButton ticketId={target.id} />
           )}
         </div>
       </div>
@@ -74,21 +72,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         
         {/* Reply Input */}
         {target.status !== 'closed' ? (
-          <div className="border-t border-slate-100 bg-white p-4">
-            <div className="flex items-center gap-3">
-              <button className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700">
-                <Paperclip className="h-5 w-5" />
-              </button>
-              <input
-                type="text"
-                placeholder="اكتب ردك هنا..."
-                className="h-12 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-5 text-slate-800 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all"
-              />
-              <button className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-md transition-colors hover:bg-amber-600">
-                <Send className="h-5 w-5 rtl:rotate-180" />
-              </button>
-            </div>
-          </div>
+          <TicketReplyBox ticketId={target.id} />
         ) : (
           <div className="border-t border-slate-100 bg-slate-50 p-6 text-center text-slate-500 font-medium">
             هذه التذكرة مغلقة ولا يمكن إضافة ردود جديدة.

@@ -90,11 +90,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <Card accentColor="rose" className="p-6">
               <div className="flex items-center gap-4">
                 <span className="text-3xl font-black text-rose-500">{formatPrice(product.price)}</span>
-                {product.electronicPrice && (
-                  <span className="text-sm font-bold text-slate-500 line-through">
-                    بدلاً من {formatPrice(product.price + 5000)}
-                  </span>
-                )}
+                {/* A struck-through "original price" of price + 5000 used to be
+                    printed here — an invented discount on every product. */}
               </div>
               
               <div className="mt-6">

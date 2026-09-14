@@ -72,19 +72,18 @@ export function AdminPublisherPayoutClient({ payout, publisher }: Props) {
           <h3 className="text-xl font-black text-slate-800">بيانات التحويل البنكي</h3>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-          <div>
-            <div className="text-sm text-slate-500 mb-1">اسم البنك</div>
-            <div className="font-bold text-slate-800">البنك الأهلي المصري</div>
-          </div>
-          <div>
-            <div className="text-sm text-slate-500 mb-1">رقم الحساب / IBAN</div>
-            <div className="font-bold text-slate-800 font-mono tracking-widest text-left" dir="ltr">EG90000100000000000000000000</div>
-          </div>
-          <div>
-            <div className="text-sm text-slate-500 mb-1">اسم المستفيد</div>
-            <div className="font-bold text-slate-800">{publisher?.name || 'مؤسسة النشر'}</div>
-          </div>
+        {/* The bank name and IBAN printed here were invented
+            (EG90000100000000000000000000) and shown next to the real payee's
+            name, so an admin could confirm a transfer against an account that
+            does not exist. There is no column anywhere for a payee's bank
+            details yet. */}
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+          <div className="mb-1 text-sm font-bold text-amber-900">اسم المستفيد</div>
+          <div className="mb-4 font-black text-amber-900">{publisher?.name || 'مؤسسة النشر'}</div>
+          <p className="text-sm font-medium text-amber-800">
+            بيانات الحساب البنكي غير مسجّلة في المنصة بعد — احصل عليها من المستفيد
+            مباشرة قبل التحويل.
+          </p>
         </div>
 
         {status !== 'paid' && (

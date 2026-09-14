@@ -20,7 +20,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
   const posts = await getBlogPosts();
-  const post = posts.find(p => p.slug === resolvedParams.slug) || posts[0]; // fallback for preview
+  // An unknown slug used to silently render the first article as if it were the
+  // one requested.
+  const post = posts.find((p) => p.slug === resolvedParams.slug);
 
   if (!post) {
     notFound();
@@ -56,7 +58,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             </div>
             <div className="flex items-center gap-2">
               <User className="h-5 w-5 text-amber-500" />
-              فريق الرحلة
+              {post.authorName || 'فريق الرحلة'}
             </div>
           </div>
         </header>
@@ -82,26 +84,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <p className="lead text-xl text-slate-600 font-medium leading-relaxed mb-8">
             {post.excerpt}
           </p>
-          <div className="text-slate-700 leading-loose space-y-6">
-            <p>
-              في عالم يتسارع فيه كل شيء، تظل القراءة والكتابة من أهم النوافذ التي يطل منها الطفل واليافع على عوالمه الداخلية والخارجية. من خلال القصة، لا يتعلم الطفل فقط مفردات جديدة، بل يكتسب مهارات حياتية وقيم إنسانية تبني شخصيته.
-            </p>
-            <h3 className="text-2xl font-bold text-slate-900 mt-10 mb-4">أهمية الخيال في التنشئة</h3>
-            <p>
-              يعد الخيال المحرك الأساسي للإبداع. عندما يقرأ الطفل قصة أو يبني أحداثها بنفسه، فإنه يضع نفسه مكان الأبطال، ويختبر مشاعر متنوعة في بيئة آمنة تماماً. هذه التجربة تعزز من قدرته على التعاطف وحل المشكلات.
-            </p>
-            <p>
-              من هنا، نؤمن في منصة «الرحلة» أن تخصيص القصص لتشمل تفاصيل عن الطفل نفسه، يضاعف من ارتباطه بالقراءة ويجعله شغوفاً بمعرفة المزيد. 
-            </p>
-            <h3 className="text-2xl font-bold text-slate-900 mt-10 mb-4">كيف نبني هذه التجربة؟</h3>
-            <ul className="list-disc pr-6 space-y-2 marker:text-amber-500">
-              <li>نعتمد على بناء سردي سليم يحترم وعي الطفل.</li>
-              <li>نشرك العائلة في اختيار القيم التربوية المناسبة.</li>
-              <li>نقدم منتجاً بصرياً عال الجودة يثري المخيلة.</li>
-            </ul>
-            <p>
-              في النهاية، تذكر أن تخصيص وقت للقراءة اليومية مع طفلك هو استثمار حقيقي في مستقبله وذاكرته.
-            </p>
+          {/* The article's own body. Four invented paragraphs used to be printed
+              here for every post, and post.content was never rendered at all. */}
+          <div className="text-slate-700 leading-loose space-y-6 whitespace-pre-wrap">
+            {post.content}
           </div>
         </article>
 

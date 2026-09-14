@@ -145,8 +145,10 @@ export const getProductBySlug = async (slug: string): Promise<PersonalizedProduc
     .eq('slug', slug)
     .single();
 
+  // Sample data is for local development only — it must never stand in for
+  // a real record on the live site.
   if (error || !data) {
-    // Fallback to mock data if not found in db
+    if (process.env.NODE_ENV !== 'development') return null;
     const product = mockProducts.find(p => p.slug === slug);
     if (product && product.ownerType === 'platform') {
       return product;

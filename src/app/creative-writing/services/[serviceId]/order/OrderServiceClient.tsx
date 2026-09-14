@@ -7,6 +7,8 @@ import { formatPrice } from '@/lib/utils';
 import { createServiceOrder } from '@/actions/service-orders';
 
 interface Props {
+  /** Read from site settings — it used to be the placeholder {paymentWalletNumber}. */
+  paymentWalletNumber: string;
   serviceId: string;
   serviceName: string;
   instructorId: string | null;
@@ -20,6 +22,7 @@ export function OrderServiceClient({
   instructorId,
   instructorName,
   amount,
+  paymentWalletNumber,
 }: Props) {
   const router = useRouter();
   const [transactionRef, setTransactionRef] = useState('');
@@ -74,7 +77,7 @@ export function OrderServiceClient({
         <p className="mb-2 text-sm font-bold text-slate-700">تعليمات الدفع عبر إنستاباي</p>
         <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
           <p className="mb-2 text-sm text-slate-600">قم بتحويل المبلغ إلى رقم المحفظة التالي:</p>
-          <p className="select-all font-mono text-xl font-black text-rose-700">01234567890</p>
+          <p className="select-all font-mono text-xl font-black text-rose-700">{paymentWalletNumber}</p>
         </div>
 
         <label htmlFor="ref" className="mb-2 block text-sm font-bold text-slate-700">

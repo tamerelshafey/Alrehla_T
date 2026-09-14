@@ -32,7 +32,13 @@ export async function updateSiteSettings(formData: FormData) {
   // Only overwrite a field the form actually supplied, so a partial save
   // cannot blank out settings it did not include.
   const next: Record<string, unknown> = { ...current };
-  for (const field of ['siteName', 'contactEmail', 'facebookUrl', 'instagramUrl']) {
+  for (const field of [
+    'siteName',
+    'contactEmail',
+    'facebookUrl',
+    'instagramUrl',
+    'paymentWalletNumber',
+  ]) {
     const value = formData.get(field);
     if (typeof value === 'string' && value.trim() !== '') {
       next[field] = value.trim();
@@ -59,5 +65,7 @@ export async function updateSiteSettings(formData: FormData) {
   });
 
   revalidatePath('/dashboard/admin/content/settings');
+  revalidatePath('/enha-lak/checkout');
+  revalidatePath('/creative-writing/booking/confirm');
   revalidatePath('/', 'layout');
 }

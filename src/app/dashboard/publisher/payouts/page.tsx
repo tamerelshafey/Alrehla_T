@@ -62,12 +62,16 @@ export default async function PublisherPayoutsPage() {
               <div className="text-xs text-slate-500 mb-1">طريقة الدفع المفضلة</div>
               <div className="font-bold text-slate-700">تحويل بنكي</div>
             </div>
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <div className="text-xs text-slate-500 mb-1">رقم الحساب / IBAN</div>
-              <div className="font-mono text-slate-700 font-bold tracking-widest text-left" dir="ltr">EG90000100000000000000000000</div>
+            {/* An invented IBAN used to be shown here as "your payment
+                details". Nothing stores a publisher's bank account. */}
+            <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+              <div className="mb-1 text-xs text-slate-500">رقم الحساب / IBAN</div>
+              <div className="font-bold text-slate-500">غير مسجّل</div>
             </div>
           </div>
-          <button className="text-sm font-bold text-blue-600 hover:underline">تعديل بيانات الدفع</button>
+          <p className="text-sm font-medium text-slate-500">
+            لتسجيل بيانات الدفع أو تعديلها، تواصل مع الإدارة.
+          </p>
         </div>
       </div>
 

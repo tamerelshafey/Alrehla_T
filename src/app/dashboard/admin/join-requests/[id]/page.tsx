@@ -7,6 +7,8 @@ import { Unauthorized } from '@/components/admin/Unauthorized';
 import { User, Mail, Phone, Calendar, Briefcase, FileText, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
 
+import { JoinRequestActions } from './JoinRequestActions';
+
 export const dynamic = 'force-dynamic';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
@@ -50,18 +52,17 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <div className="p-8 space-y-8">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex items-start gap-3">
-              <Mail className="h-5 w-5 text-slate-400 mt-0.5" />
+            {/* The join_requests table stores only a name, a requested role and
+                a status — there is no email or phone column to show, and the
+                invented ones that used to be printed here were worse than
+                nothing: an admin would have contacted a made-up address. */}
+            <div className="flex items-start gap-3 md:col-span-2">
+              <Mail className="mt-0.5 h-5 w-5 text-slate-400" />
               <div>
-                <div className="text-sm text-slate-500 mb-1">البريد الإلكتروني</div>
-                <div className="font-bold text-slate-800">applicant@example.com</div>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Phone className="h-5 w-5 text-slate-400 mt-0.5" />
-              <div>
-                <div className="text-sm text-slate-500 mb-1">رقم الهاتف</div>
-                <div className="font-bold text-slate-800">+20 100 123 4567</div>
+                <div className="mb-1 text-sm text-slate-500">بيانات التواصل</div>
+                <div className="font-bold text-slate-500">
+                  غير مسجّلة — نموذج الانضمام لا يحفظ بريدًا أو هاتفًا بعد.
+                </div>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -87,26 +88,14 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           {target.requestedRole === 'instructor' && (
             <div className="border-t border-slate-100 pt-8">
               <h3 className="font-bold text-slate-800 mb-4">روابط النماذج السابقة (Portfolio)</h3>
-              <ul className="list-disc list-inside text-blue-600 hover:underline cursor-pointer space-y-2">
-                <li>https://example.com/portfolio/work1</li>
-                <li>https://example.com/portfolio/work2</li>
-              </ul>
+              <p className="font-medium text-slate-500">لا توجد روابط أعمال مسجّلة.</p>
             </div>
           )}
 
           {/* Action Buttons */}
           <div className="pt-8 border-t border-slate-100 flex flex-wrap gap-4">
             {target.status === 'pending' ? (
-              <>
-                <button className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white shadow-md transition-colors hover:bg-emerald-700">
-                  <CheckCircle className="h-5 w-5" />
-                  قبول الطلب
-                </button>
-                <button className="flex items-center gap-2 rounded-xl bg-rose-50 px-6 py-3 font-bold text-rose-600 transition-colors hover:bg-rose-100">
-                  <XCircle className="h-5 w-5" />
-                  رفض الطلب
-                </button>
-              </>
+              <JoinRequestActions requestId={target.id} />
             ) : (
               <div className="flex items-center gap-2 text-slate-500 bg-slate-50 px-4 py-3 rounded-xl border border-slate-100">
                 <Clock className="h-5 w-5" />

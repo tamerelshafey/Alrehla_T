@@ -15,10 +15,12 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 
 interface Props {
+  /** Read from site settings — it used to be the placeholder {paymentWalletNumber}. */
+  paymentWalletNumber: string;
   user: UserType;
 }
 
-export function CheckoutClient({ user }: Props) {
+export function CheckoutClient({ user, paymentWalletNumber }: Props) {
   const { items, cartTotal } = useCart();
   const [step, setStep] = useState<1 | 2>(1); // 1: Shipping, 2: Payment
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'wallet' | 'fawry' | 'instapay'>('credit_card');
@@ -256,7 +258,7 @@ export function CheckoutClient({ user }: Props) {
                 <p className="text-sm font-bold text-slate-700 mb-2">تعليمات الدفع عبر إنستاباي</p>
                 <div className="bg-white border border-slate-200 rounded-xl p-4 mb-4">
                   <p className="text-sm text-slate-600 mb-2">قم بتحويل المبلغ إلى رقم المحفظة التالي:</p>
-                  <p className="text-xl font-mono font-black text-rose-700 select-all">01234567890</p>
+                  <p className="text-xl font-mono font-black text-rose-700 select-all">{paymentWalletNumber}</p>
                 </div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">رقم العملية / المرجع (Transaction Reference)</label>
                 <input type="text" required value={transactionRef} onChange={e => setTransactionRef(e.target.value)} placeholder="رقم العملية أو المرجع" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-rose-500 font-mono text-right" />

@@ -1,3 +1,4 @@
+import { getSiteSettings } from '@/data/domains/content';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
@@ -19,6 +20,7 @@ export default async function OrderServicePage({
   const { serviceId } = await params;
   const { instructor: instructorId } = await searchParams;
 
+  const settings = await getSiteSettings();
   const services = await getStandaloneServices();
   const service = services.find((s) => s.id === serviceId);
   if (!service) notFound();
@@ -64,6 +66,7 @@ export default async function OrderServicePage({
         <h1 className="mb-8 text-3xl font-black tracking-tight text-slate-900">تأكيد الطلب</h1>
 
         <OrderServiceClient
+          paymentWalletNumber={settings.paymentWalletNumber}
           serviceId={serviceId}
           serviceName={service.name}
           instructorId={instructorId ?? null}

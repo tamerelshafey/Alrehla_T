@@ -1,3 +1,4 @@
+import { getSiteSettings } from '@/data/domains/content';
 import { getCurrentUser } from '@/data/domains/auth';
 import { CheckoutClient } from './CheckoutClient';
 import { redirect } from 'next/navigation';
@@ -6,6 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function CheckoutPage() {
   const user = await getCurrentUser();
+  const settings = await getSiteSettings();
   
   if (!user) {
     redirect('/sign-in?callbackUrl=/enha-lak/checkout');
@@ -19,7 +21,7 @@ export default async function CheckoutPage() {
         <p className="mt-2 text-slate-600">أكمل بياناتك وأختر طريقة الدفع المناسبة لإتمام طلبك.</p>
       </div>
 
-      <CheckoutClient user={user} />
+      <CheckoutClient user={user} paymentWalletNumber={settings.paymentWalletNumber} />
     </div>
   );
 }

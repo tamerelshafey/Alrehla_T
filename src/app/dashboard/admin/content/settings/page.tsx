@@ -35,6 +35,21 @@ export default async function Page() {
               <label className="block text-sm font-bold text-slate-700 mb-2">رابط فيسبوك</label>
               <input type="url" name="facebookUrl" defaultValue={settings.facebookUrl} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
+            <div className="md:col-span-2">
+              <label className="mb-2 block text-sm font-bold text-slate-700">
+                رقم المحفظة لاستقبال التحويلات
+              </label>
+              <input
+                type="text"
+                name="paymentWalletNumber"
+                dir="ltr"
+                defaultValue={settings.paymentWalletNumber}
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-left text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              />
+              <p className="mt-2 text-sm font-medium text-amber-700">
+                هذا الرقم يظهر للعملاء في كل شاشات الدفع. راجعه جيدًا قبل الحفظ.
+              </p>
+            </div>
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">رابط إنستجرام</label>
               <input type="url" name="instagramUrl" defaultValue={settings.instagramUrl} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />

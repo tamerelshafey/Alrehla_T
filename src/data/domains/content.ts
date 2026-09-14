@@ -21,7 +21,13 @@ export interface SiteSettings {
   contactEmail: string;
   facebookUrl: string;
   instagramUrl: string;
+  /** The wallet customers transfer to. Editable from the admin settings screen
+   *  so it never has to be a number buried in the code again. */
+  paymentWalletNumber: string;
 }
+
+/** Used only when the settings row has no wallet number saved yet. */
+export const DEFAULT_PAYMENT_WALLET = '01063335517';
 
 export const getSiteSettings = async (): Promise<SiteSettings> => {
   const supabase = await createClient();
@@ -32,12 +38,25 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
 
   if (error || !data) {
     if (process.env.NODE_ENV === 'development') {
-      return mockSiteSettings;
+      return { ...mockSiteSettings, paymentWalletNumber: DEFAULT_PAYMENT_WALLET };
     }
-    return { siteName: "", contactEmail: "", facebookUrl: "", instagramUrl: "" };
+    return {
+      siteName: '',
+      contactEmail: '',
+      facebookUrl: '',
+      instagramUrl: '',
+      paymentWalletNumber: DEFAULT_PAYMENT_WALLET,
+    };
   }
 
-  return data.value as unknown as SiteSettings;
+  const value = data.value as unknown as Partial<SiteSettings>;
+  return {
+    siteName: value.siteName ?? '',
+    contactEmail: value.contactEmail ?? '',
+    facebookUrl: value.facebookUrl ?? '',
+    instagramUrl: value.instagramUrl ?? '',
+    paymentWalletNumber: value.paymentWalletNumber || DEFAULT_PAYMENT_WALLET,
+  };
 };
 
 import { createClient } from '@/lib/supabase/server';
@@ -98,7 +117,10 @@ export const getBlogPostBySlug = async (
     .eq('slug', slug)
     .single();
 
+  // Sample data is for local development only — it must never stand in for
+  // a real record on the live site.
   if (error || !data) {
+    if (process.env.NODE_ENV !== 'development') return null;
     const post = mockBlogPosts.find((p) => p.slug === slug);
     return post || null;
   }
