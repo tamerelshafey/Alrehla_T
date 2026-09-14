@@ -1,0 +1,139 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { createClient } from '@/lib/supabase/server';
+import { getCurrentUser } from '@/data/domains/auth';
+import { hasAdminPermission } from '@/lib/utils';
+import { logAuditAction } from '@/lib/audit';
+
+/**
+ * Shipping fees by area, managed from the admin dashboard.
+ *
+ * Checkout used to charge a flat 50 EGP written into the code. The fee now
+ * comes from this table, which means it has to be editable somewhere other
+ * than the database console.
+ */
+
+async function requireOrdersAdmin() {
+  const user = await getCurrentUser();
+  if (!hasAdminPermission(user, 'canManageOrders')) {
+    throw new Error('غير مصرح لك بإدارة أسعار الشحن');
+  }
+  return user;
+}
+
+function validate(governorate: string, city: string, fee: number) {
+  const gov = governorate.trim();
+  const area = city.trim();
+  if (!gov) throw new Error('اكتب اسم المحافظة');
+  if (!area) throw new Error('اكتب اسم المنطقة');
+  if (!Number.isFinite(fee) || fee < 0) throw new Error('السعر غير صحيح');
+  if (fee > 100000) throw new Error('السعر غير منطقي');
+  return { gov, area };
+}
+
+export async function upsertShippingRate(params: {
+  id?: string;
+  governorate: string;
+  city: string;
+  fee: number;
+  isActive: boolean;
+}) {
+  const admin = await requireOrdersAdmin();
+  const { gov, area } = validate(params.governorate, params.city, params.fee);
+  const supabase = await createClient();
+
+  const row = {
+    governorate: gov,
+    city: area,
+    fee: params.fee,
+    is_active: params.isActive,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { error } = params.id
+    ? await supabase.from('shipping_rates').update(row).eq('id', params.id)
+    : await supabase.from('shipping_rates').upsert(row, { onConflict: 'governorate,city' });
+
+  if (error) {
+    console.error('Error saving shipping rate', error);
+    throw new Error('تعذّر حفظ السعر');
+  }
+
+  await logAuditAction({
+    actorProfileId: admin.id,
+    actorName: admin.fullName,
+    action: params.id ? 'shipping_rate_updated' : 'shipping_rate_created',
+    entityType: 'ShippingRate',
+    entityId: params.id ?? `${gov}/${area}`,
+    metadata: { governorate: gov, city: area, fee: params.fee, isActive: params.isActive },
+  });
+
+  revalidatePath('/dashboard/admin/settings/shipping');
+  revalidatePath('/enha-lak/checkout');
+  return { ok: true };
+}
+
+/**
+ * Removing an area.
+ *
+ * Orders already placed keep the fee that was charged at the time — it is
+ * stored on the order itself — so deleting an area never changes a past order.
+ */
+export async function deleteShippingRate(id: string) {
+  const admin = await requireOrdersAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase.from('shipping_rates').delete().eq('id', id);
+  if (error) {
+    console.error('Error deleting shipping rate', error);
+    throw new Error('تعذّر حذف المنطقة');
+  }
+
+  await logAuditAction({
+    actorProfileId: admin.id,
+    actorName: admin.fullName,
+    action: 'shipping_rate_deleted',
+    entityType: 'ShippingRate',
+    entityId: id,
+  });
+
+  revalidatePath('/dashboard/admin/settings/shipping');
+  revalidatePath('/enha-lak/checkout');
+  return { ok: true };
+}
+
+/** Raising or lowering every area in one governorate at once. */
+export async function adjustShippingRatesByGovernorate(governorate: string, delta: number) {
+  const admin = await requireOrdersAdmin();
+  if (!Number.isFinite(delta) || delta === 0) throw new Error('اكتب قيمة التعديل');
+
+  const supabase = await createClient();
+  const { data: rates } = await supabase
+    .from('shipping_rates')
+    .select('id, fee')
+    .eq('governorate', governorate);
+
+  if (!rates?.length) throw new Error('لا توجد مناطق في هذه المحافظة');
+
+  for (const rate of rates) {
+    const next = Math.max(0, rate.fee + delta);
+    await supabase
+      .from('shipping_rates')
+      .update({ fee: next, updated_at: new Date().toISOString() })
+      .eq('id', rate.id);
+  }
+
+  await logAuditAction({
+    actorProfileId: admin.id,
+    actorName: admin.fullName,
+    action: 'shipping_rates_bulk_adjusted',
+    entityType: 'ShippingRate',
+    entityId: governorate,
+    metadata: { governorate, delta, areas: rates.length },
+  });
+
+  revalidatePath('/dashboard/admin/settings/shipping');
+  revalidatePath('/enha-lak/checkout');
+  return { ok: true, updated: rates.length };
+}

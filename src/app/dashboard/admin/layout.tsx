@@ -6,7 +6,7 @@ import { AdminPermission } from '@/types';
 import { 
   Users, UserCheck, LayoutDashboard, Settings,
   BookOpen, Box, ShoppingCart, Calendar,
-  LifeBuoy, FileText, DollarSign, ShieldAlert, Star, LucideIcon 
+  LifeBuoy, FileText, DollarSign, ShieldAlert, Star, Truck, LucideIcon 
 } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { LogoutButton } from '@/components/LogoutButton';
@@ -29,6 +29,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { label: 'إعدادات تسعير الناشرين', href: '/dashboard/admin/settings/publisher-pricing', icon: Settings, permission: 'canManagePublishers' },
     { label: 'الاشتراكات', href: '/dashboard/admin/subscriptions/box', icon: Box, permission: 'canManageSubscriptions' },
     { label: 'الطلبات', href: '/dashboard/admin/orders', icon: ShoppingCart, permission: 'canManageOrders' },
+    { label: 'أسعار الشحن', href: '/dashboard/admin/settings/shipping', icon: Truck, permission: 'canManageOrders' },
     { label: 'الحجوزات والجلسات', href: '/dashboard/admin/bookings', icon: Calendar, permission: 'canManageBookings' },
     { label: 'طلبات الانضمام', href: '/dashboard/admin/join-requests', icon: UserCheck, permission: 'canManageSupport' },
     { label: 'رسائل الدعم الفني', href: '/dashboard/admin/support/tickets', icon: LifeBuoy, permission: 'canManageSupport' },
