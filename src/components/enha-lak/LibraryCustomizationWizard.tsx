@@ -1,4 +1,6 @@
 'use client';
+
+import { uploadImage } from '@/lib/cloudinary';
 import { formatPrice } from '@/lib/utils';
 
 import React, { useState, useEffect } from 'react';
@@ -52,6 +54,7 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
   });
 
   const [isClient, setIsClient] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   useEffect(() => {
     setIsClient(true);
     const saved = sessionStorage.getItem(`library_wizard_${product.id}`);
@@ -94,6 +97,18 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
   };
 
   const onSubmit = async (data: LibraryFormValues) => {
+    // The chosen cover photo used to be dropped here entirely: the order went
+    // through with a child's name and a dedication, and no picture.
+    let coverPhotoUrl: string | undefined;
+    try {
+      if (data.coverPhotoFile instanceof File) {
+        coverPhotoUrl = (await uploadImage(data.coverPhotoFile, 'alrehla/library')).url;
+      }
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'تعذّر رفع الصورة');
+      return;
+    }
+
     addItem({
       id: `${product.id}-${Date.now()}`,
       name: product.name,
@@ -104,6 +119,7 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
       customizationData: {
         childName: data.newChildName || 'مشارك من العائلة',
         dedicationText: data.dedicationText,
+        coverPhotoUrl,
       }
     });
 
@@ -162,6 +178,11 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
         <div className="lg:col-span-2">
           <div className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200 md:p-10">
             <FormProvider {...methods}>
+              {uploadError && (
+                <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+                  {uploadError}
+                </div>
+              )}
               <form onSubmit={methods.handleSubmit(onSubmit)}>
                 {currentStep === 1 && <Step1ChildInfo onNext={onNext} />}
                 {currentStep === 2 && <Step2CoverDetails onNext={onNext} onPrev={onPrev} />}

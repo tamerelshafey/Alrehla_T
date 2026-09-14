@@ -1131,6 +1131,7 @@ export type Database = {
           fee: number
           is_active: boolean
           updated_at: string
+          city: string | null
         }
         Insert: {
           id?: string
@@ -1138,6 +1139,7 @@ export type Database = {
           fee: number
           is_active?: boolean
           updated_at?: string
+          city?: string | null
         }
         Update: {
           id?: string
@@ -1145,6 +1147,7 @@ export type Database = {
           fee?: number
           is_active?: boolean
           updated_at?: string
+          city?: string | null
         }
         Relationships: []
       }

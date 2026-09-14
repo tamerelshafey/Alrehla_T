@@ -17,8 +17,8 @@ import { Button } from '@/components/ui/Button';
 interface Props {
   /** Read from site settings — it used to be a placeholder number in the code. */
   paymentWalletNumber: string;
-  /** Shipping fee per governorate, set by the admin. Empty until configured. */
-  shippingRates: { governorate: string; fee: number }[];
+  /** Shipping fee per area, set by the admin. Empty until configured. */
+  shippingRates: { governorate: string; city: string; fee: number }[];
   user: UserType;
 }
 
@@ -50,7 +50,18 @@ export function CheckoutClient({ user, paymentWalletNumber, shippingRates }: Pro
   // governorate. A flat 50 EGP used to be charged with the comment
   // "Fixed shipping logic for demo".
   const needsShipping = items.some((item: { type?: string }) => item.type !== 'subscription');
-  const matchedRate = shippingRates.find((r) => r.governorate === shippingInfo.gov);
+  // The rate is per area, not per governorate: Cairo and Shorouk are both in
+  // Cairo and are not the same trip.
+  const matchedRate = shippingRates.find(
+    (r) => r.governorate === shippingInfo.gov && r.city === shippingInfo.city
+  );
+  const areasByGovernorate = shippingRates.reduce<Record<string, typeof shippingRates>>(
+    (acc, rate) => {
+      (acc[rate.governorate] ??= []).push(rate);
+      return acc;
+    },
+    {}
+  );
   const shippingKnown = !needsShipping || Boolean(matchedRate);
   const shipping = needsShipping ? (matchedRate?.fee ?? 0) : 0;
   const grandTotal = subtotal + shipping;
@@ -163,30 +174,40 @@ export function CheckoutClient({ user, paymentWalletNumber, shippingRates }: Pro
                 <input type="text" required value={shippingInfo.address} onChange={e => setShippingInfo({...shippingInfo, address: e.target.value})} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-rose-500 focus:bg-white" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">المحافظة</label>
-                  <select required value={shippingInfo.gov} onChange={e => setShippingInfo({...shippingInfo, gov: e.target.value})} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-rose-500 focus:bg-white">
-                    <option value="">اختر المحافظة...</option>
-                    {/* Three hard-coded governorates used to be the only
-                        choices. The list now comes from the shipping rates the
-                        admin has configured. */}
-                    {shippingRates.map((rate) => (
-                      <option key={rate.governorate} value={rate.governorate}>
-                        {rate.governorate}
-                      </option>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <label className="mb-2 block text-sm font-bold text-slate-700">
+                    المنطقة / المدينة
+                  </label>
+                  <select
+                    required
+                    value={shippingInfo.gov && shippingInfo.city ? `${shippingInfo.gov}|${shippingInfo.city}` : ''}
+                    onChange={(e) => {
+                      const [gov, city] = e.target.value.split('|');
+                      setShippingInfo({ ...shippingInfo, gov: gov ?? '', city: city ?? '' });
+                    }}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-rose-500 focus:bg-white"
+                  >
+                    <option value="">اختر المنطقة...</option>
+                    {/* Three hard-coded governorates used to be the only choices,
+                        and the fee was a flat 50 EGP whichever you picked. */}
+                    {Object.entries(areasByGovernorate).map(([gov, areas]) => (
+                      <optgroup key={gov} label={gov}>
+                        {areas.map((area) => (
+                          <option key={`${gov}|${area.city}`} value={`${gov}|${area.city}`}>
+                            {area.city} — {formatPrice(area.fee)}
+                          </option>
+                        ))}
+                      </optgroup>
                     ))}
                   </select>
                   {shippingRates.length === 0 && (
                     <p className="mt-2 text-xs font-bold text-amber-700">
-                      لم تُضبط محافظات الشحن بعد — تواصل مع الإدارة.
+                      لم تُضبط مناطق الشحن بعد — تواصل مع الإدارة.
                     </p>
                   )}
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">المدينة / المنطقة</label>
-                  <input type="text" required value={shippingInfo.city} onChange={e => setShippingInfo({...shippingInfo, city: e.target.value})} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-rose-500 focus:bg-white" />
-                </div>
+
                 <div className="md:col-span-2">
                   <label className="mb-2 block text-sm font-bold text-slate-700">
                     ملاحظات للتوصيل (اختياري)
@@ -322,7 +343,7 @@ export function CheckoutClient({ user, paymentWalletNumber, shippingRates }: Pro
                     ? shipping === 0
                       ? 'مجاناً'
                       : formatPrice(shipping)
-                    : 'يُحدَّد حسب المحافظة'}
+                    : 'يُحدَّد حسب المنطقة'}
               </span>
             </div>
           </div>
@@ -334,7 +355,7 @@ export function CheckoutClient({ user, paymentWalletNumber, shippingRates }: Pro
 
           {needsShipping && !shippingKnown && (
             <p className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-800">
-              الإجمالي بدون مصاريف الشحن — تُحسب بعد اختيار المحافظة.
+              الإجمالي بدون مصاريف الشحن — تُحسب بعد اختيار المنطقة.
             </p>
           )}
 

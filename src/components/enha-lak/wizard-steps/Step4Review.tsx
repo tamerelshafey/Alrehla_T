@@ -54,7 +54,7 @@ export function Step4Review({ onPrev, product }: { onPrev: () => void, product: 
             <div>
               <span className="text-slate-500 block mb-1">الصور المرفقة:</span>
               <span className="font-bold text-slate-800">
-                {values.facePhotoFile ? 'تم إرفاق صورة شخصية' : 'لم يتم الإرفاق'} 
+                {values.facePhotoFile ? 'تم رفع الصورة الشخصية' : 'لم يتم الإرفاق'} 
                 {values.secondPhotoFile && ' + صورة إضافية'}
               </span>
             </div>

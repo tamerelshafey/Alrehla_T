@@ -60,6 +60,8 @@ export const getOrders = async (): Promise<Order[]> => {
 
 export type ShippingRate = {
   governorate: string;
+  /** The city or district within it — Cairo and Shorouk are not the same trip. */
+  city: string;
   fee: number;
 };
 
@@ -75,10 +77,13 @@ export async function getShippingRates(): Promise<ShippingRate[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('shipping_rates')
-    .select('governorate, fee')
+    .select('governorate, city, fee')
     .eq('is_active', true)
-    .order('governorate', { ascending: true });
+    .order('governorate', { ascending: true })
+    .order('city', { ascending: true });
 
   if (error || !data) return [];
-  return data.map((r) => ({ governorate: r.governorate, fee: r.fee }));
+  return data
+    .filter((r) => Boolean(r.city))
+    .map((r) => ({ governorate: r.governorate, city: r.city as string, fee: r.fee }));
 }

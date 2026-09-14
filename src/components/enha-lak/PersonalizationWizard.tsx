@@ -1,4 +1,6 @@
 'use client';
+
+import { uploadImage } from '@/lib/cloudinary';
 import React, { useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -59,6 +61,7 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
   });
 
   const { handleSubmit, trigger, getValues, reset } = methods;
+  const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
     const saved = sessionStorage.getItem(`wizard_state_${product.id}`);
@@ -92,6 +95,25 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
   };
 
   const onSubmit = async (data: WizardFormValues) => {
+    // 0. Upload the photos the customer chose.
+    //
+    // Only the file NAME used to be kept: the File itself was dropped, so the
+    // book was ordered without the photo it is built from, while the review
+    // step said "تم إرفاق صورة شخصية".
+    let facePhotoUrl: string | undefined;
+    let secondPhotoUrl: string | undefined;
+    try {
+      if (data.facePhotoFile) {
+        facePhotoUrl = (await uploadImage(data.facePhotoFile, 'alrehla/personalization')).url;
+      }
+      if (data.secondPhotoFile) {
+        secondPhotoUrl = (await uploadImage(data.secondPhotoFile, 'alrehla/personalization')).url;
+      }
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'تعذّر رفع الصورة');
+      return;
+    }
+
     // 1. Create family member if new
     let childName = data.newChildName || '';
     let finalChildId = data.familyMemberId || '';
@@ -130,7 +152,8 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
         recipientType: 'child',
         childId: finalChildId || undefined,
         childName,
-        childPhotoFile: data.facePhotoFile ? data.facePhotoFile.name : undefined,
+        childPhotoUrl: facePhotoUrl,
+        secondPhotoUrl,
         heroDescription: data.heroDescription,
         storyGoal: data.storyGoal,
         familyMemberNames: data.familyMemberNames,
@@ -154,6 +177,12 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
           <div className="mb-8 rounded-3xl bg-white p-8 shadow-sm border border-slate-200">
             <WizardStepper currentStep={currentStep} />
             
+            {uploadError && (
+              <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+                {uploadError}
+              </div>
+            )}
+
             <div className="mt-8">
               {currentStep === 1 && <Step1ChildInfo onNext={() => handleNext(['familyMemberId', 'newChildName', 'newChildBirthDate', 'newChildGender'])} />}
               {currentStep === 2 && <Step2Details onNext={() => handleNext(['heroDescription', 'familyMemberNames', 'storyGoal', 'facePhotoFile'])} onPrev={handlePrev} />}
