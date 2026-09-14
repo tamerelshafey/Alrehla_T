@@ -1,0 +1,54 @@
+# فحوصات ما قبل النشر
+#
+# الغرض: سجل مرئي على GitHub لكل دفعة — إيه اللي نجح وإيه اللي فشل ومتى.
+#
+# ⚠️ الملف ده **مش** هو اللي بيمنع النشر.
+# Vercel بينشر من الـPush مباشرة ومش بيستنى GitHub. اللي بيمنع النشر فعلًا
+# هو إن `npm run build` بيشغّل `npm run verify` الأول (فحص الأنواع ثم
+# الاختبارات)، وVercel بينفّذ نفس الأمر ده. فشل أي فحص = فشل البناء =
+# النسخة القديمة تفضل شغالة والجديدة ما تنشرش.
+#
+# يعني الحماية في package.json، وده هنا للرؤية والتاريخ.
+
+name: الفحوصات
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    name: أنواع · اختبارات · lint · بناء
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: تثبيت الحزم
+        run: npm ci
+
+      - name: فحص الأنواع
+        run: npm run typecheck
+
+      - name: الاختبارات
+        run: npm test
+
+      - name: lint
+        run: npm run lint
+
+      # البناء آخر خطوة: أبطأ واحدة، ومفيش فايدة من تشغيلها لو حاجة قبلها فشلت.
+      # المتغيرات وهمية عن قصد — البناء بيحتاج وجودها لا صحتها، ومفيش
+      # مفتاح حقيقي بيتحط في GitHub لمجرد فحص بناء.
+      - name: البناء
+        run: npx next build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          NEXT_PUBLIC_SITE_URL: https://example.com
