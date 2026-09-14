@@ -105,30 +105,68 @@ export function AdminInstructorClient({ instructor, updateRequests, certificatio
               <div key={req.id} className="mb-6 last:mb-0 bg-white rounded-3xl p-6 border border-amber-100">
                 <div className="mb-4">
                   <span className="text-xs font-bold text-slate-500 block mb-2">تاريخ الطلب: {new Date(req.createdAt).toLocaleString('ar-EG')}</span>
+                  {/* Only the fields the instructor actually asked to change are
+                      shown — a request about the bio used to be rendered as if it
+                      were a work-model request. */}
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                      <div className="font-bold text-slate-700 mb-2">النظام المطلوب</div>
-                      <div>{req.requestedChanges.workModel === 'monthly' ? 'شهري' : 'بالجلسة'}</div>
-                      {req.requestedChanges.workModel === 'monthly' && <div>الساعات: {req.requestedChanges.monthlyHoursCommitted}</div>}
-                    </div>
-                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                      <div className="font-bold text-slate-700 mb-2">السعر المطلوب</div>
-                      <div>{req.requestedChanges.requestedPrice || 'فئة سعر رقم: ' + req.requestedChanges.selectedPricingOptionId}</div>
-                    </div>
+                    {req.requestedChanges.workModel !== undefined && (
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div className="font-bold text-slate-700 mb-2">النظام المطلوب</div>
+                        <div>{req.requestedChanges.workModel === 'monthly' ? 'شهري' : 'بالجلسة'}</div>
+                        {req.requestedChanges.workModel === 'monthly' && <div>الساعات: {req.requestedChanges.monthlyHoursCommitted}</div>}
+                      </div>
+                    )}
+                    {(req.requestedChanges.requestedPrice !== undefined || req.requestedChanges.selectedPricingOptionId !== undefined) && (
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div className="font-bold text-slate-700 mb-2">السعر المطلوب</div>
+                        <div>{req.requestedChanges.requestedPrice || 'فئة سعر رقم: ' + req.requestedChanges.selectedPricingOptionId}</div>
+                      </div>
+                    )}
+                    {req.requestedChanges.displayName !== undefined && (
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div className="font-bold text-slate-700 mb-2">الاسم المعروض</div>
+                        <div>{req.requestedChanges.displayName}</div>
+                      </div>
+                    )}
+                    {req.requestedChanges.yearsExperience !== undefined && (
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div className="font-bold text-slate-700 mb-2">سنوات الخبرة</div>
+                        <div>{req.requestedChanges.yearsExperience}</div>
+                      </div>
+                    )}
+                    {req.requestedChanges.bio !== undefined && (
+                      <div className="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div className="font-bold text-slate-700 mb-2">النبذة المطلوبة</div>
+                        <div className="leading-relaxed whitespace-pre-wrap">{req.requestedChanges.bio || '— فارغة —'}</div>
+                      </div>
+                    )}
+                    {req.requestedChanges.specialties !== undefined && (
+                      <div className="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div className="font-bold text-slate-700 mb-2">التخصصات المطلوبة</div>
+                        <div className="flex flex-wrap gap-2">
+                          {req.requestedChanges.specialties.length === 0 && <span>— فارغة —</span>}
+                          {req.requestedChanges.specialties.map((sp, i) => (
+                            <span key={i} className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-600">{sp}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="mb-6">
-                  <h4 className="font-bold text-slate-700 mb-3 text-sm">الجدول المطلوب</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {req.requestedChanges.weeklySchedule?.map((s, idx) => (
-                      <span key={idx} className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1 text-sm text-emerald-800">
-                        <span className="font-bold capitalize mr-1">{s.day}:</span> {s.time}
-                        {s.commitmentType === 'fixed_term' && <span className="text-xs block text-emerald-600">({s.commitmentMonths} شهور)</span>}
-                      </span>
-                    ))}
+                {req.requestedChanges.weeklySchedule !== undefined && (
+                  <div className="mb-6">
+                    <h4 className="font-bold text-slate-700 mb-3 text-sm">الجدول المطلوب</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {req.requestedChanges.weeklySchedule?.map((s, idx) => (
+                        <span key={idx} className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1 text-sm text-emerald-800">
+                          <span className="font-bold capitalize mr-1">{s.day}:</span> {s.time}
+                          {s.commitmentType === 'fixed_term' && <span className="text-xs block text-emerald-600">({s.commitmentMonths} شهور)</span>}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="flex flex-col gap-3">
                   <input 

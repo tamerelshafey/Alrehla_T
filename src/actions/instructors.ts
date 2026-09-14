@@ -85,6 +85,15 @@ export async function approveProfileUpdateRequest(requestId: string) {
   // Build the update from the requested changes only — never trust the payload
   // to carry fields the instructor is not allowed to change.
   const update: Database['public']['Tables']['instructors']['Update'] = {};
+
+  // Profile details (bio, specialties, years of experience, display name).
+  if (changes.displayName !== undefined) update.display_name = changes.displayName;
+  if (changes.bio !== undefined) update.bio = changes.bio;
+  if (changes.specialties !== undefined) update.specialties = changes.specialties;
+  if (changes.yearsExperience !== undefined) {
+    update.years_experience = changes.yearsExperience;
+  }
+
   if (changes.workModel) update.work_model = changes.workModel;
   if (changes.monthlyHoursCommitted !== undefined) {
     update.monthly_hours_committed = changes.monthlyHoursCommitted;
@@ -249,5 +258,62 @@ export async function updatePricingFormulaSettings(
   });
 
   revalidatePath('/dashboard/admin/settings/creative-writing-pricing');
+  return { success: true };
+}
+
+/**
+ * An admin editing an instructor's public profile directly.
+ *
+ * The instructor's own edits go through `profile_update_requests` for review;
+ * an admin with canManageInstructors edits in place, so existing instructor
+ * cards can be filled in without waiting for each instructor to log in.
+ */
+export async function updateInstructorProfileByAdmin(
+  instructorId: string,
+  details: {
+    displayName: string;
+    bio: string;
+    specialties: string[];
+    yearsExperience: number;
+  }
+) {
+  const currentUser = await requireInstructorAdmin();
+  const supabase = await createClient();
+
+  const displayName = details.displayName.trim();
+  if (!displayName) throw new Error('اسم المدرب مطلوب');
+  if (!Number.isFinite(details.yearsExperience) || details.yearsExperience < 0) {
+    throw new Error('سنوات الخبرة غير صحيحة');
+  }
+
+  const { error } = await supabase
+    .from('instructors')
+    .update({
+      display_name: displayName,
+      bio: details.bio.trim(),
+      specialties: details.specialties,
+      years_experience: details.yearsExperience,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', instructorId);
+
+  if (error) {
+    console.error('Error updating instructor profile', error);
+    throw new Error('تعذّر حفظ بيانات المدرب');
+  }
+
+  await logAuditAction({
+    actorProfileId: currentUser.id,
+    actorName: currentUser.fullName,
+    action: 'instructor_profile_edited_by_admin',
+    entityType: 'Instructor',
+    entityId: instructorId,
+    metadata: { displayName, yearsExperience: details.yearsExperience },
+  });
+
+  revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
+  revalidatePath('/dashboard/admin/instructors');
+  revalidatePath('/creative-writing/instructors');
+  revalidatePath(`/creative-writing/instructors/${instructorId}`);
   return { success: true };
 }

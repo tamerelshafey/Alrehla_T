@@ -7,6 +7,7 @@ import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { AdminInstructorClient } from './AdminInstructorClient';
 import { InstructorServicesSection } from './InstructorServicesSection';
+import { InstructorProfileEditor } from './InstructorProfileEditor';
 import { getStandaloneServices, getInstructorServiceOffers } from '@/data/domains/services';
 
 export const dynamic = 'force-dynamic';
@@ -33,6 +34,9 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         updateRequests={updateRequests} 
         certification={certification} 
       />
+      <div className="mt-8">
+        <InstructorProfileEditor instructor={target} />
+      </div>
       <div className="mt-8">
         <InstructorServicesSection
           instructorId={target.id}

@@ -20,8 +20,8 @@ export function ProfileFormShell({ defaultValues, children }: ProfileFormShellPr
         {/* Alert about approvals */}
         <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 mb-8 flex gap-3 text-blue-800">
           <div className="text-sm">
-            <p className="font-bold">مراجعة البيانات</p>
-            <p>أي تغييرات في الاسم، الصورة الشخصية، أو النبذة تخضع لمراجعة واعتماد الإدارة قبل نشرها للطلاب.</p>
+            <p className="font-bold">التعديل غير متاح حاليًا</p>
+            <p>تعديل بيانات هذا الملف غير مفعّل بعد — البيانات معروضة للاطلاع فقط. للتغيير، تواصل مع الإدارة.</p>
           </div>
         </div>
         
@@ -86,9 +86,14 @@ export function ProfileFormShell({ defaultValues, children }: ProfileFormShellPr
 
         {/* Submit Button */}
         <div className="flex justify-end pt-4">
+          {/* This form has never been wired to anything: it had no save
+              action at all. Rather than keep a button that silently does
+              nothing, it is disabled until the save is built. */}
           <button
             type="button"
-            className="rounded-xl bg-slate-900 px-8 py-3 font-bold text-white shadow-md transition-colors hover:bg-slate-800"
+            disabled
+            title="غير متاح حاليًا"
+            className="cursor-not-allowed rounded-xl bg-slate-200 px-8 py-3 font-bold text-slate-500"
           >
             حفظ التغييرات
           </button>
