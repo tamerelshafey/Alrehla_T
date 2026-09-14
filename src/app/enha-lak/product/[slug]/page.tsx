@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
 import { optimizedImageUrl } from '@/lib/cloudinary';
+import { ImagePlaceholder } from '@/components/ui/ImagePlaceholder';
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -60,9 +61,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-slate-400">
-                لا توجد صورة
-              </div>
+              <ImagePlaceholder label={product.name} />
             )}
           </div>
           

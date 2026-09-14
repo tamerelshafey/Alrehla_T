@@ -1,3 +1,7 @@
+// ⚠️ غير مستخدم. رفع الصور كله موحَّد على Cloudinary عبر
+// `@/components/dashboard/ImageField`. الملف ده بيرفع على Supabase
+// Storage — مسار تاني بالكامل. متستخدمهوش في شاشة جديدة.
+
 'use client';
 
 import { useState, useRef } from 'react';

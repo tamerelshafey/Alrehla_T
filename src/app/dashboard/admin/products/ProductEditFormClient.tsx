@@ -1,4 +1,5 @@
 'use client';
+import { ImageField } from '@/components/dashboard/ImageField';
 
 import React, { useState, useEffect } from 'react';
 import { Publisher, PersonalizedProduct, PricingFormulaSettings } from '@/types';
@@ -110,10 +111,16 @@ export function ProductEditFormClient({ product, publishers, pricingSettings }: 
         <textarea name="shortDescription" defaultValue={product.shortDescription} rows={3} required className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-amber-500 focus:outline-none"></textarea>
       </div>
       
-      <div>
-        <label className="block text-sm font-bold text-slate-700 mb-2">صورة الغلاف (رابط)</label>
-        <input type="text" name="coverImageUrl" defaultValue={product.coverImageUrl || ''} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-amber-500 focus:outline-none text-left" dir="ltr" />
-      </div>
+      {/* كان خانة نص بتطلب من الإدارة ترفع الصورة في مكان تاني وتنسخ
+          الرابط بالإيد. بقى رفعًا مباشرًا زي كل صور الموقع. */}
+      <ImageField
+        name="coverImageUrl"
+        label="صورة الغلاف"
+        folder="alrehla/products"
+        value={product.coverImageUrl || ''}
+        aspect="cover"
+        hint="غلاف الكتاب — يفضّل طولي (3:4)"
+      />
       
       <div className="pt-6 border-t border-slate-100 flex justify-end">
         <button type="submit" className="rounded-xl bg-slate-900 px-8 py-3 font-bold text-white shadow-md transition-colors hover:bg-slate-800">

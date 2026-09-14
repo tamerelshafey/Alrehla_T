@@ -143,7 +143,7 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
                       referrerPolicy="no-referrer"
                     />
                   ) : (
-                    <ImagePlaceholder label="غلاف المنتج" />
+                    <ImagePlaceholder label={product.name} />
                   )}
                   {publisher && (
                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-slate-800 shadow-sm z-10 pointer-events-none">

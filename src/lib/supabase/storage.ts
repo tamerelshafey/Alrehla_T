@@ -1,3 +1,6 @@
+// ⚠️ غير مستخدم. الرفع كله على Cloudinary — شوف `@/lib/cloudinary`.
+// الملف ده متسيب لأن البكت ممكن يكون فيه ملفات قديمة.
+
 import { createClient } from './client';
 export type StorageBucket = 'Rehla'; // As per the image provided
 export type StorageFolder = 'products' | 'blog' | 'profiles' | 'attachments' | 'publishers';

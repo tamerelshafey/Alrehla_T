@@ -47,7 +47,7 @@ export default async function CustomPage() {
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <ImagePlaceholder label="غلاف المنتج" />
+                  <ImagePlaceholder label={product.name} />
                 )}
               </div>
               <div className="flex flex-1 flex-col p-6">

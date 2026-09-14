@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Publisher, PricingFormulaSettings } from '@/types';
 import { calculateFinalSessionPrice } from '@/lib/utils';
 import { saveProduct } from '@/actions/products';
-import { FileUpload } from '@/components/ui/file-upload';
+import { ImageField } from '@/components/dashboard/ImageField';
 
 interface Props {
   publishers: Publisher[];
@@ -30,7 +30,6 @@ export function ProductFormClient({ publishers, pricingSettings }: Props) {
       <input type="hidden" name="id" value="" />
       <input type="hidden" name="slug" value="" />
       {/* Hidden input to include the image URL in the form submission */}
-      <input type="hidden" name="coverImageUrl" value={coverImageUrl} />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
@@ -113,15 +112,18 @@ export function ProductFormClient({ publishers, pricingSettings }: Props) {
         <textarea name="shortDescription" rows={3} required className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-amber-500 focus:outline-none"></textarea>
       </div>
       
-      <div>
-        <label className="block text-sm font-bold text-slate-700 mb-2">صورة الغلاف</label>
-        <FileUpload 
-          folder="products" 
-          label="اضغط هنا لرفع صورة الغلاف الخاصة بالمنتج"
-          onUploadSuccess={(url) => setCoverImageUrl(url)}
-          currentFileUrl={coverImageUrl}
-        />
-      </div>
+      {/* كان بيرفع على Supabase Storage — مسار تاني بالكامل عن باقي
+          الموقع اللي على Cloudinary. التوحيد بيخلي الصورة تتحسن وتتضغط
+          تلقائيًا زي كل صور الموقع. */}
+      <ImageField
+        name="coverImageUrl"
+        label="صورة الغلاف"
+        folder="alrehla/products"
+        value={coverImageUrl}
+        onChange={setCoverImageUrl}
+        aspect="cover"
+        hint="غلاف الكتاب — يفضّل طولي (3:4)"
+      />
       
       <div className="pt-6 border-t border-slate-100 flex justify-end">
         <button type="submit" className="rounded-xl bg-slate-900 px-8 py-3 font-bold text-white shadow-md transition-colors hover:bg-slate-800">
