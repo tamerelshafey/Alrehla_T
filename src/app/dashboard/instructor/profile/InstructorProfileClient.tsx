@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { User, Info, CheckCircle2 } from 'lucide-react';
 import { Instructor } from '@/types';
 import { submitInstructorProfileUpdate } from '@/actions/instructors';
+import { optimizedImageUrl } from '@/lib/cloudinary';
 
 interface Props {
   instructor: Instructor;
@@ -88,7 +89,7 @@ export function InstructorProfileClient({
         <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-slate-100 bg-slate-50 shadow-sm">
           {avatarUrl ? (
             <Image
-              src={avatarUrl}
+              src={optimizedImageUrl(avatarUrl, 200)}
               alt={`صورة المدرب ${displayName}`}
               fill
               className="object-cover"

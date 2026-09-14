@@ -13,6 +13,7 @@ import { createDummyOrder, submitPaymentProof } from '@/actions/orders';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { optimizedImageUrl } from '@/lib/cloudinary';
 
 interface Props {
   /** Read from site settings — it used to be a placeholder number in the code. */
@@ -311,7 +312,7 @@ export function CheckoutClient({ user, paymentWalletNumber, shippingRates }: Pro
             {items.map((item: any) => (
               <div key={item.id} className="flex gap-4 border-b border-slate-100 pb-4 last:border-0 last:pb-0">
                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50">
-                  <Image src={item.imageUrl || ''} alt={item.name} fill className="object-cover" />
+                  <Image src={optimizedImageUrl(item.imageUrl, 160)} alt={item.name} fill className="object-cover" />
                 </div>
                 <div className="flex-1">
                   

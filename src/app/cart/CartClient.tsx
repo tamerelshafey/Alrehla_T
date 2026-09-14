@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ShoppingCart, Trash2, ArrowRight, Package } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { optimizedImageUrl } from '@/lib/cloudinary';
 
 export default function CartClient() {
   const { items, removeItem, updateQuantity, cartTotal } = useCart();
@@ -43,7 +44,7 @@ export default function CartClient() {
                     <div key={item.id} className={`flex flex-col md:flex-row items-center gap-6 ${index > 0 ? 'pt-6' : 'pb-6 border-b border-slate-100'}`}>
                       <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 text-slate-400">
                         {item.imageUrl ? (
-                          <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
+                          <Image src={optimizedImageUrl(item.imageUrl, 200)} alt={item.name} fill className="object-cover" />
                         ) : (
                           <Package className="h-10 w-10" />
                         )}

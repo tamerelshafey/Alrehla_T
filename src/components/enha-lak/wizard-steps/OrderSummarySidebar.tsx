@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { PersonalizedProduct } from '@/types';
 import Image from 'next/image';
+import { optimizedImageUrl } from '@/lib/cloudinary';
 
 // We just mock the addons for now, or we can fetch them. Let's hardcode a few prices or assume each addon is 150.
 // In a real app we would import mockAddonProducts. For now, let's say an addon is 150 EGP.
@@ -42,7 +43,7 @@ export function OrderSummarySidebar({ product }: { product: PersonalizedProduct 
       <div className="flex gap-4 mb-6 pb-6 border-b border-slate-100">
         <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
           {product.coverImageUrl ? (
-            <Image src={product.coverImageUrl} alt={product.name} fill className="object-cover" referrerPolicy="no-referrer" />
+            <Image src={optimizedImageUrl(product.coverImageUrl, 400)} alt={product.name} fill className="object-cover" referrerPolicy="no-referrer" />
           ) : null}
         </div>
         <div>

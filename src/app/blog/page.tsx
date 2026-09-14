@@ -8,6 +8,7 @@ import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 
 import { Metadata } from 'next';
+import { optimizedImageUrl } from '@/lib/cloudinary';
 
 export const metadata: Metadata = {
   title: 'المدونة',
@@ -41,7 +42,7 @@ export default async function BlogPage() {
               >
                 <div className="relative mb-6 flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl bg-slate-100">
                   {post.coverImageUrl ? (
-                    <Image src={post.coverImageUrl} alt={`صورة مقال: ${post.title}`} fill className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer" />
+                    <Image src={optimizedImageUrl(post.coverImageUrl, 600)} alt={`صورة مقال: ${post.title}`} fill className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer" />
                   ) : (
                     <BookOpen className="h-12 w-12 text-slate-300" />
                   )}

@@ -6,6 +6,7 @@ import { Star, Quote } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Section } from '@/components/ui/Section';
+import { optimizedImageUrl } from '@/lib/cloudinary';
 
 const testimonials: any[] = [];
 
@@ -121,7 +122,7 @@ export default async function Home() {
               <div className="flex flex-col items-center text-center">
                 <div className="mb-4 relative h-24 w-24 overflow-hidden rounded-full border-4 border-emerald-50">
                   <Image 
-                    src={instructor.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor.displayName)}&background=10b981&color=fff`} 
+                    src={optimizedImageUrl(instructor.avatarUrl, 300) || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor.displayName)}&background=10b981&color=fff`} 
                     alt={instructor.displayName} 
                     fill className="object-cover"
                     referrerPolicy="no-referrer"

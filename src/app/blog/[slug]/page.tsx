@@ -7,6 +7,7 @@ import { getBlogPosts } from '@/data/domains/content';
 import { notFound } from 'next/navigation';
 import { Section } from '@/components/ui/Section';
 import { Button } from '@/components/ui/Button';
+import { optimizedImageUrl } from '@/lib/cloudinary';
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -67,7 +68,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <div className="relative mb-16 aspect-[21/9] w-full overflow-hidden rounded-[2rem] bg-slate-100 shadow-lg">
           {post.coverImageUrl ? (
             <Image 
-              src={post.coverImageUrl} 
+              src={optimizedImageUrl(post.coverImageUrl, 1400)} 
               alt={post.title} 
               className="h-full w-full object-cover"
               referrerPolicy="no-referrer"

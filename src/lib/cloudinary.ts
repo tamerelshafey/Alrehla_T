@@ -50,3 +50,24 @@ export async function uploadImage(file: File, folder = 'alrehla'): Promise<Uploa
 
   return { url: data.secure_url, publicId: data.public_id ?? '' };
 }
+
+/**
+ * A delivery URL that is optimised for the browser asking for it.
+ *
+ * Images were served exactly as uploaded: an 8MB phone photo reached every
+ * visitor at full size. `f_auto` picks the best format the browser supports
+ * (usually WebP or AVIF), `q_auto` picks a quality that is visually
+ * indistinguishable, and `c_limit,w_…` caps the width without ever enlarging
+ * or cropping. This typically cuts the bytes transferred by more than half,
+ * which is what actually consumes a Cloudinary plan.
+ *
+ * A non-Cloudinary URL is returned untouched, so this is safe to apply to any
+ * image the site has.
+ */
+export function optimizedImageUrl(url: string | null | undefined, width = 800): string {
+  if (!url) return '';
+  if (!url.includes('res.cloudinary.com') || !url.includes('/upload/')) return url;
+  // Don't stack transformations on a URL that already carries some.
+  if (/\/upload\/[a-z]{1,3}_/.test(url)) return url;
+  return url.replace('/upload/', `/upload/f_auto,q_auto,c_limit,w_${width}/`);
+}

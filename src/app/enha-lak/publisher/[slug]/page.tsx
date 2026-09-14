@@ -5,6 +5,7 @@ import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import { optimizedImageUrl } from '@/lib/cloudinary';
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -60,7 +61,7 @@ export default async function PublisherPage({ params }: { params: Promise<{ slug
                 <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100">
                   {product.coverImageUrl ? (
                     <Image
-                      src={product.coverImageUrl}
+                      src={optimizedImageUrl(product.coverImageUrl, 600)}
                       alt={product.name}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-105"

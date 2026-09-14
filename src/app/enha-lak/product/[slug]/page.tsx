@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
+import { optimizedImageUrl } from '@/lib/cloudinary';
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -52,7 +53,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-lg">
             {product.coverImageUrl ? (
               <Image
-                src={product.coverImageUrl}
+                src={optimizedImageUrl(product.coverImageUrl, 900)}
                 alt={product.name}
                 fill priority
                 className="object-cover"

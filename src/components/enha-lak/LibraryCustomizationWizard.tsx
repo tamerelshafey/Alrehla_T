@@ -1,6 +1,6 @@
 'use client';
 
-import { uploadImage } from '@/lib/cloudinary';
+import { uploadImage, optimizedImageUrl } from '@/lib/cloudinary';
 import { formatPrice } from '@/lib/utils';
 
 import React, { useState, useEffect } from 'react';
@@ -199,7 +199,7 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
             <div className="flex gap-4 mb-6 pb-6 border-b border-slate-100">
               <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
                 {product.coverImageUrl ? (
-                  <Image src={product.coverImageUrl} alt={product.name} fill className="object-cover" referrerPolicy="no-referrer" />
+                  <Image src={optimizedImageUrl(product.coverImageUrl, 600)} alt={product.name} fill className="object-cover" referrerPolicy="no-referrer" />
                 ) : null}
               </div>
               <div>
