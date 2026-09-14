@@ -2,7 +2,7 @@ import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser } from '@/data/domains/auth';
 import { getInstructors } from '@/data/domains/writing';
-import { getProfileUpdateRequestsByInstructor, getInstructorCertification } from '@/data/domains/writing';
+import { getProfileUpdateRequestsByInstructor, getInstructorCertification, getPricingFormulaSettings } from '@/data/domains/writing';
 import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { AdminInstructorClient } from './AdminInstructorClient';
@@ -25,6 +25,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const certification = await getInstructorCertification(target.id);
   const services = await getStandaloneServices();
   const serviceOffers = await getInstructorServiceOffers(target.id);
+  const formula = await getPricingFormulaSettings();
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
@@ -42,6 +43,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           instructorId={target.id}
           services={services}
           offers={serviceOffers}
+          formula={formula}
         />
       </div>
     </div>

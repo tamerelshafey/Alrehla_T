@@ -6,17 +6,23 @@ import type { CreativeService, InstructorServiceOffer } from '@/types';
 import {
   saveInstructorServiceOffer,
   removeInstructorServiceOffer,
+  rejectInstructorServiceOffer,
 } from '@/actions/instructor-services';
+import { formatPrice, calculateFinalSessionPrice } from '@/lib/utils';
+import type { PricingFormulaSettings } from '@/types';
 
 interface Props {
   instructorId: string;
   services: CreativeService[];
   offers: InstructorServiceOffer[];
+  formula: PricingFormulaSettings;
 }
 
 type RowState = { price: string; isActive: boolean };
 
-export function InstructorServicesSection({ instructorId, services, offers }: Props) {
+export function InstructorServicesSection({ instructorId, services, offers, formula }: Props) {
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectNote, setRejectNote] = useState('');
   const offerFor = (serviceId: string) => offers.find((o) => o.serviceId === serviceId);
 
   const [rows, setRows] = useState<Record<string, RowState>>(() => {
@@ -62,6 +68,19 @@ export function InstructorServicesSection({ instructorId, services, offers }: Pr
     });
   };
 
+  const handleReject = (serviceId: string) => {
+    setError(null);
+    startTransition(async () => {
+      try {
+        await rejectInstructorServiceOffer(instructorId, serviceId, rejectNote);
+        setRejectingId(null);
+        setRejectNote('');
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'تعذّر الرفض');
+      }
+    });
+  };
+
   const handleRemove = (serviceId: string) => {
     setError(null);
     startTransition(async () => {
@@ -87,8 +106,9 @@ export function InstructorServicesSection({ instructorId, services, offers }: Pr
     <div className="rounded-3xl border border-slate-200 bg-white p-8">
       <h3 className="font-black text-slate-800 mb-2 text-lg">الخدمات الإبداعية</h3>
       <p className="text-sm text-slate-500 mb-6">
-        حدّد الخدمات التي يقدّمها هذا المدرب وسعره في كل خدمة. الخدمة التي لها سعر
-        تظهر للعملاء ضمن مقدّمي الخدمة؛ والتي بلا سعر تبقى قيد المراجعة ولا تظهر.
+        الرقم هنا هو <strong>حصيلة المدرب</strong>، وسعر العميل يُحسب فوقه بمعادلة المنصة
+        (×{formula.platformMultiplier} + {formatPrice(formula.fixedAdminFee)}). الخدمة التي
+        لها حصيلة معتمدة تظهر للعملاء؛ والتي بلا حصيلة تبقى قيد المراجعة ولا تظهر.
       </p>
 
       {error && (
@@ -114,11 +134,42 @@ export function InstructorServicesSection({ instructorId, services, offers }: Pr
                   {service.category ?? 'بدون تصنيف'}
                   {service.priceType === 'starts_from' && ' · سعرها حسب المدرب'}
                 </div>
+
+                {/* ما طلبه المدرب — لم يكن يظهر للإدارة من قبل إطلاقًا. */}
+                {offer?.requestedPrice != null &&
+                  offer.requestedPrice !== offer.approvedPrice && (
+                    <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800">
+                      <span>
+                        {offer.approvedPrice == null ? 'المدرب طلب' : 'المدرب يطلب تعديل الحصيلة إلى'}{' '}
+                        {formatPrice(offer.requestedPrice)}
+                        <span className="mx-1 text-amber-400">|</span>
+                        العميل سيدفع{' '}
+                        {formatPrice(calculateFinalSessionPrice(offer.requestedPrice, formula))}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() =>
+                          update(service.id, { price: String(offer.requestedPrice) })
+                        }
+                        className="rounded-lg bg-amber-600 px-2.5 py-1 text-white transition-colors hover:bg-amber-700 disabled:opacity-50"
+                      >
+                        استخدم هذا السعر
+                      </button>
+                    </div>
+                  )}
+
+                {Number(row.price) > 0 && (
+                  <div className="mt-2 text-xs font-bold text-slate-500">
+                    بهذه الحصيلة يدفع العميل{' '}
+                    {formatPrice(calculateFinalSessionPrice(Number(row.price), formula))}
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
                 <label className="text-sm font-bold text-slate-600" htmlFor={`price-${service.id}`}>
-                  السعر
+                  حصيلة المدرب
                 </label>
                 <input
                   id={`price-${service.id}`}
@@ -167,6 +218,19 @@ export function InstructorServicesSection({ instructorId, services, offers }: Pr
                   <Save className="h-4 w-4" />
                   {savedId === service.id ? 'تم' : 'حفظ'}
                 </button>
+                {offer && offer.status !== 'rejected' && (
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    onClick={() => {
+                      setRejectNote('');
+                      setRejectingId(rejectingId === service.id ? null : service.id);
+                    }}
+                    className="rounded-xl border border-rose-200 px-3 py-2 text-sm font-bold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-50"
+                  >
+                    رفض
+                  </button>
+                )}
                 {offer && (
                   <button
                     type="button"
@@ -179,6 +243,37 @@ export function InstructorServicesSection({ instructorId, services, offers }: Pr
                   </button>
                 )}
               </div>
+
+              {rejectingId === service.id && (
+                <div className="w-full space-y-2 rounded-2xl border border-rose-200 bg-rose-50 p-3">
+                  <label className="text-xs font-bold text-rose-800">
+                    سبب الرفض (يصل للمدرب)
+                  </label>
+                  <input
+                    className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-sm"
+                    value={rejectNote}
+                    onChange={(e) => setRejectNote(e.target.value)}
+                    placeholder="مثال: السعر أعلى من المعتاد لهذه الخدمة"
+                  />
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setRejectingId(null)}
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600"
+                    >
+                      إلغاء
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() => handleReject(service.id)}
+                      className="rounded-xl bg-rose-600 px-4 py-1.5 text-xs font-bold text-white transition-colors hover:bg-rose-700 disabled:opacity-50"
+                    >
+                      تأكيد الرفض
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

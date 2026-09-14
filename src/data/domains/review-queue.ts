@@ -40,7 +40,12 @@ export async function getReviewQueue(): Promise<ReviewQueueItem[]> {
     supabase.from('service_orders').select('id', head).eq('status', 'awaiting_verification'),
     supabase.from('join_requests').select('id', head).eq('status', 'pending'),
     supabase.from('profile_update_requests').select('id', head).eq('status', 'pending'),
-    supabase.from('instructor_services').select('id', head).eq('status', 'pending'),
+    // "قيد المراجعة" plus an approved offer whose instructor has asked for a
+    // different price — the second kind is invisible in the status alone.
+    supabase
+      .from('instructor_services')
+      .select('id, status, requested_price, approved_price')
+      .or('status.eq.pending,and(status.eq.approved,requested_price.not.is.null)'),
     supabase.from('support_tickets').select('id', head).eq('status', 'open'),
     supabase.from('support_session_requests').select('id', head).eq('status', 'pending'),
     supabase.from('withdrawal_requests').select('id', head).eq('status', 'pending'),
@@ -49,6 +54,10 @@ export async function getReviewQueue(): Promise<ReviewQueueItem[]> {
   // A count the current admin is not allowed to read comes back as an error or
   // null; it is treated as nothing to review rather than breaking the page.
   const n = (result: { count: number | null }) => result.count ?? 0;
+
+  const pendingOffers = (serviceOffers.data ?? []).filter(
+    (o) => o.status === 'pending' || o.requested_price !== o.approved_price
+  ).length;
 
   const items: ReviewQueueItem[] = [
     {
@@ -110,7 +119,7 @@ export async function getReviewQueue(): Promise<ReviewQueueItem[]> {
     {
       key: 'service_offers',
       label: 'طلبات مدربين لتقديم خدمات',
-      count: n(serviceOffers),
+      count: pendingOffers,
       href: '/dashboard/admin/instructors',
       permission: 'canManageInstructors',
       urgent: false,

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { getCurrentUser } from '@/data/domains/auth';
 import { hasAdminPermission } from '@/lib/utils';
+import { getMyInstructorId } from '@/data/domains/services';
 
 /**
  * Admin-only management of which instructor provides which creative service,
@@ -84,5 +85,168 @@ export async function removeInstructorServiceOffer(
 
   revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
   revalidatePath('/creative-writing/services');
+  return { ok: true };
+}
+
+/** رفض طلب المدرب مع ملاحظة توضّح السبب. */
+export async function rejectInstructorServiceOffer(
+  instructorId: string,
+  serviceId: string,
+  adminNotes: string
+) {
+  await requireInstructorAdmin();
+  if (!adminNotes.trim()) {
+    throw new Error('اكتب سبب الرفض ليصل للمدرب');
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('instructor_services')
+    .update({
+      status: 'rejected',
+      approved_price: null,
+      is_active: false,
+      admin_notes: adminNotes.trim(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('instructor_id', instructorId)
+    .eq('service_id', serviceId);
+
+  if (error) {
+    console.error('Error rejecting instructor service offer', error);
+    throw new Error('تعذّر رفض الطلب');
+  }
+
+  revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
+  revalidatePath('/dashboard/instructor/services');
+  revalidatePath('/dashboard/admin');
+  return { ok: true };
+}
+
+/* ================================================================
+ * الجانب الخاص بالمدرب
+ * ================================================================
+ * المدرب يطلب تقديم خدمة ويقترح حصيلته، ويوقف خدمته مؤقتًا.
+ *
+ * ما لا يستطيعه هنا: اعتماد نفسه، أو كتابة السعر المعتمد. هذا مفروض
+ * بمُشغِّل في قاعدة البيانات، لا بهذا الملف — الكود هنا للرسالة الواضحة فقط.
+ */
+
+async function requireOwnInstructorId(): Promise<string> {
+  const user = await getCurrentUser();
+  if (user.role !== 'instructor') {
+    throw new Error('هذه الصفحة للمدربين فقط');
+  }
+  const instructorId = await getMyInstructorId();
+  if (!instructorId) {
+    throw new Error('لم يتم ربط حسابك بملف مدرب بعد');
+  }
+  return instructorId;
+}
+
+function validatePrice(price: number) {
+  if (!Number.isFinite(price) || price <= 0) {
+    throw new Error('السعر لازم يكون رقم أكبر من صفر');
+  }
+  if (price > 1_000_000) {
+    throw new Error('السعر غير منطقي');
+  }
+}
+
+/**
+ * «أقدّم هذه الخدمة» — طلب جديد، أو تعديل السعر المقترح على طلب قائم.
+ *
+ * المبلغ المقترح هو **حصيلة المدرب**، لا ما يدفعه العميل: سعر العميل يُحسب
+ * بمعادلة المنصة فوقه، تمامًا كما في تسعير الجلسات.
+ */
+export async function proposeServiceOffer(serviceId: string, requestedPrice: number) {
+  const instructorId = await requireOwnInstructorId();
+  validatePrice(requestedPrice);
+
+  const supabase = await createClient();
+
+  const { data: existing } = await supabase
+    .from('instructor_services')
+    .select('id')
+    .eq('instructor_id', instructorId)
+    .eq('service_id', serviceId)
+    .maybeSingle();
+
+  // تعديل السعر المقترح لا يُنزل الحالة من "معتمدة" — الخدمة تظل معروضة
+  // للعملاء بالسعر المعتمد القديم حتى تعتمد الإدارة السعر الجديد.
+  const { error } = existing
+    ? await supabase
+        .from('instructor_services')
+        .update({ requested_price: requestedPrice, updated_at: new Date().toISOString() })
+        .eq('id', existing.id)
+    : await supabase.from('instructor_services').insert({
+        instructor_id: instructorId,
+        service_id: serviceId,
+        requested_price: requestedPrice,
+        status: 'pending',
+        is_active: true,
+      });
+
+  if (error) {
+    console.error('Error proposing service offer', error);
+    throw new Error('تعذّر إرسال الطلب');
+  }
+
+  revalidatePath('/dashboard/instructor/services');
+  revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
+  revalidatePath('/dashboard/admin');
+  return { ok: true };
+}
+
+/** إيقاف مؤقت أو إعادة تفعيل — بيد المدرب، وتخفي خدمته من قائمة العملاء. */
+export async function setMyOfferActive(serviceId: string, isActive: boolean) {
+  const instructorId = await requireOwnInstructorId();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from('instructor_services')
+    .update({ is_active: isActive, updated_at: new Date().toISOString() })
+    .eq('instructor_id', instructorId)
+    .eq('service_id', serviceId);
+
+  if (error) {
+    console.error('Error toggling offer', error);
+    throw new Error('تعذّر تغيير حالة الخدمة');
+  }
+
+  revalidatePath('/dashboard/instructor/services');
+  revalidatePath('/creative-writing/services');
+  return { ok: true };
+}
+
+/** سحب طلب لم تبتّ فيه الإدارة بعد. */
+export async function withdrawMyOffer(serviceId: string) {
+  const instructorId = await requireOwnInstructorId();
+  const supabase = await createClient();
+
+  const { data: offer } = await supabase
+    .from('instructor_services')
+    .select('id, status')
+    .eq('instructor_id', instructorId)
+    .eq('service_id', serviceId)
+    .maybeSingle();
+
+  if (!offer) throw new Error('الطلب غير موجود');
+  if (offer.status === 'approved') {
+    throw new Error('الخدمة معتمدة — استخدم «إيقاف مؤقت» بدل السحب');
+  }
+
+  const { error } = await supabase
+    .from('instructor_services')
+    .delete()
+    .eq('id', offer.id);
+
+  if (error) {
+    console.error('Error withdrawing offer', error);
+    throw new Error('تعذّر سحب الطلب');
+  }
+
+  revalidatePath('/dashboard/instructor/services');
+  revalidatePath('/dashboard/admin');
   return { ok: true };
 }

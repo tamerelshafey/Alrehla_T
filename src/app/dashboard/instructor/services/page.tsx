@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
+import { MyServiceOffersClient } from './MyServiceOffersClient';
+import { getPricingFormulaSettings } from '@/data/domains/writing';
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatDate, formatPrice } from '@/lib/utils';
 import { getCurrentUser } from '@/data/domains/auth';
@@ -12,12 +14,6 @@ import {
 } from '@/data/domains/services';
 
 export const dynamic = 'force-dynamic';
-
-const OFFER_STATUS: Record<string, { label: string; type: 'success' | 'warning' | 'neutral' }> = {
-  approved: { label: 'معتمدة', type: 'success' },
-  pending: { label: 'قيد المراجعة', type: 'warning' },
-  rejected: { label: 'مرفوضة', type: 'neutral' },
-};
 
 const ORDER_STATUS: Record<string, { label: string; type: 'success' | 'warning' | 'neutral' }> = {
   paid: { label: 'مدفوع', type: 'success' },
@@ -48,30 +44,12 @@ export default async function InstructorServicesPage() {
     );
   }
 
-  const [services, offers, orders] = await Promise.all([
+  const [services, offers, orders, formula] = await Promise.all([
     getStandaloneServices(),
     getInstructorServiceOffers(instructorId),
     getServiceOrdersForInstructor(instructorId),
+    getPricingFormulaSettings(),
   ]);
-
-  const offerRows = offers.map((offer) => {
-    const service = services.find((s) => s.id === offer.serviceId);
-    const status = offer.isActive
-      ? OFFER_STATUS[offer.status] ?? { label: offer.status, type: 'warning' as const }
-      : { label: 'موقوفة', type: 'neutral' as const };
-    return {
-      id: offer.id,
-      serviceName: service?.name ?? offer.serviceId,
-      price: offer.approvedPrice != null ? formatPrice(offer.approvedPrice) : '—',
-      statusDisplay: <StatusBadge type={status.type} label={status.label} />,
-    };
-  });
-
-  const offerColumns = [
-    { header: 'الخدمة', accessorKey: 'serviceName' },
-    { header: 'سعرك', accessorKey: 'price' },
-    { header: 'الحالة', accessorKey: 'statusDisplay' },
-  ];
 
   const orderRows = orders.map((order) => {
     const status = ORDER_STATUS[order.status] ?? { label: order.status, type: 'warning' as const };
@@ -96,11 +74,11 @@ export default async function InstructorServicesPage() {
       <div>
         <DashboardPageHeader title="الخدمات التي تقدّمها" backHref="/dashboard/instructor" />
         <p className="mt-2 font-medium text-slate-500">
-          الخدمات الإبداعية المسندة إليك وسعرك في كل منها. الأسعار تُعتمد من الإدارة — تواصل
-          معها لتعديل أي سعر.
+          اختر الخدمات التي تستطيع تقديمها واقترح حصيلتك من كل منها. الإدارة تعتمد السعر
+          النهائي قبل أن تظهر الخدمة للعملاء.
         </p>
         <div className="mt-4">
-          <SimpleDataTable columns={offerColumns} data={offerRows} />
+          <MyServiceOffersClient services={services} offers={offers} formula={formula} />
         </div>
       </div>
 
