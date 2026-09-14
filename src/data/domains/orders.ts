@@ -57,3 +57,28 @@ export const getOrders = async (): Promise<Order[]> => {
   }));
 };
 
+
+export type ShippingRate = {
+  governorate: string;
+  fee: number;
+};
+
+/**
+ * Shipping fees by governorate, set by the admin.
+ *
+ * Checkout used to charge a flat 50 EGP with the comment "Fixed shipping logic
+ * for demo". Shipping is not flat, so the number now comes from here — and
+ * when nothing is configured the customer is told the fee will be confirmed
+ * rather than shown an invented one.
+ */
+export async function getShippingRates(): Promise<ShippingRate[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('shipping_rates')
+    .select('governorate, fee')
+    .eq('is_active', true)
+    .order('governorate', { ascending: true });
+
+  if (error || !data) return [];
+  return data.map((r) => ({ governorate: r.governorate, fee: r.fee }));
+}

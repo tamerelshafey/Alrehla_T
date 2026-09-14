@@ -41,10 +41,12 @@ export default async function PublisherDashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <StatCard title="إجمالي المبيعات" value={`${formatPrice(totalSales)}`} icon={ShoppingBag} trend="+12% عن الشهر الماضي" trendUp={true} />
-        <StatCard title="أرباحك (70%)" value={`${formatPrice(totalEarnings)}`} icon={DollarSign} trend={`جاهزة للسحب: ${formatPrice(850)}`} trendUp={true} />
-        <StatCard title="الكتب المنشورة" value="12 كتاب" icon={BookOpen} />
-        <StatCard title="تقييم القراء" value="4.8/5" icon={Star} trend="من 156 تقييم" trendUp={true} />
+        {/* "+12% عن الشهر الماضي", a 70% share, "12 كتاب", "4.8/5 من 156 تقييم"
+            and a withdrawable balance of 850 were all written into the page —
+            the same figures for every publisher, none of them measured. */}
+        <StatCard title="إجمالي المبيعات" value={`${formatPrice(totalSales)}`} icon={ShoppingBag} />
+        <StatCard title="أرباحك" value={`${formatPrice(totalEarnings)}`} icon={DollarSign} />
+        <StatCard title="عدد الطلبات" value={`${orders.length}`} icon={BookOpen} />
       </div>
 
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -79,17 +81,17 @@ export default async function PublisherDashboard() {
         <div className="rounded-3xl border border-slate-200 bg-slate-900 p-8 text-white shadow-md flex flex-col justify-between">
           <div>
             <h3 className="text-xl font-bold mb-2">طلب سحب الأرباح</h3>
-            <p className="text-slate-400 text-sm mb-6">يمكنك سحب أرباحك عند وصول الرصيد القابل للسحب إلى الحد الأدنى ({formatPrice(500)}).</p>
-            
+            <p className="mb-6 text-sm text-slate-400">
+              لطلب سحب أرباحك، تواصل مع الإدارة. طلب السحب من داخل الموقع غير متاح بعد.
+            </p>
+
             <div className="mb-8">
-              <div className="text-sm text-slate-400 mb-1">الرصيد المتاح للسحب</div>
-              <div className="text-4xl font-black text-emerald-400">{formatPrice(850)}</div>
+              <div className="mb-1 text-sm text-slate-400">إجمالي أرباحك حتى الآن</div>
+              <div className="text-4xl font-black text-emerald-400">
+                {formatPrice(totalEarnings)}
+              </div>
             </div>
           </div>
-          
-          <button className="w-full rounded-xl bg-white px-4 py-3 font-bold text-slate-900 transition-colors hover:bg-slate-100">
-            طلب سحب الرصيد الآن
-          </button>
         </div>
       </div>
     </div>

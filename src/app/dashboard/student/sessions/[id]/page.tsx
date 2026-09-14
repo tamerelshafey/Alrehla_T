@@ -1,16 +1,37 @@
 import { getCurrentUser } from '@/data/domains/auth';
-import { redirect } from 'next/navigation';
+import { getSessions, getInstructorById } from '@/data/domains/writing';
+import { notFound, redirect } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { Video, Clock, User, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export default async function StudentSessionPage() {
+/**
+ * One session for the student.
+ *
+ * The page used to ignore its own [id] entirely and print the same invented
+ * details for every session: "اليوم، 16:00", "مع المدرب أحمد محمود", and a
+ * link to Google Meet's home page.
+ */
+export default async function StudentSessionPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const user = await getCurrentUser();
   if (user.role !== 'student') {
     redirect('/dashboard');
   }
+
+  const sessions = await getSessions();
+  const session = sessions.find((s) => s.id === id);
+  if (!session) notFound();
+
+  const instructor = session.instructorId
+    ? await getInstructorById(session.instructorId)
+    : null;
 
   return (
     <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">
@@ -28,21 +49,39 @@ export default async function StudentSessionPage() {
             <div>
               <h2 className="text-2xl font-black text-indigo-900 mb-1">غرفة التدريب المرئية</h2>
               <div className="flex items-center gap-3 text-indigo-700 font-medium">
-                <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> اليوم، 16:00</span>
-                <span>•</span>
-                <span className="flex items-center gap-1"><User className="h-4 w-4" /> مع المدرب أحمد محمود</span>
+                <span className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  {new Date(session.scheduledAt).toLocaleString('ar-EG', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                  })}
+                </span>
+                {instructor && (
+                  <>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <User className="h-4 w-4" /> مع {instructor.displayName}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>
           
-          <a 
-            href="https://meet.google.com" 
-            target="_blank" 
-            rel="noreferrer"
-            className="rounded-xl bg-indigo-600 px-8 py-4 font-black text-white shadow-lg transition-transform hover:scale-105 active:scale-95 text-center w-full md:w-auto"
-          >
-            دخول الجلسة
-          </a>
+          {session.meetingUrl ? (
+            <a
+              href={session.meetingUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full rounded-xl bg-indigo-600 px-8 py-4 text-center font-black text-white shadow-lg transition-transform hover:scale-105 active:scale-95 md:w-auto"
+            >
+              دخول الجلسة
+            </a>
+          ) : (
+            <span className="w-full rounded-xl bg-white/70 px-8 py-4 text-center font-bold text-indigo-700 md:w-auto">
+              رابط الجلسة لم يُضَف بعد
+            </span>
+          )}
         </div>
 
         <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 flex gap-3 text-blue-800">

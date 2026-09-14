@@ -15,15 +15,20 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 
 interface Props {
-  /** Read from site settings — it used to be the placeholder {paymentWalletNumber}. */
+  /** Read from site settings — it used to be a placeholder number in the code. */
   paymentWalletNumber: string;
+  /** Shipping fee per governorate, set by the admin. Empty until configured. */
+  shippingRates: { governorate: string; fee: number }[];
   user: UserType;
 }
 
-export function CheckoutClient({ user, paymentWalletNumber }: Props) {
-  const { items, cartTotal } = useCart();
+export function CheckoutClient({ user, paymentWalletNumber, shippingRates }: Props) {
+  const { items, cartTotal, clearCart } = useCart();
   const [step, setStep] = useState<1 | 2>(1); // 1: Shipping, 2: Payment
-  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'wallet' | 'fawry' | 'instapay'>('credit_card');
+  // Card, wallet and Fawry options used to be offered here with forms that
+  // were never read by anything: the customer typed a real card number, was
+  // told the payment succeeded, and nothing was ever charged. Until a real
+  // payment gateway is integrated, transfer is the only method on offer.
   const [isProcessing, setIsProcessing] = useState(false);
   const [transactionRef, setTransactionRef] = useState('');
   const router = useRouter();
@@ -36,11 +41,18 @@ export function CheckoutClient({ user, paymentWalletNumber }: Props) {
     phone: '',
     address: '',
     city: '',
-    gov: ''
+    gov: '',
+    notes: '',
   });
 
   const subtotal = cartTotal;
-  const shipping = items.length > 0 && items.some((item: any) => item.type !== 'book') ? 50 : 0; // Fixed shipping logic for demo
+  // Shipping is not flat: it comes from the rate set for the chosen
+  // governorate. A flat 50 EGP used to be charged with the comment
+  // "Fixed shipping logic for demo".
+  const needsShipping = items.some((item: { type?: string }) => item.type !== 'subscription');
+  const matchedRate = shippingRates.find((r) => r.governorate === shippingInfo.gov);
+  const shippingKnown = !needsShipping || Boolean(matchedRate);
+  const shipping = needsShipping ? (matchedRate?.fee ?? 0) : 0;
   const grandTotal = subtotal + shipping;
 
   const handleShippingSubmit = (e: React.FormEvent) => {
@@ -54,18 +66,28 @@ export function CheckoutClient({ user, paymentWalletNumber }: Props) {
     setIsProcessing(true);
     startTransition(async () => {
       // Create order
-      const orderId = await createDummyOrder(items.map((i: any) => ({
-        productId: i.id,
-        quantity: i.quantity,
-        unitPrice: i.price,
-        customizationData: i.customizationData
-      })), grandTotal);
-      
-      if (paymentMethod === 'instapay') {
-        await submitPaymentProof(orderId, transactionRef);
-      }
-      
-      // In real app, clearCart() would be here
+      const orderId = await createDummyOrder(
+        items.map((i: { id: string; quantity: number; price: number; customizationData?: unknown }) => ({
+          productId: i.id,
+          quantity: i.quantity,
+          unitPrice: i.price,
+          customizationData: i.customizationData,
+        })) as Parameters<typeof createDummyOrder>[0],
+        grandTotal,
+        {
+          recipientName: shippingInfo.name,
+          recipientPhone: shippingInfo.phone,
+          addressLine: shippingInfo.address,
+          city: shippingInfo.city,
+          governorate: shippingInfo.gov,
+          notes: shippingInfo.notes,
+        },
+        shipping
+      );
+
+      await submitPaymentProof(orderId, transactionRef);
+
+      clearCart();
       router.push('/enha-lak/order-confirmation?id=' + orderId);
     });
   };
@@ -142,14 +164,36 @@ export function CheckoutClient({ user, paymentWalletNumber }: Props) {
                   <label className="block text-sm font-bold text-slate-700 mb-2">المحافظة</label>
                   <select required value={shippingInfo.gov} onChange={e => setShippingInfo({...shippingInfo, gov: e.target.value})} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-rose-500 focus:bg-white">
                     <option value="">اختر المحافظة...</option>
-                    <option value="cairo">القاهرة</option>
-                    <option value="giza">الجيزة</option>
-                    <option value="alex">الإسكندرية</option>
+                    {/* Three hard-coded governorates used to be the only
+                        choices. The list now comes from the shipping rates the
+                        admin has configured. */}
+                    {shippingRates.map((rate) => (
+                      <option key={rate.governorate} value={rate.governorate}>
+                        {rate.governorate}
+                      </option>
+                    ))}
                   </select>
+                  {shippingRates.length === 0 && (
+                    <p className="mt-2 text-xs font-bold text-amber-700">
+                      لم تُضبط محافظات الشحن بعد — تواصل مع الإدارة.
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">المدينة / المنطقة</label>
                   <input type="text" required value={shippingInfo.city} onChange={e => setShippingInfo({...shippingInfo, city: e.target.value})} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-rose-500 focus:bg-white" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="mb-2 block text-sm font-bold text-slate-700">
+                    ملاحظات للتوصيل (اختياري)
+                  </label>
+                  <input
+                    type="text"
+                    value={shippingInfo.notes}
+                    onChange={(e) => setShippingInfo({ ...shippingInfo, notes: e.target.value })}
+                    placeholder="علامة مميزة، أفضل وقت للتسليم…"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-rose-500 focus:bg-white"
+                  />
                 </div>
               </div>
 
@@ -182,88 +226,42 @@ export function CheckoutClient({ user, paymentWalletNumber }: Props) {
           </div>
 
           <form onSubmit={handlePaymentSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              
-              <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-3 transition-colors ${paymentMethod === 'credit_card' ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-200 bg-white hover:border-rose-300'}`}>
-                <input type="radio" name="payment" value="credit_card" checked={paymentMethod === 'credit_card'} onChange={() => setPaymentMethod('credit_card')} className="sr-only" />
-                <CreditCard className={`h-8 w-8 ${paymentMethod === 'credit_card' ? 'text-rose-600' : 'text-slate-400'}`} />
-                <span className="font-bold text-sm">بطاقة بنكية</span>
-              </label>
-
-              <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-3 transition-colors ${paymentMethod === 'wallet' ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-200 bg-white hover:border-rose-300'}`}>
-                <input type="radio" name="payment" value="wallet" checked={paymentMethod === 'wallet'} onChange={() => setPaymentMethod('wallet')} className="sr-only" />
-                <Wallet className={`h-8 w-8 ${paymentMethod === 'wallet' ? 'text-rose-600' : 'text-slate-400'}`} />
-                <span className="font-bold text-sm text-center">محفظة إلكترونية<br/><span className="text-xs font-normal opacity-70">(فودافون كاش وغيرها)</span></span>
-              </label>
-
-              <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-3 transition-colors ${paymentMethod === 'fawry' ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-200 bg-white hover:border-rose-300'}`}>
-                <input type="radio" name="payment" value="fawry" checked={paymentMethod === 'fawry'} onChange={() => setPaymentMethod('fawry')} className="sr-only" />
-                <div className="h-8 flex items-center justify-center font-black text-lg tracking-wider" style={{color: paymentMethod === 'fawry' ? '#facc15' : '#94a3b8'}}>fawry</div>
-                <span className="font-bold text-sm">كود فوري</span>
-              </label>
-
-            
-              <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-3 transition-colors ${paymentMethod === 'instapay' ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-200 bg-white hover:border-rose-300'}`}>
-                <input type="radio" name="payment" value="instapay" checked={paymentMethod === 'instapay'} onChange={() => setPaymentMethod('instapay')} className="sr-only" />
-                <div className="h-8 flex items-center justify-center font-black text-lg tracking-wider" style={{color: paymentMethod === 'instapay' ? '#8a2be2' : '#94a3b8'}}>InstaPay</div>
-                <span className="font-bold text-sm">إنستاباي</span>
-              </label>
-
+            <div className="flex gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+              <ShieldCheck className="h-5 w-5 shrink-0" />
+              <p>
+                الدفع حاليًا بالتحويل فقط. الدفع بالبطاقة سيُتاح عند ربط بوابة دفع رسمية —
+                ولن نطلب منك بيانات بطاقتك على هذه الصفحة أبدًا.
+              </p>
             </div>
 
-            {paymentMethod === 'credit_card' && (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 space-y-4 animate-in fade-in slide-in-from-top-2">
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">رقم البطاقة</label>
-                  <input type="text" required placeholder="0000 0000 0000 0000" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-rose-500 font-mono" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">تاريخ الانتهاء</label>
-                    <input type="text" required placeholder="MM/YY" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-rose-500 font-mono text-center" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">الرقم السري (CVV)</label>
-                    <input type="text" required placeholder="123" dir="ltr" maxLength={4} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-rose-500 font-mono text-center" />
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-slate-500 mt-4">
-                  <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                  <span>معلوماتك البنكية مشفرة وآمنة 100%. نحن لا نحتفظ ببيانات بطاقتك.</span>
-                </div>
+            <div className="animate-in fade-in slide-in-from-top-2 rounded-2xl border border-slate-200 bg-slate-50 p-6">
+              <p className="mb-2 text-sm font-bold text-slate-700">
+                تعليمات التحويل (إنستاباي / محفظة إلكترونية)
+              </p>
+              <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
+                <p className="mb-2 text-sm text-slate-600">
+                  حوّل المبلغ إلى رقم المحفظة التالي:
+                </p>
+                <p className="font-mono text-xl font-black text-rose-700 select-all">
+                  {paymentWalletNumber}
+                </p>
               </div>
-            )}
-
-            {paymentMethod === 'wallet' && (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 animate-in fade-in slide-in-from-top-2">
-                <label className="block text-sm font-bold text-slate-700 mb-2">رقم الهاتف المرتبط بالمحفظة الإلكترونية</label>
-                <input type="tel" required placeholder="01X XXXX XXXX" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-rose-500 font-mono text-right" />
-                <p className="text-xs text-slate-500 mt-2">ستصلك رسالة لتأكيد الدفع على هذا الرقم.</p>
-              </div>
-            )}
-
-            {paymentMethod === 'fawry' && (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 animate-in fade-in slide-in-from-top-2">
-                <p className="text-sm font-bold text-slate-700 mb-2">كيف يعمل الدفع بفوري؟</p>
-                <ol className="list-decimal list-inside text-sm text-slate-600 space-y-1">
-                  <li>بعد تأكيد الطلب، سيظهر لك "كود دفع فوري".</li>
-                  <li>توجه لأقرب منفذ فوري أو استخدم تطبيق myFawry.</li>
-                  <li>أدخل الكود وقم بالدفع خلال 24 ساعة لتأكيد طلبك.</li>
-                </ol>
-              </div>
-            )}
-
-            {paymentMethod === 'instapay' && (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 animate-in fade-in slide-in-from-top-2">
-                <p className="text-sm font-bold text-slate-700 mb-2">تعليمات الدفع عبر إنستاباي</p>
-                <div className="bg-white border border-slate-200 rounded-xl p-4 mb-4">
-                  <p className="text-sm text-slate-600 mb-2">قم بتحويل المبلغ إلى رقم المحفظة التالي:</p>
-                  <p className="text-xl font-mono font-black text-rose-700 select-all">{paymentWalletNumber}</p>
-                </div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">رقم العملية / المرجع (Transaction Reference)</label>
-                <input type="text" required value={transactionRef} onChange={e => setTransactionRef(e.target.value)} placeholder="رقم العملية أو المرجع" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-rose-500 font-mono text-right" />
-              </div>
-            )}
+              <label className="mb-2 block text-sm font-bold text-slate-700">
+                رقم العملية / المرجع (Transaction Reference)
+              </label>
+              <input
+                type="text"
+                required
+                value={transactionRef}
+                onChange={(e) => setTransactionRef(e.target.value)}
+                placeholder="رقم العملية أو المرجع"
+                dir="ltr"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-right font-mono outline-none focus:border-rose-500"
+              />
+              <p className="mt-2 text-xs font-medium text-slate-500">
+                طلبك يُسجَّل فورًا، وتُراجعه الإدارة وتؤكد استلام المبلغ.
+              </p>
+            </div>
 
             <div className="pt-6">
               <button 
@@ -271,7 +269,7 @@ export function CheckoutClient({ user, paymentWalletNumber }: Props) {
                 disabled={isProcessing}
                 className="w-full flex justify-center items-center gap-2 rounded-xl bg-rose-600 px-8 py-4 font-black text-white hover:bg-rose-700 transition-colors shadow-lg disabled:opacity-70"
               >
-                {isPending || isProcessing ? (paymentMethod === 'instapay' ? 'جاري التحقق وإرسال الطلب...' : 'جاري معالجة الدفع...') : (paymentMethod === 'instapay' ? 'لقد قمت بالتحويل' : `تأكيد الدفع (${formatPrice(grandTotal)})`)}
+                {isPending || isProcessing ? 'جارٍ تسجيل الطلب…' : 'لقد قمت بالتحويل'}
               </button>
             </div>
           </form>
@@ -313,7 +311,15 @@ export function CheckoutClient({ user, paymentWalletNumber }: Props) {
             </div>
             <div className="flex justify-between text-sm text-slate-600">
               <span>مصاريف الشحن</span>
-              <span className="font-bold">{shipping === 0 ? 'مجاناً' : `${formatPrice(shipping)}`}</span>
+              <span className="font-bold">
+                {!needsShipping
+                  ? 'لا ينطبق'
+                  : shippingKnown
+                    ? shipping === 0
+                      ? 'مجاناً'
+                      : formatPrice(shipping)
+                    : 'يُحدَّد حسب المحافظة'}
+              </span>
             </div>
           </div>
 
@@ -321,6 +327,12 @@ export function CheckoutClient({ user, paymentWalletNumber }: Props) {
             <span className="text-lg font-black text-slate-800">الإجمالي</span>
             <span className="text-2xl font-black text-rose-600">{formatPrice(grandTotal)}</span>
           </div>
+
+          {needsShipping && !shippingKnown && (
+            <p className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-800">
+              الإجمالي بدون مصاريف الشحن — تُحسب بعد اختيار المحافظة.
+            </p>
+          )}
 
           <div className="rounded-xl bg-slate-50 p-4 flex items-start gap-3">
             <ShieldCheck className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />

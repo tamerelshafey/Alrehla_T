@@ -11,7 +11,6 @@ export function BookingConfirmClient({ paymentWalletNumber }: { paymentWalletNum
   const searchParams = useSearchParams();
   const packageId = searchParams?.get('package') || 'dummy-package';
   const instructorId = searchParams?.get('instructor') || 'dummy-instructor';
-  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'instapay'>('credit_card');
   const [participantType, setParticipantType] = useState<'self' | 'child'>('self');
   const [childId, setChildId] = useState<string>('');
   const [children, setChildren] = useState<{id:string, name:string}[]>([]);
@@ -32,9 +31,7 @@ export function BookingConfirmClient({ paymentWalletNumber }: { paymentWalletNum
 const orderId = await createDummyBookingServiceOrder(250, packageId, instructorId, participantType, childId);
       setOrderIdState(orderId);
       
-      if (paymentMethod === 'instapay') {
-        await submitBookingPaymentProof(orderId, transactionRef);
-      }
+      await submitBookingPaymentProof(orderId, transactionRef);
       
       setIsSuccess(true);
     });
@@ -47,12 +44,10 @@ const orderId = await createDummyBookingServiceOrder(250, packageId, instructorI
           <CheckCircle2 className="h-10 w-10" />
         </div>
         <h2 className="mb-4 text-3xl font-black text-slate-800">
-          {paymentMethod === 'instapay' ? 'بانتظار تأكيد الدفع' : 'تم تأكيد الحجز بنجاح!'}
+          بانتظار تأكيد الدفع
         </h2>
         <p className="mb-8 text-slate-600">
-          {paymentMethod === 'instapay' 
-            ? 'لقد استلمنا طلب الحجز الخاص بك وجاري مراجعة إيصال الدفع. سنقوم بتأكيد حجزك قريباً.' 
-            : 'تم استلام الدفعة وتأكيد موعدك بنجاح. تفاصيل الحجز متوفرة في لوحة التحكم.'}
+          لقد استلمنا طلب الحجز الخاص بك وجاري مراجعة التحويل. سنؤكد حجزك قريبًا.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button href="/account/orders/creative-writing" accentColor="emerald" className="!bg-slate-900 !text-white hover:!bg-slate-800 px-8 py-3">
@@ -106,53 +101,36 @@ const orderId = await createDummyBookingServiceOrder(250, packageId, instructorI
       <form onSubmit={handlePaymentSubmit} className="space-y-6">
         <h2 className="text-xl font-black text-slate-800">طريقة الدفع</h2>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <label className={`cursor-pointer rounded-2xl border-2 p-4 flex items-center gap-3 transition-colors ${paymentMethod === 'credit_card' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white hover:border-emerald-300'}`}>
-            <input type="radio" name="payment" value="credit_card" checked={paymentMethod === 'credit_card'} onChange={() => setPaymentMethod('credit_card')} className="sr-only" />
-            <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'credit_card' ? 'border-emerald-500' : 'border-slate-300'}`}>
-              {paymentMethod === 'credit_card' && <div className="h-2 w-2 rounded-full bg-emerald-500" />}
-            </div>
-            <span className="font-bold">بطاقة بنكية</span>
+        {/* A card form used to sit here whose inputs nothing ever read: the
+            customer typed a real card number and was shown a success screen
+            without a penny being charged. Transfer only until a real payment
+            gateway is integrated. */}
+        <div className="animate-in fade-in slide-in-from-top-2 rounded-2xl border border-slate-200 bg-slate-50 p-6">
+          <p className="mb-2 text-sm font-bold text-slate-700">
+            تعليمات التحويل (إنستاباي / محفظة إلكترونية)
+          </p>
+          <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
+            <p className="mb-2 text-sm text-slate-600">حوّل المبلغ إلى رقم المحفظة التالي:</p>
+            <p className="font-mono text-xl font-black text-emerald-700 select-all">
+              {paymentWalletNumber}
+            </p>
+          </div>
+          <label className="mb-2 block text-sm font-bold text-slate-700">
+            رقم العملية / المرجع (Transaction Reference)
           </label>
-          <label className={`cursor-pointer rounded-2xl border-2 p-4 flex items-center gap-3 transition-colors ${paymentMethod === 'instapay' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white hover:border-emerald-300'}`}>
-            <input type="radio" name="payment" value="instapay" checked={paymentMethod === 'instapay'} onChange={() => setPaymentMethod('instapay')} className="sr-only" />
-            <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'instapay' ? 'border-emerald-500' : 'border-slate-300'}`}>
-              {paymentMethod === 'instapay' && <div className="h-2 w-2 rounded-full bg-emerald-500" />}
-            </div>
-            <span className="font-bold">إنستاباي (InstaPay)</span>
-          </label>
+          <input
+            type="text"
+            required
+            value={transactionRef}
+            onChange={(e) => setTransactionRef(e.target.value)}
+            placeholder="رقم العملية أو المرجع"
+            dir="ltr"
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-right font-mono outline-none focus:border-emerald-500"
+          />
+          <p className="mt-2 text-xs font-medium text-slate-500">
+            حجزك يُسجَّل فورًا، وتُراجعه الإدارة وتؤكد استلام المبلغ.
+          </p>
         </div>
-
-        {paymentMethod === 'credit_card' && (
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 space-y-4 animate-in fade-in slide-in-from-top-2">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">رقم البطاقة</label>
-              <input type="text" required placeholder="0000 0000 0000 0000" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-emerald-500 font-mono" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">تاريخ الانتهاء</label>
-                <input type="text" required placeholder="MM/YY" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-emerald-500 font-mono text-center" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">الرقم السري (CVV)</label>
-                <input type="text" required placeholder="123" dir="ltr" maxLength={4} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-emerald-500 font-mono text-center" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {paymentMethod === 'instapay' && (
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 animate-in fade-in slide-in-from-top-2">
-            <p className="text-sm font-bold text-slate-700 mb-2">تعليمات الدفع عبر إنستاباي</p>
-            <div className="bg-white border border-slate-200 rounded-xl p-4 mb-4">
-              <p className="text-sm text-slate-600 mb-2">قم بتحويل المبلغ إلى رقم المحفظة التالي:</p>
-              <p className="text-xl font-mono font-black text-emerald-700 select-all">{paymentWalletNumber}</p>
-            </div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">رقم العملية / المرجع (Transaction Reference)</label>
-            <input type="text" required value={transactionRef} onChange={e => setTransactionRef(e.target.value)} placeholder="رقم العملية أو المرجع" dir="ltr" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-emerald-500 font-mono text-right" />
-          </div>
-        )}
 
         <div className="flex flex-col sm:flex-row gap-4 pt-4">
           <Button
@@ -161,7 +139,7 @@ const orderId = await createDummyBookingServiceOrder(250, packageId, instructorI
             accentColor="emerald"
             className="flex-1 py-4 text-center disabled:opacity-70"
           >
-            {isPending ? 'جاري التنفيذ...' : (paymentMethod === 'instapay' ? 'لقد قمت بالتحويل' : 'تأكيد الحجز والدفع')}
+            {isPending ? 'جارٍ تسجيل الحجز…' : 'لقد قمت بالتحويل'}
             {!isPending && <CheckCircle2 className="h-5 w-5" />}
           </Button>
           <Button

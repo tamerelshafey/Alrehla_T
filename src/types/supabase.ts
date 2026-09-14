@@ -580,6 +580,10 @@ export type Database = {
           status: Database["public"]["Enums"]["join_request_status_enum"]
           created_at: string
           updated_at: string
+          email: string | null
+          phone: string | null
+          portfolio_url: string | null
+          message: string | null
         }
         Insert: {
           id?: string
@@ -588,6 +592,10 @@ export type Database = {
           status?: Database["public"]["Enums"]["join_request_status_enum"]
           created_at?: string
           updated_at?: string
+          email?: string | null
+          phone?: string | null
+          portfolio_url?: string | null
+          message?: string | null
         }
         Update: {
           id?: string
@@ -596,6 +604,10 @@ export type Database = {
           status?: Database["public"]["Enums"]["join_request_status_enum"]
           created_at?: string
           updated_at?: string
+          email?: string | null
+          phone?: string | null
+          portfolio_url?: string | null
+          message?: string | null
         }
         Relationships: []
       }
@@ -670,6 +682,13 @@ export type Database = {
           transaction_reference: string | null
           created_at: string
           updated_at: string
+          recipient_name: string | null
+          recipient_phone: string | null
+          address_line: string | null
+          city: string | null
+          governorate: string | null
+          shipping_notes: string | null
+          shipping_fee: number
         }
         Insert: {
           id?: string
@@ -681,6 +700,13 @@ export type Database = {
           transaction_reference?: string | null
           created_at?: string
           updated_at?: string
+          recipient_name?: string | null
+          recipient_phone?: string | null
+          address_line?: string | null
+          city?: string | null
+          governorate?: string | null
+          shipping_notes?: string | null
+          shipping_fee?: number
         }
         Update: {
           id?: string
@@ -692,6 +718,13 @@ export type Database = {
           transaction_reference?: string | null
           created_at?: string
           updated_at?: string
+          recipient_name?: string | null
+          recipient_phone?: string | null
+          address_line?: string | null
+          city?: string | null
+          governorate?: string | null
+          shipping_notes?: string | null
+          shipping_fee?: number
         }
         Relationships: []
       }
@@ -1061,6 +1094,60 @@ export type Database = {
         }
         Relationships: []
       }
+      session_reports: {
+        Row: {
+          id: string
+          session_id: string
+          instructor_id: string
+          attendance: string
+          report: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          instructor_id: string
+          attendance: string
+          report?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          session_id?: string
+          instructor_id?: string
+          attendance?: string
+          report?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shipping_rates: {
+        Row: {
+          id: string
+          governorate: string
+          fee: number
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          governorate: string
+          fee: number
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          governorate?: string
+          fee?: number
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sessions: {
         Row: {
           id: string
@@ -1071,6 +1158,7 @@ export type Database = {
           status: string
           created_at: string
           updated_at: string | null
+          meeting_url: string | null
         }
         Insert: {
           id?: string
@@ -1081,6 +1169,7 @@ export type Database = {
           status?: string
           created_at?: string
           updated_at?: string | null
+          meeting_url?: string | null
         }
         Update: {
           id?: string
@@ -1091,6 +1180,7 @@ export type Database = {
           status?: string
           created_at?: string
           updated_at?: string | null
+          meeting_url?: string | null
         }
         Relationships: []
       }

@@ -47,9 +47,11 @@ export default async function PublisherPayoutsPage() {
             </div>
             <div className="text-4xl font-black text-emerald-600">{formatPrice(availableBalance)}</div>
           </div>
-          <button className="mt-6 w-full rounded-xl bg-emerald-600 px-4 py-3 font-bold text-white transition-colors hover:bg-emerald-700">
-            طلب سحب الرصيد
-          </button>
+          {/* This button had no handler: a publisher believed a withdrawal
+              had been requested and nothing was ever filed. */}
+          <p className="mt-6 rounded-xl bg-white/70 p-3 text-center text-sm font-bold text-emerald-800">
+            لطلب السحب، تواصل مع الإدارة — الطلب من داخل الموقع غير متاح بعد.
+          </p>
         </div>
 
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -77,7 +79,10 @@ export default async function PublisherPayoutsPage() {
 
       <div className="rounded-xl bg-blue-50 p-4 border border-blue-100 text-sm text-blue-800 mb-8 flex gap-3">
         <AlertCircle className="h-5 w-5 shrink-0" />
-        <p>يتم احتساب أرباح الناشر بنسبة <strong>70%</strong> من إجمالي المبيعات، ويتم تسوية الحسابات وإتاحة طلب السحب في اليوم الأول من كل شهر ميلادي جديد للمبيعات التي تمت في الشهر السابق.</p>
+        <p>
+          تُحتسب أرباح الناشر وفق معادلة التسعير المعتمدة في المنصة، وتظهر في جدول
+          الدفعات بالأسفل. لأي استفسار عن حسابك أو لطلب السحب، تواصل مع الإدارة.
+        </p>
       </div>
 
       <h3 className="text-xl font-bold text-slate-800 mb-4">سجل الدفعات</h3>

@@ -7,8 +7,29 @@ import { getCurrentUser } from '@/data/domains/auth';
 
 import { createClient } from '@/lib/supabase/server';
 
-// Utility to create a dummy order for checkout simulation
-export async function createDummyOrder(items: OrderItem[], totalAmount: number) {
+export type ShippingDetails = {
+  recipientName: string;
+  recipientPhone: string;
+  addressLine: string;
+  city: string;
+  governorate: string;
+  notes?: string;
+};
+
+/**
+ * Creating an order.
+ *
+ * The shipping address used to be collected on screen — name, phone, address,
+ * city and governorate, all marked required — and then thrown away: the order
+ * row carried only a user id, a total and a status. A printed book was ordered
+ * with nowhere to send it.
+ */
+export async function createDummyOrder(
+  items: OrderItem[],
+  totalAmount: number,
+  shipping?: ShippingDetails,
+  shippingFee = 0
+) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -21,7 +42,14 @@ export async function createDummyOrder(items: OrderItem[], totalAmount: number) 
     .insert({
       user_id: user.id,
       total_amount: totalAmount,
-      status: 'pending'
+      status: 'pending',
+      recipient_name: shipping?.recipientName?.trim() || null,
+      recipient_phone: shipping?.recipientPhone?.trim() || null,
+      address_line: shipping?.addressLine?.trim() || null,
+      city: shipping?.city?.trim() || null,
+      governorate: shipping?.governorate?.trim() || null,
+      shipping_notes: shipping?.notes?.trim() || null,
+      shipping_fee: shippingFee,
     })
     .select('id')
     .single();

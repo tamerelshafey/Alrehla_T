@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { SessionWithDetails } from '@/types';
 import { Video, Clock, User, CheckCircle2, AlertCircle, FileText, Send } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { saveSessionReport } from '@/actions/sessions';
 
 interface Props {
   session: SessionWithDetails;
@@ -12,10 +14,27 @@ export function InstructorSessionClient({ session }: Props) {
   const [attendance, setAttendance] = useState<'present' | 'absent' | null>(null);
   const [report, setReport] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    if (!attendance) {
+      setError('سجّل الحضور أولاً');
+      return;
+    }
+    setIsSaving(true);
+    setError('');
+    try {
+      await saveSessionReport({ sessionId: session.id, attendance, report });
+      setIsSubmitted(true);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'تعذّر حفظ التقرير');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const studentId = session.childId || session.userId;
@@ -31,29 +50,47 @@ export function InstructorSessionClient({ session }: Props) {
           <div>
             <h2 className="text-2xl font-black text-indigo-900 mb-1">غرفة التدريب المرئية</h2>
             <div className="flex items-center gap-3 text-indigo-700 font-medium">
-              <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> اليوم، 14:00</span>
+              <span className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                {new Date(session.scheduledAt).toLocaleString('ar-EG', {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                })}
+              </span>
               <span>•</span>
               <span className="flex items-center gap-1"><User className="h-4 w-4" /> مع الطالب #{studentId?.split('-')[1]}</span>
             </div>
           </div>
         </div>
         
-        <a 
-          href="https://meet.google.com" 
-          target="_blank" 
-          rel="noreferrer"
-          className="rounded-xl bg-indigo-600 px-8 py-4 font-black text-white shadow-lg transition-transform hover:scale-105 active:scale-95 text-center w-full md:w-auto"
-        >
-          دخول الجلسة الآن
-        </a>
+        {session.meetingUrl ? (
+          <a
+            href={session.meetingUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="w-full rounded-xl bg-indigo-600 px-8 py-4 text-center font-black text-white shadow-lg transition-transform hover:scale-105 active:scale-95 md:w-auto"
+          >
+            دخول الجلسة الآن
+          </a>
+        ) : (
+          <span className="w-full rounded-xl bg-white/70 px-8 py-4 text-center font-bold text-indigo-700 md:w-auto">
+            رابط الجلسة لم يُضَف بعد
+          </span>
+        )}
       </div>
+
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+          {error}
+        </div>
+      )}
 
       {isSubmitted && (
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 flex gap-3 text-emerald-800">
           <CheckCircle2 className="h-6 w-6 shrink-0" />
           <div>
             <p className="font-bold text-lg mb-1">تم تسجيل الجلسة بنجاح</p>
-            <p className="text-sm">تم حفظ الحضور والتقرير، وتم إرسال نسخة للإدارة وللطالب في لوحة التحكم الخاصة به.</p>
+            <p className="text-sm">تم حفظ الحضور والتقرير. الإدارة والمتدرب يمكنهما الاطلاع عليه.</p>
           </div>
         </div>
       )}
@@ -135,11 +172,11 @@ export function InstructorSessionClient({ session }: Props) {
                 <div className="flex justify-end pt-4">
                   <button
                     type="submit"
-                    disabled={!attendance || !report}
+                    disabled={!attendance || !report || isSaving}
                     className="flex items-center gap-2 rounded-xl bg-slate-900 px-8 py-3 font-bold text-white shadow-md transition-colors hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Send className="h-5 w-5" />
-                    حفظ وإرسال التقرير
+                    {isSaving ? 'جارٍ الحفظ…' : 'حفظ وإرسال التقرير'}
                   </button>
                 </div>
               )}

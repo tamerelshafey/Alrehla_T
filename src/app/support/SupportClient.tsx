@@ -5,6 +5,7 @@ import { PageContainer } from '@/components/PageContainer';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { SupportTicketForm } from './SupportTicketForm';
 import {
   Search,
   MessageCircle,
@@ -14,7 +15,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 
-export default function SupportClient() {
+export default function SupportClient({ isSignedIn }: { isSignedIn: boolean }) {
   const [activeTab, setActiveTab] = useState('enha-lak');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
@@ -33,7 +34,7 @@ export default function SupportClient() {
       },
       {
         q: 'كم يستغرق شحن القصة المخصصة؟',
-        a: 'يستغرق العمل 3-5 أيام لتجهيز وطباعة القصة، ثم 2-3 أيام إضافية للشحن حسب المحافظة.',
+        a: 'القصة الإلكترونية جاهزة خلال 3-5 أيام عمل، والمطبوعة خلال 7-10 أيام عمل، بخلاف مدة الشحن حسب المحافظة.',
       },
       {
         q: 'هل يمكنني تعديل القصة بعد الطلب؟',
@@ -47,7 +48,7 @@ export default function SupportClient() {
       },
       {
         q: 'ما المنصة المستخدمة للجلسات؟',
-        a: 'نستخدم منصة Zoom في جميع جلساتنا، وستصلك روابط الدخول عبر البريد الإلكتروني.',
+        a: 'تُعقد الجلسات عبر Google Meet أو Dooly، ويصلك رابط الجلسة مع تفاصيل موعدها، وستصلك روابط الدخول عبر البريد الإلكتروني.',
       },
       {
         q: 'كيف أختار المدرب؟',
@@ -75,7 +76,7 @@ export default function SupportClient() {
     general: [
       {
         q: 'ما طرق الدفع المتاحة؟',
-        a: 'نقبل الدفع عبر البطاقات الائتمانية والمحافظ الإلكترونية وخدمات التقسيط المتاحة.',
+        a: 'الدفع حاليًا بالتحويل على المحفظة الإلكترونية أو إنستاباي. الدفع بالبطاقة سيُتاح عند ربط بوابة دفع رسمية.',
       },
       {
         q: 'ما سياسة الاسترداد؟',
@@ -192,7 +193,7 @@ export default function SupportClient() {
             </div>
             <h3 className="mb-2 text-xl font-bold text-slate-800">واتساب</h3>
             <p className="mb-6 font-medium text-slate-500">
-              محادثة فورية 9ص-9م
+              راسلنا عبر واتساب
             </p>
             <Button
               className="w-full !bg-green-500 !hover:bg-green-600 shadow-md"
@@ -213,12 +214,12 @@ export default function SupportClient() {
               للشكاوى والمقترحات
             </p>
             <Button
-              href="mailto:support@alrehla.com"
+              href="mailto:Alrehla@tech-bokra.com"
               variant="secondary"
               accentColor="amber"
               className="w-full !bg-slate-100 !text-slate-700 !border-0 !hover:bg-slate-200"
             >
-              support@alrehla.com
+              Alrehla@tech-bokra.com
             </Button>
           </Card>
 
@@ -232,50 +233,10 @@ export default function SupportClient() {
               </h3>
             </div>
             <p className="mb-6 text-sm font-medium text-slate-500">
-              لم تجد إجابة؟ أرسل لنا وسنرد خلال 24 ساعة.
+              لم تجد إجابة؟ أرسل لنا تذكرة وسنرد عليك في أقرب وقت.
             </p>
 
-            <form className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">
-                  التصنيف
-                </label>
-                <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 transition-all outline-none focus:border-amber-500">
-                  <option value="enha-lak">طلب «إنها لك»</option>
-                  <option value="creative-writing">«بداية الرحلة»</option>
-                  <option value="account-payment">الحساب والدفع</option>
-                  <option value="partners">شراكات</option>
-                  <option value="other">أخرى</option>
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">
-                  البريد الإلكتروني
-                </label>
-                <input
-                  type="email"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium transition-all outline-none focus:border-amber-500"
-                  placeholder="البريد للرد عليك"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">
-                  التفاصيل
-                </label>
-                <textarea
-                  rows={3}
-                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium transition-all outline-none focus:border-amber-500"
-                  placeholder="اشرح مشكلتك أو استفسارك..."
-                ></textarea>
-              </div>
-              <Button
-                type="button"
-                accentColor="amber"
-                className="mt-2 w-full !bg-slate-900 !hover:bg-slate-800 shadow-md"
-              >
-                إرسال التذكرة
-              </Button>
-            </form>
+            <SupportTicketForm isSignedIn={isSignedIn} />
           </Card>
         </div>
       </Section>

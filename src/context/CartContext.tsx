@@ -16,6 +16,10 @@ interface CartContextType {
   addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
+  /** Emptying the cart after an order. The checkout used to carry the comment
+   *  "In real app, clearCart() would be here" — so every completed order left
+   *  its items in the cart, ready to be ordered again. */
+  clearCart: () => void;
   itemCount: number;
   cartTotal: number;
 }
@@ -47,11 +51,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => prev.map(i => i.id === id ? { ...i, quantity } : i));
   };
 
+  const clearCart = () => setItems([]);
+
   const itemCount = items.reduce((acc, i) => acc + i.quantity, 0);
   const cartTotal = items.reduce((acc, i) => acc + (i.price * i.quantity), 0);
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, itemCount, cartTotal }}>
+    <CartContext.Provider
+      value={{ items, addItem, removeItem, updateQuantity, clearCart, itemCount, cartTotal }}
+    >
       {children}
     </CartContext.Provider>
   );

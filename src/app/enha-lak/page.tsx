@@ -77,7 +77,7 @@ export default async function EnhaLakPage() {
     },
     {
       title: 'استلم واستمتع',
-      description: 'قصة جاهزة في 7-10 أيام عمل.',
+      description: 'إلكترونية في 3-5 أيام، مطبوعة في 7-10 أيام عمل.',
       icon: Package,
     },
   ];

@@ -517,6 +517,9 @@ export interface Session {
 }
 
 export type SessionWithDetails = Session & {
+  /** The meeting room for this session. The dashboards used to link to
+   *  https://meet.google.com — Google Meet's home page, not a room. */
+  meetingUrl?: string;
   userId: string;
   participantType: 'self' | 'child';
   childId?: string;

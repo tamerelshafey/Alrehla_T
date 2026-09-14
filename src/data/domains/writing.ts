@@ -393,6 +393,7 @@ export const getSessions = async (): Promise<SessionWithDetails[]> => {
       scheduledAt: sess.scheduled_at,
       createdAt: sess.created_at,
       updatedAt: sess.updated_at || sess.created_at,
+      meetingUrl: sess.meeting_url || undefined,
       // joined details
       userId: sub?.user_id || 'unknown',
       participantType: sub?.participant_type || 'self',
