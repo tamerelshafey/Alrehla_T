@@ -1,9 +1,9 @@
 'use server';
+import { requireAdmin } from '@/lib/auth-guard';
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { getCurrentUser } from '@/data/domains/auth';
-import { hasAdminPermission } from '@/lib/utils';
 import { getMyInstructorId } from '@/data/domains/services';
 import { notifyUser, getInstructorUserId } from '@/lib/notifications';
 
@@ -17,12 +17,9 @@ import { notifyUser, getInstructorUserId } from '@/lib/notifications';
  * codebase before — it is never the only guard.
  */
 
+/** يفوّض للقاعدة الموحّدة في `@/lib/auth-guard` — التنفيذ واحد، والرسالة خاصة بهذا المجال. */
 async function requireInstructorAdmin() {
-  const user = await getCurrentUser();
-  if (!hasAdminPermission(user, 'canManageInstructors')) {
-    throw new Error('غير مصرح لك بإدارة خدمات المدربين');
-  }
-  return user;
+  return requireAdmin('canManageCatalog', 'غير مصرح لك بإدارة عروض المدربين');
 }
 
 export async function saveInstructorServiceOffer(params: {

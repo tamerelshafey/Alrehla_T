@@ -1,10 +1,9 @@
 'use server';
+import { requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getCurrentUser } from '@/data/domains/auth';
-import { hasAdminPermission } from '@/lib/utils';
 import { logAuditAction } from '@/lib/audit';
 
 /**
@@ -30,10 +29,7 @@ export async function createInstructor(params: {
   yearsExperience: number;
   workModel: 'monthly' | 'per_session';
 }) {
-  const admin = await getCurrentUser();
-  if (!hasAdminPermission(admin, 'canManageInstructors')) {
-    throw new Error('غير مصرح لك بإضافة مدربين');
-  }
+  const admin = await requireAdmin('canManageInstructors', 'غير مصرح لك بإضافة مدربين');
 
   const email = params.email.trim().toLowerCase();
   const fullName = params.fullName.trim();

@@ -1,10 +1,9 @@
 'use server';
+import { requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentUser } from '@/data/domains/auth';
-import { hasAdminPermission } from '@/lib/utils';
 
 /**
  * Managing the standalone creative services ("الخدمات الإبداعية").
@@ -13,12 +12,9 @@ import { hasAdminPermission } from '@/lib/utils';
  * rename, reprice or remove a service from inside the site at all.
  */
 
+/** يفوّض للقاعدة الموحّدة في `@/lib/auth-guard` — التنفيذ واحد، والرسالة خاصة بهذا المجال. */
 async function requireCatalogAdmin() {
-  const user = await getCurrentUser();
-  if (!hasAdminPermission(user, 'canManageCatalog')) {
-    throw new Error('غير مصرح لك بإدارة الخدمات');
-  }
-  return user;
+  return requireAdmin('canManageCatalog', 'غير مصرح لك بإدارة الخدمات');
 }
 
 export interface ServiceInput {

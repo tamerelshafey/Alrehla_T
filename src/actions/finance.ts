@@ -1,4 +1,5 @@
 'use server';
+import { requireSuperAdmin as requireSuperAdminGuard, requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
@@ -16,12 +17,9 @@ import { getMyInstructorId } from '@/data/domains/services';
  * guard behind the checks made here.
  */
 
+/** يفوّض للقاعدة الموحّدة في `@/lib/auth-guard`. */
 async function requireSuperAdmin() {
-  const user = await getCurrentUser();
-  if (user.role !== 'super_admin') {
-    throw new Error('غير مصرح لك بإدارة المدفوعات');
-  }
-  return user;
+  return requireSuperAdminGuard('غير مصرح لك بإدارة المدفوعات');
 }
 
 export async function markInstructorPayoutAsPaid(payoutId: string) {

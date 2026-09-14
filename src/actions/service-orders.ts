@@ -1,9 +1,9 @@
 'use server';
+import { requireAdmin } from '@/lib/auth-guard';
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
-import { getCurrentUser } from '@/data/domains/auth';
 import { hasAdminPermission, calculateFinalSessionPrice } from '@/lib/utils';
 import { notifyUser, getInstructorUserId } from '@/lib/notifications';
 
@@ -387,12 +387,9 @@ export async function confirmServiceOrderReceipt(orderId: string) {
 
 /* ---------------- الإدارة ---------------- */
 
+/** يفوّض للقاعدة الموحّدة في `@/lib/auth-guard` — التنفيذ واحد، والرسالة خاصة بهذا المجال. */
 async function requireOrdersAdmin() {
-  const user = await getCurrentUser();
-  if (!hasAdminPermission(user, 'canManageOrders')) {
-    throw new Error('غير مصرح لك بإدارة الطلبات');
-  }
-  return user;
+  return requireAdmin('canManageOrders', 'غير مصرح لك بإدارة الطلبات');
 }
 
 /** تأكيد استلام المبلغ. */

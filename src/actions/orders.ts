@@ -4,7 +4,6 @@ import { requireUser, requireAdmin } from '@/lib/auth-guard';
 import { revalidatePath } from 'next/cache';
 import { OrderItem } from '@/types';
 import { logAuditAction } from '@/lib/audit';
-import { getCurrentUser } from '@/data/domains/auth';
 
 import { createClient } from '@/lib/supabase/server';
 

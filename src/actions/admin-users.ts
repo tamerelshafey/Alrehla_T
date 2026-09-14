@@ -1,10 +1,9 @@
 'use server';
+import { requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getCurrentUser } from '@/data/domains/auth';
-import { hasAdminPermission } from '@/lib/utils';
 import { logAuditAction } from '@/lib/audit';
 import type { UserRole } from '@/types';
 
@@ -32,10 +31,7 @@ export async function inviteUser(params: {
   fullName: string;
   role: UserRole;
 }) {
-  const admin = await getCurrentUser();
-  if (!hasAdminPermission(admin, 'canManageUsers')) {
-    throw new Error('غير مصرح لك بإضافة مستخدمين');
-  }
+  const admin = await requireAdmin('canManageUsers', 'غير مصرح لك بإضافة مستخدمين');
 
   const email = params.email.trim().toLowerCase();
   const fullName = params.fullName.trim();
@@ -102,10 +98,7 @@ export async function inviteUser(params: {
  * عملية جدول عادية — بتمر بصلاحيات قاعدة البيانات، مش بمفتاح الإدارة.
  */
 export async function updateUserRole(userId: string, role: UserRole) {
-  const admin = await getCurrentUser();
-  if (!hasAdminPermission(admin, 'canManageUsers')) {
-    throw new Error('غير مصرح لك بتعديل أدوار المستخدمين');
-  }
+  const admin = await requireAdmin('canManageUsers', 'غير مصرح لك بتعديل أدوار المستخدمين');
 
   if (!ASSIGNABLE_ROLES.includes(role)) throw new Error('الدور المختار غير صالح');
 

@@ -1,9 +1,8 @@
 'use server';
+import { requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentUser } from '@/data/domains/auth';
-import { hasAdminPermission } from '@/lib/utils';
 import { logAuditAction } from '@/lib/audit';
 import { notifyUser, getInstructorUserId } from '@/lib/notifications';
 
@@ -19,10 +18,7 @@ export async function setWithdrawalStatus(params: {
   status: 'approved' | 'paid' | 'rejected';
   adminNotes?: string;
 }) {
-  const admin = await getCurrentUser();
-  if (!hasAdminPermission(admin, 'canManageFinance')) {
-    throw new Error('غير مصرح لك بإدارة طلبات السحب');
-  }
+  const admin = await requireAdmin('canManageFinance', 'غير مصرح لك بإدارة طلبات السحب');
 
   const { requestId, status, adminNotes } = params;
   if (status === 'rejected' && !adminNotes?.trim()) {

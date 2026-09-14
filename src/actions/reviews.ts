@@ -1,9 +1,8 @@
 'use server';
+import { requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentUser } from '@/data/domains/auth';
-import { hasAdminPermission } from '@/lib/utils';
 import { logAuditAction } from '@/lib/audit';
 
 /**
@@ -84,10 +83,7 @@ export async function setReviewHidden(
   isHidden: boolean,
   reason: string
 ) {
-  const admin = await getCurrentUser();
-  if (!hasAdminPermission(admin, 'canManageContent')) {
-    throw new Error('غير مصرح لك بإدارة التقييمات');
-  }
+  const admin = await requireAdmin('canManageContent', 'غير مصرح لك بإدارة التقييمات');
   if (isHidden && !reason.trim()) {
     throw new Error('اكتب سبب الإخفاء');
   }

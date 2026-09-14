@@ -1,10 +1,9 @@
 'use server';
+import { requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentUser } from '@/data/domains/auth';
-import { hasAdminPermission } from '@/lib/utils';
 import { logAuditAction } from '@/lib/audit';
 
 /**
@@ -16,12 +15,9 @@ import { logAuditAction } from '@/lib/audit';
  * publish or edit a post from inside the site at all.
  */
 
+/** يفوّض للقاعدة الموحّدة في `@/lib/auth-guard` — التنفيذ واحد، والرسالة خاصة بهذا المجال. */
 async function requireContentAdmin() {
-  const user = await getCurrentUser();
-  if (!hasAdminPermission(user, 'canManageContent')) {
-    throw new Error('غير مصرح لك بإدارة المدونة');
-  }
-  return user;
+  return requireAdmin('canManageContent', 'غير مصرح لك بإدارة المدونة');
 }
 
 /**

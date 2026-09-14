@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { getMyInstructorId } from '@/data/domains/services';
+import { requireInstructor } from '@/lib/auth-guard';
 
 /**
  * The instructor's attendance record and report for a session.
@@ -18,8 +18,7 @@ export async function saveSessionReport(params: {
 }) {
   const { sessionId, attendance, report } = params;
 
-  const instructorId = await getMyInstructorId();
-  if (!instructorId) throw new Error('لم يتم ربط حسابك بملف مدرب');
+  const { instructorId } = await requireInstructor();
 
   const supabase = await createClient();
 

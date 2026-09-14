@@ -1,9 +1,8 @@
 'use server';
+import { requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentUser } from '@/data/domains/auth';
-import { hasAdminPermission } from '@/lib/utils';
 import { logAuditAction } from '@/lib/audit';
 
 /**
@@ -17,10 +16,7 @@ export async function setJoinRequestStatus(
   requestId: string,
   status: 'approved' | 'rejected'
 ) {
-  const admin = await getCurrentUser();
-  if (!hasAdminPermission(admin, 'canManageSupport')) {
-    throw new Error('غير مصرح لك بإدارة طلبات الانضمام');
-  }
+  const admin = await requireAdmin('canManageSupport', 'غير مصرح لك بإدارة طلبات الانضمام');
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -54,6 +50,9 @@ export async function setJoinRequestStatus(
  * `type="button"`: every application — instructors, illustrators, authors —
  * vanished the moment the applicant clicked send.
  */
+// عامّة عن قصد: أي زائر يقدم طلب انضمام. قاعدة البيانات بتفرض
+// `status = 'pending'` في قاعدة «Anyone can apply to join»، فمحدش
+// يقدر يقدّم طلبًا مقبولًا من البداية.
 export async function submitJoinRequest(params: {
   applicantName: string;
   email: string;

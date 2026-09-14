@@ -1,9 +1,8 @@
 'use server';
+import { requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentUser } from '@/data/domains/auth';
-import { hasAdminPermission } from '@/lib/utils';
 import { logAuditAction } from '@/lib/audit';
 import { notifyUser } from '@/lib/notifications';
 import type { Database } from '@/types/supabase';
@@ -23,12 +22,9 @@ const FLOW: Record<string, string> = {
   cancelled: 'ملغي',
 };
 
+/** يفوّض للقاعدة الموحّدة في `@/lib/auth-guard` — التنفيذ واحد، والرسالة خاصة بهذا المجال. */
 async function requireOrdersAdmin() {
-  const user = await getCurrentUser();
-  if (!hasAdminPermission(user, 'canManageOrders')) {
-    throw new Error('غير مصرح لك بإدارة الطلبات');
-  }
-  return user;
+  return requireAdmin('canManageOrders', 'غير مصرح لك بإدارة الطلبات');
 }
 
 export async function setOrderFulfilmentStatus(params: {

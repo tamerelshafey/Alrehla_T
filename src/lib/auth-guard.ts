@@ -75,3 +75,20 @@ export async function requireInstructor(): Promise<{
   if (!data) throw new Error('لا يوجد ملف مدرب مرتبط بحسابك');
   return { user, instructorId: data.id };
 }
+
+/**
+ * الإدارة ومعاها **أي واحدة** من الصلاحيات دي.
+ *
+ * بعض الشاشات بيوصل لها أكتر من دور — إعدادات التسعير مثلًا بيعدّلها
+ * مسؤول الكتالوج ومسؤول المدربين.
+ */
+export async function requireAnyAdmin(
+  permissions: AdminPermission[],
+  message = 'غير مصرح لك بهذا الإجراء',
+): Promise<UserProfile> {
+  const user = await getCurrentUser();
+  if (!permissions.some((p) => hasAdminPermission(user, p))) {
+    throw new Error(message);
+  }
+  return user;
+}

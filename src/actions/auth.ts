@@ -31,6 +31,8 @@ export async function signIn(formData: FormData) {
   redirect('/dashboard')
 }
 
+// عامّة بالضرورة: دي دالة إنشاء الحساب نفسها، فمفيش مستخدم تتحقق منه.
+// الحماية هنا من Supabase Auth (تأكيد البريد ومنع التكرار).
 export async function signUp(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string

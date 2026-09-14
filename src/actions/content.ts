@@ -1,10 +1,9 @@
 'use server';
+import { requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentUser } from '@/data/domains/auth';
-import { hasAdminPermission } from '@/lib/utils';
 import { CONTENT_DEFAULTS, CONTENT_FIELDS } from '@/lib/site-content';
 
 /**
@@ -15,10 +14,7 @@ import { CONTENT_DEFAULTS, CONTENT_FIELDS } from '@/lib/site-content';
  * It now updates the single `site_settings` row the footer reads.
  */
 export async function updateSiteSettings(formData: FormData) {
-  const user = await getCurrentUser();
-  if (!hasAdminPermission(user, 'canManageContent')) {
-    throw new Error('غير مصرح لك بتعديل إعدادات الموقع');
-  }
+  const user = await requireAdmin('canManageContent', 'غير مصرح لك بتعديل إعدادات الموقع');
 
   const supabase = await createClient();
 
@@ -78,10 +74,7 @@ export async function updateSiteSettings(formData: FormData) {
  * partial save can never blank out the other slots.
  */
 export async function saveSiteImage(params: { key: string; url: string }) {
-  const user = await getCurrentUser();
-  if (!hasAdminPermission(user, 'canManageContent')) {
-    throw new Error('غير مصرح لك بتعديل صور الموقع');
-  }
+  const user = await requireAdmin('canManageContent', 'غير مصرح لك بتعديل صور الموقع');
 
   const supabase = await createClient();
   const { data: existing } = await supabase
@@ -136,10 +129,7 @@ export async function saveSiteImage(params: { key: string; url: string }) {
 export async function savePageContent(
   entries: { key: string; value: string }[],
 ) {
-  const user = await getCurrentUser();
-  if (!hasAdminPermission(user, 'canManageContent')) {
-    throw new Error('غير مصرح لك بتعديل محتوى الصفحات');
-  }
+  const user = await requireAdmin('canManageContent', 'غير مصرح لك بتعديل محتوى الصفحات');
 
   // مفتاح مش معرّف في الكود مالوش أي مكان في الموقع — رفضه أحسن من
   // تخزين صف ميّت في الجدول.
@@ -213,10 +203,7 @@ export async function saveTestimonial(
   id: string | null,
   data: { authorName: string; authorRole: string; content: string },
 ) {
-  const user = await getCurrentUser();
-  if (!hasAdminPermission(user, 'canManageContent')) {
-    throw new Error('غير مصرح لك بتعديل آراء العملاء');
-  }
+  const user = await requireAdmin('canManageContent', 'غير مصرح لك بتعديل آراء العملاء');
 
   const authorName = data.authorName.trim();
   const authorRole = data.authorRole.trim();
@@ -261,10 +248,7 @@ export async function saveTestimonial(
 }
 
 export async function deleteTestimonial(id: string) {
-  const user = await getCurrentUser();
-  if (!hasAdminPermission(user, 'canManageContent')) {
-    throw new Error('غير مصرح لك بحذف آراء العملاء');
-  }
+  const user = await requireAdmin('canManageContent', 'غير مصرح لك بحذف آراء العملاء');
 
   const supabase = await createClient();
   const { error } = await supabase.from('testimonials').delete().eq('id', id);

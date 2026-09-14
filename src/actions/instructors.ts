@@ -1,12 +1,11 @@
 'use server';
+import { requireAdmin, requireAnyAdmin } from '@/lib/auth-guard';
 
 import { Instructor } from '@/types';
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
 import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/types/supabase';
-import { getCurrentUser } from '@/data/domains/auth';
-import { hasAdminPermission } from '@/lib/utils';
 import { notifyUser, getInstructorUserId } from '@/lib/notifications';
 
 /**
@@ -18,12 +17,9 @@ import { notifyUser, getInstructorUserId } from '@/lib/notifications';
  * clear error and again by row-level security, which is the real guard.
  */
 
+/** يفوّض للقاعدة الموحّدة في `@/lib/auth-guard` — التنفيذ واحد، والرسالة خاصة بهذا المجال. */
 async function requireInstructorAdmin() {
-  const user = await getCurrentUser();
-  if (!hasAdminPermission(user, 'canManageInstructors')) {
-    throw new Error('غير مصرح لك بإدارة المدربين');
-  }
-  return user;
+  return requireAdmin('canManageInstructors', 'غير مصرح لك بإدارة المدربين');
 }
 
 /** The instructor must be asking about their own profile. */
@@ -240,13 +236,10 @@ export async function updatePricingFormulaSettings(
   platformMultiplier: number,
   fixedAdminFee: number
 ) {
-  const user = await getCurrentUser();
-  if (
-    !hasAdminPermission(user, 'canManageCatalog') &&
-    !hasAdminPermission(user, 'canManageInstructors')
-  ) {
-    throw new Error('غير مصرح لك بتعديل إعدادات التسعير');
-  }
+  const user = await requireAnyAdmin(
+    ['canManageCatalog', 'canManageInstructors'],
+    'غير مصرح لك بتعديل إعدادات التسعير',
+  );
 
   const supabase = await createClient();
   const { error } = await supabase

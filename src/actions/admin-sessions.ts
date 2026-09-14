@@ -1,9 +1,8 @@
 'use server';
+import { requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentUser } from '@/data/domains/auth';
-import { hasAdminPermission } from '@/lib/utils';
 import { logAuditAction } from '@/lib/audit';
 import { notifyUser, getInstructorUserId } from '@/lib/notifications';
 
@@ -14,12 +13,9 @@ import { notifyUser, getInstructorUserId } from '@/lib/notifications';
  * everybody to Google Meet's home page — but nothing could write to it, so
  * every session showed "رابط الجلسة لم يُضَف بعد" with no way to add one.
  */
+/** يفوّض للقاعدة الموحّدة في `@/lib/auth-guard` — التنفيذ واحد، والرسالة خاصة بهذا المجال. */
 async function requireBookingsAdmin() {
-  const user = await getCurrentUser();
-  if (!hasAdminPermission(user, 'canManageBookings')) {
-    throw new Error('غير مصرح لك بإدارة الجلسات');
-  }
-  return user;
+  return requireAdmin('canManageBookings', 'غير مصرح لك بإدارة الجلسات');
 }
 
 export async function updateSessionDetails(params: {

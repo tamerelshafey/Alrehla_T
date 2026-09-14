@@ -1,9 +1,8 @@
 'use server';
+import { requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentUser } from '@/data/domains/auth';
-import { hasAdminPermission } from '@/lib/utils';
 import { logAuditAction } from '@/lib/audit';
 
 /**
@@ -14,12 +13,9 @@ import { logAuditAction } from '@/lib/audit';
  * than the database console.
  */
 
+/** يفوّض للقاعدة الموحّدة في `@/lib/auth-guard` — التنفيذ واحد، والرسالة خاصة بهذا المجال. */
 async function requireOrdersAdmin() {
-  const user = await getCurrentUser();
-  if (!hasAdminPermission(user, 'canManageOrders')) {
-    throw new Error('غير مصرح لك بإدارة أسعار الشحن');
-  }
-  return user;
+  return requireAdmin('canManageOrders', 'غير مصرح لك بإدارة أسعار الشحن');
 }
 
 function validate(governorate: string, city: string, fee: number) {
