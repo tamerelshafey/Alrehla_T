@@ -2,9 +2,9 @@ import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser } from '@/data/domains/auth';
 import { getStandaloneServices } from '@/data/domains/services';
-import { hasAdminPermission , formatPrice } from '@/lib/utils';
+import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
-import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
+import { ServicesManagerClient } from './ServicesManagerClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,22 +15,14 @@ export default async function Page() {
   }
 
   const services = await getStandaloneServices();
-  
-  const formatted = services.map(s => ({
-    ...s,
-    priceDisplay: `${formatPrice(s.price)}`
-  }));
-
-  const columns = [
-    { header: 'اسم الخدمة', accessorKey: 'name' },
-    { header: 'السعر', accessorKey: 'priceDisplay' },
-    { header: 'الوصف', accessorKey: 'description' }
-  ];
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
       <DashboardPageHeader title="الخدمات الإبداعية المستقلة" />
-      <SimpleDataTable columns={columns} data={formatted} />
+      <p className="mb-6 text-slate-600">
+        الخدمات التي تظهر للعملاء في صفحة الخدمات الإبداعية. التعديل هنا ينعكس على الموقع مباشرة.
+      </p>
+      <ServicesManagerClient services={services} />
     </div>
   );
 }
