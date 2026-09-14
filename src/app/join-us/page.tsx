@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 };
 
 import { PageContainer } from '@/components/PageContainer';
+import { getSiteContent } from '@/data/domains/content';
 import {
   Heart,
   Users,
@@ -20,79 +21,47 @@ import {
   Mic,
 } from 'lucide-react';
 
-export default function JoinUsPage() {
+export default async function JoinUsPage() {
+  const content = await getSiteContent();
+
+  // الأيقونات والألوان ثابتة؛ النصوص من لوحة الإدارة ← محتوى الصفحات.
   const reasons = [
-    {
-      title: 'ساهم في عمل له معنى',
-      description:
-        'ساهم في قصص وتجارب تربوية حقيقية تصل إلى أطفال ويافعين وشباب.',
-      icon: Heart,
-      bg: 'bg-rose-50',
-      color: 'text-rose-600',
-    },
-    {
-      title: 'مجتمع متعدد الخبرات',
-      description: 'اعمل مع كتّاب ومدربين ورسّامين وصنّاع محتوى وتربويين.',
-      icon: Users,
-      bg: 'bg-blue-50',
-      color: 'text-blue-600',
-    },
-    {
-      title: 'مرونة في العمل',
-      description:
-        'استمتع بحرية العمل عن بعد والمساهمة في الأوقات التي تناسبك.',
-      icon: Map,
-      bg: 'bg-amber-50',
-      color: 'text-amber-600',
-    },
-    {
-      title: 'فرص للتعلم والنمو',
-      description: 'طوّر حرفتك داخل مشروع يطوّر أدواته ومحتواه باستمرار.',
-      icon: TrendingUp,
-      bg: 'bg-emerald-50',
-      color: 'text-emerald-600',
-    },
-  ];
+    { key: 'reason1', icon: Heart, bg: 'bg-rose-50', color: 'text-rose-600' },
+    { key: 'reason2', icon: Users, bg: 'bg-blue-50', color: 'text-blue-600' },
+    { key: 'reason3', icon: Map, bg: 'bg-amber-50', color: 'text-amber-600' },
+    { key: 'reason4', icon: TrendingUp, bg: 'bg-emerald-50', color: 'text-emerald-600' },
+  ].map((r) => ({
+    ...r,
+    title: content[`join.${r.key}.title`],
+    description: content[`join.${r.key}.text`],
+  }));
 
   const roles = [
-    {
-      title: 'مدرب كتابة إبداعية',
-      description:
-        'يعمل فرديًا مع الأطفال واليافعين والشباب، ويساعدهم على تطوير أدواتهم وصوتهم من دون أن يكتب بدلاً عنهم.',
-      icon: PenTool,
-    },
-    {
-      title: 'رسام قصص أطفال',
-      description:
-        'تحويل الكلمات إلى عوالم بصرية ساحرة، ورسم شخصيات تبقى في ذاكرة الأطفال.',
-      icon: ImageIcon,
-    },
-    {
-      title: 'معلق صوتي',
-      description:
-        'إعطاء حياة وشخصية للكلمات من خلال الأداء الصوتي للقصص المخصصة والمحتوى الصوتي.',
-      icon: Mic,
-    },
-  ];
+    { key: 'role1', icon: PenTool },
+    { key: 'role2', icon: ImageIcon },
+    { key: 'role3', icon: Mic },
+  ].map((r) => ({
+    ...r,
+    title: content[`join.${r.key}.title`],
+    description: content[`join.${r.key}.text`],
+  }));
 
   return (
     <PageContainer className="!py-0 !space-y-0">
       {/* Hero Section */}
       <Section containerClassName="max-w-4xl space-y-6 text-center">
         <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-6xl">
-          اصنع معنا تجارب تستحق أن تُحكى
+          {content['join.title']}
         </h1>
         <p className="mx-auto max-w-3xl text-lg leading-relaxed font-medium text-slate-500 md:text-xl">
-          نبحث عن أشخاص يجمعون بين الحرفة والاهتمام بالإنسان: مدرّبين كتابة،
-          ورسّامي قصص، ومتعاونين وأصوات، يساعدوننا على تقديم تجربة عربية عالية
-          الجودة.
+          {content['join.subtitle']}
         </p>
       </Section>
 
       {/* Why Join Us */}
       <Section containerClassName="max-w-6xl">
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
-          لماذا تنضم إلى فريق "الرحلة"؟
+          {content['join.why.title']}
         </h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {reasons.map((reason, idx) => {
@@ -123,7 +92,7 @@ export default function JoinUsPage() {
       {/* Available Roles */}
       <Section containerClassName="max-w-5xl rounded-3xl border border-slate-100 bg-slate-50 p-8 md:p-16">
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
-          الفرص المتاحة
+          {content['join.roles.title']}
         </h2>
         <div className="space-y-6">
           {roles.map((role, idx) => {
@@ -155,7 +124,7 @@ export default function JoinUsPage() {
       <Section containerClassName="max-w-3xl">
         <Card accentColor="amber" className="p-8 shadow-xl shadow-slate-200/50 md:p-12">
           <h2 className="mb-8 text-center text-3xl font-black text-slate-800">
-            نموذج التقديم
+            {content['join.form.title']}
           </h2>
           <JoinForm />
         </Card>

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 import { PageContainer } from '@/components/PageContainer';
-import { getSiteSettings } from '@/data/domains/content';
+import { getSiteSettings, getSiteContent } from '@/data/domains/content';
 import { optimizedImageUrl } from '@/lib/cloudinary';
 import { ImagePlaceholder } from '@/components/ui/ImagePlaceholder';
 import {
@@ -25,53 +25,30 @@ import {
 
 export default async function AboutPage() {
   const settings = await getSiteSettings();
+  const content = await getSiteContent();
+
+  // الأيقونة واللون ثابتان لكل قيمة؛ الاسم والوصف بيتعدّلوا من لوحة الإدارة.
   const values = [
-    {
-      title: 'الأصالة',
-      description: 'محتوى عربي أصيل يحافظ على الهوية',
-      icon: Compass,
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
-    },
-    {
-      title: 'الإبداع',
-      description: 'حلول مبتكرة تواكب العصر',
-      icon: Lightbulb,
-      color: 'text-amber-600',
-      bg: 'bg-amber-50',
-    },
-    {
-      title: 'الجودة',
-      description: 'معايير عالية في كل ما نقدم',
-      icon: ShieldCheck,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
-    },
-    {
-      title: 'التخصيص',
-      description: 'كل طفل فريد ويستحق محتوى خاص',
-      icon: UserCheck,
-      color: 'text-purple-600',
-      bg: 'bg-purple-50',
-    },
-    {
-      title: 'الشمولية',
-      description: 'خدماتنا للجميع بغض النظر عن الخلفية',
-      icon: Users,
-      color: 'text-rose-600',
-      bg: 'bg-rose-50',
-    },
-  ];
+    { key: 'value1', icon: Compass, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { key: 'value2', icon: Lightbulb, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { key: 'value3', icon: ShieldCheck, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { key: 'value4', icon: UserCheck, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { key: 'value5', icon: Users, color: 'text-rose-600', bg: 'bg-rose-50' },
+  ].map((v) => ({
+    ...v,
+    title: content[`about.${v.key}.title`],
+    description: content[`about.${v.key}.text`],
+  }));
 
   return (
     <PageContainer className="!py-0 !space-y-0">
       {/* Header */}
       <Section containerClassName="max-w-4xl space-y-6 text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-xs font-bold tracking-widest text-slate-600 uppercase">
-          عن المنصة
+          {content['about.badge']}
         </div>
         <h1 className="text-4xl leading-tight font-black text-slate-900 md:text-6xl">
-          رحلتنا: تبدأ بالأمان وتقودها القيم
+          {content['about.title']}
         </h1>
         <div className="relative mt-12 h-64 w-full overflow-hidden rounded-[2.5rem] md:h-96">
           {settings.images.aboutTeam ? (
@@ -99,13 +76,9 @@ export default async function AboutPage() {
               <Sparkles className="h-8 w-8" />
             </div>
             <div className="space-y-4">
-              <h2 className="text-2xl font-black text-slate-800">الشرارة</h2>
+              <h2 className="text-2xl font-black text-slate-800">{content['about.spark.title']}</h2>
               <p className="text-lg leading-relaxed font-medium text-slate-600">
-                في ظل تسارع الرقمنة وتدفّق المحتوى من حولنا، ازدادت حاجتنا إلى
-                تجارب لا يضيع فيها الإنسان وسط ما يقرأ ويشاهد. ومن هنا انطلقت
-                الشرارة: أن نوظّف الرقمنة لتقريب الحكاية من صاحبها، لا لإبعاده
-                عنها؛ فيكون حاضرًا فيها باسمه وصوته واختياراته، مرةً حين تصل إليه
-                حكاية تحمل شيئًا منه، ومرةً حين تنطلق الحكاية من داخله.
+                {content['about.spark.text']}
               </p>
             </div>
           </div>
@@ -119,12 +92,10 @@ export default async function AboutPage() {
             <div className="rounded-xl bg-blue-100 p-3 text-blue-600">
               <Target className="h-6 w-6" />
             </div>
-            <h2 className="text-2xl font-black text-slate-800">الرسالة</h2>
+            <h2 className="text-2xl font-black text-slate-800">{content['about.mission.title']}</h2>
           </div>
           <p className="text-lg leading-relaxed font-medium text-slate-600">
-            نصمّم ونقدّم بالعربية قصصًا ومنتجات مخصّصة وتجارب كتابة فردية آمنة
-            لمختلف الأعمار؛ ليكون كل فرد جزءًا من الحكاية، أو تنطلق الحكاية من
-            صوته وأفكاره، ضمن تجربة تحترم اختياراته وتدعم تعبيره ونموه.
+            {content['about.mission.text']}
           </p>
         </Card>
 
@@ -133,12 +104,10 @@ export default async function AboutPage() {
             <div className="rounded-xl bg-emerald-100 p-3 text-emerald-600">
               <HeartHandshake className="h-6 w-6" />
             </div>
-            <h2 className="text-2xl font-black text-slate-800">الرؤية</h2>
+            <h2 className="text-2xl font-black text-slate-800">{content['about.vision.title']}</h2>
           </div>
           <p className="text-lg leading-relaxed font-medium text-slate-600">
-            أن تكون منصة «الرحلة» وجهة عربية رائدة لتجارب الحكاية والكتابة
-            الآمنة والشخصية، يجد فيها كل فرد مساحةً يرى فيها نفسه، ويعبّر عن
-            صوته، ويواصل نموه.
+            {content['about.vision.text']}
           </p>
         </Card>
       </Section>
@@ -146,7 +115,7 @@ export default async function AboutPage() {
       {/* Core Values */}
       <Section>
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
-          قيمنا الأساسية
+          {content['about.values.title']}
         </h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {values.map((value, index) => {

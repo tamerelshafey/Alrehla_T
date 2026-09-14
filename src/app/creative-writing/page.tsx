@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: 'استكشف برامج ودورات الكتابة الإبداعية المتاحة.',
 };
 
-import { getTestimonials } from '@/data/domains/content';
+import { getTestimonials, getSiteContent } from '@/data/domains/content';
 import { PageContainer } from '@/components/PageContainer';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
@@ -31,69 +31,35 @@ export default async function CreativeWritingPage() {
     t.authorRole.includes('ولي')
   );
 
+  const content = await getSiteContent();
+
+  // الأيقونات والألوان ثابتة؛ النصوص من لوحة الإدارة ← محتوى الصفحات.
   const suitableFor = [
-    {
-      text: 'لديه أفكار أو صور أو قصص، ويريد أدوات تساعده على تحويلها إلى كتابة أوضح.',
-      icon: Sparkles,
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
-    },
-    {
-      text: 'قد لا يعرف من أين يبدأ، أو يتوقف طويلاً أمام الصفحة البيضاء، ويحتاج إلى مساحة تساعده على المحاولة.',
-      icon: Target,
-      color: 'text-teal-600',
-      bg: 'bg-teal-50',
-    },
-    {
-      text: 'لديه نصوص أو محاولات ويريد تطوير الفكرة والصياغة والمراجعة مع الحفاظ على صوته.',
-      icon: PenTool,
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
-    },
-  ];
+    { key: 'cw.suitable1', icon: Sparkles, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { key: 'cw.suitable2', icon: Target, color: 'text-teal-600', bg: 'bg-teal-50' },
+    { key: 'cw.suitable3', icon: PenTool, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+  ].map((item) => ({ ...item, text: content[item.key] }));
 
   const features = [
-    {
-      title: 'مساحة للمحاولة',
-      description: 'يبدأ من نقطة تناسبه، من غير مقارنة أو قالب واحد للجميع.',
-      icon: ShieldCheck,
-      color: 'text-purple-600',
-      bg: 'bg-purple-50',
-    },
-    {
-      title: 'أدوات للكتابة',
-      description:
-        'يتعرف إلى أدوات تساعده على تنمية الفكرة والوصف والتنظيم والمراجعة.',
-      icon: PenTool,
-      color: 'text-indigo-600',
-      bg: 'bg-emerald-50',
-    },
-    {
-      title: 'صوت واختيار',
-      description: 'الفكرة والقرارات الأساسية والنص لصاحبها.',
-      icon: Heart,
-      color: 'text-rose-600',
-      bg: 'bg-rose-50',
-    },
-    {
-      title: 'تقدم بلا مقارنة',
-      description:
-        'ينمو من خلال المحاولة والتغذية الراجعة والمراجعة، لا الدرجات.',
-      icon: Target,
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
-    },
-  ];
+    { key: 'feature1', icon: ShieldCheck, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { key: 'feature2', icon: PenTool, color: 'text-indigo-600', bg: 'bg-emerald-50' },
+    { key: 'feature3', icon: Heart, color: 'text-rose-600', bg: 'bg-rose-50' },
+    { key: 'feature4', icon: Target, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+  ].map((f) => ({
+    ...f,
+    title: content[`cw.${f.key}.title`],
+    description: content[`cw.${f.key}.text`],
+  }));
 
   return (
     <PageContainer className="!py-0 !space-y-0">
       {/* Hero Section */}
       <Section containerClassName="mx-auto max-w-4xl text-center pt-8">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 mb-6 leading-tight">
-          برامج الكتابة الإبداعية
+          {content['cw.hero.title']}
         </h1>
         <p className="text-xl md:text-2xl font-medium text-slate-600 mb-8 leading-relaxed">
-          نساعدك على تحويل أفكارك إلى قصص، من خلال مساحة آمنة للمحاولة وتطوير مهارات الكتابة.
+          {content['cw.hero.subtitle']}
         </p>
       </Section>
 
@@ -101,7 +67,7 @@ export default async function CreativeWritingPage() {
       <Section containerClassName="mx-auto w-full max-w-6xl">
         <div className="rounded-3xl border border-slate-100 bg-slate-50/50 p-8 md:p-16">
           <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
-            قد تكون مناسبة إذا كان المشارك...
+            {content['cw.suitable.title']}
           </h2>
           <div className="grid gap-8 md:grid-cols-3">
             {suitableFor.map((item, idx) => {
@@ -130,7 +96,7 @@ export default async function CreativeWritingPage() {
       {/* Features */}
       <Section containerClassName="mx-auto w-full max-w-5xl">
         <h2 className="mb-16 text-center text-3xl font-black text-slate-800">
-          ماذا يجد المشارك في «بداية الرحلة»؟
+          {content['cw.features.title']}
         </h2>
         <div className="grid gap-8 sm:grid-cols-2">
           {features.map((feature, idx) => {
@@ -159,7 +125,7 @@ export default async function CreativeWritingPage() {
       {/* Pathways */}
       <Section containerClassName="mx-auto w-full max-w-4xl">
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
-          ما يناسبك؟
+          {content['cw.pathways.title']}
         </h2>
         <div className="grid gap-6 md:grid-cols-2">
           <Link
@@ -170,10 +136,10 @@ export default async function CreativeWritingPage() {
               <Map className="h-6 w-6" />
             </div>
             <h3 className="mb-3 text-2xl font-bold text-slate-800">
-              باقات «بداية الرحلة»
+              {content['cw.pathway1.title']}
             </h3>
             <p className="mb-6 font-medium text-slate-600">
-              لمن يريد مسارًا متتابعًا
+              {content['cw.pathway1.text']}
             </p>
             <span className="flex items-center gap-2 font-bold text-emerald-600 transition-all group-hover:gap-3">
               اكتشف الباقات <ArrowLeft className="h-4 w-4" />
@@ -187,10 +153,10 @@ export default async function CreativeWritingPage() {
               <PenTool className="h-6 w-6" />
             </div>
             <h3 className="mb-3 text-2xl font-bold text-slate-800">
-              خدمات إبداعية مستقلة
+              {content['cw.pathway2.title']}
             </h3>
             <p className="mb-6 font-medium text-slate-600">
-              مراجعات واستشارات سريعة
+              {content['cw.pathway2.text']}
             </p>
             <span className="flex items-center gap-2 font-bold text-teal-600 transition-all group-hover:gap-3">
               اكتشف الخدمات <ArrowLeft className="h-4 w-4" />
@@ -206,10 +172,9 @@ export default async function CreativeWritingPage() {
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-800 text-slate-300">
             <User className="h-8 w-8" />
           </div>
-          <h2 className="mb-6 text-3xl font-black">مدربو «بداية الرحلة»</h2>
+          <h2 className="mb-6 text-3xl font-black">{content['cw.instructors.title']}</h2>
           <p className="mx-auto mb-8 max-w-2xl leading-relaxed font-medium text-slate-400">
-            فريق من الكُتّاب والتربويين المتخصصين في أدب الطفل واليافعين، يجمعون
-            بين الشغف الإبداعي والقدرة على التوجيه بأسلوب داعم ومحفز.
+            {content['cw.instructors.text']}
           </p>
           <Button
             href="/creative-writing/instructors"
@@ -252,7 +217,7 @@ export default async function CreativeWritingPage() {
       {/* Final CTA */}
       <Section containerClassName="mx-auto w-full max-w-4xl pb-20 text-center">
         <h2 className="mb-10 text-4xl font-black text-slate-900">
-          جاهز للبدء؟
+          {content['cw.cta.title']}
         </h2>
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Button

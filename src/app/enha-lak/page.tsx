@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 import Link from 'next/link';
 
-import { getTestimonials } from '@/data/domains/content';
+import { getTestimonials, getSiteContent } from '@/data/domains/content';
 
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
@@ -37,60 +37,39 @@ import {
 
 export default async function EnhaLakPage() {
   const testimonials = await getTestimonials();
+  const content = await getSiteContent();
 
+  // الأيقونات والألوان ثابتة؛ النصوص من لوحة الإدارة ← محتوى الصفحات.
   const benefits = [
-    {
-      title: 'تعزيز الهوية',
-      description:
-        'عندما يرى الطفل نفسه بطلاً، يزداد تقديره لذاته وثقته بنفسه.',
-      icon: Fingerprint,
-      color: 'text-indigo-600',
-      bg: 'bg-indigo-50',
-    },
-    {
-      title: 'شغف القراءة',
-      description: 'الارتباط الشخصي بالقصة يحول القراءة من واجب إلى متعة.',
-      icon: BookOpen,
-      color: 'text-rose-600',
-      bg: 'bg-rose-50',
-    },
-    {
-      title: 'غرس القيم',
-      description: 'الرسائل التربوية أكثر تأثيراً عندما يعيشها الطفل بنفسه.',
-      icon: Sparkles,
-      color: 'text-rose-600',
-      bg: 'bg-amber-50',
-    },
-  ];
+    { key: 'benefit1', icon: Fingerprint, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { key: 'benefit2', icon: BookOpen, color: 'text-rose-600', bg: 'bg-rose-50' },
+    { key: 'benefit3', icon: Sparkles, color: 'text-rose-600', bg: 'bg-amber-50' },
+  ].map((b) => ({
+    ...b,
+    title: content[`enhaLak.${b.key}.title`],
+    description: content[`enhaLak.${b.key}.text`],
+  }));
 
   const steps = [
-    {
-      title: 'املأ البيانات',
-      description: 'اسم الطفل، عمره، صورته، هواياته.',
-      icon: User,
-    },
-    { title: 'اختر القيمة', description: 'حدد الهدف التربوي.', icon: FileEdit },
-    {
-      title: 'انتظر السحر',
-      description: 'فريقنا ينسج قصة مخصصة.',
-      icon: Wand2,
-    },
-    {
-      title: 'استلم واستمتع',
-      description: 'إلكترونية في 3-5 أيام، مطبوعة في 7-10 أيام عمل.',
-      icon: Package,
-    },
-  ];
+    { key: 'step1', icon: User },
+    { key: 'step2', icon: FileEdit },
+    { key: 'step3', icon: Wand2 },
+    { key: 'step4', icon: Package },
+  ].map((s) => ({
+    ...s,
+    title: content[`enhaLak.${s.key}.title`],
+    description: content[`enhaLak.${s.key}.text`],
+  }));
 
   return (
     <PageContainer className="!py-0 !space-y-0">
             {/* Hero Section */}
       <Section containerClassName="max-w-4xl text-center py-12 md:py-20">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 mb-6 leading-tight">
-          إنها لك... حيث يتحول الخيال إلى واقع
+          {content['enhaLak.hero.title']}
         </h1>
         <p className="text-xl md:text-2xl font-medium text-slate-600 mb-8 leading-relaxed">
-          قصص ومنتجات مخصصة تجعل الطفل بطل الحكاية، وتعزز ارتباطه بالقراءة والقيم بأسلوب مشوق.
+          {content['enhaLak.hero.subtitle']}
         </p>
       </Section>
       
@@ -107,11 +86,10 @@ export default async function EnhaLakPage() {
                 <PenTool className="h-8 w-8" />
               </div>
               <h3 className="mb-3 text-2xl font-bold text-slate-800">
-                أنت البطل هنا
+                {content['enhaLak.path1.title']}
               </h3>
               <p className="leading-relaxed font-medium text-slate-600">
-                نصنع محتوى مخصصاً لطفلك من الصفر بعد إتمام الطلب، ليكون هو محور
-                القصة بأدق تفاصيلها.
+                {content['enhaLak.path1.text']}
               </p>
             </Card>
           </Link>
@@ -124,11 +102,10 @@ export default async function EnhaLakPage() {
                 <BookOpen className="h-8 w-8" />
               </div>
               <h3 className="mb-3 text-2xl font-bold text-slate-800">
-                المكتبة العامة
+                {content['enhaLak.path2.title']}
               </h3>
               <p className="leading-relaxed font-medium text-slate-600">
-                اختر قصة جاهزة من المكتبة وخصص غلافها فقط، محتوى القصة الأصلي يبقى
-                كما هو.
+                {content['enhaLak.path2.text']}
               </p>
             </Card>
           </Link>
@@ -141,10 +118,10 @@ export default async function EnhaLakPage() {
                 <Package className="h-8 w-8" />
               </div>
               <h3 className="mb-3 text-2xl font-bold text-slate-800">
-                صندوق الرحلة
+                {content['enhaLak.path3.title']}
               </h3>
               <p className="leading-relaxed font-medium text-slate-600">
-                اشترك واستقبل قصة جديدة مختارة بعناية كل فترة.
+                {content['enhaLak.path3.text']}
               </p>
             </Card>
           </Link>
@@ -154,7 +131,7 @@ export default async function EnhaLakPage() {
       {/* Power of Personalization */}
       <Section containerClassName="max-w-6xl rounded-3xl border border-slate-100 bg-slate-50/50 p-8 md:p-12">
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
-          قوة القصة الشخصية
+          {content['enhaLak.benefits.title']}
         </h2>
         <div className="grid gap-8 md:grid-cols-3">
           {benefits.map((benefit, index) => {
@@ -181,7 +158,7 @@ export default async function EnhaLakPage() {
       {/* How it works */}
       <Section containerClassName="max-w-5xl">
         <h2 className="mb-16 text-center text-3xl font-black text-slate-800">
-          كيف تعمل؟
+          {content['enhaLak.steps.title']}
         </h2>
         <div className="relative grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4">
           <div className="absolute top-8 right-12 left-12 -z-10 hidden h-0.5 bg-slate-100 md:block"></div>
@@ -210,7 +187,7 @@ export default async function EnhaLakPage() {
       {/* Testimonials */}
       <Section containerClassName="max-w-6xl pb-24">
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
-          ماذا تقول الأسر عنا؟
+          {content['enhaLak.testimonials.title']}
         </h2>
         <div className="grid gap-6 md:grid-cols-3">
           {testimonials.map((testimonial) => (

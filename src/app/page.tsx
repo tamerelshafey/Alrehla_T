@@ -1,3 +1,4 @@
+import React from 'react';
 import { getPublishers } from '@/data/domains/products';
 import { getInstructors } from '@/data/domains/writing';
 import Image from 'next/image';
@@ -7,15 +8,49 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Section } from '@/components/ui/Section';
 import { optimizedImageUrl } from '@/lib/cloudinary';
-import { getSiteSettings } from '@/data/domains/content';
+import { getSiteSettings, getSiteContent, getTestimonials } from '@/data/domains/content';
 import { ImagePlaceholder } from '@/components/ui/ImagePlaceholder';
+import { RichText } from '@/components/ui/RichText';
 
-const testimonials: any[] = [];
+/**
+ * تلوين كلمتين في العنوان الرئيسي.
+ *
+ * العنوان بقى نصًا واحدًا قابلاً للتعديل من لوحة الإدارة، فالتلوين بقى
+ * بالبحث عن الكلمتين: لو الإدارة غيّرت العنوان بالكامل، العنوان بيظهر
+ * بلون واحد بدل ما يكسر.
+ */
+function HighlightedTitle({ title }: { title: string }) {
+  const accents: [string, string][] = [
+    ['الحكاية', 'text-amber-500'],
+    ['صوتك', 'text-emerald-500'],
+  ];
+  const pattern = new RegExp(`(${accents.map(([w]) => w).join('|')})`, 'g');
+  const parts = title.split(pattern);
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        const accent = accents.find(([word]) => word === part);
+        return accent ? (
+          <span key={i} className={accent[1]}>
+            {part}
+          </span>
+        ) : (
+          <React.Fragment key={i}>{part}</React.Fragment>
+        );
+      })}
+    </>
+  );
+}
 
 export default async function Home() {
   // Every image on this page used to come from picsum.photos — random stock
   // photographs standing in as the platform's own.
   const settings = await getSiteSettings();
+  const content = await getSiteContent();
+  // قسم آراء العملاء كان مربوطًا بمصفوفة فاضية مكتوبة في الكود، فكان بيقول
+  // «قريبًا» دائمًا مهما كتبت الإدارة آراء في قاعدة البيانات.
+  const testimonials = await getTestimonials();
   const publishers = await getPublishers();
   const activePublishers = publishers.filter((p: any) => p.status === 'active').slice(0, 4);
   const instructors = await getInstructors();
@@ -28,13 +63,13 @@ export default async function Home() {
           <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16">
             <div className="mb-4 inline-flex w-fit items-center rounded-full bg-amber-100 px-3 py-1 text-sm font-bold text-amber-700">
               <Star className="ml-1.5 h-4 w-4" />
-              منصة للكتابة والقراءة
+              {content['home.hero.badge']}
             </div>
             <h1 className="mb-6 text-4xl leading-tight font-black text-slate-800 md:text-5xl lg:text-6xl">
-              حيث تبدأ <span className="text-amber-500">الحكاية</span>، وتكتشف <span className="text-emerald-500">صوتك</span>
+              <HighlightedTitle title={content['home.hero.title']} />
             </h1>
             <p className="mb-8 max-w-lg text-lg leading-relaxed font-medium text-slate-600">
-              سواء كنت تبحث عن قصة تُنسج خصيصاً لطفلك ليكون بطلها، أو مساحة آمنة لاكتشاف صوته الإبداعي؛ في "الرحلة" تبدأ كل الحكايات.
+              {content['home.hero.subtitle']}
             </p>
             <div className="flex flex-wrap gap-4">
               <Button href="/enha-lak" variant="primary" accentColor="amber">
@@ -82,11 +117,10 @@ export default async function Home() {
             <div className="relative flex flex-1 flex-col p-8">
               <div className="absolute top-0 right-0 -z-0 h-32 w-32 rounded-bl-full bg-violet-50 transition-transform group-hover:scale-110"></div>
               <h3 className="relative z-10 mb-4 text-2xl font-bold text-violet-700">
-                إنها لك
+                {content['home.pillar.enhaLak.title']}
               </h3>
               <p className="relative z-10 leading-relaxed font-medium text-slate-600">
-                قصص ومنتجات مخصصة تجعل الطفل جزءًا من الحكاية، وتجعل الأسرة شريكةً
-                في اختيار الفكرة أو القيمة التي تُنسج حولها.
+                {content['home.pillar.enhaLak.text']}
               </p>
             </div>
           </Link>
@@ -109,11 +143,10 @@ export default async function Home() {
             <div className="relative flex flex-1 flex-col p-8">
               <div className="absolute top-0 right-0 -z-0 h-32 w-32 rounded-bl-full bg-emerald-50 transition-transform group-hover:scale-110"></div>
               <h3 className="relative z-10 mb-4 text-2xl font-bold text-emerald-600">
-                بداية الرحلة
+                {content['home.pillar.writing.title']}
               </h3>
               <p className="relative z-10 leading-relaxed font-medium text-slate-600">
-                برنامج فردي للكتابة الإبداعية يساعد الشباب والأطفال على اكتشاف
-                أصواتهم الخاصة وتطوير مهاراتهم في السرد والتعبير.
+                {content['home.pillar.writing.text']}
               </p>
             </div>
           </Link>
@@ -125,8 +158,8 @@ export default async function Home() {
       <Section className="bg-slate-50 border-y border-slate-100">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <h2 className="text-3xl font-black text-slate-800 mb-2">مدربون متميزون</h2>
-            <p className="text-slate-500 font-medium max-w-2xl">نخبة من المدربين المتخصصين في الكتابة الإبداعية وتطوير مهارات السرد.</p>
+            <h2 className="text-3xl font-black text-slate-800 mb-2">{content['home.instructors.title']}</h2>
+            <p className="text-slate-500 font-medium max-w-2xl">{content['home.instructors.text']}</p>
           </div>
           <Button href="/creative-writing" variant="secondary" className="w-full md:w-auto">عرض جميع المدربين</Button>
         </div>
@@ -160,8 +193,8 @@ export default async function Home() {
       <Section>
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <h2 className="text-3xl font-black text-slate-800 mb-2">شركاء "إنها لك"</h2>
-            <p className="text-slate-500 font-medium max-w-2xl">دور نشر ومؤسسات إبداعية تقدم محتوى متميزاً قابل للتخصيص.</p>
+            <h2 className="text-3xl font-black text-slate-800 mb-2">{content['home.publishers.title']}</h2>
+            <p className="text-slate-500 font-medium max-w-2xl">{content['home.publishers.text']}</p>
           </div>
           <Button href="/enha-lak" variant="secondary" className="w-full md:w-auto">استكشف المكتبة</Button>
         </div>
@@ -209,24 +242,12 @@ export default async function Home() {
           </div>
           <div className="flex flex-col justify-center p-8 text-right md:p-12 lg:p-16">
             <h2 className="mb-8 text-3xl font-black text-slate-800">
-              قصتنا: من فكرة إلى رحلة
+              {content['home.story.title']}
             </h2>
-            <div className="mb-8 space-y-4 text-lg leading-relaxed font-medium text-slate-600">
-              <p>
-                كيف نحوّل الكتابة لدى الطفل من واجب إلى هواية؟ وكيف نساعده على أن
-                يعثر على صوته بين الكلمات؟ من هذه الرغبة وُلدت «بداية الرحلة»؛ مساحة
-                آمنة تبدأ فيها الحكاية من الداخل.
-              </p>
-              <p>
-                وفي الجهة الأخرى، وُلدت «إنها لك» من حكاية تبحث عن بطلها، لتصل إليه
-                حاملةً اسمه وشيئًا منه. ومع الوقت، أدركنا أن الحكاية لا يحدّها عُمر،
-                فاتسعت مسارات المشروعين.
-              </p>
-              <p>
-                ولأن القصة هي نواتهما المشتركة — مرةً تصل إلى صاحبها، ومرةً تنطلق من
-                صوته — جمعناهما تحت اسم يتسع لكل بداية: «الرحلة».
-              </p>
-            </div>
+            <RichText
+              value={content['home.story.body']}
+              className="mb-8 space-y-4 text-lg leading-relaxed font-medium text-slate-600"
+            />
             <div>
               <Button href="/about" variant="secondary" accentColor="amber" className="!border-slate-200 !text-slate-700 hover:!border-amber-400">
                 تعرّف إلى رحلتنا
@@ -239,7 +260,7 @@ export default async function Home() {
       {/* Testimonials */}
       <Section>
         <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
-          ماذا يقولون عنا؟
+          {content['home.testimonials.title']}
         </h2>
         <div className="grid gap-6 md:grid-cols-3">
           {testimonials.length === 0 ? (
@@ -268,11 +289,10 @@ export default async function Home() {
       {/* Blog Teaser */}
       <Section containerClassName="max-w-4xl text-center">
         <h2 className="mb-6 text-3xl font-black text-slate-800">
-          مساحة للإلهام
+          {content['home.blog.title']}
         </h2>
         <p className="mx-auto mb-8 max-w-2xl font-medium text-slate-500">
-          نشارككم في مدونتنا مقالات تربوية، نصائح لتطوير الكتابة، وأفكاراً
-          لتعزيز حب القراءة لدى الأبناء.
+          {content['home.blog.text']}
         </p>
         <Button href="/blog" variant="primary" accentColor="amber" className="!bg-slate-900 hover:!bg-slate-800">
           تصفح المدونة
@@ -282,7 +302,7 @@ export default async function Home() {
       {/* Final CTA */}
       <Section containerClassName="max-w-4xl pb-20 text-center">
         <h2 className="mb-10 text-4xl font-black text-slate-900">
-          هل أنت مستعد لتبدأ الرحلة؟
+          {content['home.cta.title']}
         </h2>
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Button href="/enha-lak" variant="primary" accentColor="amber" size="lg" className="!bg-blue-600 hover:!bg-blue-700 !shadow-blue-200">

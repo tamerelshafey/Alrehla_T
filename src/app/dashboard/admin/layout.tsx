@@ -6,7 +6,7 @@ import { AdminPermission } from '@/types';
 import { 
   Users, UserCheck, LayoutDashboard, Settings,
   BookOpen, Box, ShoppingCart, Calendar,
-  LifeBuoy, FileText, DollarSign, ShieldAlert, Star, Truck, LucideIcon 
+  LifeBuoy, FileText, DollarSign, ShieldAlert, Star, Truck, Quote, LucideIcon 
 } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { LogoutButton } from '@/components/LogoutButton';
@@ -36,7 +36,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { label: 'التقييمات', href: '/dashboard/admin/reviews', icon: Star, permission: 'canManageContent' },
     { label: 'المدونة', href: '/dashboard/admin/content/blog', icon: FileText, permission: 'canManageContent' },
     { label: 'صور الموقع', href: '/dashboard/admin/content/images', icon: FileText, permission: 'canManageContent' },
-    { label: 'محتوى الموقع', href: '/dashboard/admin/content/pages', icon: LayoutDashboard, permission: 'canManageContent' },
+    { label: 'محتوى الصفحات', href: '/dashboard/admin/content/pages', icon: LayoutDashboard, permission: 'canManageContent' },
+    { label: 'آراء العملاء', href: '/dashboard/admin/content/testimonials', icon: Quote, permission: 'canManageContent' },
+    // كانت شاشة الإعدادات موجودة من غير أي رابط يوصّل لها — الوصول الوحيد
+    // كان بكتابة العنوان بالإيد. رقم الدفع والـ QR بيتظبطوا من هنا.
+    { label: 'الإعدادات العامة', href: '/dashboard/admin/content/settings', icon: Settings, permission: 'canManageContent' },
     { label: 'المالية', href: '/dashboard/admin/finance/instructor-payouts', icon: DollarSign, permission: 'canManageFinance' },
     { label: 'طلبات السحب', href: '/dashboard/admin/finance/withdrawals', icon: DollarSign, permission: 'canManageFinance' },
     { label: 'السجلات والتدقيق', href: '/dashboard/admin/audit-logs', icon: ShieldAlert, permission: 'canViewAuditLogs' },
