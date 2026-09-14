@@ -83,11 +83,16 @@ export const getTestimonials = async (): Promise<Testimonial[]> => {
   }));
 };
 
-export const getBlogPosts = async (): Promise<BlogPost[]> => {
+export const getBlogPosts = async (
+  options: { includeDrafts?: boolean } = {}
+): Promise<BlogPost[]> => {
   const supabase = await createClient();
-  const { data, error } = await supabase.from('blog_posts')
-    .select('*')
-    .order('published_at', { ascending: false });
+  // A post dated in the future is a draft: the public listing must not show it.
+  const query = supabase.from('blog_posts').select('*');
+  if (!options.includeDrafts) {
+    query.lte('published_at', new Date().toISOString());
+  }
+  const { data, error } = await query.order('published_at', { ascending: false });
 
   if ((error || !data || data.length === 0)) {
     if (process.env.NODE_ENV === 'development') {
@@ -137,3 +142,26 @@ export const getBlogPostBySlug = async (
   };
 };
 
+
+/** One post by id — for the admin editor, which works on ids not slugs. */
+export const getBlogPostById = async (id: string): Promise<BlogPost | null> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  return {
+    id: data.id,
+    slug: data.slug,
+    title: data.title,
+    excerpt: data.excerpt,
+    content: data.content,
+    coverImageUrl: data.cover_image_url || undefined,
+    authorName: data.author_name || 'فريق الرحلة',
+    publishedAt: data.published_at,
+  };
+};

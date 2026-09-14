@@ -16,7 +16,9 @@ export default async function Page() {
     return <Unauthorized />;
   }
 
-  const posts = await getBlogPosts();
+  // Drafts are dated in the future, so they never reach the public listing —
+  // but the admin must see them.
+  const posts = await getBlogPosts({ includeDrafts: true });
 
   const formatted = posts.map(p => ({
     ...p,
@@ -39,7 +41,10 @@ export default async function Page() {
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
-      <DashboardPageHeader title="إدارة المدونة" />
+      <DashboardPageHeader
+        title="إدارة المدونة"
+        action={{ label: 'مقال جديد', href: '/dashboard/admin/content/blog/new' }}
+      />
       <SimpleDataTable columns={columns} data={formatted} />
     </div>
   );
