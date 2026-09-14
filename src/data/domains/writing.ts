@@ -9,6 +9,7 @@ import {
   InstructorPricingOption, PricingFormulaSettings, InstructorCompensationProfile, InstructorCertification
 } from '@/types';
 import { cookies } from 'next/headers';
+import { createPublicClient } from '@/lib/supabase/public';
 import { createClient } from '@/lib/supabase/server';
 
 // Import from auth if needed
@@ -19,7 +20,7 @@ import { mockCourseSubscriptions, mockDocuments, mockInstructorCertifications, m
 
 
 export const getWritingPackages = async (): Promise<WritingPackage[]> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from('creative_writing_packages')
     .select('*')
     .order('created_at', { ascending: true });
@@ -52,7 +53,7 @@ export const getWritingPackages = async (): Promise<WritingPackage[]> => {
 export const getWritingPackageBySlug = async (
   slug: string
 ): Promise<WritingPackage | null> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from('creative_writing_packages')
     .select('*')
     .eq('slug', slug)
@@ -85,7 +86,7 @@ export const getWritingPackageBySlug = async (
 };
 
 export const getInstructors = async (): Promise<Instructor[]> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from('instructors')
     .select('*')
     .order('created_at', { ascending: false });
@@ -120,7 +121,7 @@ export const getInstructors = async (): Promise<Instructor[]> => {
 export const getInstructorById = async (
   id: string
 ): Promise<Instructor | null> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from('instructors')
     .select('*')
     .eq('id', id)

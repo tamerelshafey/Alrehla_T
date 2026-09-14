@@ -36,7 +36,8 @@ export const DEFAULT_PAYMENT_WALLET = '01063335517';
 // cache() بتخلي الإعدادات تُقرأ **مرة واحدة** لكل عرض للصفحة بدل ما تتقرا
 // في الهيدر وفي الصفحة نفسها — استعلامين بقوا واحد في كل صفحة في الموقع.
 export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
-  const supabase = await createClient();
+  // عميل بلا كوكيز عن قصد: ده بيخلي الصفحات العامة قابلة للتخزين المؤقت.
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from('site_settings')
     .select('value')
     .eq('key', 'general')
@@ -76,6 +77,7 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
 
 import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
+import { createPublicClient } from '@/lib/supabase/public';
 import type { SiteImages } from '@/lib/site-images';
 import { CONTENT_DEFAULTS, type SiteContent } from '@/lib/site-content';
 import { mockBlogPosts, mockSiteSettings, mockTestimonials } from '@/data/fixtures/content';
@@ -89,7 +91,7 @@ import { mockBlogPosts, mockSiteSettings, mockTestimonials } from '@/data/fixtur
  * لو الاتصال بقاعدة البيانات وقع.
  */
 export const getSiteContent = cache(async (): Promise<SiteContent> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from('page_content').select('key, value');
 
   if (error || !data) {
@@ -109,7 +111,7 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
 });
 
 export const getTestimonials = async (): Promise<Testimonial[]> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from('testimonials')
     .select('*')
     .order('created_at', { ascending: false });
@@ -132,7 +134,7 @@ export const getTestimonials = async (): Promise<Testimonial[]> => {
 export const getBlogPosts = async (
   options: { includeDrafts?: boolean } = {}
 ): Promise<BlogPost[]> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   // A post dated in the future is a draft: the public listing must not show it.
   const query = supabase.from('blog_posts').select('*');
   if (!options.includeDrafts) {
@@ -162,7 +164,7 @@ export const getBlogPosts = async (
 export const getBlogPostBySlug = async (
   slug: string
 ): Promise<BlogPost | null> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from('blog_posts')
     .select('*')
     .eq('slug', slug)

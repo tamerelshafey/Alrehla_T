@@ -17,12 +17,13 @@ import { mockAllUsers, mockCurrentUser } from '../fixtures/auth';
 
 
 
+import { createPublicClient } from '@/lib/supabase/public';
 import { createClient } from '@/lib/supabase/server';
 import { getPublisherPricingSettings } from '@/data/domains/admin';
 import { mockAddonProducts, mockProducts, mockPublishers, mockSubscriptionTiers } from '@/data/fixtures/products';
 
 export const getPersonalizedProducts = async (): Promise<PersonalizedProduct[]> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from('personalized_products')
     .select('*')
     .order('created_at', { ascending: false });
@@ -66,7 +67,7 @@ export const getAddonProducts = async (): Promise<AddonProduct[]> => {
 };
 
 export const getSubscriptionTiers = async (): Promise<SubscriptionTier[]> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from('box_subscription_plans')
     .select('id, name, price_total, price_monthly, duration_months, savings_note')
     .order('duration_months', { ascending: true });
@@ -90,7 +91,7 @@ export const getSubscriptionTiers = async (): Promise<SubscriptionTier[]> => {
 
 
 export const getPublishers = async (): Promise<Publisher[]> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from('publishers')
     .select('*')
     .order('created_at', { ascending: false });
@@ -114,7 +115,7 @@ export const getPublishers = async (): Promise<Publisher[]> => {
 };
 
 export const getPublisherBySlug = async (slug: string): Promise<Publisher | null> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from('publishers')
     .select('*')
     .eq('slug', slug)
@@ -139,7 +140,7 @@ export const getPublisherBySlug = async (slug: string): Promise<Publisher | null
 };
 
 export const getProductBySlug = async (slug: string): Promise<PersonalizedProduct | null> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from('personalized_products')
     .select('*')
     .eq('slug', slug)
