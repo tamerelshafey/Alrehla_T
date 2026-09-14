@@ -208,3 +208,30 @@ export async function getPublisherOrders() {
 
 
 
+
+/** The publisher record belonging to the signed-in user, if any. */
+export async function getMyPublisher(): Promise<Publisher | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data, error } = await supabase
+    .from('publishers')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  return {
+    id: data.id,
+    slug: data.slug,
+    name: data.name,
+    logoUrl: data.logo_url || undefined,
+    bio: data.bio,
+    isSample: data.is_sample ?? false,
+    status: data.status,
+  };
+}

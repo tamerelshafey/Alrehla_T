@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
-import { User, Info, CheckCircle2 } from 'lucide-react';
+import { Info, CheckCircle2 } from 'lucide-react';
 import { Instructor } from '@/types';
 import { submitInstructorProfileUpdate } from '@/actions/instructors';
-import { optimizedImageUrl } from '@/lib/cloudinary';
+import { AvatarPicker } from '@/components/dashboard/AvatarPicker';
+import { updateMyProfile } from '@/actions/profiles';
 
 interface Props {
   instructor: Instructor;
@@ -28,6 +28,7 @@ export function InstructorProfileClient({
   const [specialties, setSpecialties] = useState((instructor.specialties ?? []).join('، '));
   const [yearsExperience, setYearsExperience] = useState(instructor.yearsExperience ?? 0);
 
+  const [avatar, setAvatar] = useState(avatarUrl ?? '');
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -37,6 +38,9 @@ export function InstructorProfileClient({
     setMessage('');
     setError('');
     try {
+      // The picture belongs to the account, not to the reviewed profile, so it
+      // saves immediately; the rest goes to the admin for review.
+      await updateMyProfile({ fullName: displayName.trim(), avatarUrl: avatar });
       await submitInstructorProfileUpdate(instructor.id, {
         displayName: displayName.trim(),
         bio: bio.trim(),
@@ -85,27 +89,15 @@ export function InstructorProfileClient({
         </div>
       )}
 
-      <div className="mb-8 flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-        <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-slate-100 bg-slate-50 shadow-sm">
-          {avatarUrl ? (
-            <Image
-              src={optimizedImageUrl(avatarUrl, 200)}
-              alt={`صورة المدرب ${displayName}`}
-              fill
-              className="object-cover"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <User className="h-10 w-10 text-slate-300" />
-          )}
-        </div>
-        <div className="pt-2 text-center sm:text-right">
-          <h3 className="text-lg font-bold text-slate-800">الصورة الشخصية</h3>
-          <p className="mt-1 text-sm font-medium text-slate-500">
-            تغيير الصورة غير متاح حاليًا — تواصل مع الإدارة لتحديثها.
-          </p>
-        </div>
-      </div>
+      {/* The picture can now be changed; the two buttons that used to sit here
+          had no handler at all. */}
+      <AvatarPicker
+        value={avatar}
+        onChange={setAvatar}
+        onError={setError}
+        label="الصورة الشخصية"
+        folder="alrehla/avatars"
+      />
 
       <hr className="border-slate-100" />
 
