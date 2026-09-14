@@ -115,7 +115,7 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
       price: product.price,
       quantity: 1,
       type: 'book',
-      imageUrl: product.coverImageUrl || `https://picsum.photos/seed/${product.id}/600/800`,
+      imageUrl: product.coverImageUrl || undefined,
       customizationData: {
         childName: data.newChildName || 'مشارك من العائلة',
         dedicationText: data.dedicationText,

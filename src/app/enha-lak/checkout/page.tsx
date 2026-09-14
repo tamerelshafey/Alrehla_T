@@ -26,6 +26,7 @@ export default async function CheckoutPage() {
       <CheckoutClient
         user={user}
         paymentWalletNumber={settings.paymentWalletNumber}
+        paymentQrUrl={settings.paymentQrUrl}
         shippingRates={shippingRates}
       />
     </div>

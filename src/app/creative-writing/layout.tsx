@@ -1,6 +1,7 @@
 import React from 'react';
 import { HeroCarousel } from '@/components/HeroCarousel';
 import { SectionSubNav } from '@/components/SectionSubNav';
+import { getSiteSettings } from '@/data/domains/content';
 
 const creativeWritingTabs = [
   { name: 'نظرة عامة', href: '/creative-writing' },
@@ -10,37 +11,41 @@ const creativeWritingTabs = [
   { name: 'الخدمات الإبداعية', href: '/creative-writing/services' },
 ];
 
-const creativeSlides = [
-  {
-    id: '1',
-    title: 'رحلة كتابة، لا درس كتابة',
-    description: 'أكاديمية بداية الرحلة للكتابة الإبداعية تساعد الشباب والأطفال على اكتشاف أصواتهم.',
-    image: 'https://picsum.photos/seed/creative1/1600/900',
-    ctaText: 'استكشف الباقات',
-    ctaLink: '/creative-writing/packages',
-    theme: 'emerald' as const,
-  },
-  {
-    id: '2',
-    title: 'تطوير المهارات برعاية خبراء',
-    description: 'جلسات تفاعلية، توجيه فردي، وتطوير مستمر لمهارات السرد والتعبير.',
-    image: 'https://picsum.photos/seed/creative2/1600/900',
-    ctaText: 'تعرف على مدربينا',
-    ctaLink: '/creative-writing/instructors',
-    theme: 'teal' as const,
-  },
-  {
-    id: '3',
-    title: 'خدمات إبداعية متكاملة',
-    description: 'من التحرير والتدقيق إلى الاستشارات الأدبية، نحن هنا لدعم قلمك.',
-    image: 'https://picsum.photos/seed/creative3/1600/900',
-    ctaText: 'عرض الخدمات',
-    ctaLink: '/creative-writing/services',
-    theme: 'emerald' as const,
-  }
-];
 
-export default function CreativeWritingLayout({ children }: { children: React.ReactNode }) {
+
+export default async function CreativeWritingLayout({ children }: { children: React.ReactNode }) {
+  // These were three stock photographs from picsum.photos.
+  const settings = await getSiteSettings();
+  const creativeSlides = [
+    {
+      id: '1',
+      title: 'رحلة كتابة، لا درس كتابة',
+      description: 'أكاديمية بداية الرحلة للكتابة الإبداعية تساعد الشباب والأطفال على اكتشاف أصواتهم.',
+      image: settings.images.creativeSlide1 ?? '',
+      ctaText: 'استكشف الباقات',
+      ctaLink: '/creative-writing/packages',
+      theme: 'emerald' as const,
+    },
+    {
+      id: '2',
+      title: 'تطوير المهارات برعاية خبراء',
+      description: 'جلسات تفاعلية، توجيه فردي، وتطوير مستمر لمهارات السرد والتعبير.',
+      image: settings.images.creativeSlide2 ?? '',
+      ctaText: 'تعرف على مدربينا',
+      ctaLink: '/creative-writing/instructors',
+      theme: 'teal' as const,
+    },
+    {
+      id: '3',
+      title: 'خدمات إبداعية متكاملة',
+      description: 'من التحرير والتدقيق إلى الاستشارات الأدبية، نحن هنا لدعم قلمك.',
+      image: settings.images.creativeSlide3 ?? '',
+      ctaText: 'عرض الخدمات',
+      ctaLink: '/creative-writing/services',
+      theme: 'emerald' as const,
+    }
+  ];
+
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-[#F8FAF9] to-[#F1F6F4] selection:bg-emerald-200 selection:text-emerald-900">
       {/* Decorative Background */}

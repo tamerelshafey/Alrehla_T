@@ -120,7 +120,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                       price: product.price,
                       quantity: 1,
                       type: 'custom',
-                      imageUrl: product.coverImageUrl || `https://picsum.photos/seed/${product.id}/600/800`
+                      imageUrl: product.coverImageUrl || undefined
                     }} 
                   />
                 )}

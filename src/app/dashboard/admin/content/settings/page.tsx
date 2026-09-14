@@ -5,6 +5,7 @@ import { getSiteSettings } from '@/data/domains/content';
 import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { updateSiteSettings } from '@/actions/content';
+import { PaymentQrUploader } from './PaymentQrUploader';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +50,9 @@ export default async function Page() {
               <p className="mt-2 text-sm font-medium text-amber-700">
                 هذا الرقم يظهر للعملاء في كل شاشات الدفع. راجعه جيدًا قبل الحفظ.
               </p>
+            </div>
+            <div className="md:col-span-2 border-t border-slate-100 pt-6">
+              <PaymentQrUploader value={settings.paymentQrUrl} />
             </div>
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">رابط إنستجرام</label>

@@ -26,7 +26,7 @@ export default async function CustomSubscriptionPage({ params }: PageProps) {
     price: tier.priceTotal,
     shortDescription: `اشتراك صندوق الرحلة (لمدة ${tier.durationMonths} ${tier.durationMonths === 1 ? 'شهر' : 'أشهر'})`,
     ownerType: 'platform',
-    coverImageUrl: `https://picsum.photos/seed/${tier.id}/600/800`,
+    coverImageUrl: undefined,
     features: [
       'قصة مخصصة جديدة شهرياً',
       'أنشطة تفاعلية ومفاجآت',

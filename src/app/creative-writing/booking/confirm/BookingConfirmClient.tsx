@@ -6,8 +6,15 @@ import { Calendar, Clock, User, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createDummyBookingServiceOrder, submitBookingPaymentProof } from '@/actions/bookings';
 import { Button } from '@/components/ui/Button';
+import { TransferInstructions } from '@/components/checkout/TransferInstructions';
 
-export function BookingConfirmClient({ paymentWalletNumber }: { paymentWalletNumber: string }) {
+export function BookingConfirmClient({
+  paymentWalletNumber,
+  paymentQrUrl,
+}: {
+  paymentWalletNumber: string;
+  paymentQrUrl?: string;
+}) {
   const searchParams = useSearchParams();
   const packageId = searchParams?.get('package') || 'dummy-package';
   const instructorId = searchParams?.get('instructor') || 'dummy-instructor';
@@ -109,12 +116,11 @@ const orderId = await createDummyBookingServiceOrder(250, packageId, instructorI
           <p className="mb-2 text-sm font-bold text-slate-700">
             تعليمات التحويل (إنستاباي / محفظة إلكترونية)
           </p>
-          <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
-            <p className="mb-2 text-sm text-slate-600">حوّل المبلغ إلى رقم المحفظة التالي:</p>
-            <p className="font-mono text-xl font-black text-emerald-700 select-all">
-              {paymentWalletNumber}
-            </p>
-          </div>
+          <TransferInstructions
+            walletNumber={paymentWalletNumber}
+            qrUrl={paymentQrUrl}
+            accent="emerald"
+          />
           <label className="mb-2 block text-sm font-bold text-slate-700">
             رقم العملية / المرجع (Transaction Reference)
           </label>

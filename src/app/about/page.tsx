@@ -9,6 +9,9 @@ export const metadata: Metadata = {
 };
 
 import { PageContainer } from '@/components/PageContainer';
+import { getSiteSettings } from '@/data/domains/content';
+import { optimizedImageUrl } from '@/lib/cloudinary';
+import { ImagePlaceholder } from '@/components/ui/ImagePlaceholder';
 import {
   Sparkles,
   Target,
@@ -20,7 +23,8 @@ import {
   Users,
 } from 'lucide-react';
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const settings = await getSiteSettings();
   const values = [
     {
       title: 'الأصالة',
@@ -70,7 +74,18 @@ export default function AboutPage() {
           رحلتنا: تبدأ بالأمان وتقودها القيم
         </h1>
         <div className="relative mt-12 h-64 w-full overflow-hidden rounded-[2.5rem] md:h-96">
-          <Image src="https://picsum.photos/seed/aboutplatform/1200/600" alt="صورة تمثيلية لفريق عمل وإدارة منصة الرحلة" fill priority className="object-cover" referrerPolicy="no-referrer" />
+          {settings.images.aboutTeam ? (
+            <Image
+              src={optimizedImageUrl(settings.images.aboutTeam, 1400)}
+              alt="فريق منصة الرحلة"
+              fill
+              priority
+              className="object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <ImagePlaceholder label="صورة صفحة رحلتنا" />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent"></div>
         </div>
       </Section>

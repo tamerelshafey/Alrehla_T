@@ -147,7 +147,7 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
       price: product.price + addonsPrice,
       quantity: 1,
       type: product.category === 'subscription' ? 'subscription' : 'custom',
-      imageUrl: product.coverImageUrl || `https://picsum.photos/seed/${product.id}/600/800`,
+      imageUrl: product.coverImageUrl || undefined,
       customizationData: {
         recipientType: 'child',
         childId: finalChildId || undefined,

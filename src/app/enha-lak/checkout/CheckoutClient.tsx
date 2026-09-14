@@ -3,6 +3,7 @@ import { formatPrice } from '@/lib/utils';
 
 import React, { useState } from 'react';
 import { useCart } from '@/context/CartContext';
+import { TransferInstructions } from '@/components/checkout/TransferInstructions';
 import { UserProfile as UserType } from '@/types';
 import { CreditCard, Wallet, MapPin, Truck, ShieldCheck, ChevronRight, CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
@@ -18,12 +19,14 @@ import { optimizedImageUrl } from '@/lib/cloudinary';
 interface Props {
   /** Read from site settings — it used to be a placeholder number in the code. */
   paymentWalletNumber: string;
+  /** InstaPay QR from site settings, when one has been uploaded. */
+  paymentQrUrl?: string;
   /** Shipping fee per area, set by the admin. Empty until configured. */
   shippingRates: { governorate: string; city: string; fee: number }[];
   user: UserType;
 }
 
-export function CheckoutClient({ user, paymentWalletNumber, shippingRates }: Props) {
+export function CheckoutClient({ user, paymentWalletNumber, paymentQrUrl, shippingRates }: Props) {
   const { items, cartTotal, clearCart } = useCart();
   const [step, setStep] = useState<1 | 2>(1); // 1: Shipping, 2: Payment
   // Card, wallet and Fawry options used to be offered here with forms that
@@ -264,14 +267,11 @@ export function CheckoutClient({ user, paymentWalletNumber, shippingRates }: Pro
               <p className="mb-2 text-sm font-bold text-slate-700">
                 تعليمات التحويل (إنستاباي / محفظة إلكترونية)
               </p>
-              <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
-                <p className="mb-2 text-sm text-slate-600">
-                  حوّل المبلغ إلى رقم المحفظة التالي:
-                </p>
-                <p className="font-mono text-xl font-black text-rose-700 select-all">
-                  {paymentWalletNumber}
-                </p>
-              </div>
+              <TransferInstructions
+                walletNumber={paymentWalletNumber}
+                qrUrl={paymentQrUrl}
+                accent="rose"
+              />
               <label className="mb-2 block text-sm font-bold text-slate-700">
                 رقم العملية / المرجع (Transaction Reference)
               </label>

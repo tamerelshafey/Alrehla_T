@@ -7,10 +7,15 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Section } from '@/components/ui/Section';
 import { optimizedImageUrl } from '@/lib/cloudinary';
+import { getSiteSettings } from '@/data/domains/content';
+import { ImagePlaceholder } from '@/components/ui/ImagePlaceholder';
 
 const testimonials: any[] = [];
 
 export default async function Home() {
+  // Every image on this page used to come from picsum.photos — random stock
+  // photographs standing in as the platform's own.
+  const settings = await getSiteSettings();
   const publishers = await getPublishers();
   const activePublishers = publishers.filter((p: any) => p.status === 'active').slice(0, 4);
   const instructors = await getInstructors();
@@ -41,11 +46,15 @@ export default async function Home() {
             </div>
           </div>
           <div className="relative hidden lg:block">
-            <Image 
-              src="https://picsum.photos/seed/hero3/800/800" 
+            {settings.images.homeHero ? (
+              <Image 
+              src={optimizedImageUrl(settings.images.homeHero, 1200)} 
               alt="طفل يقرأ كتاباً" 
               fill className="object-cover" referrerPolicy="no-referrer"
             />
+            ) : (
+              <ImagePlaceholder label="طفل يقرأ كتاباً" />
+            )}
             <div className="absolute inset-0 bg-gradient-to-r from-amber-50 to-transparent"></div>
           </div>
         </div>
@@ -59,11 +68,15 @@ export default async function Home() {
             className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 group relative flex flex-col overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white transition-all duration-300 hover:border-violet-300 hover:shadow-2xl hover:shadow-violet-500/10"
           >
             <div className="relative h-64 w-full overflow-hidden bg-slate-100">
+              {settings.images.homeReading ? (
               <Image 
-                src="https://picsum.photos/seed/childreading/800/600" 
+                src={optimizedImageUrl(settings.images.homeReading, 1200)} 
                 alt="إنها لك" 
                 fill className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer"
               />
+            ) : (
+              <ImagePlaceholder label="إنها لك" />
+            )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
             </div>
             <div className="relative flex flex-1 flex-col p-8">
@@ -82,11 +95,15 @@ export default async function Home() {
             className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 group relative flex flex-col overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white transition-all duration-300 hover:border-emerald-300 hover:shadow-2xl hover:shadow-emerald-500/10"
           >
             <div className="relative h-64 w-full overflow-hidden bg-slate-100">
+              {settings.images.homeWriting ? (
               <Image 
-                src="https://picsum.photos/seed/childwriting/800/600" 
+                src={optimizedImageUrl(settings.images.homeWriting, 1200)} 
                 alt="بداية الرحلة" 
                 fill className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer"
               />
+            ) : (
+              <ImagePlaceholder label="بداية الرحلة" />
+            )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
             </div>
             <div className="relative flex flex-1 flex-col p-8">
@@ -179,11 +196,15 @@ export default async function Home() {
       <Section containerClassName="overflow-hidden rounded-[3rem] border border-slate-100 bg-white shadow-xl shadow-slate-200/50 p-0">
         <div className="grid lg:grid-cols-2">
           <div className="relative h-64 lg:h-auto">
-            <Image 
-              src="https://picsum.photos/seed/familyreading/800/800" 
+            {settings.images.homeFamily ? (
+              <Image 
+              src={optimizedImageUrl(settings.images.homeFamily, 1200)} 
               alt="العائلة تقرأ معاً" 
               fill className="object-cover" referrerPolicy="no-referrer"
             />
+            ) : (
+              <ImagePlaceholder label="العائلة تقرأ معاً" />
+            )}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/90 lg:to-white"></div>
           </div>
           <div className="flex flex-col justify-center p-8 text-right md:p-12 lg:p-16">

@@ -1,5 +1,7 @@
 import { formatPrice } from '@/lib/utils';
 import Image from 'next/image';
+import { optimizedImageUrl } from '@/lib/cloudinary';
+import { ImagePlaceholder } from '@/components/ui/ImagePlaceholder';
 import Link from 'next/link';
 import { getAddonProducts, getPersonalizedProducts } from '@/data/domains/products';
 import { PenTool, Plus, Book, FileText, ShoppingCart } from 'lucide-react';
@@ -36,16 +38,17 @@ export default async function CustomPage() {
               className="flex flex-col overflow-hidden relative p-0"
             >
               <div className="relative h-64 w-full bg-slate-100">
-                <Image
-                  src={
-                    product.coverImageUrl ||
-                    `https://picsum.photos/seed/${product.id}/600/800`
-                  }
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  referrerPolicy="no-referrer"
-                />
+                {product.coverImageUrl ? (
+                  <Image
+                    src={optimizedImageUrl(product.coverImageUrl, 600)}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <ImagePlaceholder label="غلاف المنتج" />
+                )}
               </div>
               <div className="flex flex-1 flex-col p-6">
                 <h3 className="mb-2 text-2xl font-bold text-slate-800">
@@ -89,7 +92,7 @@ export default async function CustomPage() {
                     price: product.price,
                     quantity: 1,
                     type: 'custom',
-                    imageUrl: product.coverImageUrl || `https://picsum.photos/seed/${product.id}/600/800`
+                    imageUrl: product.coverImageUrl || undefined
                   }} 
                 />
                 <Button href={`/enha-lak/product/${product.slug}`} variant="secondary" className="mt-3 w-full">

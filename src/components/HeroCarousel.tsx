@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { optimizedImageUrl } from '@/lib/cloudinary';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 export interface Slide {
@@ -49,12 +50,16 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
             index === currentIndex ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          <img
-            src={slide.image}
-            alt={slide.title}
-            className="h-full w-full object-cover"
-            referrerPolicy="no-referrer"
-          />
+          {slide.image ? (
+            <img
+              src={optimizedImageUrl(slide.image, 1600)}
+              alt={slide.title}
+              className="h-full w-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="h-full w-full bg-gradient-to-br from-slate-700 to-slate-900" />
+          )}
           {/* Gradients to ensure text readability */}
           <div className="absolute inset-0 bg-gradient-to-l from-black/80 via-black/40 to-transparent"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>

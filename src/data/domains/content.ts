@@ -24,6 +24,10 @@ export interface SiteSettings {
   /** The wallet customers transfer to. Editable from the admin settings screen
    *  so it never has to be a number buried in the code again. */
   paymentWalletNumber: string;
+  /** An InstaPay QR the customer can scan instead of typing the number. */
+  paymentQrUrl: string;
+  /** Site imagery, by slot. See src/lib/site-images.ts. */
+  images: SiteImages;
 }
 
 /** Used only when the settings row has no wallet number saved yet. */
@@ -38,7 +42,12 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
 
   if (error || !data) {
     if (process.env.NODE_ENV === 'development') {
-      return { ...mockSiteSettings, paymentWalletNumber: DEFAULT_PAYMENT_WALLET };
+      return {
+        ...mockSiteSettings,
+        paymentWalletNumber: DEFAULT_PAYMENT_WALLET,
+        paymentQrUrl: '',
+        images: {},
+      };
     }
     return {
       siteName: '',
@@ -46,6 +55,8 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
       facebookUrl: '',
       instagramUrl: '',
       paymentWalletNumber: DEFAULT_PAYMENT_WALLET,
+      paymentQrUrl: '',
+      images: {},
     };
   }
 
@@ -56,10 +67,13 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
     facebookUrl: value.facebookUrl ?? '',
     instagramUrl: value.instagramUrl ?? '',
     paymentWalletNumber: value.paymentWalletNumber || DEFAULT_PAYMENT_WALLET,
+    paymentQrUrl: value.paymentQrUrl ?? '',
+    images: value.images ?? {},
   };
 };
 
 import { createClient } from '@/lib/supabase/server';
+import type { SiteImages } from '@/lib/site-images';
 import { mockBlogPosts, mockSiteSettings, mockTestimonials } from '@/data/fixtures/content';
 
 export const getTestimonials = async (): Promise<Testimonial[]> => {

@@ -69,3 +69,58 @@ export async function updateSiteSettings(formData: FormData) {
   revalidatePath('/creative-writing/booking/confirm');
   revalidatePath('/', 'layout');
 }
+
+/**
+ * Saving one image, or the payment QR, into the site settings.
+ *
+ * Kept separate from the settings form so a single upload is one write, and a
+ * partial save can never blank out the other slots.
+ */
+export async function saveSiteImage(params: { key: string; url: string }) {
+  const user = await getCurrentUser();
+  if (!hasAdminPermission(user, 'canManageContent')) {
+    throw new Error('غير مصرح لك بتعديل صور الموقع');
+  }
+
+  const supabase = await createClient();
+  const { data: existing } = await supabase
+    .from('site_settings')
+    .select('value')
+    .eq('key', 'general')
+    .single();
+
+  const current = (existing?.value ?? {}) as Record<string, unknown>;
+  const next: Record<string, unknown> = { ...current };
+
+  if (params.key === 'paymentQrUrl') {
+    next.paymentQrUrl = params.url.trim();
+  } else {
+    const images = { ...((current.images ?? {}) as Record<string, string>) };
+    if (params.url.trim()) images[params.key] = params.url.trim();
+    else delete images[params.key];
+    next.images = images;
+  }
+
+  const { error } = await supabase
+    .from('site_settings')
+    .update({ value: next as never })
+    .eq('key', 'general');
+
+  if (error) {
+    console.error('Error saving site image', error);
+    throw new Error('تعذّر حفظ الصورة');
+  }
+
+  await logAuditAction({
+    actorProfileId: user.id,
+    actorName: user.fullName,
+    action: params.url.trim() ? 'site_image_updated' : 'site_image_removed',
+    entityType: 'SiteSettings',
+    entityId: params.key,
+  });
+
+  revalidatePath('/dashboard/admin/content/images');
+  revalidatePath('/dashboard/admin/content/settings');
+  revalidatePath('/', 'layout');
+  return { ok: true };
+}

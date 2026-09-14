@@ -67,6 +67,7 @@ export default async function OrderServicePage({
 
         <OrderServiceClient
           paymentWalletNumber={settings.paymentWalletNumber}
+          paymentQrUrl={settings.paymentQrUrl}
           serviceId={serviceId}
           serviceName={service.name}
           instructorId={instructorId ?? null}

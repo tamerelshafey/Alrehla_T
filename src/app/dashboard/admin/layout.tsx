@@ -35,6 +35,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { label: 'رسائل الدعم الفني', href: '/dashboard/admin/support/tickets', icon: LifeBuoy, permission: 'canManageSupport' },
     { label: 'التقييمات', href: '/dashboard/admin/reviews', icon: Star, permission: 'canManageContent' },
     { label: 'المدونة', href: '/dashboard/admin/content/blog', icon: FileText, permission: 'canManageContent' },
+    { label: 'صور الموقع', href: '/dashboard/admin/content/images', icon: FileText, permission: 'canManageContent' },
     { label: 'محتوى الموقع', href: '/dashboard/admin/content/pages', icon: LayoutDashboard, permission: 'canManageContent' },
     { label: 'المالية', href: '/dashboard/admin/finance/instructor-payouts', icon: DollarSign, permission: 'canManageFinance' },
     { label: 'طلبات السحب', href: '/dashboard/admin/finance/withdrawals', icon: DollarSign, permission: 'canManageFinance' },

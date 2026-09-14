@@ -3,6 +3,8 @@ import { formatPrice } from '@/lib/utils';
 
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
+import { optimizedImageUrl } from '@/lib/cloudinary';
+import { ImagePlaceholder } from '@/components/ui/ImagePlaceholder';
 import Link from 'next/link';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
@@ -132,16 +134,17 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
               >
                 <Link href={`/enha-lak/product/${product.slug}`} className="absolute inset-0 z-0" />
                 <div className="relative h-64 w-full bg-slate-100">
-                  <Image
-                    src={
-                      product.coverImageUrl ||
-                      `https://picsum.photos/seed/${product.id}/600/800`
-                    }
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                    referrerPolicy="no-referrer"
-                  />
+                  {product.coverImageUrl ? (
+                    <Image
+                      src={optimizedImageUrl(product.coverImageUrl, 600)}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <ImagePlaceholder label="غلاف المنتج" />
+                  )}
                   {publisher && (
                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-slate-800 shadow-sm z-10 pointer-events-none">
                       {publisher.name}

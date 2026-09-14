@@ -17,7 +17,10 @@ export default async function BookingConfirmPage() {
         <h1 className="mb-10 text-center text-3xl font-black text-slate-800 md:text-5xl">تأكيد ومراجعة الحجز</h1>
         <Card accentColor="emerald" className="p-6 md:p-10 shadow-xl shadow-slate-200/50">
           <Suspense fallback={<div className="p-8 text-center">جاري التحميل...</div>}>
-            <BookingConfirmClient paymentWalletNumber={settings.paymentWalletNumber} />
+            <BookingConfirmClient
+              paymentWalletNumber={settings.paymentWalletNumber}
+              paymentQrUrl={settings.paymentQrUrl}
+            />
           </Suspense>
         </Card>
       </Section>

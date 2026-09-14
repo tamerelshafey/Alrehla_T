@@ -1,6 +1,7 @@
 import React from 'react';
 import { HeroCarousel } from '@/components/HeroCarousel';
 import { SectionSubNav } from '@/components/SectionSubNav';
+import { getSiteSettings } from '@/data/domains/content';
 
 const enhaLakTabs = [
   { name: 'نظرة عامة', href: '/enha-lak' },
@@ -9,37 +10,41 @@ const enhaLakTabs = [
   { name: 'صندوق الرحلة', href: '/enha-lak/subscription' },
 ];
 
-const enhaLakSlides = [
-  {
-    id: '1',
-    title: 'قصتك أنت البطل فيها',
-    description: 'نصنع قصصاً مخصصة تجعل طفلك محور الأحداث وتغرس فيه أجمل القيم.',
-    image: 'https://picsum.photos/seed/enhalak1/1600/900',
-    ctaText: 'اصنع قصتك',
-    ctaLink: '/enha-lak/custom',
-    theme: 'violet' as const,
-  },
-  {
-    id: '2',
-    title: 'صندوق الرحلة السحري',
-    description: 'اشتراكات شهرية مليئة بالمفاجآت والكتب الممتعة لتنمية حب القراءة.',
-    image: 'https://picsum.photos/seed/enhalak2/1600/900',
-    ctaText: 'اكتشف الصندوق',
-    ctaLink: '/enha-lak/subscription',
-    theme: 'rose' as const,
-  },
-  {
-    id: '3',
-    title: 'مكتبة الخيال الواسعة',
-    description: 'تصفح قصصنا وإصداراتنا المتنوعة التي تناسب مختلف الأعمار.',
-    image: 'https://picsum.photos/seed/enhalak3/1600/900',
-    ctaText: 'تصفح المكتبة',
-    ctaLink: '/enha-lak/library',
-    theme: 'violet' as const,
-  }
-];
 
-export default function EnhaLakLayout({ children }: { children: React.ReactNode }) {
+
+export default async function EnhaLakLayout({ children }: { children: React.ReactNode }) {
+  // These were three stock photographs from picsum.photos.
+  const settings = await getSiteSettings();
+  const enhaLakSlides = [
+    {
+      id: '1',
+      title: 'قصتك أنت البطل فيها',
+      description: 'نصنع قصصاً مخصصة تجعل طفلك محور الأحداث وتغرس فيه أجمل القيم.',
+      image: settings.images.enhaLakSlide1 ?? '',
+      ctaText: 'اصنع قصتك',
+      ctaLink: '/enha-lak/custom',
+      theme: 'violet' as const,
+    },
+    {
+      id: '2',
+      title: 'صندوق الرحلة السحري',
+      description: 'اشتراكات شهرية مليئة بالمفاجآت والكتب الممتعة لتنمية حب القراءة.',
+      image: settings.images.enhaLakSlide2 ?? '',
+      ctaText: 'اكتشف الصندوق',
+      ctaLink: '/enha-lak/subscription',
+      theme: 'rose' as const,
+    },
+    {
+      id: '3',
+      title: 'مكتبة الخيال الواسعة',
+      description: 'تصفح قصصنا وإصداراتنا المتنوعة التي تناسب مختلف الأعمار.',
+      image: settings.images.enhaLakSlide3 ?? '',
+      ctaText: 'تصفح المكتبة',
+      ctaLink: '/enha-lak/library',
+      theme: 'violet' as const,
+    }
+  ];
+
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#FFFBFD] to-[#FDF5F7] selection:bg-rose-200 selection:text-rose-900">
       {/* Decorative Background */}
