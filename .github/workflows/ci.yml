@@ -4,11 +4,17 @@
 #
 # ⚠️ الملف ده **مش** هو اللي بيمنع النشر.
 # Vercel بينشر من الـPush مباشرة ومش بيستنى GitHub. اللي بيمنع النشر فعلًا
-# هو إن `npm run build` بيشغّل `npm run verify` الأول (فحص الأنواع ثم
-# الاختبارات)، وVercel بينفّذ نفس الأمر ده. فشل أي فحص = فشل البناء =
-# النسخة القديمة تفضل شغالة والجديدة ما تنشرش.
+# هو إن `build` في package.json بيشغّل `verify` الأول (فحص الأنواع ثم
+# الاختبارات)، وVercel بينفّذ نفس الأمر. فشل أي فحص = فشل البناء = النسخة
+# القديمة تفضل شغالة والجديدة ما تنشرش.
 #
 # يعني الحماية في package.json، وده هنا للرؤية والتاريخ.
+#
+# ملاحظة على مدير الحزم: المشروع بيستخدم **bun**، و`bun.lock` هو ملف
+# القفل المتتبَّع. `package-lock.json` متجاهَل عن قصد (في .gitignore)
+# عشان ملفين قفل جنب بعض بيفرّقوا وينتجوا شجرة حزم مختلفة محليًا عن
+# Vercel. فالفحوصات هنا لازم تستخدم bun زي ما Vercel بيعمل بالظبط —
+# نسخة أولى من الملف ده استخدمت `npm ci` وفشلت لأن ملف القفل مش موجود.
 
 name: الفحوصات
 
@@ -26,28 +32,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # نسخة Node لبعض أدوات البناء. 20 اتوقف دعمها على GitHub،
+      # و24 هي الافتراضية الحالية.
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 24
 
       - name: تثبيت الحزم
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: فحص الأنواع
-        run: npm run typecheck
+        run: bun run typecheck
 
       - name: الاختبارات
-        run: npm test
+        run: bun run test
 
       - name: lint
-        run: npm run lint
+        run: bun run lint
 
       # البناء آخر خطوة: أبطأ واحدة، ومفيش فايدة من تشغيلها لو حاجة قبلها فشلت.
       # المتغيرات وهمية عن قصد — البناء بيحتاج وجودها لا صحتها، ومفيش
       # مفتاح حقيقي بيتحط في GitHub لمجرد فحص بناء.
       - name: البناء
-        run: npx next build
+        run: bunx next build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
