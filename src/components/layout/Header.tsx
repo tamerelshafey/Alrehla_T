@@ -4,11 +4,14 @@ import React from 'react';
 import { CartHeaderButton } from '@/components/cart/CartHeaderButton';
 import { AccountMenu } from '@/components/layout/AccountMenu';
 import { getCurrentUser } from '@/data/domains/auth';
+import { getUnreadNotificationCount } from '@/data/domains/account';
+import { Bell } from 'lucide-react';
 
 export default async function Header() {
   const user = await getCurrentUser();
   const userRole = user.role;
   const isVisitor = userRole === 'visitor';
+  const unreadCount = isVisitor ? 0 : await getUnreadNotificationCount();
 
   const getDashboardLabel = () => {
     switch (userRole) {
@@ -58,6 +61,23 @@ export default async function Header() {
 
         <div className="flex items-center gap-3">
           <CartHeaderButton />
+
+          {!isVisitor && (
+            <Link
+              href="/notifications"
+              aria-label={
+                unreadCount > 0 ? `الإشعارات، ${unreadCount} غير مقروء` : 'الإشعارات'
+              }
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-white hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 left-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-black text-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </Link>
+          )}
           
           <div className="hidden h-6 w-px bg-slate-200 sm:block"></div>
           

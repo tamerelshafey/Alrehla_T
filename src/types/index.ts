@@ -245,6 +245,8 @@ export interface NotificationItem {
   message: string;
   isRead: boolean;
   createdAt: string;
+  /** Where the notification points, when it points anywhere. */
+  link?: string;
 }
 
 // تذاكر الدعم

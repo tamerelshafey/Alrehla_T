@@ -607,6 +607,7 @@ export type Database = {
           message: string | null
           is_read: boolean
           created_at: string
+          link: string | null
         }
         Insert: {
           id?: string
@@ -615,6 +616,7 @@ export type Database = {
           message?: string | null
           is_read?: boolean
           created_at?: string
+          link?: string | null
         }
         Update: {
           id?: string
@@ -623,6 +625,7 @@ export type Database = {
           message?: string | null
           is_read?: boolean
           created_at?: string
+          link?: string | null
         }
         Relationships: []
       }
@@ -1353,6 +1356,15 @@ export type Database = {
       is_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      notify_user: {
+        Args: {
+          p_recipient: string
+          p_title: string
+          p_message?: string | null
+          p_link?: string | null
+        }
+        Returns: undefined
       }
     }
     Enums: {

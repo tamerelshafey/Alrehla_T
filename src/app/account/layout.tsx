@@ -39,7 +39,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
           <Link href="/account/support" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-amber-600">
             <HelpCircle className="h-4 w-4" /> تذاكر الدعم
           </Link>
-          <Link href="/account/notifications" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-amber-600">
+          <Link href="/notifications" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-amber-600">
             <Bell className="h-4 w-4" /> الإشعارات
           </Link>
         </nav>

@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/types/supabase';
 import { getCurrentUser } from '@/data/domains/auth';
 import { hasAdminPermission } from '@/lib/utils';
+import { notifyUser, getInstructorUserId } from '@/lib/notifications';
 
 /**
  * Instructor profile changes, certification and pricing settings.
@@ -142,6 +143,13 @@ export async function approveProfileUpdateRequest(requestId: string) {
     metadata: { instructorId: request.instructor_id },
   });
 
+  await notifyUser({
+    recipientProfileId: await getInstructorUserId(request.instructor_id),
+    title: 'تم اعتماد تعديلات ملفك',
+    message: 'التعديلات التي أرسلتها ظاهرة الآن للطلاب.',
+    link: '/dashboard/instructor/profile',
+  });
+
   revalidatePath(`/dashboard/admin/instructors/${request.instructor_id}`);
   revalidatePath('/dashboard/instructor/settings');
   return { success: true };
@@ -173,6 +181,13 @@ export async function rejectProfileUpdateRequest(requestId: string, adminFeedbac
     entityType: 'ProfileUpdateRequest',
     entityId: requestId,
     metadata: { instructorId: request.instructor_id, adminFeedback },
+  });
+
+  await notifyUser({
+    recipientProfileId: await getInstructorUserId(request.instructor_id),
+    title: 'لم تُعتمد تعديلات ملفك',
+    message: adminFeedback,
+    link: '/dashboard/instructor/profile',
   });
 
   revalidatePath(`/dashboard/admin/instructors/${request.instructor_id}`);

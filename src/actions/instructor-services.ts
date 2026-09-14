@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { getCurrentUser } from '@/data/domains/auth';
 import { hasAdminPermission } from '@/lib/utils';
 import { getMyInstructorId } from '@/data/domains/services';
+import { notifyUser, getInstructorUserId } from '@/lib/notifications';
 
 /**
  * Admin-only management of which instructor provides which creative service,
@@ -60,8 +61,19 @@ export async function saveInstructorServiceOffer(params: {
     throw new Error('تعذّر حفظ الخدمة');
   }
 
+  await notifyUser({
+    recipientProfileId: await getInstructorUserId(instructorId),
+    title: status === 'approved' ? 'تم اعتماد خدمتك' : 'تحديث على خدمتك',
+    message:
+      status === 'approved'
+        ? `اعتمدت الإدارة حصيلتك في هذه الخدمة${approvedPrice != null ? ` بمبلغ ${approvedPrice} ج.م` : ''}.`
+        : 'الخدمة ما زالت قيد المراجعة.',
+    link: '/dashboard/instructor/services',
+  });
+
   revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
   revalidatePath('/creative-writing/services');
+  revalidatePath('/dashboard/instructor/services');
   return { ok: true };
 }
 
@@ -116,6 +128,13 @@ export async function rejectInstructorServiceOffer(
     console.error('Error rejecting instructor service offer', error);
     throw new Error('تعذّر رفض الطلب');
   }
+
+  await notifyUser({
+    recipientProfileId: await getInstructorUserId(instructorId),
+    title: 'لم تُعتمد الخدمة',
+    message: adminNotes.trim(),
+    link: '/dashboard/instructor/services',
+  });
 
   revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
   revalidatePath('/dashboard/instructor/services');

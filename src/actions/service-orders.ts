@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
 import { getCurrentUser } from '@/data/domains/auth';
 import { hasAdminPermission, calculateFinalSessionPrice } from '@/lib/utils';
+import { notifyUser, getInstructorUserId } from '@/lib/notifications';
 
 /**
  * Ordering a standalone creative service.
@@ -99,6 +100,15 @@ export async function createServiceOrder(params: {
     throw new Error('تعذّر إنشاء الطلب');
   }
 
+  if (instructorId) {
+    await notifyUser({
+      recipientProfileId: await getInstructorUserId(instructorId),
+      title: 'طلب خدمة جديد',
+      message: 'وصلك طلب خدمة إبداعية جديد. سيظهر للتنفيذ بعد تأكيد الدفع.',
+      link: `/dashboard/instructor/services/orders/${order.id}`,
+    });
+  }
+
   revalidatePath('/account/orders/creative-writing');
   revalidatePath('/dashboard/admin/orders/services');
 
@@ -182,6 +192,32 @@ export async function sendServiceOrderMessage(
     throw new Error('تعذّر إرسال الرسالة');
   }
 
+  // The other side of the conversation hears about it.
+  const { data: order } = await supabase
+    .from('service_orders')
+    .select('buyer_profile_id, instructor_id')
+    .eq('id', orderId)
+    .maybeSingle();
+
+  if (order && !isDelivery) {
+    const instructorUserId = order.instructor_id
+      ? await getInstructorUserId(order.instructor_id)
+      : null;
+    const recipient =
+      user.id === order.buyer_profile_id ? instructorUserId : order.buyer_profile_id;
+    const link =
+      user.id === order.buyer_profile_id
+        ? `/dashboard/instructor/services/orders/${orderId}`
+        : `/account/orders/creative-writing/${orderId}`;
+
+    await notifyUser({
+      recipientProfileId: recipient,
+      title: 'رسالة جديدة على طلب خدمة',
+      message: text.slice(0, 120),
+      link,
+    });
+  }
+
   revalidateOrder(orderId);
   return { ok: true };
 }
@@ -203,6 +239,13 @@ export async function startServiceOrder(orderId: string) {
     .eq('id', orderId);
 
   if (error) throw new Error('تعذّر تحديث حالة الطلب');
+
+  await notifyUser({
+    recipientProfileId: order.buyer_profile_id,
+    title: 'بدأ تنفيذ طلبك',
+    message: 'المدرب بدأ العمل على طلبك.',
+    link: `/account/orders/creative-writing/${orderId}`,
+  });
 
   revalidateOrder(orderId);
   return { ok: true };
@@ -237,6 +280,13 @@ export async function deliverServiceOrder(orderId: string, deliveryMessage: stri
     .eq('id', orderId);
 
   if (error) throw new Error('تعذّر تسجيل التسليم');
+
+  await notifyUser({
+    recipientProfileId: order.buyer_profile_id,
+    title: 'تم تسليم طلبك',
+    message: 'راجع ما سلّمه المدرب وأكّد الاستلام.',
+    link: `/account/orders/creative-writing/${orderId}`,
+  });
 
   revalidateOrder(orderId);
   return { ok: true };
@@ -307,6 +357,15 @@ async function completeOrder(
   if (error) throw new Error('تعذّر إقفال الطلب');
 
   await recordInstructorEarning(supabase, order, service?.name ?? 'خدمة إبداعية');
+
+  if (order.instructor_id) {
+    await notifyUser({
+      recipientProfileId: await getInstructorUserId(order.instructor_id),
+      title: 'اكتمل الطلب',
+      message: 'تم تأكيد الاستلام، وأُضيفت حصيلتك إلى مستحقاتك.',
+      link: '/dashboard/instructor/payouts',
+    });
+  }
 }
 
 /** العميل يؤكد استلام العمل. */
@@ -347,6 +406,29 @@ export async function confirmServiceOrderPayment(orderId: string) {
     .eq('id', orderId);
 
   if (error) throw new Error('تعذّر تأكيد الدفع');
+
+  const { data: order } = await supabase
+    .from('service_orders')
+    .select('buyer_profile_id, instructor_id')
+    .eq('id', orderId)
+    .maybeSingle();
+
+  if (order) {
+    await notifyUser({
+      recipientProfileId: order.buyer_profile_id,
+      title: 'تم تأكيد دفعك',
+      message: 'استلمنا المبلغ، والمدرب سيبدأ التنفيذ.',
+      link: `/account/orders/creative-writing/${orderId}`,
+    });
+    if (order.instructor_id) {
+      await notifyUser({
+        recipientProfileId: await getInstructorUserId(order.instructor_id),
+        title: 'طلب جاهز للتنفيذ',
+        message: 'تم تأكيد الدفع — يمكنك بدء التنفيذ الآن.',
+        link: `/dashboard/instructor/services/orders/${orderId}`,
+      });
+    }
+  }
 
   await logAuditAction({
     actorProfileId: admin.id,
@@ -408,6 +490,19 @@ export async function setServiceOrderStatusByAdmin(
     .eq('id', orderId);
 
   if (error) throw new Error('تعذّر تحديث حالة الطلب');
+
+  const { data: target } = await supabase
+    .from('service_orders')
+    .select('buyer_profile_id')
+    .eq('id', orderId)
+    .maybeSingle();
+
+  await notifyUser({
+    recipientProfileId: target?.buyer_profile_id,
+    title: status === 'refunded' ? 'تم استرجاع طلبك' : 'تم إلغاء طلبك',
+    message: reason.trim(),
+    link: `/account/orders/creative-writing/${orderId}`,
+  });
 
   await logAuditAction({
     actorProfileId: admin.id,
