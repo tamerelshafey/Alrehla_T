@@ -689,6 +689,10 @@ export type Database = {
           governorate: string | null
           shipping_notes: string | null
           shipping_fee: number
+          shipped_at: string | null
+          delivered_at: string | null
+          tracking_reference: string | null
+          admin_notes: string | null
         }
         Insert: {
           id?: string
@@ -707,6 +711,10 @@ export type Database = {
           governorate?: string | null
           shipping_notes?: string | null
           shipping_fee?: number
+          shipped_at?: string | null
+          delivered_at?: string | null
+          tracking_reference?: string | null
+          admin_notes?: string | null
         }
         Update: {
           id?: string
@@ -725,6 +733,10 @@ export type Database = {
           governorate?: string | null
           shipping_notes?: string | null
           shipping_fee?: number
+          shipped_at?: string | null
+          delivered_at?: string | null
+          tracking_reference?: string | null
+          admin_notes?: string | null
         }
         Relationships: []
       }
@@ -1476,8 +1488,8 @@ export type Database = {
       instructor_status_enum: "pending_training" | "pending_approval" | "active" | "suspended"
       join_request_status: "pending" | "approved" | "rejected"
       join_request_status_enum: "pending" | "approved" | "rejected"
-      order_status: "pending" | "awaiting_verification" | "paid" | "failed" | "refunded"
-      order_status_enum: "pending" | "awaiting_verification" | "paid" | "failed" | "refunded"
+      order_status: "pending" | "awaiting_verification" | "paid" | "failed" | "refunded" | "preparing" | "shipped" | "delivered" | "cancelled"
+      order_status_enum: "pending" | "awaiting_verification" | "paid" | "failed" | "refunded" | "preparing" | "shipped" | "delivered" | "cancelled"
       owner_type: "platform" | "publisher"
       payout_status: "pending" | "paid"
       payout_status_enum: "pending" | "paid"

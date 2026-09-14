@@ -88,7 +88,7 @@ export async function getReviewQueue(): Promise<ReviewQueueItem[]> {
       key: 'withdrawals',
       label: 'طلبات سحب أرباح',
       count: n(withdrawals),
-      href: '/dashboard/admin/finance/instructor-payouts',
+      href: '/dashboard/admin/finance/withdrawals',
       permission: 'canManageFinance',
       urgent: true,
     },

@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser } from '@/data/domains/auth';
-import { getOrders } from '@/data/domains/orders';
+import { getAllOrders } from '@/data/domains/orders';
 import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { OrdersClient } from './OrdersClient';
@@ -15,7 +15,7 @@ export default async function Page() {
     return <Unauthorized />;
   }
 
-  const orders = await getOrders();
+  const orders = await getAllOrders();
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">

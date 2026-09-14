@@ -2,7 +2,7 @@ import { formatPrice } from '@/lib/utils';
 import { getCurrentUser } from '@/data/domains/auth';
 import { getReviewQueue } from '@/data/domains/review-queue';
 import { hasAdminPermission } from '@/lib/utils';
-import { getOrders } from '@/data/domains/orders';
+import { getAllOrders } from '@/data/domains/orders';
 import { getInstructors, getSessions, getWritingPackages } from '@/data/domains/writing';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -28,7 +28,7 @@ export default async function AdminDashboard() {
   }
 
   const packages = await getWritingPackages();
-  const orders = await getOrders();
+  const orders = await getAllOrders();
   const bookings = await getSessions();
   const instructors = await getInstructors();
   const reviewQueue = (await getReviewQueue()).filter((item) =>

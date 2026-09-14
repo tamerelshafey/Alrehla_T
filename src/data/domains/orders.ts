@@ -5,7 +5,7 @@ import {
   StudyMaterial, InstructorStudent, BoxSubscription, SupportTicket, 
   JoinRequest, SupportSessionRequest, AuditLog, ServiceOrder, CourseSubscription, 
   SupportTicketMessage, FamilyMember, NotificationItem, UserRole,
-  PublisherOrder,
+  PublisherOrder, OrderItem,
   InstructorPricingOption, PricingFormulaSettings, InstructorCompensationProfile, InstructorCertification
 } from '@/types';
 import { cookies } from 'next/headers';
@@ -47,6 +47,17 @@ export const getOrders = async (): Promise<Order[]> => {
     totalAmount: order.total_amount,
     status: order.status,
     transactionReference: order.transaction_reference || undefined,
+    trackingReference: order.tracking_reference || undefined,
+    shippedAt: order.shipped_at || undefined,
+    deliveredAt: order.delivered_at || undefined,
+    adminNotes: order.admin_notes || undefined,
+    shippingFee: order.shipping_fee ?? undefined,
+    recipientName: order.recipient_name || undefined,
+    recipientPhone: order.recipient_phone || undefined,
+    addressLine: order.address_line || undefined,
+    city: order.city || undefined,
+    governorate: order.governorate || undefined,
+    shippingNotes: order.shipping_notes || undefined,
     createdAt: order.created_at,
     items: (order.order_items || []).map((item: any) => ({
       productId: item.product_id,
@@ -109,5 +120,64 @@ export async function getAllShippingRates(): Promise<ShippingRateRow[]> {
     city: r.city ?? '',
     fee: r.fee,
     isActive: r.is_active,
+  }));
+}
+
+/**
+ * Every order — for the admin screens.
+ *
+ * The admin order pages used `getOrders`, which filters by the signed-in
+ * user: an admin was shown only their OWN orders and believed that was the
+ * whole list. Row-level security is what actually limits this read.
+ *
+ * Items are fetched in a second query rather than as a join, because the
+ * generated types carry no relationship for it and a joined shape would have
+ * to be cast away — which is how untyped data got into this codebase before.
+ */
+export async function getAllOrders(): Promise<Order[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error || !data) return [];
+
+  const { data: items } = await supabase
+    .from('order_items')
+    .select('order_id, product_id, quantity, unit_price, customization_data')
+    .in('order_id', data.map((o) => o.id));
+
+  const itemsByOrder = new Map<string, OrderItem[]>();
+  for (const item of items ?? []) {
+    const list = itemsByOrder.get(item.order_id) ?? [];
+    list.push({
+      productId: item.product_id,
+      quantity: item.quantity,
+      unitPrice: item.unit_price,
+      customizationData: (item.customization_data as OrderItem['customizationData']) || undefined,
+    });
+    itemsByOrder.set(item.order_id, list);
+  }
+
+  return data.map((order) => ({
+    id: order.id,
+    userId: order.user_id,
+    totalAmount: order.total_amount,
+    status: order.status,
+    transactionReference: order.transaction_reference || undefined,
+    trackingReference: order.tracking_reference || undefined,
+    shippedAt: order.shipped_at || undefined,
+    deliveredAt: order.delivered_at || undefined,
+    adminNotes: order.admin_notes || undefined,
+    shippingFee: order.shipping_fee ?? undefined,
+    recipientName: order.recipient_name || undefined,
+    recipientPhone: order.recipient_phone || undefined,
+    addressLine: order.address_line || undefined,
+    city: order.city || undefined,
+    governorate: order.governorate || undefined,
+    shippingNotes: order.shipping_notes || undefined,
+    createdAt: order.created_at,
+    items: itemsByOrder.get(order.id) ?? [],
   }));
 }

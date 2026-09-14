@@ -200,3 +200,42 @@ export const getPublisherPricingSettings = async (): Promise<PricingFormulaSetti
     updatedAt: data.updated_at
   };
 };
+
+export type WithdrawalRequestRow = {
+  id: string;
+  instructorId: string;
+  instructorName: string;
+  amount: number;
+  method: string;
+  status: string;
+  adminNotes: string | null;
+  createdAt: string;
+};
+
+/**
+ * Instructor withdrawal requests — row-level security limits this to admins
+ * and to the instructor's own rows.
+ */
+export async function getWithdrawalRequests(): Promise<WithdrawalRequestRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('withdrawal_requests')
+    .select('id, instructor_id, amount, method, status, admin_notes, created_at, instructors(display_name)')
+    .order('created_at', { ascending: false });
+
+  if (error || !data) return [];
+
+  return data.map((row) => {
+    const joined = row.instructors as unknown as { display_name: string } | null;
+    return {
+      id: row.id,
+      instructorId: row.instructor_id,
+      instructorName: joined?.display_name ?? 'مدرب',
+      amount: row.amount,
+      method: row.method,
+      status: row.status,
+      adminNotes: row.admin_notes,
+      createdAt: row.created_at,
+    };
+  });
+}

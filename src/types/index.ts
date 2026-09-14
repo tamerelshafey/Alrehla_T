@@ -164,7 +164,16 @@ export type PersonalizedProduct = {
 };
 
 // حالة الطلب
-export type OrderStatus = 'pending' | 'awaiting_verification' | 'paid' | 'failed' | 'refunded';
+export type OrderStatus =
+  | 'pending'
+  | 'awaiting_verification'
+  | 'paid'
+  | 'preparing'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled'
+  | 'failed'
+  | 'refunded';
 
 // طلب شراء من المتجر
 export interface OrderItem {
@@ -190,6 +199,18 @@ export type Order = {
   status: OrderStatus;
   createdAt: string;
   transactionReference?: string;
+  /** Fulfilment — the order used to stop at "paid" with nothing after it. */
+  trackingReference?: string;
+  shippedAt?: string;
+  deliveredAt?: string;
+  adminNotes?: string;
+  shippingFee?: number;
+  recipientName?: string;
+  recipientPhone?: string;
+  addressLine?: string;
+  city?: string;
+  governorate?: string;
+  shippingNotes?: string;
 };
 
 // مقال في المدونة

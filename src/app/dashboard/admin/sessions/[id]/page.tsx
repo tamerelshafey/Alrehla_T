@@ -9,6 +9,7 @@ import {
 } from '@/data/domains/writing';
 import { getParticipantName } from '@/data/domains/account';
 import { notFound } from 'next/navigation';
+import { SessionSettings } from './SessionSettings';
 import { FileText, Download, Upload } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -70,6 +71,12 @@ export default async function InstructorSessionDetailsPage({ params }: { params:
               </div>
             </div>
           </section>
+
+          <SessionSettings
+            sessionId={session.id}
+            meetingUrl={session.meetingUrl ?? ''}
+            scheduledAt={session.scheduledAt}
+          />
 
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex justify-between items-center mb-4">

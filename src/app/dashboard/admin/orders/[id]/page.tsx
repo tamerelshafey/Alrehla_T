@@ -1,14 +1,27 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser } from '@/data/domains/auth';
-import { getOrders } from '@/data/domains/orders';
+import { getAllOrders } from '@/data/domains/orders';
 import { getPersonalizedProducts } from '@/data/domains/products';
 import { hasAdminPermission, formatDate , formatPrice } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { confirmOrderPayment } from '@/actions/orders';
+import { FulfilmentPanel } from './FulfilmentPanel';
 
 export const dynamic = 'force-dynamic';
+
+const ORDER_STATUS_LABEL: Record<string, string> = {
+  pending: 'بانتظار الدفع',
+  awaiting_verification: 'بانتظار تأكيد الدفع',
+  paid: 'تم الدفع',
+  preparing: 'قيد التجهيز',
+  shipped: 'تم الشحن',
+  delivered: 'تم التسليم',
+  cancelled: 'ملغي',
+  refunded: 'مسترجع',
+  failed: 'فشل الدفع',
+};
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
@@ -16,7 +29,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     return <Unauthorized />;
   }
   const { id } = await params;
-  const orders = await getOrders();
+  const orders = await getAllOrders();
   const target = orders.find(o => o.id === id) || orders[0];
   const products = await getPersonalizedProducts();
   const formattedItems = target.items.map((item: any, idx: number) => {
@@ -51,7 +64,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
           <div>
             <div className="text-sm text-slate-500 mb-1">تاريخ الطلب: {formatDate(target.createdAt)}</div>
-            <div className="text-sm text-slate-500 mb-1">حالة الدفع: {target.status === 'paid' ? 'تم الدفع' : target.status === 'awaiting_verification' ? 'بانتظار تأكيد الدفع' : 'معلق'}</div>
+            <div className="text-sm text-slate-500 mb-1">حالة الطلب: {ORDER_STATUS_LABEL[target.status] ?? target.status}</div>
             {target.transactionReference && (
               <div className="text-sm text-slate-500 font-mono text-blue-600">رقم العملية (InstaPay): {target.transactionReference}</div>
             )}
@@ -64,11 +77,49 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 </button>
               </form>
             )}
-            <button className="rounded-xl bg-slate-900 px-6 py-2 font-bold text-white transition-colors hover:bg-slate-800" disabled title="غير متاح حاليًا">
-              تحديث حالة الشحن (مشحون) (غير متاح)
-            </button>
+            <FulfilmentPanel
+              orderId={target.id}
+              status={target.status}
+              trackingReference={target.trackingReference ?? ''}
+            />
           </div>
         </div>
+        {/* The shipping address is now stored with the order — it used to be
+            collected on screen and thrown away. */}
+        <div className="mb-8 rounded-2xl border border-slate-100 bg-slate-50 p-5">
+          <h3 className="mb-3 font-bold text-slate-800">عنوان الشحن</h3>
+          {target.recipientName ? (
+            <div className="space-y-1 text-sm font-medium text-slate-600">
+              <p>
+                <span className="font-bold text-slate-800">{target.recipientName}</span>
+                {target.recipientPhone && (
+                  <span className="mr-3" dir="ltr">
+                    {target.recipientPhone}
+                  </span>
+                )}
+              </p>
+              <p>
+                {target.addressLine}
+                {target.city && `، ${target.city}`}
+                {target.governorate && `، ${target.governorate}`}
+              </p>
+              {target.shippingNotes && <p className="text-slate-500">ملاحظات: {target.shippingNotes}</p>}
+              {target.shippingFee != null && (
+                <p className="text-slate-500">مصاريف الشحن: {formatPrice(target.shippingFee)}</p>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm font-medium text-slate-400">
+              لا يوجد عنوان مسجّل — طلب قديم أو منتج لا يُشحن.
+            </p>
+          )}
+          {target.trackingReference && (
+            <p className="mt-3 text-sm font-bold text-blue-700" dir="ltr">
+              {target.trackingReference}
+            </p>
+          )}
+        </div>
+
         <h3 className="text-xl font-bold text-slate-800 mb-4">محتويات الطلب</h3>
         <SimpleDataTable columns={columns} data={formattedItems} />
         
