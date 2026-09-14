@@ -199,7 +199,7 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
             <div className="flex gap-4 mb-6 pb-6 border-b border-slate-100">
               <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
                 {product.coverImageUrl ? (
-                  <Image src={optimizedImageUrl(product.coverImageUrl, 600)} alt={product.name} fill className="object-cover" referrerPolicy="no-referrer" />
+                  <Image src={optimizedImageUrl(product.coverImageUrl, 600)} alt={product.name} fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover" referrerPolicy="no-referrer" />
                 ) : null}
               </div>
               <div>

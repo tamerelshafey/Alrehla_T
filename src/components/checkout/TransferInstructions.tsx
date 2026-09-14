@@ -45,7 +45,7 @@ export function TransferInstructions({
                 <Image
                   src={optimizedImageUrl(qrUrl, 400)}
                   alt="كود الدفع عبر إنستاباي"
-                  fill
+                  fill sizes="220px"
                   className="object-contain p-1.5"
                 />
               </div>

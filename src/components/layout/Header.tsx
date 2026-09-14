@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { User, Compass } from 'lucide-react';
 import React from 'react';
+import { getSiteSettings } from '@/data/domains/content';
+import { slotImageUrl } from '@/lib/cloudinary';
 import { CartHeaderButton } from '@/components/cart/CartHeaderButton';
 import { AccountMenu } from '@/components/layout/AccountMenu';
 import { getCurrentUser } from '@/data/domains/auth';
@@ -8,6 +11,8 @@ import { getUnreadNotificationCount } from '@/data/domains/account';
 import { Bell } from 'lucide-react';
 
 export default async function Header() {
+  const settings = await getSiteSettings();
+  const logo = settings.images.logo;
   const user = await getCurrentUser();
   const userRole = user.role;
   const isVisitor = userRole === 'visitor';
@@ -46,8 +51,24 @@ export default async function Header() {
             href="/"
             className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 flex items-center gap-2 text-2xl font-black tracking-tighter text-amber-500 hover:text-amber-600 transition-colors"
           >
-            <Compass className="h-6 w-6" />
-            <span>الرحلة</span>
+            {/* الشعار بيترفع من: لوحة الإدارة ← صور الموقع ← شعار الموقع.
+                لحد ما يترفع، البوصلة والاسم بيفضلوا زي ما هم. */}
+            {logo ? (
+              <Image
+                src={slotImageUrl(logo, 'logo')}
+                alt="الرحلة"
+                width={160}
+                height={40}
+                priority
+                className="h-9 w-auto object-contain"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <>
+                <Compass className="h-6 w-6" />
+                <span>الرحلة</span>
+              </>
+            )}
           </Link>
           <nav className="hidden gap-1 text-[14px] font-bold text-slate-600 lg:flex">
             <NavLink href="/">الرئيسية</NavLink>

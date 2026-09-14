@@ -312,7 +312,7 @@ export function CheckoutClient({ user, paymentWalletNumber, paymentQrUrl, shippi
             {items.map((item: any) => (
               <div key={item.id} className="flex gap-4 border-b border-slate-100 pb-4 last:border-0 last:pb-0">
                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50">
-                  <Image src={optimizedImageUrl(item.imageUrl, 160)} alt={item.name} fill className="object-cover" />
+                  <Image src={optimizedImageUrl(item.imageUrl, 160)} alt={item.name} fill sizes="96px" className="object-cover" />
                 </div>
                 <div className="flex-1">
                   

@@ -47,7 +47,7 @@ export function PaymentQrUploader({ value }: { value: string }) {
       <div className="flex flex-wrap items-center gap-4">
         <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
           {value ? (
-            <Image src={optimizedImageUrl(value, 400)} alt="كود الدفع" fill className="object-contain p-2" />
+            <Image src={optimizedImageUrl(value, 400)} alt="كود الدفع" fill sizes="200px" className="object-contain p-2" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-xs font-bold text-slate-400">
               لم يُرفع بعد

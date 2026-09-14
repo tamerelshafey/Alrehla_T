@@ -33,7 +33,9 @@ export interface SiteSettings {
 /** Used only when the settings row has no wallet number saved yet. */
 export const DEFAULT_PAYMENT_WALLET = '01063335517';
 
-export const getSiteSettings = async (): Promise<SiteSettings> => {
+// cache() بتخلي الإعدادات تُقرأ **مرة واحدة** لكل عرض للصفحة بدل ما تتقرا
+// في الهيدر وفي الصفحة نفسها — استعلامين بقوا واحد في كل صفحة في الموقع.
+export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
   const supabase = await createClient();
   const { data, error } = await supabase.from('site_settings')
     .select('value')
@@ -70,7 +72,7 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
     paymentQrUrl: value.paymentQrUrl ?? '',
     images: value.images ?? {},
   };
-};
+});
 
 import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';

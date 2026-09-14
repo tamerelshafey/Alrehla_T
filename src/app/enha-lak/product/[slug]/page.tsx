@@ -55,7 +55,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <Image
                 src={optimizedImageUrl(product.coverImageUrl, 900)}
                 alt={product.name}
-                fill priority
+                fill sizes="(max-width: 1024px) 100vw, 520px" priority
                 className="object-cover"
                 referrerPolicy="no-referrer"
               />

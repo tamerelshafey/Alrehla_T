@@ -35,7 +35,7 @@ export default async function PublisherPage({ params }: { params: Promise<{ slug
               <Image
                 src={publisher.logoUrl}
                 alt={publisher.name}
-                fill priority
+                fill sizes="(max-width: 768px) 100vw, 300px" priority
                 className="object-cover"
                 referrerPolicy="no-referrer"
               />
@@ -63,7 +63,7 @@ export default async function PublisherPage({ params }: { params: Promise<{ slug
                     <Image
                       src={optimizedImageUrl(product.coverImageUrl, 600)}
                       alt={product.name}
-                      fill
+                      fill sizes="(max-width: 768px) 100vw, 300px"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                       referrerPolicy="no-referrer"
                     />

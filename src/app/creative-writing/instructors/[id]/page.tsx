@@ -43,7 +43,7 @@ export default async function InstructorProfilePage({ params }: { params: Promis
               <div className="relative -mt-20 flex flex-col sm:flex-row sm:items-end gap-6">
                 <div className="relative flex h-40 w-40 items-center justify-center rounded-[2rem] border-4 border-white bg-white shadow-lg overflow-hidden">
                    {instructor.avatarUrl ? (
-                      <Image src={optimizedImageUrl(instructor.avatarUrl, 400)} alt={`صورة المدرب ${instructor.displayName}`} fill className="object-cover" referrerPolicy="no-referrer" priority />
+                      <Image src={optimizedImageUrl(instructor.avatarUrl, 400)} alt={`صورة المدرب ${instructor.displayName}`} fill sizes="160px" className="object-cover" referrerPolicy="no-referrer" priority />
                     ) : (
                       <User className="h-16 w-16 text-slate-300" />
                     )}

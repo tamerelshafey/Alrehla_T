@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 import { PageContainer } from '@/components/PageContainer';
 import { getSiteSettings, getSiteContent } from '@/data/domains/content';
-import { optimizedImageUrl } from '@/lib/cloudinary';
+import { slotImageUrl, blurPlaceholder } from '@/lib/cloudinary';
 import { ImagePlaceholder } from '@/components/ui/ImagePlaceholder';
 import {
   Sparkles,
@@ -53,10 +53,13 @@ export default async function AboutPage() {
         <div className="relative mt-12 h-64 w-full overflow-hidden rounded-[2.5rem] md:h-96">
           {settings.images.aboutTeam ? (
             <Image
-              src={optimizedImageUrl(settings.images.aboutTeam, 1400)}
+              src={slotImageUrl(settings.images.aboutTeam, 'aboutTeam')}
               alt="فريق منصة الرحلة"
               fill
+              sizes="(max-width: 896px) 100vw, 896px"
               priority
+              placeholder={blurPlaceholder(settings.images.aboutTeam) ? 'blur' : 'empty'}
+              blurDataURL={blurPlaceholder(settings.images.aboutTeam)}
               className="object-cover"
               referrerPolicy="no-referrer"
             />

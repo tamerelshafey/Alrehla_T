@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import type { Metadata } from 'next';
 import { Cairo } from 'next/font/google';
 import './globals.css';
@@ -7,6 +6,8 @@ import Footer from '@/components/layout/Footer';
 import ScrollToTop from '@/components/layout/ScrollToTop';
 import DevAuthToolbar from '@/components/dev/DevAuthToolbar';
 import { Providers } from '@/components/providers/Providers';
+import { getSiteSettings } from '@/data/domains/content';
+import { slotImageUrl } from '@/lib/cloudinary';
 
 const cairo = Cairo({
   subsets: ['arabic'],
@@ -14,11 +15,55 @@ const cairo = Cairo({
   variable: '--font-cairo',
 });
 
-export const metadata: Metadata = {
-  title: 'الرحلة',
-  description:
-    'منصة تعليمية لتعلّم الكتابة الإبداعية وتقديم قصص وهدايا مخصصة للأطفال والشباب.',
-};
+/**
+ * بيانات الصفحة اللي بتظهر لما حد يبعت رابط الموقع.
+ *
+ * من غيرها، رابط الموقع على واتساب أو فيسبوك بيظهر نصًا أزرق سادة. معاها
+ * بيظهر كارت فيه صورة وعنوان ووصف — وده أول انطباع عن المنصة.
+ *
+ * `metadataBase` هو اللي بيخلي روابط الصور تتكتب كاملة؛ من غيره التطبيقات
+ * ما بتلاقيش الصورة أصلًا.
+ */
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || 'https://alrehla-t.vercel.app';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const title = settings.siteName?.trim() || 'الرحلة';
+  const description =
+    'منصة عربية لتعلّم الكتابة الإبداعية وتقديم قصص ومنتجات مخصصة للأطفال والشباب.';
+
+  const share = settings.images.ogImage
+    ? slotImageUrl(settings.images.ogImage, 'ogImage')
+    : undefined;
+  const icon = settings.images.favicon
+    ? slotImageUrl(settings.images.favicon, 'favicon')
+    : undefined;
+
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: { default: title, template: `%s · ${title}` },
+    description,
+    alternates: { canonical: '/' },
+    openGraph: {
+      type: 'website',
+      locale: 'ar_EG',
+      siteName: title,
+      title,
+      description,
+      url: '/',
+      images: share ? [{ url: share, width: 1200, height: 630, alt: title }] : undefined,
+    },
+    twitter: {
+      card: share ? 'summary_large_image' : 'summary',
+      title,
+      description,
+      images: share ? [share] : undefined,
+    },
+    // أيقونة التبويب بترفعها الإدارة؛ لو مرفعتش، المتصفح بيستخدم الافتراضي.
+    icons: icon ? { icon: [{ url: icon }], apple: [{ url: icon }] } : undefined,
+  };
+}
 
 export default function RootLayout({
   children,

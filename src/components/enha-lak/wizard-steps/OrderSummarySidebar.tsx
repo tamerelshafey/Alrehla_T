@@ -43,7 +43,7 @@ export function OrderSummarySidebar({ product }: { product: PersonalizedProduct 
       <div className="flex gap-4 mb-6 pb-6 border-b border-slate-100">
         <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
           {product.coverImageUrl ? (
-            <Image src={optimizedImageUrl(product.coverImageUrl, 400)} alt={product.name} fill className="object-cover" referrerPolicy="no-referrer" />
+            <Image src={optimizedImageUrl(product.coverImageUrl, 400)} alt={product.name} fill sizes="96px" className="object-cover" referrerPolicy="no-referrer" />
           ) : null}
         </div>
         <div>
@@ -58,7 +58,7 @@ export function OrderSummarySidebar({ product }: { product: PersonalizedProduct 
           <div className="flex items-center gap-3">
             <div className="relative h-10 w-10 overflow-hidden rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
               {facePhotoPreviewUrl ? (
-                 <Image src={facePhotoPreviewUrl} alt="صورة وجه الطفل للطلب" fill unoptimized className="object-cover" />
+                 <Image src={facePhotoPreviewUrl} alt="صورة وجه الطفل للطلب" fill sizes="96px" unoptimized className="object-cover" />
               ) : (
                 <span className="text-xl text-slate-400 font-bold">{childName.charAt(0)}</span>
               )}

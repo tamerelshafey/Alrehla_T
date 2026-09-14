@@ -7,7 +7,7 @@ import { Star, Quote } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Section } from '@/components/ui/Section';
-import { optimizedImageUrl } from '@/lib/cloudinary';
+import { optimizedImageUrl, slotImageUrl, blurPlaceholder } from '@/lib/cloudinary';
 import { getSiteSettings, getSiteContent, getTestimonials } from '@/data/domains/content';
 import { ImagePlaceholder } from '@/components/ui/ImagePlaceholder';
 import { RichText } from '@/components/ui/RichText';
@@ -83,9 +83,14 @@ export default async function Home() {
           <div className="relative hidden lg:block">
             {settings.images.homeHero ? (
               <Image 
-              src={optimizedImageUrl(settings.images.homeHero, 1200)} 
-              alt="طفل يقرأ كتاباً" 
-              fill className="object-cover" referrerPolicy="no-referrer"
+              src={slotImageUrl(settings.images.homeHero, 'homeHero')}
+              alt="طفل يقرأ كتاباً"
+              fill
+              sizes="(max-width: 1024px) 0px, 50vw"
+              priority
+              placeholder={blurPlaceholder(settings.images.homeHero) ? 'blur' : 'empty'}
+              blurDataURL={blurPlaceholder(settings.images.homeHero)}
+              className="object-cover" referrerPolicy="no-referrer"
             />
             ) : (
               <ImagePlaceholder label="طفل يقرأ كتاباً" />
@@ -105,9 +110,13 @@ export default async function Home() {
             <div className="relative h-64 w-full overflow-hidden bg-slate-100">
               {settings.images.homeReading ? (
               <Image 
-                src={optimizedImageUrl(settings.images.homeReading, 1200)} 
-                alt="إنها لك" 
-                fill className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer"
+                src={slotImageUrl(settings.images.homeReading, 'homeReading')}
+                alt="إنها لك"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                placeholder={blurPlaceholder(settings.images.homeReading) ? 'blur' : 'empty'}
+                blurDataURL={blurPlaceholder(settings.images.homeReading)}
+                className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer"
               />
             ) : (
               <ImagePlaceholder label="إنها لك" />
@@ -131,9 +140,13 @@ export default async function Home() {
             <div className="relative h-64 w-full overflow-hidden bg-slate-100">
               {settings.images.homeWriting ? (
               <Image 
-                src={optimizedImageUrl(settings.images.homeWriting, 1200)} 
-                alt="بداية الرحلة" 
-                fill className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer"
+                src={slotImageUrl(settings.images.homeWriting, 'homeWriting')}
+                alt="بداية الرحلة"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                placeholder={blurPlaceholder(settings.images.homeWriting) ? 'blur' : 'empty'}
+                blurDataURL={blurPlaceholder(settings.images.homeWriting)}
+                className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer"
               />
             ) : (
               <ImagePlaceholder label="بداية الرحلة" />
@@ -172,9 +185,9 @@ export default async function Home() {
               <div className="flex flex-col items-center text-center">
                 <div className="mb-4 relative h-24 w-24 overflow-hidden rounded-full border-4 border-emerald-50">
                   <Image 
-                    src={optimizedImageUrl(instructor.avatarUrl, 300) || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor.displayName)}&background=10b981&color=fff`} 
-                    alt={instructor.displayName} 
-                    fill className="object-cover"
+                    src={optimizedImageUrl(instructor.avatarUrl, 300) || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor.displayName)}&background=10b981&color=fff`}
+                    alt={instructor.displayName}
+                    fill sizes="96px" className="object-cover"
                     referrerPolicy="no-referrer"
                   />
                 </div>
@@ -207,9 +220,9 @@ export default async function Home() {
               <div className="mb-4 relative h-20 w-20 flex items-center justify-center">
                 {publisher.logoUrl ? (
                   <Image 
-                    src={publisher.logoUrl} 
-                    alt={publisher.name} 
-                    fill className="object-contain"
+                    src={optimizedImageUrl(publisher.logoUrl, 200)}
+                    alt={publisher.name}
+                    fill sizes="80px" className="object-contain"
                     referrerPolicy="no-referrer"
                   />
                 ) : (
@@ -231,9 +244,13 @@ export default async function Home() {
           <div className="relative h-64 lg:h-auto">
             {settings.images.homeFamily ? (
               <Image 
-              src={optimizedImageUrl(settings.images.homeFamily, 1200)} 
-              alt="العائلة تقرأ معاً" 
-              fill className="object-cover" referrerPolicy="no-referrer"
+              src={slotImageUrl(settings.images.homeFamily, 'homeFamily')}
+              alt="العائلة تقرأ معاً"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              placeholder={blurPlaceholder(settings.images.homeFamily) ? 'blur' : 'empty'}
+              blurDataURL={blurPlaceholder(settings.images.homeFamily)}
+              className="object-cover" referrerPolicy="no-referrer"
             />
             ) : (
               <ImagePlaceholder label="العائلة تقرأ معاً" />

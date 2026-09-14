@@ -14,7 +14,11 @@ const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dwg0hr34g';
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'alreha';
 
 const MAX_BYTES = 10 * 1024 * 1024;
-const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+// SVG مسموح للشعارات: التحويلات على Cloudinary بتحوّله لصورة نقطية عند
+// العرض، فمفيش أي كود جواه بيتنفّذ في متصفح الزائر.
+const ALLOWED = [
+  'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'image/svg+xml',
+];
 
 export type UploadedImage = {
   url: string;
@@ -70,4 +74,64 @@ export function optimizedImageUrl(url: string | null | undefined, width = 800): 
   // Don't stack transformations on a URL that already carries some.
   if (/\/upload\/[a-z]{1,3}_/.test(url)) return url;
   return url.replace('/upload/', `/upload/f_auto,q_auto,c_limit,w_${width}/`);
+}
+
+/**
+ * رابط صورة مظبوط على مقاس خانة معيّنة — **من غير قص**.
+ *
+ * المشكلة اللي بيحلّها: الصور بتترفع بأي مقاس (صورة موبايل طولية، لقطة شاشة
+ * عريضة)، والموقع بيعرضها في مكان له نسبة ثابتة. الطريقة الافتراضية في CSS
+ * (`object-cover`) بتملا المكان بقص الأطراف — فالوش يتقطع أو العنوان يختفي.
+ *
+ * الحل هنا إن Cloudinary هو اللي يظبط المقاس قبل ما الصورة توصل المتصفح:
+ *
+ *   c_pad + b_auto  → الصورة كاملة جوّه المقاس المطلوب، والفراغ الجانبي
+ *                     بيتملّي بلون مسحوب من أطراف الصورة نفسها، فالنتيجة
+ *                     بتبان طبيعية مش إطار أبيض.
+ *   c_fit           → الصورة كاملة من غير ملء — للشعارات والأيقونات، عشان
+ *                     الشفافية ما تتحوّلش للون.
+ *
+ * في الحالتين الصورة بتوصل بالنسبة المضبوطة، فـ `object-cover` في CSS
+ * مالهاش أي حاجة تقصّها.
+ *
+ * `dpr_auto` بيخلي الشاشات عالية الدقة تاخد نسخة أوضح من غير ما الشاشات
+ * العادية تحمّل بايت زيادة.
+ */
+import { SITE_IMAGE_BY_KEY, type SiteImageKey } from '@/lib/site-images';
+
+export function slotImageUrl(
+  url: string | null | undefined,
+  key: SiteImageKey,
+): string {
+  if (!url) return '';
+  if (!url.includes('res.cloudinary.com') || !url.includes('/upload/')) return url;
+  if (/\/upload\/[a-z]{1,3}_/.test(url)) return url;
+
+  const slot = SITE_IMAGE_BY_KEY[key];
+  if (!slot) return optimizedImageUrl(url);
+
+  const parts = ['f_auto', 'q_auto', 'dpr_auto', `w_${slot.w}`];
+  if (slot.fit === 'pad') {
+    parts.push('c_pad', 'b_auto');
+    if (slot.ar) parts.push(`ar_${slot.ar}`);
+  } else {
+    parts.push('c_fit');
+    if (slot.ar) parts.push(`h_${slot.w}`);
+  }
+
+  return url.replace('/upload/', `/upload/${parts.join(',')}/`);
+}
+
+/**
+ * صورة بديلة صغيرة جدًا (20 بكسل مموّهة) تُعرض لحظة تحميل الصورة الأصلية.
+ *
+ * بدل ما المكان يفضل فاضي أبيض وبعدين الصورة تنطّ فيه، بيظهر شكل مموّه
+ * بألوان الصورة الحقيقية — الصفحة بتحس مستقرة وأسرع حتى لو الوقت واحد.
+ */
+export function blurPlaceholder(url: string | null | undefined): string | undefined {
+  if (!url || !url.includes('res.cloudinary.com') || !url.includes('/upload/')) {
+    return undefined;
+  }
+  if (/\/upload\/[a-z]{1,3}_/.test(url)) return undefined;
+  return url.replace('/upload/', '/upload/f_auto,q_auto:low,e_blur:800,w_20/');
 }

@@ -138,7 +138,7 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
                     <Image
                       src={optimizedImageUrl(product.coverImageUrl, 600)}
                       alt={product.name}
-                      fill
+                      fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 260px"
                       className="object-cover"
                       referrerPolicy="no-referrer"
                     />

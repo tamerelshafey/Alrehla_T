@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { optimizedImageUrl } from '@/lib/cloudinary';
+import { slotImageUrl } from '@/lib/cloudinary';
+import type { SiteImageKey } from '@/lib/site-images';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 export interface Slide {
@@ -10,6 +11,8 @@ export interface Slide {
   title: string;
   description?: string;
   image: string;
+  /** خانة الصورة — عشان تتظبط على مقاس الشريحة من غير قص. */
+  slotKey: SiteImageKey;
   ctaText?: string;
   ctaLink?: string;
   theme?: 'amber' | 'rose' | 'emerald' | 'violet' | 'teal';
@@ -17,6 +20,28 @@ export interface Slide {
 
 export function HeroCarousel({ slides }: { slides: Slide[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  /**
+   * الشرائح كلها فوق بعضها في نفس المكان، فكلها «داخل الشاشة» تقنيًا —
+   * يعني التحميل الكسول العادي ما بيأجّلش حاجة. عشان كده أول شريحة بس
+   * بتتحمّل مع الصفحة، والباقي بيتحمّل بعد ما المتصفح يخلص أول رسم.
+   * النتيجة: صورة واحدة بدل ثلاثة في أول تحميل.
+   */
+  const [loadRest, setLoadRest] = useState(false);
+
+  useEffect(() => {
+    const idle =
+      typeof window !== 'undefined' && 'requestIdleCallback' in window
+        ? (window as any).requestIdleCallback
+        : (fn: () => void) => setTimeout(fn, 900);
+    const id = idle(() => setLoadRest(true));
+    return () => {
+      if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        (window as any).cancelIdleCallback(id);
+      } else {
+        clearTimeout(id as unknown as number);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -50,11 +75,16 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
             index === currentIndex ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          {slide.image ? (
+          {slide.image && (index === 0 || loadRest) ? (
             <img
-              src={optimizedImageUrl(slide.image, 1600)}
+              src={slotImageUrl(slide.image, slide.slotKey)}
               alt={slide.title}
               className="h-full w-full object-cover"
+              width={1600}
+              height={900}
+              loading={index === 0 ? 'eager' : 'lazy'}
+              fetchPriority={index === 0 ? 'high' : 'low'}
+              decoding="async"
               referrerPolicy="no-referrer"
             />
           ) : (

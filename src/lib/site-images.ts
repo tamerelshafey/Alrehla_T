@@ -1,13 +1,21 @@
 /**
- * Every image the site shows that is not a product, a person or an article.
+ * كل صورة في الموقع مش منتج ولا شخص ولا مقال.
  *
- * These were all `https://picsum.photos/...` — random stock photographs pulled
- * from the internet and presented as the platform's own. Each slot is named
- * here once, with where it appears, so the admin screen can list them and
- * nobody has to hunt through the code to find which image goes where.
+ * كانت كلها `https://picsum.photos/...` — صور عشوائية من الإنترنت معروضة
+ * على إنها صور المنصة. كل خانة معرّفة هنا مرة واحدة، ومعاها مكانها بالظبط،
+ * عشان شاشة الإدارة تعرضها ومحدش يضطر يدوّر في الكود.
+ *
+ * ليه فيه `ar` و`w` و`fit` جنب الوصف؟
+ * عشان الصورة تتظبط على مقاس الخانة **من غير قص**. الوصف للبني آدم،
+ * والثلاثة دول للكود: بيتحوّلوا لأمر تحويل على Cloudinary بيحط الصورة
+ * جوّه المقاس المطلوب كامله.
  */
 
 export type SiteImageKey =
+  | 'logo'
+  | 'logoDark'
+  | 'favicon'
+  | 'ogImage'
   | 'homeHero'
   | 'homeReading'
   | 'homeWriting'
@@ -20,83 +28,188 @@ export type SiteImageKey =
   | 'enhaLakSlide2'
   | 'enhaLakSlide3';
 
+/**
+ * إزاي الصورة تتظبط على المقاس:
+ *   pad     — تتصغّر كاملة جوّه المقاس، والفاضي يتملّي بلون مسحوب من الصورة
+ *             نفسها. النتيجة: المقاس مضبوط بالظبط ومفيش حتة اتقصّت.
+ *   contain — تتصغّر كاملة من غير ما تتملّي (بتفضل بنسبتها الأصلية).
+ *             للشعارات والأيقونات اللي الشفافية فيها مهمة.
+ */
+export type SiteImageFit = 'pad' | 'contain';
+
 export type SiteImageSlot = {
   key: SiteImageKey;
   /** What it is, in the admin screen. */
   label: string;
   /** Exactly where it appears on the site. */
   location: string;
-  /** The shape it is displayed in, so the uploaded image fits. */
+  /** الوصف اللي بيتعرض في شاشة الإدارة. */
   ratio: string;
+  /** نسبة الأبعاد اللي Cloudinary بيظبط عليها — فاضية = تُترك كما هي. */
+  ar?: string;
+  /** العرض المستهدف بالبكسل. */
+  w: number;
+  fit: SiteImageFit;
+  /** خانات الهوية بتتعرض في مجموعة منفصلة فوق. */
+  group: 'brand' | 'pages';
 };
 
 export const SITE_IMAGE_SLOTS: SiteImageSlot[] = [
+  /* ---------------- الهوية ---------------- */
+  {
+    key: 'logo',
+    label: 'شعار الموقع',
+    location: 'الهيدر في كل صفحات الموقع',
+    ratio: 'أفقي — يفضّل PNG أو SVG بخلفية شفافة، ارتفاع 80 بكسل أو أكثر',
+    w: 240,
+    fit: 'contain',
+    group: 'brand',
+  },
+  {
+    key: 'logoDark',
+    label: 'الشعار على خلفية داكنة',
+    location: 'الفوتر والأقسام الداكنة — اختياري',
+    ratio: 'نفس الشعار بنسخة فاتحة اللون. لو فاضي، بيُستخدم الشعار العادي',
+    w: 240,
+    fit: 'contain',
+    group: 'brand',
+  },
+  {
+    key: 'favicon',
+    label: 'أيقونة التبويب',
+    location: 'تبويب المتصفح والمفضلة وشاشة الهاتف',
+    ratio: 'مربعة (1:1) — 512×512، والأفضل خلفية شفافة',
+    ar: '1:1',
+    w: 512,
+    fit: 'contain',
+    group: 'brand',
+  },
+  {
+    key: 'ogImage',
+    label: 'صورة المشاركة',
+    location: 'تظهر لما حد يبعت رابط الموقع على واتساب أو فيسبوك',
+    ratio: 'عريضة (1.91:1) — 1200×630',
+    ar: '1200:630',
+    w: 1200,
+    fit: 'pad',
+    group: 'brand',
+  },
+
+  /* ---------------- صفحات الموقع ---------------- */
   {
     key: 'homeHero',
     label: 'الصورة الرئيسية',
     location: 'الصفحة الرئيسية — أعلى الصفحة بجوار العنوان',
     ratio: 'مربعة (1:1) — 800×800 أو أكبر',
+    ar: '1:1',
+    w: 1000,
+    fit: 'pad',
+    group: 'pages',
   },
   {
     key: 'homeReading',
     label: 'صورة قسم «إنها لك»',
     location: 'الصفحة الرئيسية — قسم القصص المخصصة',
     ratio: 'أفقية (4:3) — 800×600 أو أكبر',
+    ar: '4:3',
+    w: 1000,
+    fit: 'pad',
+    group: 'pages',
   },
   {
     key: 'homeWriting',
     label: 'صورة قسم «بداية الرحلة»',
     location: 'الصفحة الرئيسية — قسم الكتابة الإبداعية',
     ratio: 'أفقية (4:3) — 800×600 أو أكبر',
+    ar: '4:3',
+    w: 1000,
+    fit: 'pad',
+    group: 'pages',
   },
   {
     key: 'homeFamily',
     label: 'صورة قسم العائلة',
     location: 'الصفحة الرئيسية — القسم قبل الأخير',
     ratio: 'مربعة (1:1) — 800×800 أو أكبر',
+    ar: '1:1',
+    w: 1000,
+    fit: 'pad',
+    group: 'pages',
   },
   {
     key: 'aboutTeam',
     label: 'صورة صفحة «رحلتنا»',
     location: 'صفحة رحلتنا — الصورة العريضة',
     ratio: 'عريضة (2:1) — 1200×600 أو أكبر',
+    ar: '2:1',
+    w: 1400,
+    fit: 'pad',
+    group: 'pages',
   },
   {
     key: 'creativeSlide1',
     label: 'شريحة 1 — بداية الرحلة',
     location: 'أعلى صفحات «بداية الرحلة»',
     ratio: 'عريضة (16:9) — 1600×900',
+    ar: '16:9',
+    w: 1600,
+    fit: 'pad',
+    group: 'pages',
   },
   {
     key: 'creativeSlide2',
     label: 'شريحة 2 — بداية الرحلة',
     location: 'أعلى صفحات «بداية الرحلة»',
     ratio: 'عريضة (16:9) — 1600×900',
+    ar: '16:9',
+    w: 1600,
+    fit: 'pad',
+    group: 'pages',
   },
   {
     key: 'creativeSlide3',
     label: 'شريحة 3 — بداية الرحلة',
     location: 'أعلى صفحات «بداية الرحلة»',
     ratio: 'عريضة (16:9) — 1600×900',
+    ar: '16:9',
+    w: 1600,
+    fit: 'pad',
+    group: 'pages',
   },
   {
     key: 'enhaLakSlide1',
     label: 'شريحة 1 — إنها لك',
     location: 'أعلى صفحات «إنها لك»',
     ratio: 'عريضة (16:9) — 1600×900',
+    ar: '16:9',
+    w: 1600,
+    fit: 'pad',
+    group: 'pages',
   },
   {
     key: 'enhaLakSlide2',
     label: 'شريحة 2 — إنها لك',
     location: 'أعلى صفحات «إنها لك»',
     ratio: 'عريضة (16:9) — 1600×900',
+    ar: '16:9',
+    w: 1600,
+    fit: 'pad',
+    group: 'pages',
   },
   {
     key: 'enhaLakSlide3',
     label: 'شريحة 3 — إنها لك',
     location: 'أعلى صفحات «إنها لك»',
     ratio: 'عريضة (16:9) — 1600×900',
+    ar: '16:9',
+    w: 1600,
+    fit: 'pad',
+    group: 'pages',
   },
 ];
+
+export const SITE_IMAGE_BY_KEY: Record<string, SiteImageSlot> = Object.fromEntries(
+  SITE_IMAGE_SLOTS.map((s) => [s.key, s]),
+);
 
 export type SiteImages = Partial<Record<SiteImageKey, string>>;

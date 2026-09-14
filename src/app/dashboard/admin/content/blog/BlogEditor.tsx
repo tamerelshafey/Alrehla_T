@@ -157,7 +157,7 @@ export function BlogEditor({ post }: { post: BlogPost | null }) {
                   <Image
                     src={optimizedImageUrl(coverImageUrl, 200)}
                     alt="غلاف المقال"
-                    fill
+                    fill sizes="(max-width: 768px) 100vw, 480px"
                     className="object-cover"
                   />
                 </div>

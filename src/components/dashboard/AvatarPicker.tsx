@@ -52,7 +52,7 @@ export function AvatarPicker({
           <Image
             src={optimizedImageUrl(value, 200)}
             alt={label}
-            fill
+            fill sizes="96px"
             className="object-cover"
             referrerPolicy="no-referrer"
           />
