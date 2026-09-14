@@ -459,3 +459,49 @@ export async function getSessionReport(sessionId: string): Promise<{
     createdAt: data.updated_at,
   };
 }
+
+/**
+ * صفوف شاشة إدارة المدربين.
+ *
+ * الشاشة محتاجة معلومات من ثلاث جداول: المدرب نفسه، هل عنده طلب مراجعة
+ * معلّق، وهل مشترك في خدمات إبداعية معتمدة. بنجيبهم في ثلاث استعلامات
+ * مجمّعة بدل استعلام لكل مدرب (اللي كان هيبقى 200 استعلام لـ200 مدرب).
+ */
+export interface InstructorAdminRow extends Instructor {
+  hasPendingReview: boolean;
+  activeServicesCount: number;
+}
+
+export const getInstructorsForAdmin = async (): Promise<InstructorAdminRow[]> => {
+  const instructors = await getInstructors();
+  if (instructors.length === 0) return [];
+
+  const supabase = await createClient();
+  const ids = instructors.map((i) => i.id);
+
+  const [{ data: pending }, { data: services }] = await Promise.all([
+    supabase
+      .from('profile_update_requests')
+      .select('instructor_id')
+      .eq('status', 'pending')
+      .in('instructor_id', ids),
+    supabase
+      .from('instructor_services')
+      .select('instructor_id')
+      .eq('status', 'approved')
+      .eq('is_active', true)
+      .in('instructor_id', ids),
+  ]);
+
+  const pendingSet = new Set((pending ?? []).map((r) => r.instructor_id));
+  const serviceCount = new Map<string, number>();
+  for (const row of services ?? []) {
+    serviceCount.set(row.instructor_id, (serviceCount.get(row.instructor_id) ?? 0) + 1);
+  }
+
+  return instructors.map((inst) => ({
+    ...inst,
+    hasPendingReview: pendingSet.has(inst.id),
+    activeServicesCount: serviceCount.get(inst.id) ?? 0,
+  }));
+};

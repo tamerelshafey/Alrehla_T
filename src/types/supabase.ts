@@ -1403,6 +1403,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_emails: {
+        Row: {
+          user_id: string
+          email: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          email: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          email?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           id: string

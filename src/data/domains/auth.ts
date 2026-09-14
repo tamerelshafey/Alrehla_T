@@ -139,10 +139,20 @@ export const getAllUsers = async (): Promise<UserProfile[]> => {
     return [];
   }
 
+  // البريد مش في جدول المستخدمين: قاعدة القراءة عليه مفتوحة للجميع، فلو
+  // البريد كان هناك كان أي زائر يقدر يسحب بريد كل العملاء. الجدول ده
+  // الإدارة وحدها اللي تقراه — ولو اللي بيقرأ مش إدارة بترجع فاضية،
+  // والشاشة بتعرض شرطة بدل البريد.
+  const { data: emails } = await supabase
+    .from('user_emails')
+    .select('user_id, email');
+
+  const emailById = new Map((emails ?? []).map(e => [e.user_id, e.email]));
+
   return profiles.map(profile => ({
     id: profile.id,
     fullName: profile.full_name,
-    email: '', // Requires Admin API to fetch emails for all users
+    email: emailById.get(profile.id) ?? '',
     role: profile.role as UserRole,
     isGuardian: profile.is_guardian || false,
     avatarUrl: profile.avatar_url || undefined,
