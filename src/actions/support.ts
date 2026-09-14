@@ -1,4 +1,5 @@
 'use server';
+import { requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
@@ -142,6 +143,7 @@ export async function replyToSupportTicket(ticketId: string, message: string) {
 
 /** Closing a ticket. */
 export async function closeSupportTicket(ticketId: string) {
+  await requireAdmin('canManageSupport', 'إغلاق التذاكر متاح للإدارة فقط');
   const supabase = await createClient();
   const { error } = await supabase
     .from('support_tickets')

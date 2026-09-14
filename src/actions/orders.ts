@@ -1,4 +1,5 @@
 'use server';
+import { requireUser, requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 import { OrderItem } from '@/types';
@@ -99,13 +100,42 @@ export async function createDummyOrder(
   return order.id;
 }
 
+/**
+ * العميل بيقول «حوّلت» ويسيب رقم العملية.
+ *
+ * التحقق هنا بيدّي رسالة مفهومة؛ الحارس الحقيقي هو محفّز `guard_order_fields`
+ * في قاعدة البيانات، اللي بيسمح بانتقال واحد بس: قيد الانتظار →
+ * بانتظار التأكيد. «مدفوع» قرار الإدارة وحدها.
+ */
 export async function submitPaymentProof(orderId: string, transactionReference: string) {
+  const user = await requireUser();
+
+  const reference = transactionReference.trim();
+  if (!reference) {
+    return { success: false, error: 'اكتب رقم عملية التحويل' };
+  }
+
   const supabase = await createClient();
+
+  // الطلب ده بتاعه أصلًا؟ الصلاحيات بترفض غير كده، بس الرسالة بتبقى أوضح.
+  const { data: order } = await supabase
+    .from('orders')
+    .select('id, user_id, status')
+    .eq('id', orderId)
+    .maybeSingle();
+
+  if (!order || order.user_id !== user.id) {
+    return { success: false, error: 'الطلب غير موجود' };
+  }
+  if (order.status !== 'pending') {
+    return { success: false, error: 'تم إرسال إثبات الدفع لهذا الطلب بالفعل' };
+  }
+
   const { error } = await supabase
     .from('orders')
     .update({ 
       status: 'awaiting_verification',
-      transaction_reference: transactionReference 
+      transaction_reference: reference 
     })
     .eq('id', orderId);
 
@@ -120,7 +150,19 @@ export async function submitPaymentProof(orderId: string, transactionReference: 
   return { success: true };
 }
 
+/**
+ * الإدارة بتأكّد إنها شافت التحويل.
+ *
+ * دي كانت أخطر دالة في المشروع: كانت بتحوّل الطلب لـ«مدفوع» من غير أي
+ * تحقق، وصلاحية الجدول بتسمح للعميل يعدّل طلبه — فالعميل كان يقدر
+ * يأكّد دفع نفسه من غير ما يدفع.
+ */
 export async function confirmOrderPayment(orderId: string) {
+  const currentUser = await requireAdmin(
+    'canManageOrders',
+    'تأكيد الدفع متاح للإدارة فقط',
+  );
+
   const supabase = await createClient();
   const { error } = await supabase
     .from('orders')
@@ -132,7 +174,6 @@ export async function confirmOrderPayment(orderId: string) {
     return { success: false, error: 'Order not found or update failed' };
   }
 
-  const currentUser = await getCurrentUser();
   await logAuditAction({
     actorProfileId: currentUser.id,
     actorName: currentUser.fullName,

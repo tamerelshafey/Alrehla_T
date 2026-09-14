@@ -13,12 +13,12 @@ import { cookies } from 'next/headers';
 
 // Import from auth if needed
 import { mockAllUsers, mockCurrentUser } from '../fixtures/auth';
-import { mockOrders } from '../fixtures/orders';
 
 
 
 
 import { createClient } from '@/lib/supabase/server';
+import { getPublisherPricingSettings } from '@/data/domains/admin';
 import { mockAddonProducts, mockProducts, mockPublishers, mockSubscriptionTiers } from '@/data/fixtures/products';
 
 export const getPersonalizedProducts = async (): Promise<PersonalizedProduct[]> => {
@@ -179,35 +179,84 @@ export const getProductBySlug = async (slug: string): Promise<PersonalizedProduc
 };
 
 
-export async function getPublisherOrders() {
-  await new Promise(resolve => setTimeout(resolve, 600));
-  
-  const publisherOrders: PublisherOrder[] = [];
-  mockOrders.forEach(order => {
-    order.items.forEach(item => {
-      const product = mockProducts.find(p => p.id === item.productId);
-      if (product && product.ownerType === "publisher" && product.publisherId) {
-        const totalAmount = item.unitPrice * item.quantity;
-        const publisherShare = totalAmount * 0.7;
-        publisherOrders.push({
-          id: `po-${order.id}-${item.productId}`,
-          orderId: order.id,
-          productName: product.name,
-          quantity: item.quantity,
-          totalAmount: totalAmount,
-          publisherShare: publisherShare,
-          status: order.status === "paid" ? "completed" : order.status === "failed" ? "cancelled" : "pending",
-          createdAt: order.createdAt
-        });
-      }
+/**
+ * طلبات الناشر الحقيقية ونصيبه منها.
+ *
+ * دي كانت **مخترعة بالكامل**: بتبني الطلبات من بيانات تجريبية، ومعاها
+ * `setTimeout(600)` بيقلّد بطء الشبكة عشان تبان حقيقية، وبتحسب نصيب
+ * الناشر 70% ثابتة مكتوبة في الكود. يعني أي ناشر بيفتح لوحته كان بيشوف
+ * طلبات وأرباح مش موجودة.
+ *
+ * النسخة دي بتقرا من قاعدة البيانات، وبتحسب النصيب بعكس معادلة التسعير
+ * المحفوظة في «إعدادات تسعير الناشرين»:
+ *
+ *     سعر العميل  =  نصيب الناشر × المُعامِل + الرسم الثابت
+ *     نصيب الناشر =  (سعر العميل − الرسم الثابت) ÷ المُعامِل
+ *
+ * الرسم الثابت بيتخصم على الوحدة الواحدة، زي ما بيتخصم على الجلسة
+ * الواحدة في جانب المدربين.
+ */
+export async function getPublisherOrders(): Promise<PublisherOrder[]> {
+  const publisher = await getMyPublisher();
+  if (!publisher) return [];
+
+  const supabase = await createClient();
+
+  // منتجات الناشر ده.
+  const { data: products } = await supabase
+    .from('personalized_products')
+    .select('id, name')
+    .eq('publisher_id', publisher.id);
+
+  if (!products || products.length === 0) return [];
+  const productById = new Map(products.map((p) => [p.id, p.name]));
+
+  // بنودها في الطلبات.
+  const { data: items } = await supabase
+    .from('order_items')
+    .select('id, order_id, product_id, quantity, unit_price')
+    .in('product_id', Array.from(productById.keys()));
+
+  if (!items || items.length === 0) return [];
+
+  // الطلبات نفسها — للحالة والتاريخ.
+  const orderIds = Array.from(new Set(items.map((i) => i.order_id)));
+  const { data: orders } = await supabase
+    .from('orders')
+    .select('id, status, created_at')
+    .in('id', orderIds);
+
+  const orderById = new Map((orders ?? []).map((o) => [o.id, o]));
+
+  const formula = await getPublisherPricingSettings();
+  const multiplier = formula.platformMultiplier > 0 ? formula.platformMultiplier : 1;
+
+  const rows: PublisherOrder[] = [];
+  for (const item of items) {
+    const order = orderById.get(item.order_id);
+    if (!order) continue;
+
+    const totalAmount = item.unit_price * item.quantity;
+    // النصيب لا ينزل تحت الصفر لو الرسم الثابت أكبر من سعر الوحدة.
+    const sharePerUnit = Math.max(
+      0,
+      (item.unit_price - formula.fixedAdminFee) / multiplier,
+    );
+
+    rows.push({
+      id: item.id,
+      orderId: item.order_id,
+      productName: productById.get(item.product_id) ?? 'منتج محذوف',
+      quantity: item.quantity,
+      totalAmount,
+      publisherShare: sharePerUnit * item.quantity,
+      status: order.status,
+      createdAt: order.created_at,
     });
-  });
-  return publisherOrders;
+  }
+
+  return rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
-
-
-
-
 
 /** The publisher record belonging to the signed-in user, if any. */
 export async function getMyPublisher(): Promise<Publisher | null> {
