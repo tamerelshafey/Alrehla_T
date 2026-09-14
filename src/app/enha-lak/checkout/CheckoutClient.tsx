@@ -113,8 +113,12 @@ export function CheckoutClient({ user, paymentWalletNumber, shippingRates }: Pro
           </div>
         </div>
         <h2 className="text-3xl font-black text-slate-800 mb-4">تم تأكيد طلبك بنجاح!</h2>
-        <p className="text-slate-600 mb-2">رقم الطلب: <span className="font-bold text-slate-900">#ORD-{Math.floor(Math.random() * 100000)}</span></p>
-        <p className="text-slate-600 mb-8">تم إرسال تفاصيل الطلب والفاتورة إلى بريدك الإلكتروني. يمكنك متابعة حالة الطلب من لوحة التحكم الخاصة بك.</p>
+        {/* A random number used to be shown as "your order number", and the
+            page claimed an invoice had been emailed — no email is sent
+            anywhere in this flow. */}
+        <p className="mb-8 text-slate-600">
+          يمكنك متابعة حالة الطلب من صفحة طلباتك في حسابك.
+        </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button href="/dashboard" accentColor="rose" className="px-8 py-3 !bg-slate-900 !text-white hover:!bg-slate-800">

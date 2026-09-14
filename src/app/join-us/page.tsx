@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
+import { JoinForm } from './JoinForm';
 import { Button } from '@/components/ui/Button';
 
 export const metadata: Metadata = {
@@ -156,88 +157,7 @@ export default function JoinUsPage() {
           <h2 className="mb-8 text-center text-3xl font-black text-slate-800">
             نموذج التقديم
           </h2>
-          <form className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">
-                  الاسم
-                </label>
-                <input
-                  type="text"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium transition-all outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                  placeholder="الاسم الكامل"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">
-                  البريد الإلكتروني
-                </label>
-                <input
-                  type="email"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium transition-all outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                  placeholder="example@email.com"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">
-                  رقم الهاتف
-                </label>
-                <input
-                  type="tel"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium transition-all outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                  placeholder="رقم الهاتف مع رمز الدولة"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">
-                  الدور المطلوب
-                </label>
-                <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium text-slate-700 transition-all outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                  <option value="" disabled selected>
-                    اختر الدور المناسب
-                  </option>
-                  <option value="instructor">مدرب/ة في «بداية الرحلة»</option>
-                  <option value="illustrator">رسام/ة لقصص «إنها لك»</option>
-                  <option value="voiceover">معلق/ة صوتي/ة</option>
-                  <option value="author">كاتب/ة قصص أطفال</option>
-                  <option value="other">دور آخر</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">
-                رابط معرض الأعمال (اختياري)
-              </label>
-              <input
-                type="url"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium transition-all outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                placeholder="https://"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">
-                الرسالة
-              </label>
-              <textarea
-                rows={4}
-                className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium transition-all outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                placeholder="حدثنا عن نفسك وعن سبب رغبتك بالانضمام لنا..."
-              ></textarea>
-            </div>
-
-            <Button
-              type="button"
-              accentColor="amber"
-              className="w-full !bg-slate-900 !hover:bg-slate-800"
-            >
-              إرسال الطلب
-            </Button>
-          </form>
+          <JoinForm />
         </Card>
       </Section>
     </PageContainer>

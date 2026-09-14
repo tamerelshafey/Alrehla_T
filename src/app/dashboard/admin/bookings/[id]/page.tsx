@@ -72,8 +72,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           <Link href={`/dashboard/admin/sessions/${target.id}`} className="rounded-xl bg-blue-600 px-6 py-3 font-bold text-white transition-colors hover:bg-blue-700">
             الدخول إلى قاعة الجلسة
           </Link>
-          <button className="rounded-xl bg-red-50 px-6 py-3 font-bold text-red-600 transition-colors hover:bg-red-100">
-            إلغاء الحجز
+          <button className="rounded-xl bg-red-50 px-6 py-3 font-bold text-red-600 transition-colors hover:bg-red-100" disabled title="غير متاح حاليًا">
+            إلغاء الحجز (غير متاح)
           </button>
         </div>
       </div>

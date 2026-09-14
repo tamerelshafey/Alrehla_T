@@ -1,20 +1,48 @@
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getSessionAttachments, getSessionMessages } from '@/data/domains/writing';
+import {
+  getSessionAttachments,
+  getSessionMessages,
+  getSessions,
+  getInstructorById,
+  getWritingPackages,
+  getSessionReport,
+} from '@/data/domains/writing';
+import { getParticipantName } from '@/data/domains/account';
+import { notFound } from 'next/navigation';
 import { FileText, Download, Upload } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 export default async function InstructorSessionDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: sessionId } = await params;
-  const messages = await getSessionMessages(sessionId);
-  const attachments = await getSessionAttachments(sessionId);
+
+  // The session details on this page — date, package and student — were all
+  // written into the markup and identical for every session.
+  const sessions = await getSessions();
+  const session = sessions.find((s) => s.id === sessionId);
+  if (!session) notFound();
+
+  const [messages, attachments, instructor, packages, report] = await Promise.all([
+    getSessionMessages(sessionId),
+    getSessionAttachments(sessionId),
+    session.instructorId ? getInstructorById(session.instructorId) : Promise.resolve(null),
+    getWritingPackages(),
+    getSessionReport(sessionId),
+  ]);
+
+  const pkg = packages.find((p) => p.id === session.packageId);
+  const studentName = await getParticipantName(session.childId, session.userId);
 
   return (
     <div className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">
       <DashboardPageHeader 
         title={`مساحة الجلسة`} 
         backHref="/dashboard/instructor"
-        action={{ label: 'الدخول للجلسة (ميت)', href: '#' }}
+        action={
+          session.meetingUrl
+            ? { label: 'الدخول للجلسة', href: session.meetingUrl }
+            : undefined
+        }
       />
 
       <div className="grid gap-8 md:grid-cols-3">
@@ -25,15 +53,20 @@ export default async function InstructorSessionDetailsPage({ params }: { params:
             <div className="space-y-4 text-sm font-medium">
               <div className="flex justify-between border-b border-slate-50 pb-3">
                 <span className="text-slate-500">التاريخ والوقت</span>
-                <span className="text-slate-800 font-bold">السبت، 15 أكتوبر - 4:00 م</span>
+                <span className="font-bold text-slate-800">
+                  {new Date(session.scheduledAt).toLocaleString('ar-EG', {
+                    dateStyle: 'full',
+                    timeStyle: 'short',
+                  })}
+                </span>
               </div>
               <div className="flex justify-between border-b border-slate-50 pb-3">
                 <span className="text-slate-500">الباقة</span>
-                <span className="text-slate-800 font-bold">باقة الإبحار</span>
+                <span className="font-bold text-slate-800">{pkg?.name ?? '—'}</span>
               </div>
               <div className="flex justify-between border-b border-slate-50 pb-3">
                 <span className="text-slate-500">المتدرب</span>
-                <span className="text-slate-800 font-bold">ياسمين طارق</span>
+                <span className="font-bold text-slate-800">{studentName}</span>
               </div>
             </div>
           </section>
@@ -41,9 +74,7 @@ export default async function InstructorSessionDetailsPage({ params }: { params:
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-slate-800">المرفقات</h2>
-              <button className="text-blue-600 hover:text-blue-700 p-1">
-                <Upload className="h-4 w-4" />
-              </button>
+
             </div>
             <div className="space-y-3">
               {attachments.map((file) => (
@@ -67,7 +98,11 @@ export default async function InstructorSessionDetailsPage({ params }: { params:
             <h2 className="mb-6 text-xl font-bold text-slate-800">الرسائل والملاحظات</h2>
             <div className="flex-1 space-y-6 overflow-y-auto pr-2 pb-4">
               {messages.map((msg) => {
-                const isInstructor = msg.senderName === 'سارة أحمد';
+                // Alignment used to be decided by comparing the sender's name
+                // to one hard-coded instructor, so every other instructor's
+                // messages rendered as if the student had sent them.
+                const isInstructor =
+                  Boolean(instructor) && msg.senderName === instructor?.displayName;
                 return (
                   <div key={msg.id} className={`flex flex-col ${isInstructor ? 'items-start' : 'items-end'}`}>
                     <div className="mb-1 text-xs font-bold text-slate-500">{msg.senderName}</div>
@@ -78,15 +113,23 @@ export default async function InstructorSessionDetailsPage({ params }: { params:
                 );
               })}
             </div>
-            <div className="mt-6 flex gap-2 border-t border-slate-100 pt-6">
-              <input 
-                type="text" 
-                placeholder="أرسل ملاحظة للمتدرب..." 
-                className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium outline-none focus:border-amber-500 focus:bg-white"
-              />
-              <button className="rounded-xl bg-amber-500 px-6 font-bold text-white shadow-md hover:bg-amber-600">
-                إرسال
-              </button>
+            {/* An input and a send button used to sit here with no handler on
+                either: a note typed for the student went nowhere. The
+                instructor's saved session report is shown instead. */}
+            <div className="mt-6 border-t border-slate-100 pt-6">
+              <h3 className="mb-2 font-bold text-slate-800">تقرير المدرب</h3>
+              {report ? (
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                  <p className="mb-2 text-sm font-bold text-slate-600">
+                    الحضور: {report.attendance === 'present' ? 'حضر' : 'لم يحضر'}
+                  </p>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-600">
+                    {report.report || 'بدون ملاحظات.'}
+                  </p>
+                </div>
+              ) : (
+                <p className="font-medium text-slate-400">لم يسجّل المدرب تقريرًا بعد.</p>
+              )}
             </div>
           </section>
         </div>

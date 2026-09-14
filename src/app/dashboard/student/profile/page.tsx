@@ -10,7 +10,7 @@ export default async function StudentProfilePage() {
   const defaultValues = {
     name: user.fullName,
     email: user.email,
-    bio: 'طالب في برامج الكتابة الإبداعية.',
+    bio: '',
     avatarUrl: user.avatarUrl
   };
 

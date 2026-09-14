@@ -33,8 +33,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 إدارة الأبناء
               </Link>
             )}
-            <button className="rounded-xl bg-red-50 px-4 py-2 font-bold text-red-600 transition-colors hover:bg-red-100">
-              إيقاف الحساب
+            <button className="rounded-xl bg-red-50 px-4 py-2 font-bold text-red-600 transition-colors hover:bg-red-100" disabled title="غير متاح حاليًا">
+              إيقاف الحساب (غير متاح)
             </button>
           </div>
         </div>

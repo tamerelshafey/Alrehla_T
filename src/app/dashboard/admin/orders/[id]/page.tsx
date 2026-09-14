@@ -64,8 +64,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 </button>
               </form>
             )}
-            <button className="rounded-xl bg-slate-900 px-6 py-2 font-bold text-white transition-colors hover:bg-slate-800">
-              تحديث حالة الشحن (مشحون)
+            <button className="rounded-xl bg-slate-900 px-6 py-2 font-bold text-white transition-colors hover:bg-slate-800" disabled title="غير متاح حاليًا">
+              تحديث حالة الشحن (مشحون) (غير متاح)
             </button>
           </div>
         </div>

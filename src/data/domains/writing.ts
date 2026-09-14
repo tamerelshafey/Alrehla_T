@@ -438,3 +438,24 @@ export async function getInstructorPricingOptions(): Promise<InstructorPricingOp
     isActive: o.is_active,
   }));
 }
+
+/** The latest saved report for a session, if the instructor has written one. */
+export async function getSessionReport(sessionId: string): Promise<{
+  attendance: 'present' | 'absent';
+  report: string;
+  createdAt: string;
+} | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('session_reports')
+    .select('attendance, report, updated_at')
+    .eq('session_id', sessionId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return {
+    attendance: data.attendance === 'absent' ? 'absent' : 'present',
+    report: data.report ?? '',
+    createdAt: data.updated_at,
+  };
+}

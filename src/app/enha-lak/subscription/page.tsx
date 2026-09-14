@@ -36,7 +36,9 @@ export default async function SubscriptionPage() {
       <Section containerClassName="max-w-5xl">
         <div className="grid gap-8 md:grid-cols-3">
           {tiers.map((tier, index) => {
-            const isPopular = index === 1;
+            // "الأكثر طلباً" used to be given to whichever plan happened to be second
+  // in the list. Nothing measures demand, so the badge is gone.
+  const isPopular = false;
             return (
               <Card
                 key={tier.id}

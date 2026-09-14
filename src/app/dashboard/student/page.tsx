@@ -1,7 +1,12 @@
 import { formatDate , formatPrice } from '@/lib/utils';
 import { getCurrentUser } from '@/data/domains/auth';
 import { getOrders } from '@/data/domains/orders';
-import { getWritingPackages } from '@/data/domains/writing';
+import {
+  getWritingPackages,
+  getCourseSubscriptions,
+  getSessions,
+  getSessionReport,
+} from '@/data/domains/writing';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Book, ShoppingBag, ArrowLeft, FileText, User, FileBox } from 'lucide-react';
@@ -15,9 +20,28 @@ export default async function StudentDashboard() {
     redirect('/dashboard');
   }
 
-  const packages = await getWritingPackages();
-  const currentPackage = packages[0];
-  const orders = await getOrders();
+  // The dashboard used to show the first package in the whole catalogue as
+  // "your course", whatever the student was actually enrolled in.
+  const [packages, subscriptions, allSessions, orders] = await Promise.all([
+    getWritingPackages(),
+    getCourseSubscriptions(),
+    getSessions(),
+    getOrders(),
+  ]);
+
+  const mySubscription = subscriptions.find(
+    (sub) => sub.userId === user.id && sub.status === 'active'
+  );
+  const currentPackage =
+    packages.find((p) => p.id === mySubscription?.packageId) ?? null;
+  const mySessions = mySubscription
+    ? allSessions.filter((s) => s.courseSubscriptionId === mySubscription.id)
+    : [];
+
+  const lastCompleted = [...mySessions]
+    .filter((s) => s.status === 'completed')
+    .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime())[0];
+  const latestReport = lastCompleted ? await getSessionReport(lastCompleted.id) : null;
 
   const getOrderStatus = (status: string) => {
     switch (status) {
@@ -77,7 +101,11 @@ export default async function StudentDashboard() {
             </Link>
           </div>
           
-          <StudentJourneyClient currentPackage={currentPackage} />
+          <StudentJourneyClient
+            currentPackage={currentPackage}
+            sessions={mySessions}
+            latestReport={latestReport}
+          />
 
           <Link
             href="/creative-writing/packages"

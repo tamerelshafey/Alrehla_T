@@ -358,9 +358,15 @@ export type BoxSubscription = {
 export type JoinRequest = {
   id: string;
   applicantName: string;
-  requestedRole: 'instructor' | 'publisher';
+  requestedRole: string;
   status: 'pending' | 'approved' | 'rejected';
   createdAt: string;
+  /** Supplied by the applicant. The admin screen used to print invented
+   *  contact details because none of this was stored. */
+  email?: string;
+  phone?: string;
+  portfolioUrl?: string;
+  message?: string;
 };
 
 export type SupportSessionRequest = {

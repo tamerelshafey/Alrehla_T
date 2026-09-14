@@ -52,16 +52,21 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <div className="p-8 space-y-8">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* The join_requests table stores only a name, a requested role and
-                a status — there is no email or phone column to show, and the
-                invented ones that used to be printed here were worse than
-                nothing: an admin would have contacted a made-up address. */}
-            <div className="flex items-start gap-3 md:col-span-2">
+            <div className="flex items-start gap-3">
               <Mail className="mt-0.5 h-5 w-5 text-slate-400" />
+              <div className="min-w-0">
+                <div className="mb-1 text-sm text-slate-500">البريد الإلكتروني</div>
+                <div className="truncate font-bold text-slate-800" dir="ltr">
+                  {target.email || '—'}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Phone className="mt-0.5 h-5 w-5 text-slate-400" />
               <div>
-                <div className="mb-1 text-sm text-slate-500">بيانات التواصل</div>
-                <div className="font-bold text-slate-500">
-                  غير مسجّلة — نموذج الانضمام لا يحفظ بريدًا أو هاتفًا بعد.
+                <div className="mb-1 text-sm text-slate-500">رقم الهاتف</div>
+                <div className="font-bold text-slate-800" dir="ltr">
+                  {target.phone || '—'}
                 </div>
               </div>
             </div>
@@ -79,16 +84,29 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               <FileText className="h-5 w-5 text-amber-500" />
               نبذة عن المتقدم
             </h3>
-            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-slate-700 leading-relaxed">
-              لدي خبرة تزيد عن 5 سنوات في هذا المجال وأرغب في الانضمام لفريق العمل لتقديم محتوى عالي الجودة. عملت سابقاً مع عدة منصات تعليمية ولدي شغف كبير بالكتابة الإبداعية وتطوير مهارات الطلاب.
-              أتمنى أن تتاح لي الفرصة لكي أكون جزءاً من منصة الرحلة.
+            {/* The same invented paragraph used to be shown as every
+                applicant's own words. */}
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6 leading-relaxed whitespace-pre-wrap text-slate-700">
+              {target.message || <span className="text-slate-400">لم يكتب المتقدم رسالة.</span>}
             </div>
           </div>
           
           {target.requestedRole === 'instructor' && (
             <div className="border-t border-slate-100 pt-8">
               <h3 className="font-bold text-slate-800 mb-4">روابط النماذج السابقة (Portfolio)</h3>
-              <p className="font-medium text-slate-500">لا توجد روابط أعمال مسجّلة.</p>
+              {target.portfolioUrl ? (
+                <a
+                  href={target.portfolioUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-bold text-blue-600 underline"
+                  dir="ltr"
+                >
+                  {target.portfolioUrl}
+                </a>
+              ) : (
+                <p className="font-medium text-slate-500">لا توجد روابط أعمال مسجّلة.</p>
+              )}
             </div>
           )}
 

@@ -7,12 +7,11 @@ export function Step3Addons({ onNext, onPrev }: { onNext: () => void, onPrev: ()
   const { watch, setValue } = useFormContext();
   const selectedAddons: string[] = watch('selectedAddonIds') || [];
   
-  // Mock addons data instead of fetching for now as there's no mock endpoint
-  const [addons] = useState<AddonProduct[]>([
-    { id: 'addon-1', name: 'لعبة دمية لبطل القصة', price: 150, description: 'لعبة قماشية صغيرة مصممة لتشبه بطل القصة.' },
-    { id: 'addon-2', name: 'تغليف هدايا فاخر', price: 50, description: 'تغليف جميل ومميز للقصة لتكون جاهزة للإهداء.' },
-    { id: 'addon-3', name: 'نسخة رقمية (PDF)', price: 100, description: 'نسخة عالية الدقة للقراءة على الأجهزة اللوحية.' }
-  ]);
+  // Three add-ons used to be listed here and priced into the customer's
+  // total — a plush toy, gift wrapping and a PDF copy. None of them exists:
+  // there is no add-on products table at all, and nothing downstream could
+  // ever have fulfilled an order for one.
+  const [addons] = useState<AddonProduct[]>([]);
 
   const toggleAddon = (id: string) => {
     if (selectedAddons.includes(id)) {

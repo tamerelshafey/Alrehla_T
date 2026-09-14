@@ -105,7 +105,11 @@ export const getJoinRequests = async (): Promise<JoinRequest[]> => {
     applicantName: r.applicant_name,
     requestedRole: r.requested_role,
     status: r.status,
-    createdAt: r.created_at
+    createdAt: r.created_at,
+    email: r.email ?? undefined,
+    phone: r.phone ?? undefined,
+    portfolioUrl: r.portfolio_url ?? undefined,
+    message: r.message ?? undefined,
   }));
 };
 

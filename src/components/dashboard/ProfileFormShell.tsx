@@ -38,11 +38,15 @@ export function ProfileFormShell({ defaultValues, children }: ProfileFormShellPr
             <h3 className="text-lg font-bold text-slate-800">الصورة الشخصية</h3>
             <p className="text-sm font-medium text-slate-500 mt-1">يُفضل استخدام صورة مربعة واضحة.</p>
             <div className="mt-4 flex gap-2 justify-center sm:justify-start">
-              <button type="button" className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200">
+              {/* Both buttons had no handler, and contradicted the banner
+                  above saying editing is not available. */}
+              <button
+                type="button"
+                disabled
+                title="غير متاح حاليًا"
+                className="cursor-not-allowed rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-400"
+              >
                 تغيير الصورة
-              </button>
-              <button type="button" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-red-600 transition-colors hover:bg-red-50">
-                حذف
               </button>
             </div>
           </div>
