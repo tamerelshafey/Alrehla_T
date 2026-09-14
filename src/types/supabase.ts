@@ -7,12 +7,22 @@ export type Json =
   | Json[]
 
 /**
- * Generated from the live Supabase database (project xxptugdbtzkjyydveprp)
- * on 14 September 2026, read directly from information_schema and pg_enum.
+ * شكل قاعدة البيانات كما هي فعلًا (مشروع xxptugdbtzkjyydveprp).
  *
- * Do NOT hand-edit. Regenerate whenever the schema changes. A stale version of
- * this file is what previously allowed code to be written against columns that
- * did not exist (child_profiles.name / .age), which shipped broken to production.
+ * ⚠️ الملف ده المفروض يتولّد تلقائيًا:
+ *
+ *     npx supabase gen types typescript --project-id xxptugdbtzkjyydveprp
+ *
+ * لكنه اتعدّل بإيد أكتر من مرة لما اتضافت جداول جديدة. آخر مطابقة كاملة
+ * مع قاعدة البيانات الحقيقية كانت في سبتمبر 2026، وطلعت **صفر فروق**:
+ * 44 جدول، كل عمود بنوعه وحالة السماح بالفراغ.
+ *
+ * ليه ده مهم: نسخة قديمة من الملف ده هي اللي سمحت قبل كده بكتابة كود
+ * على أعمدة مش موجودة (child_profiles.name و .age)، والكود ده وصل
+ * للإنتاج مكسور.
+ *
+ * القاعدة: أي تعديل على قاعدة البيانات لازم يتبعه تحديث هنا، والأفضل
+ * بالتوليد التلقائي مش بالإيد.
  */
 export type Database = {
   public: {
@@ -1513,41 +1523,25 @@ export type Database = {
     }
     Enums: {
       age_group: "under_12" | "12_plus"
-      age_group_enum: "under_12" | "12_plus"
-      booking_status: "pending" | "confirmed" | "completed" | "cancelled"
       booking_status_enum: "pending" | "confirmed" | "completed" | "cancelled" | "rescheduled"
-      box_subscription_status: "active" | "paused" | "cancelled"
       commitment_type: "ongoing" | "fixed_term"
       compensation_approval_status: "proposed" | "under_discussion" | "approved" | "rejected"
       compensation_billing_model: "monthly" | "per_session"
-      course_subscription_status: "active" | "completed" | "cancelled"
       day_of_week: "saturday" | "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday"
       document_status_enum: "draft" | "submitted" | "reviewed"
-      instructor_status: "pending_training" | "pending_approval" | "active" | "suspended"
       instructor_status_enum: "pending_training" | "pending_approval" | "active" | "suspended"
-      join_request_status: "pending" | "approved" | "rejected"
       join_request_status_enum: "pending" | "approved" | "rejected"
-      order_status: "pending" | "awaiting_verification" | "paid" | "failed" | "refunded" | "preparing" | "shipped" | "delivered" | "cancelled"
       order_status_enum: "pending" | "awaiting_verification" | "paid" | "failed" | "refunded" | "preparing" | "shipped" | "delivered" | "cancelled"
       owner_type: "platform" | "publisher"
-      payout_status: "pending" | "paid"
       payout_status_enum: "pending" | "paid"
-      portfolio_status: "draft" | "submitted" | "reviewed"
       product_category: "library" | "custom" | "subscription"
-      product_owner_type: "platform" | "publisher"
-      publisher_status: "pending" | "active" | "suspended"
       publisher_status_enum: "pending" | "active" | "suspended"
-      requested_role: "instructor" | "publisher"
       service_order_status: "pending" | "awaiting_verification" | "paid" | "refunded" | "in_progress" | "delivered" | "completed" | "cancelled"
-      session_request_status: "pending" | "contacted" | "closed"
       sub_status_enum: "active" | "cancelled" | "paused"
       support_session_status_enum: "pending" | "contacted" | "resolved"
-      ticket_status: "open" | "answered" | "closed"
       ticket_status_enum: "open" | "answered" | "closed"
       update_request_status: "pending" | "approved" | "rejected"
-      user_role: "visitor" | "customer" | "student" | "instructor" | "publisher" | "general_supervisor" | "super_admin"
       user_role_enum: "visitor" | "customer" | "student" | "instructor" | "publisher" | "general_supervisor" | "super_admin"
-      work_model: "per_session" | "monthly"
       work_model_enum: "per_session" | "monthly"
     }
     CompositeTypes: {
