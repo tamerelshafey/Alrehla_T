@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const publisher = await getPublisherBySlug(slug);
   if (!publisher) return { title: 'ناشر غير موجود' };
   return pageMetadata({
-    title: `${publisher.name} — دار نشر على منصة الرحلة`,
+    title: `${publisher.name} — دار نشر`,
     description: publisher.bio || `تصفّح إصدارات ${publisher.name} على منصة الرحلة.`,
     path: `/enha-lak/publisher/${publisher.slug}`,
     image: publisher.logoUrl,
