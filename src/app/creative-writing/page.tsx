@@ -1,10 +1,14 @@
 import { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 
-export const metadata: Metadata = {
-  title: 'الكتابة الإبداعية',
-  description: 'استكشف برامج ودورات الكتابة الإبداعية المتاحة.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'الكتابة الإبداعية',
+    description: 'استكشف برامج ودورات الكتابة الإبداعية المتاحة.',
+    path: '/creative-writing',
+  });
+}
 
 import { getTestimonials, getSiteContent } from '@/data/domains/content';
 import { PageContainer } from '@/components/PageContainer';

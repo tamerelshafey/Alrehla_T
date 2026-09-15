@@ -1,3 +1,14 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'صندوق الرحلة',
+    description: 'اشتراك شهري يصل إلى باب البيت: قصة مخصصة وأنشطة ومفاجآت تناسب عمر الطفل.',
+    path: '/enha-lak/subscription',
+  });
+}
+
 import Image from 'next/image';
 import { optimizedImageUrl } from '@/lib/cloudinary';
 import { formatPrice } from '@/lib/utils';

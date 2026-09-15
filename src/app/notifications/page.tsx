@@ -1,3 +1,15 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'الإشعارات',
+    description: 'إشعارات حسابك على منصة الرحلة.',
+    path: '/notifications',
+    noIndex: true,
+  });
+}
+
 import { redirect } from 'next/navigation';
 import { PageContainer } from '@/components/PageContainer';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';

@@ -1,15 +1,19 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import { PageContainer } from '@/components/PageContainer';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { RichText } from '@/components/ui/RichText';
 import { getSiteContent } from '@/data/domains/content';
 
-export const metadata: Metadata = {
-  title: 'الشروط والأحكام',
-  description: 'الشروط والأحكام الخاصة باستخدام خدمات منصة الرحلة.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'الشروط والأحكام',
+    description: 'الشروط والأحكام الخاصة باستخدام خدمات منصة الرحلة.',
+    path: '/terms',
+  });
+}
 
 // نص الشروط كان مكتوبًا في الكود. بقى يتعدّل من:
 // لوحة الإدارة ← محتوى الصفحات ← الشروط والأحكام.

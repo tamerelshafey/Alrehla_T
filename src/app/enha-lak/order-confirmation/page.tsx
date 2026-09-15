@@ -1,3 +1,15 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'تأكيد الطلب',
+    description: 'تفاصيل طلبك بعد إتمامه.',
+    path: '/enha-lak/order-confirmation',
+    noIndex: true,
+  });
+}
+
 import { formatPrice } from '@/lib/utils';
 import { PageContainer } from '@/components/PageContainer';
 import { Section } from '@/components/ui/Section';

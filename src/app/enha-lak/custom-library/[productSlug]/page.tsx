@@ -1,3 +1,17 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+// صفحة داخل مسار الشراء: مالهاش لازمة في نتايج البحث، والرابط القانوني
+// بيوجّه للصفحة العامة اللي المفروض تتفهرس.
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'تخصيص إصدار من المكتبة',
+    description: 'أضف لمسة شخصية على إصدار من المكتبة قبل إتمام الطلب.',
+    path: '/enha-lak/library',
+    noIndex: true,
+  });
+}
+
 import { notFound } from 'next/navigation';
 import { getProductBySlug } from '@/data/domains/products';
 import { PageContainer } from '@/components/PageContainer';

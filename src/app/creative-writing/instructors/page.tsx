@@ -1,3 +1,14 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'مدربو الكتابة الإبداعية',
+    description: 'تعرّف على مدربي الكتابة الإبداعية في منصة الرحلة، وتقييمات المشاركين، واحجز جلستك مع المدرب المناسب.',
+    path: '/creative-writing/instructors',
+  });
+}
+
 import { getInstructors } from '@/data/domains/writing';
 import { getInstructorRatingSummaries } from '@/data/domains/reviews';
 import { RatingStars } from '@/components/services/RatingStars';

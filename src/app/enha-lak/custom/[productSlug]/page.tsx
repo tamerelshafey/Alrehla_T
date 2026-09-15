@@ -1,3 +1,17 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+// صفحة داخل مسار الشراء: مالهاش لازمة في نتايج البحث، والرابط القانوني
+// بيوجّه للصفحة العامة اللي المفروض تتفهرس.
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'تخصيص القصة',
+    description: 'أدخل بيانات طفلك لتخصيص القصة قبل إتمام الطلب.',
+    path: '/enha-lak/custom',
+    noIndex: true,
+  });
+}
+
 import { getProductBySlug } from '@/data/domains/products';
 import { PageContainer } from '@/components/PageContainer';
 import Link from 'next/link';

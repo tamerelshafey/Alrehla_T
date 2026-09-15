@@ -1,3 +1,14 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'المكتبة العامة',
+    description: 'تصفّح إصدارات دور النشر وكتب الأطفال المتاحة في مكتبة منصة الرحلة.',
+    path: '/enha-lak/library',
+  });
+}
+
 import { BookOpen } from 'lucide-react';
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';

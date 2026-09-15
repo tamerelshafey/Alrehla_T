@@ -1,3 +1,15 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'إتمام الطلب',
+    description: 'مراجعة الطلب وبيانات الشحن وإتمام الدفع.',
+    path: '/enha-lak/checkout',
+    noIndex: true,
+  });
+}
+
 import { getSiteSettings } from '@/data/domains/content';
 import { getShippingRates } from '@/data/domains/orders';
 import { getCurrentUser } from '@/data/domains/auth';

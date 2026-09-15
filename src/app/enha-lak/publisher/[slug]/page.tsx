@@ -6,13 +6,19 @@ import { Card } from '@/components/ui/Card';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { optimizedImageUrl } from '@/lib/cloudinary';
+import { pageMetadata } from '@/lib/seo';
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const publisher = await getPublisherBySlug(slug);
   if (!publisher) return { title: 'ناشر غير موجود' };
-  return { title: publisher.name, description: publisher.bio };
+  return pageMetadata({
+    title: `${publisher.name} — دار نشر على منصة الرحلة`,
+    description: publisher.bio || `تصفّح إصدارات ${publisher.name} على منصة الرحلة.`,
+    path: `/enha-lak/publisher/${publisher.slug}`,
+    image: publisher.logoUrl,
+  });
 }
 
 export default async function PublisherPage({ params }: { params: Promise<{ slug: string }> }) {

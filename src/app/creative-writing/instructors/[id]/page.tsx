@@ -10,6 +10,25 @@ import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { optimizedImageUrl } from '@/lib/cloudinary';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { pageMetadata } from '@/lib/seo';
+import { instructorSchema, breadcrumbSchema } from '@/lib/structured-data';
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const instructors = await getInstructors();
+  const instructor = instructors.find((i) => i.id === id);
+  if (!instructor) return { title: 'مدرب غير موجود' };
+  return pageMetadata({
+    title: `${instructor.displayName} — مدرب كتابة إبداعية`,
+    description:
+      instructor.bio ||
+      `احجز جلسة كتابة إبداعية فردية مع ${instructor.displayName} على منصة الرحلة.`,
+    path: `/creative-writing/instructors/${instructor.id}`,
+    image: instructor.avatarUrl,
+    type: 'profile',
+  });
+}
 
 export default async function InstructorProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -27,6 +46,26 @@ export default async function InstructorProfilePage({ params }: { params: Promis
 
   return (
     <PageContainer className="!py-0 !space-y-0">
+      {/* التقييم هنا بيتكتب من تقييمات حقيقية بس — لو مفيش، الحقل مش بيتبعت أصلًا. */}
+      <JsonLd
+        data={[
+          instructorSchema({
+            name: instructor.displayName,
+            description: instructor.bio,
+            image: instructor.avatarUrl ? optimizedImageUrl(instructor.avatarUrl, 600) : undefined,
+            path: `/creative-writing/instructors/${instructor.id}`,
+            rating: rating.average,
+            ratingCount: rating.count,
+          }),
+          breadcrumbSchema([
+            { name: 'الرئيسية', path: '/' },
+            { name: 'بداية الرحلة', path: '/creative-writing' },
+            { name: 'المدربون', path: '/creative-writing/instructors' },
+            { name: instructor.displayName, path: `/creative-writing/instructors/${instructor.id}` },
+          ]),
+        ]}
+      />
+
       <Section containerClassName="mx-auto w-full max-w-5xl pt-12 pb-24">
         {/* Back link */}
         <Link href="/creative-writing/instructors" className="mb-8 inline-flex items-center gap-2 font-bold text-slate-500 hover:text-emerald-600 transition-colors">

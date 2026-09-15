@@ -11,6 +11,22 @@ import { optimizedImageUrl, slotImageUrl, blurPlaceholder } from '@/lib/cloudina
 import { getSiteSettings, getSiteContent, getTestimonials } from '@/data/domains/content';
 import { ImagePlaceholder } from '@/components/ui/ImagePlaceholder';
 import { RichText } from '@/components/ui/RichText';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { pageMetadata } from '@/lib/seo';
+import { organizationSchema, websiteSchema } from '@/lib/structured-data';
+
+export async function generateMetadata() {
+  const [settings, content] = await Promise.all([getSiteSettings(), getSiteContent()]);
+  const name = settings.siteName?.trim() || 'الرحلة';
+  return pageMetadata({
+    title: `${name} · منصة الكتابة الإبداعية والقصص المخصصة`,
+    titleAbsolute: true,
+    description:
+      content['home.hero.subtitle'] ||
+      'منصة عربية لتعلّم الكتابة الإبداعية وتقديم قصص ومنتجات مخصصة للأطفال والشباب.',
+    path: '/',
+  });
+}
 
 /**
  * تلوين كلمتين في العنوان الرئيسي.
@@ -55,8 +71,26 @@ export default async function Home() {
   const activePublishers = publishers.filter((p: any) => p.status === 'active').slice(0, 4);
   const instructors = await getInstructors();
   const topInstructors = instructors.filter((i: any) => i.status === 'active').slice(0, 4);
+  const siteName = settings.siteName?.trim() || 'الرحلة';
+
   return (
     <div className="flex flex-col">
+      {/* بيانات منظّمة: تعريف الجهة والموقع لمحركات البحث. */}
+      <JsonLd
+        data={[
+          organizationSchema({
+            name: siteName,
+            description: content['home.hero.subtitle'] || '',
+            logo: settings.images.logo
+              ? slotImageUrl(settings.images.logo, 'logo')
+              : undefined,
+            email: settings.contactEmail || undefined,
+            sameAs: [settings.facebookUrl, settings.instagramUrl],
+          }),
+          websiteSchema({ name: siteName }),
+        ]}
+      />
+
       {/* Hero Section */}
       <Section containerClassName="relative overflow-hidden rounded-[3rem] bg-amber-50 shadow-2xl shadow-amber-900/5 p-0">
         <div className="grid lg:grid-cols-2">

@@ -1,10 +1,11 @@
 import { MetadataRoute } from 'next';
+import { SITE_URL } from '@/lib/seo';
 import { getBlogPosts } from '@/data/domains/content';
 import { getPersonalizedProducts, getPublishers } from '@/data/domains/products';
 import { getInstructors } from '@/data/domains/writing';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://alrehlat.vercel.app';
+  const baseUrl = SITE_URL;
 
   // Static routes
   const staticRoutes = [
@@ -12,9 +13,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/about',
     '/blog',
     '/enha-lak',
+    '/enha-lak/custom',
+    '/enha-lak/library',
+    '/enha-lak/subscription',
     '/creative-writing',
+    '/creative-writing/about',
     '/creative-writing/instructors',
     '/creative-writing/packages',
+    '/creative-writing/services',
     '/join-us',
     '/support',
     '/privacy',

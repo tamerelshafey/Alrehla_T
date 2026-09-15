@@ -1,3 +1,14 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'الخدمات الإبداعية',
+    description: 'خدمات إبداعية مستقلة من منصة الرحلة: مراجعة النصوص، الاستشارات، التحرير، والتعليق الصوتي.',
+    path: '/creative-writing/services',
+  });
+}
+
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import { ArrowLeft, FileEdit, Video, BookOpen, MessageCircle, Headphones, Sparkles } from 'lucide-react';

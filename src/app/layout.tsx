@@ -8,6 +8,7 @@ import DevAuthToolbar from '@/components/dev/DevAuthToolbar';
 import { Providers } from '@/components/providers/Providers';
 import { getSiteSettings } from '@/data/domains/content';
 import { slotImageUrl } from '@/lib/cloudinary';
+import { SITE_URL } from '@/lib/seo';
 
 const cairo = Cairo({
   subsets: ['arabic'],
@@ -33,8 +34,6 @@ const cairo = Cairo({
  */
 export const revalidate = 3600;
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || 'https://alrehla-t.vercel.app';
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
@@ -53,14 +52,12 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(SITE_URL),
     title: { default: title, template: `%s · ${title}` },
     description,
-    alternates: { canonical: '/' },
     openGraph: {
       type: 'website',
       locale: 'ar_EG',
       siteName: title,
       title,
       description,
-      url: '/',
       images: share ? [{ url: share, width: 1200, height: 630, alt: title }] : undefined,
     },
     twitter: {

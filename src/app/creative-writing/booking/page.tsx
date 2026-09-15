@@ -1,3 +1,15 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'حجز جلسة',
+    description: 'اختر الباقة والمدرب والموعد المناسب لجلستك.',
+    path: '/creative-writing/booking',
+    noIndex: true,
+  });
+}
+
 import { PageContainer } from '@/components/PageContainer';
 import { BookingWizardClient } from '@/components/creative-writing/BookingWizardClient';
 import { getInstructors } from '@/data/domains/writing';

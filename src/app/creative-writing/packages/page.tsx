@@ -1,3 +1,14 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'باقات بداية الرحلة',
+    description: 'باقات الكتابة الإبداعية في منصة الرحلة: عدد الجلسات ومدتها وسعر كل باقة.',
+    path: '/creative-writing/packages',
+  });
+}
+
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import { getWritingPackages } from '@/data/domains/writing';

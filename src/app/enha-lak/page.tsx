@@ -1,12 +1,16 @@
 import { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 
-export const metadata: Metadata = {
-  title: 'قسم إنهى لك',
-  description: 'تصفح المتجر واكتشف أحدث منتجات وإصدارات إنهى لك.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'قسم إنهى لك',
+    description: 'تصفح المتجر واكتشف أحدث منتجات وإصدارات إنهى لك.',
+    path: '/enha-lak',
+  });
+}
 
 import Link from 'next/link';
 

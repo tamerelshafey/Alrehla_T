@@ -1,3 +1,14 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'القصص المخصصة',
+    description: 'اطلب قصة مخصصة يكون فيها طفلك هو البطل: اسمه وصورته واهتماماته داخل الحكاية.',
+    path: '/enha-lak/custom',
+  });
+}
+
 import { formatPrice } from '@/lib/utils';
 import Image from 'next/image';
 import { optimizedImageUrl } from '@/lib/cloudinary';

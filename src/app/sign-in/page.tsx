@@ -2,12 +2,17 @@ import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
 import { LogIn } from 'lucide-react';
 import { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import { SignInForm } from '@/components/SignInForm';
 
-export const metadata: Metadata = {
-  title: 'تسجيل الدخول',
-  description: 'سجل دخولك إلى حسابك في منصة الرحلة.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'تسجيل الدخول',
+    description: 'سجل دخولك إلى حسابك في منصة الرحلة.',
+    path: '/sign-in',
+    noIndex: true,
+  });
+}
 
 export default function SignInPage() {
   return (

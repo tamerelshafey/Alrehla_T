@@ -8,12 +8,16 @@ import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 
 import { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import { optimizedImageUrl } from '@/lib/cloudinary';
 
-export const metadata: Metadata = {
-  title: 'المدونة',
-  description: 'تصفح أحدث مقالات ونصائح منصة الرحلة.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'المدونة',
+    description: 'تصفح أحدث مقالات ونصائح منصة الرحلة.',
+    path: '/blog',
+  });
+}
 
 
 export default async function BlogPage() {

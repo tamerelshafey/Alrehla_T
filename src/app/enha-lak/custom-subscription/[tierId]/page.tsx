@@ -1,3 +1,17 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+// صفحة داخل مسار الشراء: مالهاش لازمة في نتايج البحث، والرابط القانوني
+// بيوجّه للصفحة العامة اللي المفروض تتفهرس.
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'تخصيص اشتراك صندوق الرحلة',
+    description: 'أدخل بيانات طفلك لتخصيص محتوى الصندوق قبل الاشتراك.',
+    path: '/enha-lak/subscription',
+    noIndex: true,
+  });
+}
+
 import { notFound } from 'next/navigation';
 import { getSubscriptionTiers } from '@/data/domains/products';
 import { PageContainer } from '@/components/PageContainer';

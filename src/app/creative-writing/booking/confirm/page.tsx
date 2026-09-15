@@ -1,3 +1,15 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'تأكيد الحجز',
+    description: 'مراجعة تفاصيل الحجز وإتمامه.',
+    path: '/creative-writing/booking/confirm',
+    noIndex: true,
+  });
+}
+
 import { getSiteSettings } from '@/data/domains/content';
 
 import { PageContainer } from '@/components/PageContainer';

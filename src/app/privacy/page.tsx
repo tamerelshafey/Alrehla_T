@@ -1,15 +1,19 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import { PageContainer } from '@/components/PageContainer';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { RichText } from '@/components/ui/RichText';
 import { getSiteContent } from '@/data/domains/content';
 
-export const metadata: Metadata = {
-  title: 'سياسة الخصوصية',
-  description: 'تعرف على سياسة الخصوصية وكيفية حماية بياناتك في منصة الرحلة.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'سياسة الخصوصية',
+    description: 'تعرف على سياسة الخصوصية وكيفية حماية بياناتك في منصة الرحلة.',
+    path: '/privacy',
+  });
+}
 
 // نص السياسة كان مكتوبًا في الكود — أي تعديل قانوني كان محتاج مبرمج.
 // بقى يتعدّل من: لوحة الإدارة ← محتوى الصفحات ← سياسة الخصوصية.

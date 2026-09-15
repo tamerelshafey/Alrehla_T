@@ -9,13 +9,22 @@ import Link from 'next/link';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
 import { optimizedImageUrl } from '@/lib/cloudinary';
 import { ImagePlaceholder } from '@/components/ui/ImagePlaceholder';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { pageMetadata } from '@/lib/seo';
+import { productSchema, breadcrumbSchema } from '@/lib/structured-data';
+import { getSiteSettings } from '@/data/domains/content';
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return { title: 'منتج غير موجود' };
-  return { title: product.name, description: product.shortDescription };
+  return pageMetadata({
+    title: product.name,
+    description: product.shortDescription || product.name,
+    path: `/enha-lak/product/${product.slug}`,
+    image: product.coverImageUrl,
+  });
 }
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -36,8 +45,31 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     );
   }
 
+  const settings = await getSiteSettings();
+  const siteName = settings.siteName?.trim() || 'الرحلة';
+
   return (
     <PageContainer className="!py-0 !space-y-0">
+      {/* بيانات منظّمة: اسم المنتج وسعره، وده اللي بيخلي السعر يظهر في نتيجة البحث. */}
+      <JsonLd
+        data={[
+          productSchema({
+            name: product.name,
+            description: product.shortDescription,
+            image: product.coverImageUrl ? optimizedImageUrl(product.coverImageUrl, 1200) : undefined,
+            path: `/enha-lak/product/${product.slug}`,
+            price: product.price,
+            brand: siteName,
+          }),
+          breadcrumbSchema([
+            { name: 'الرئيسية', path: '/' },
+            { name: 'إنها لك', path: '/enha-lak' },
+            { name: product.name, path: `/enha-lak/product/${product.slug}` },
+          ]),
+        ]}
+      />
+
+
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Product",

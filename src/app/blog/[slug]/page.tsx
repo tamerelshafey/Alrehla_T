@@ -8,6 +8,10 @@ import { notFound } from 'next/navigation';
 import { Section } from '@/components/ui/Section';
 import { Button } from '@/components/ui/Button';
 import { optimizedImageUrl } from '@/lib/cloudinary';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { pageMetadata } from '@/lib/seo';
+import { articleSchema, breadcrumbSchema } from '@/lib/structured-data';
+import { getSiteSettings } from '@/data/domains/content';
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -15,7 +19,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const posts = await getBlogPosts();
   const post = posts.find(p => p.slug === resolvedParams.slug);
   if (!post) return { title: 'مقال غير موجود' };
-  return { title: post.title, description: post.excerpt };
+  return pageMetadata({
+    title: post.title,
+    description: post.excerpt || post.title,
+    path: `/blog/${post.slug}`,
+    image: post.coverImageUrl,
+    type: 'article',
+    publishedTime: post.publishedAt || undefined,
+  });
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -29,18 +40,29 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     notFound();
   }
 
+  const settings = await getSiteSettings();
+  const siteName = settings.siteName?.trim() || 'الرحلة';
+
   return (
     <PageContainer className="!py-0 !space-y-0">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": post.title,
-    "datePublished": post.publishedAt,
-    "author": {
-      "@type": "Organization",
-      "name": "فريق الرحلة"
-    }
-  }) }} />
+      <JsonLd
+        data={[
+          articleSchema({
+            title: post.title,
+            description: post.excerpt,
+            image: post.coverImageUrl ? optimizedImageUrl(post.coverImageUrl, 1200) : undefined,
+            path: `/blog/${post.slug}`,
+            publishedAt: post.publishedAt || undefined,
+            author: post.authorName,
+            siteName,
+          }),
+          breadcrumbSchema([
+            { name: 'الرئيسية', path: '/' },
+            { name: 'المدونة', path: '/blog' },
+            { name: post.title, path: `/blog/${post.slug}` },
+          ]),
+        ]}
+      />
       <Section containerClassName="max-w-4xl pt-12 pb-24">
         {/* Back link */}
         <Link href="/blog" className="mb-8 inline-flex items-center gap-2 font-bold text-slate-500 hover:text-amber-600 transition-colors">

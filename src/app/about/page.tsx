@@ -1,12 +1,16 @@
 import Image from 'next/image';
 import { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 
-export const metadata: Metadata = {
-  title: 'عن منصة الرحلة',
-  description: 'تعرف على رؤيتنا ومهمتنا في منصة الرحلة لتطوير قدرات الأطفال والشباب.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'عن منصة الرحلة',
+    description: 'تعرف على رؤيتنا ومهمتنا في منصة الرحلة لتطوير قدرات الأطفال والشباب.',
+    path: '/about',
+  });
+}
 
 import { PageContainer } from '@/components/PageContainer';
 import { getSiteSettings, getSiteContent } from '@/data/domains/content';

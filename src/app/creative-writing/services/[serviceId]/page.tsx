@@ -5,8 +5,23 @@ import { formatPrice } from '@/lib/utils';
 import { PageContainer } from '@/components/PageContainer';
 import { Section } from '@/components/ui/Section';
 import { getStandaloneServices, getProvidersForService } from '@/data/domains/services';
+import { pageMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: Promise<{ serviceId: string }> }) {
+  const { serviceId } = await params;
+  const services = await getStandaloneServices();
+  const service = services.find((s) => s.id === serviceId);
+  if (!service) return { title: 'خدمة غير موجودة' };
+  return pageMetadata({
+    title: service.name,
+    description:
+      service.description ||
+      `${service.name} — خدمة إبداعية على منصة الرحلة، اختر المدرب المناسب وابدأ.`,
+    path: `/creative-writing/services/${service.id}`,
+  });
+}
 
 /**
  * The instructors who provide one creative service, cheapest first.

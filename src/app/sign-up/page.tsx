@@ -2,12 +2,17 @@ import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
 import { UserPlus } from 'lucide-react';
 import { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import { SignUpForm } from '@/components/SignUpForm';
 
-export const metadata: Metadata = {
-  title: 'إنشاء حساب جديد',
-  description: 'أنشئ حساباً جديداً في منصة الرحلة وابدأ رحلتك.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'إنشاء حساب جديد',
+    description: 'أنشئ حساباً جديداً في منصة الرحلة وابدأ رحلتك.',
+    path: '/sign-up',
+    noIndex: true,
+  });
+}
 
 export default function SignUpPage() {
   return (

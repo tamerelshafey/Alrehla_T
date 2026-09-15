@@ -1,3 +1,14 @@
+import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'عن «بداية الرحلة»',
+    description: 'برنامج الكتابة الإبداعية في منصة الرحلة: جلسات فردية تساعد الطفل واليافع على تطوير أدواته وصوته في الكتابة.',
+    path: '/creative-writing/about',
+  });
+}
+
 import { Sparkles, PenTool, Heart } from 'lucide-react';
 
 import { PageContainer } from '@/components/PageContainer';

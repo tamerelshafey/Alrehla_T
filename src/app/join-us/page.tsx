@@ -1,13 +1,17 @@
 import { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { JoinForm } from './JoinForm';
 import { Button } from '@/components/ui/Button';
 
-export const metadata: Metadata = {
-  title: 'انضم إلينا كمدرب أو ناشر',
-  description: 'قدم طلبك للانضمام إلى فريق منصة الرحلة كمدرب معتمد أو دار نشر.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'انضم إلينا كمدرب أو ناشر',
+    description: 'قدم طلبك للانضمام إلى فريق منصة الرحلة كمدرب معتمد أو دار نشر.',
+    path: '/join-us',
+  });
+}
 
 import { PageContainer } from '@/components/PageContainer';
 import { getSiteContent } from '@/data/domains/content';
