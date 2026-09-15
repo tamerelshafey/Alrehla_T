@@ -59,7 +59,7 @@ export default async function ServiceProvidersPage({
           {service.description}
         </p>
         <p className="mt-2 text-sm font-bold text-slate-400">
-          اختر المدرب الذي يناسبك. السعر يختلف من مدرب لآخر.
+          اختر مقدّم الخدمة الذي يناسبك. السعر يختلف من مقدّم لآخر.
         </p>
       </Section>
 
@@ -67,7 +67,7 @@ export default async function ServiceProvidersPage({
         {providers.length === 0 ? (
           <div className="rounded-3xl border border-slate-200 bg-white p-16 text-center">
             <p className="text-lg font-bold text-slate-500">
-              لا يوجد مدربون متاحون لهذه الخدمة حالياً.
+              لا يوجد مقدّمون متاحون لهذه الخدمة حالياً.
             </p>
             <p className="mt-2 text-slate-400">سيتم إضافة مقدمي الخدمة قريباً.</p>
           </div>
@@ -79,7 +79,16 @@ export default async function ServiceProvidersPage({
                 className="flex flex-wrap items-center gap-6 rounded-3xl border-2 border-slate-100 bg-white p-8 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
               >
                 <div className="min-w-[200px] flex-1">
-                  <h2 className="text-xl font-black text-slate-800">{provider.displayName}</h2>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-xl font-black text-slate-800">{provider.displayName}</h2>
+                    {/* الزائر يستحق يعرف إن اللي هينفّذ هو فريق المنصة
+                        نفسه مش مدرب مستقل. */}
+                    {provider.kind === 'platform' && (
+                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                        فريق المنصة
+                      </span>
+                    )}
+                  </div>
                   <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600">
                     {provider.bio}
                   </p>
@@ -99,10 +108,10 @@ export default async function ServiceProvidersPage({
                 </div>
 
                 <Link
-                  href={`/creative-writing/services/${serviceId}/order?instructor=${provider.instructorId}`}
+                  href={`/creative-writing/services/${serviceId}/order?provider=${provider.providerId}`}
                   className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-8 py-4 font-bold text-white shadow-md transition-colors hover:bg-amber-600"
                 >
-                  اطلب من هذا المدرب
+                  اطلب من هذا المقدّم
                   <ArrowLeft className="h-5 w-5" />
                 </Link>
               </div>

@@ -29,10 +29,11 @@ export default async function OrderServicePage({
   searchParams,
 }: {
   params: Promise<{ serviceId: string }>;
-  searchParams: Promise<{ instructor?: string }>;
+  searchParams: Promise<{ provider?: string; instructor?: string }>;
 }) {
   const { serviceId } = await params;
-  const { instructor: instructorId } = await searchParams;
+  // `instructor` هو الاسم القديم في الروابط — بيفضل مقبول.
+  const { provider: providerParam, instructor: instructorParam } = await searchParams;
 
   const settings = await getSiteSettings();
   const services = await getStandaloneServices();
@@ -47,19 +48,21 @@ export default async function OrderServicePage({
   // The price shown must be the one the server will actually charge, so it is
   // resolved here from the same source the order action uses.
   let amount = service.price;
-  let instructorName: string | null = null;
+  let providerName: string | null = null;
+  let providerId: string | null = null;
 
-  if (service.priceType === 'starts_from') {
-    if (!instructorId) {
-      redirect(`/creative-writing/services/${serviceId}`);
-    }
+  if (providerParam || instructorParam || service.priceType === 'starts_from') {
     const providers = await getProvidersForService(serviceId);
-    const provider = providers.find((p) => p.instructorId === instructorId);
+    const provider = providerParam
+      ? providers.find((p) => p.providerId === providerParam)
+      : providers.find((p) => p.instructorId === instructorParam);
+
     if (!provider) {
       redirect(`/creative-writing/services/${serviceId}`);
     }
     amount = provider.price;
-    instructorName = provider.displayName;
+    providerName = provider.displayName;
+    providerId = provider.providerId;
   }
 
   return (
@@ -84,8 +87,8 @@ export default async function OrderServicePage({
           paymentQrUrl={settings.paymentQrUrl}
           serviceId={serviceId}
           serviceName={service.name}
-          instructorId={instructorId ?? null}
-          instructorName={instructorName}
+          providerId={providerId}
+          providerName={providerName}
           amount={amount}
         />
       </Section>

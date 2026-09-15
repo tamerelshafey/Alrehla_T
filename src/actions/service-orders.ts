@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
 import { hasAdminPermission, calculateFinalSessionPrice } from '@/lib/utils';
-import { notifyUser, getInstructorUserId } from '@/lib/notifications';
+import { notifyUser, getInstructorUserId, getProviderUserId } from '@/lib/notifications';
+import { SERVICE_DUE_DAYS } from '@/lib/service-delivery';
 
 /**
  * Ordering a standalone creative service.
@@ -20,6 +21,9 @@ import { notifyUser, getInstructorUserId } from '@/lib/notifications';
  */
 export async function createServiceOrder(params: {
   serviceId: string;
+  /** مقدّم الخدمة المختار. المنصة مقدّم زي أي حد. */
+  providerId?: string | null;
+  /** الاسم القديم — بيفضل مقبول لحد ما كل الروابط تتحدّث. */
   instructorId?: string | null;
   transactionReference?: string | null;
 }) {
@@ -30,7 +34,18 @@ export async function createServiceOrder(params: {
   } = await supabase.auth.getUser();
   if (!user) throw new Error('يجب تسجيل الدخول أولاً');
 
-  const { serviceId, instructorId, transactionReference } = params;
+  const { serviceId, transactionReference } = params;
+  let providerId = params.providerId ?? null;
+
+  // رابط قديم بيبعت معرّف مدرب: نلاقي صف المقدّم بتاعه.
+  if (!providerId && params.instructorId) {
+    const { data: byInstructor } = await supabase
+      .from('service_providers')
+      .select('id')
+      .eq('instructor_id', params.instructorId)
+      .maybeSingle();
+    providerId = byInstructor?.id ?? null;
+  }
 
   const { data: service, error: serviceError } = await supabase
     .from('standalone_services')
@@ -40,45 +55,62 @@ export async function createServiceOrder(params: {
 
   if (serviceError || !service) throw new Error('الخدمة غير موجودة');
 
-  // The amount is never taken from the browser. For a per-instructor service
-  // it comes from that instructor's approved offer; otherwise from the
-  // service's own price. A tampered form cannot change what is charged.
+  // المبلغ ما بيتاخدش من المتصفح أبدًا. بيتحسب هنا من عرض مقدّم الخدمة
+  // المعتمد، فنموذج متلاعب فيه ما يقدرش يغيّر اللي بيتحاسب.
   let amount = service.price;
-  // What the instructor keeps. The customer pays the platform formula on top,
-  // exactly as with session pricing.
-  let instructorEarning: number | null = null;
+  let providerEarning: number | null = null;
+  let instructorId: string | null = null;
 
-  if (service.price_type === 'starts_from') {
-    if (!instructorId) throw new Error('يجب اختيار مدرب لهذه الخدمة');
-
-    const { data: offer, error: offerError } = await supabase
-      .from('instructor_services')
-      .select('approved_price')
-      .eq('service_id', serviceId)
-      .eq('instructor_id', instructorId)
-      .eq('status', 'approved')
-      .eq('is_active', true)
-      .single();
-
-    if (offerError || !offer || offer.approved_price == null) {
-      throw new Error('هذا المدرب لا يقدم الخدمة حالياً');
-    }
-    instructorEarning = offer.approved_price;
-
-    const { data: formula } = await supabase
-      .from('pricing_formula_settings')
-      .select('platform_multiplier, fixed_admin_fee')
-      .eq('id', 'default')
+  if (providerId) {
+    const { data: provider } = await supabase
+      .from('service_providers')
+      .select('id, kind, status, instructor_id')
+      .eq('id', providerId)
       .maybeSingle();
 
-    // No formula readable means no guessing: charge the instructor's price
-    // rather than invent a margin.
-    amount = formula
-      ? calculateFinalSessionPrice(instructorEarning, {
-          platformMultiplier: formula.platform_multiplier,
-          fixedAdminFee: formula.fixed_admin_fee,
-        })
-      : instructorEarning;
+    if (!provider || provider.status !== 'active') {
+      throw new Error('مقدّم الخدمة غير متاح حالياً');
+    }
+    instructorId = provider.instructor_id;
+
+    const { data: offer } = await supabase
+      .from('provider_services')
+      .select('approved_price')
+      .eq('service_id', serviceId)
+      .eq('provider_id', providerId)
+      .eq('status', 'approved')
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (!offer || offer.approved_price == null) {
+      throw new Error('مقدّم الخدمة لا يقدم هذه الخدمة حالياً');
+    }
+
+    if (provider.kind === 'platform') {
+      // المنصة بتقدّم الخدمة بنفسها: السعر المعتمد هو سعر العميل،
+      // ومفيش مستحق يتدفع لحد.
+      amount = offer.approved_price;
+      providerEarning = null;
+    } else {
+      // مدرب أو مستقل: السعر المعتمد مستحقه، والعميل بيدفع فوقه
+      // معادلة المنصة — نفس قاعدة تسعير الجلسات.
+      providerEarning = offer.approved_price;
+
+      const { data: formula } = await supabase
+        .from('pricing_formula_settings')
+        .select('platform_multiplier, fixed_admin_fee')
+        .eq('id', 'default')
+        .maybeSingle();
+
+      amount = formula
+        ? calculateFinalSessionPrice(providerEarning, {
+            platformMultiplier: formula.platform_multiplier,
+            fixedAdminFee: formula.fixed_admin_fee,
+          })
+        : providerEarning;
+    }
+  } else if (service.price_type === 'starts_from') {
+    throw new Error('يجب اختيار مقدّم للخدمة');
   }
 
   const { data: order, error } = await supabase
@@ -86,9 +118,10 @@ export async function createServiceOrder(params: {
     .insert({
       buyer_profile_id: user.id,
       standalone_service_id: serviceId,
-      instructor_id: instructorId ?? null,
+      instructor_id: instructorId,
+      provider_id: providerId,
       amount,
-      instructor_earning: instructorEarning,
+      instructor_earning: providerEarning,
       status: transactionReference ? 'awaiting_verification' : 'pending',
       transaction_reference: transactionReference || null,
     })
@@ -100,13 +133,18 @@ export async function createServiceOrder(params: {
     throw new Error('تعذّر إنشاء الطلب');
   }
 
-  if (instructorId) {
-    await notifyUser({
-      recipientProfileId: await getInstructorUserId(instructorId),
-      title: 'طلب خدمة جديد',
-      message: 'وصلك طلب خدمة إبداعية جديد. سيظهر للتنفيذ بعد تأكيد الدفع.',
-      link: `/dashboard/instructor/services/orders/${order.id}`,
-    });
+  // المنصة كمقدّم مالهاش حساب شخص يتبعتله إشعار — الطلب بيظهر في
+  // لوحة الإدارة أصلًا.
+  if (providerId) {
+    const recipient = await getProviderUserId(providerId);
+    if (recipient) {
+      await notifyUser({
+        recipientProfileId: recipient,
+        title: 'طلب خدمة جديد',
+        message: 'وصلك طلب خدمة إبداعية جديد. سيظهر للتنفيذ بعد تأكيد الدفع.',
+        link: `/dashboard/instructor/services/orders/${order.id}`,
+      });
+    }
   }
 
   revalidatePath('/account/orders/creative-writing');
@@ -195,16 +233,18 @@ export async function sendServiceOrderMessage(
   // The other side of the conversation hears about it.
   const { data: order } = await supabase
     .from('service_orders')
-    .select('buyer_profile_id, instructor_id')
+    .select('buyer_profile_id, instructor_id, provider_id')
     .eq('id', orderId)
     .maybeSingle();
 
   if (order && !isDelivery) {
-    const instructorUserId = order.instructor_id
-      ? await getInstructorUserId(order.instructor_id)
-      : null;
+    const providerUserId = order.provider_id
+      ? await getProviderUserId(order.provider_id)
+      : order.instructor_id
+        ? await getInstructorUserId(order.instructor_id)
+        : null;
     const recipient =
-      user.id === order.buyer_profile_id ? instructorUserId : order.buyer_profile_id;
+      user.id === order.buyer_profile_id ? providerUserId : order.buyer_profile_id;
     const link =
       user.id === order.buyer_profile_id
         ? `/dashboard/instructor/services/orders/${orderId}`
@@ -397,16 +437,20 @@ export async function confirmServiceOrderPayment(orderId: string) {
   const admin = await requireOrdersAdmin();
   const supabase = await createClient();
 
+  // المهلة بتبدأ من تأكيد الدفع مش من إنشاء الطلب: قبل الدفع مفيش
+  // التزام على مقدّم الخدمة أصلًا.
+  const dueAt = new Date(Date.now() + SERVICE_DUE_DAYS * 24 * 60 * 60 * 1000);
+
   const { error } = await supabase
     .from('service_orders')
-    .update({ status: 'paid' })
+    .update({ status: 'paid', due_at: dueAt.toISOString() })
     .eq('id', orderId);
 
   if (error) throw new Error('تعذّر تأكيد الدفع');
 
   const { data: order } = await supabase
     .from('service_orders')
-    .select('buyer_profile_id, instructor_id')
+    .select('buyer_profile_id, instructor_id, provider_id')
     .eq('id', orderId)
     .maybeSingle();
 
@@ -417,11 +461,16 @@ export async function confirmServiceOrderPayment(orderId: string) {
       message: 'استلمنا المبلغ، والمدرب سيبدأ التنفيذ.',
       link: `/account/orders/creative-writing/${orderId}`,
     });
-    if (order.instructor_id) {
+    const providerUserId = order.provider_id
+      ? await getProviderUserId(order.provider_id)
+      : order.instructor_id
+        ? await getInstructorUserId(order.instructor_id)
+        : null;
+    if (providerUserId) {
       await notifyUser({
-        recipientProfileId: await getInstructorUserId(order.instructor_id),
+        recipientProfileId: providerUserId,
         title: 'طلب جاهز للتنفيذ',
-        message: 'تم تأكيد الدفع — يمكنك بدء التنفيذ الآن.',
+        message: `تم تأكيد الدفع — يمكنك بدء التنفيذ الآن. المهلة ${SERVICE_DUE_DAYS} يومًا.`,
         link: `/dashboard/instructor/services/orders/${orderId}`,
       });
     }

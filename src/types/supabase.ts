@@ -1041,6 +1041,87 @@ export type Database = {
         }
         Relationships: []
       }
+      service_providers: {
+        Row: {
+          id: string
+          kind: Database["public"]["Enums"]["provider_kind"]
+          user_id: string | null
+          instructor_id: string | null
+          display_name: string
+          bio: string
+          avatar_url: string | null
+          status: Database["public"]["Enums"]["provider_status"]
+          is_public: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          kind: Database["public"]["Enums"]["provider_kind"]
+          user_id?: string | null
+          instructor_id?: string | null
+          display_name: string
+          bio?: string
+          avatar_url?: string | null
+          status?: Database["public"]["Enums"]["provider_status"]
+          is_public?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          kind?: Database["public"]["Enums"]["provider_kind"]
+          user_id?: string | null
+          instructor_id?: string | null
+          display_name?: string
+          bio?: string
+          avatar_url?: string | null
+          status?: Database["public"]["Enums"]["provider_status"]
+          is_public?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      provider_services: {
+        Row: {
+          id: string
+          provider_id: string
+          service_id: string
+          requested_price: number | null
+          approved_price: number | null
+          status: string
+          is_active: boolean
+          admin_notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          provider_id: string
+          service_id: string
+          requested_price?: number | null
+          approved_price?: number | null
+          status?: string
+          is_active?: boolean
+          admin_notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          provider_id?: string
+          service_id?: string
+          requested_price?: number | null
+          approved_price?: number | null
+          status?: string
+          is_active?: boolean
+          admin_notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       service_order_messages: {
         Row: {
           id: string
@@ -1082,6 +1163,9 @@ export type Database = {
           delivered_at: string | null
           completed_at: string | null
           instructor_earning: number | null
+          provider_id: string | null
+          due_at: string | null
+          due_note: string | null
         }
         Insert: {
           id?: string
@@ -1096,6 +1180,9 @@ export type Database = {
           delivered_at?: string | null
           completed_at?: string | null
           instructor_earning?: number | null
+          provider_id?: string | null
+          due_at?: string | null
+          due_note?: string | null
         }
         Update: {
           id?: string
@@ -1110,6 +1197,9 @@ export type Database = {
           delivered_at?: string | null
           completed_at?: string | null
           instructor_earning?: number | null
+          provider_id?: string | null
+          due_at?: string | null
+          due_note?: string | null
         }
         Relationships: []
       }
@@ -1556,6 +1646,8 @@ export type Database = {
       owner_type: "platform" | "publisher"
       payout_status_enum: "pending" | "paid"
       product_category: "library" | "custom" | "subscription"
+      provider_kind: "platform" | "instructor" | "individual"
+      provider_status: "pending" | "active" | "suspended"
       publisher_status_enum: "pending" | "active" | "suspended"
       service_order_status: "pending" | "awaiting_verification" | "paid" | "refunded" | "in_progress" | "delivered" | "completed" | "cancelled"
       sub_status_enum: "active" | "cancelled" | "paused"

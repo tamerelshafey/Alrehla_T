@@ -124,14 +124,49 @@ export type InstructorServiceOffer = {
   updatedAt: string;
 };
 
+/**
+ * مين يقدر يقدّم خدمة إبداعية.
+ *
+ * - platform   — المنصة نفسها. مفيش مستحق يتدفع لحد.
+ * - instructor — مدرب مسجّل، وله صفحته العامة.
+ * - individual — مقدّم خدمة مستقل مش مدرب. بيظهر في قايمة الاختيار بس.
+ */
+export type ProviderKind = 'platform' | 'instructor' | 'individual';
+
 /** A provider row as shown to a visitor choosing who will do the work. */
 export type ServiceProvider = {
   offerId: string;
-  instructorId: string;
+  providerId: string;
+  kind: ProviderKind;
+  /** موجود للمدرب بس — الأنواع التانية ما لهاش صف في جدول المدربين. */
+  instructorId: string | null;
   displayName: string;
   bio: string;
   yearsExperience: number;
+  /**
+   * اللي العميل بيدفعه فعلًا.
+   *
+   * ⚠️ كان فيه فرق بين ده وبين اللي بيتعرض: الصفحة كانت بتعرض مستحق
+   * المدرب، والخادم بيحسب فوقه معادلة المنصة — فالعميل يشوف رقمًا
+   * ويتحاسب برقم أكبر. الحقل ده بقى هو اللي بيتعرض وبيتحاسب.
+   */
   price: number;
+  /** مستحق مقدّم الخدمة. فاضي لما المنصة هي المقدّم — مفيش حد يتدفعله. */
+  providerEarning: number | null;
+};
+
+/** صف مقدّم خدمة كما تراه الإدارة. */
+export type ServiceProviderAccount = {
+  id: string;
+  kind: ProviderKind;
+  userId: string | null;
+  instructorId: string | null;
+  displayName: string;
+  bio: string;
+  avatarUrl?: string;
+  status: 'pending' | 'active' | 'suspended';
+  isPublic: boolean;
+  createdAt: string;
 };
 
 // حالة الحجز

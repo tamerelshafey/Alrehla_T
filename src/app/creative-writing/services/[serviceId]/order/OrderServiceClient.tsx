@@ -14,16 +14,16 @@ interface Props {
   paymentQrUrl?: string;
   serviceId: string;
   serviceName: string;
-  instructorId: string | null;
-  instructorName: string | null;
+  providerId: string | null;
+  providerName: string | null;
   amount: number;
 }
 
 export function OrderServiceClient({
   serviceId,
   serviceName,
-  instructorId,
-  instructorName,
+  providerId,
+  providerName,
   amount,
   paymentWalletNumber,
   paymentQrUrl,
@@ -44,7 +44,7 @@ export function OrderServiceClient({
       try {
         await createServiceOrder({
           serviceId,
-          instructorId,
+          providerId,
           transactionReference: transactionRef.trim(),
         });
         router.push('/account/orders/creative-writing');
@@ -64,10 +64,10 @@ export function OrderServiceClient({
           <span className="font-bold text-slate-800">{serviceName}</span>
         </div>
 
-        {instructorName && (
+        {providerName && (
           <div className="flex justify-between border-b border-slate-100 py-3">
-            <span className="font-medium text-slate-500">المدرب</span>
-            <span className="font-bold text-slate-800">{instructorName}</span>
+            <span className="font-medium text-slate-500">مقدّم الخدمة</span>
+            <span className="font-bold text-slate-800">{providerName}</span>
           </div>
         )}
 

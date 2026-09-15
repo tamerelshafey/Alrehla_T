@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
+import { calculateFinalSessionPrice } from '@/lib/utils';
 import type {
   CreativeService,
   InstructorServiceOffer,
+  ProviderKind,
   ServiceProvider,
 } from '@/types';
 
@@ -65,19 +67,29 @@ export async function getInstructorServiceOffers(
 }
 
 /**
- * The instructors a visitor can choose from for one service.
- * Only approved, active offers with a real price are returned — row-level
- * security enforces the same rule at the database, this is not the only
- * guard.
+ * مقدّمو الخدمة اللي العميل بيختار منهم.
+ *
+ * بيقرا من `provider_services` مش من `instructor_services`: مقدّم الخدمة
+ * بقى يقدر يكون المنصة نفسها، أو مدرب، أو مستقل مش مدرب.
+ *
+ * التسعير — وده الجزء اللي كان غلط:
+ *   • مدرب أو مستقل: السعر المعتمد هو **مستحقه هو**، والعميل بيدفع فوقه
+ *     معادلة المنصة. الصفحة كانت بتعرض المستحق والخادم بيحاسب بالسعر
+ *     النهائي — فرق بين اللي اتعرض واللي اتحاسب.
+ *   • المنصة: السعر المعتمد هو **سعر العميل** مباشرة. مفيش مستحق ولا
+ *     هامش فوق هامش.
+ *
+ * الترتيب بالأرخص عشان «يبدأ من» يبقى صادق.
  */
 export async function getProvidersForService(
   serviceId: string
 ): Promise<ServiceProvider[]> {
   const supabase = await createClient();
+
   const { data, error } = await supabase
-    .from('instructor_services')
+    .from('provider_services')
     .select(
-      'id, approved_price, instructor_id, instructors(id, display_name, bio, years_experience)'
+      'id, approved_price, provider_id, service_providers(id, kind, display_name, bio, status, instructor_id)'
     )
     .eq('service_id', serviceId)
     .eq('status', 'approved')
@@ -85,25 +97,83 @@ export async function getProvidersForService(
 
   if (error || !data) return [];
 
-  return data
+  const rows = data
     .map((row) => {
-      const joined = row.instructors as unknown as {
+      const provider = row.service_providers as unknown as {
         id: string;
+        kind: ProviderKind;
         display_name: string;
         bio: string;
-        years_experience: number;
+        status: string;
+        instructor_id: string | null;
       } | null;
-      if (!joined || row.approved_price == null) return null;
+      if (!provider || provider.status !== 'active') return null;
+      if (row.approved_price == null) return null;
+      return { row, provider };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null);
+
+  if (rows.length === 0) return [];
+
+  // سنوات الخبرة موجودة على صف المدرب بس. استعلام واحد للكل بدل واحد
+  // لكل مقدّم.
+  const instructorIds = rows
+    .map((r) => r.provider.instructor_id)
+    .filter((id): id is string => Boolean(id));
+
+  const experience = new Map<string, number>();
+  if (instructorIds.length > 0) {
+    const { data: instructors } = await supabase
+      .from('instructors')
+      .select('id, years_experience')
+      .in('id', instructorIds);
+    for (const i of instructors ?? []) {
+      experience.set(i.id, i.years_experience ?? 0);
+    }
+  }
+
+  // معادلة المنصة تُقرأ مرة واحدة. لو مش متاحة، ما بنخترعش هامش —
+  // بنحاسب بسعر المقدّم زي ما هو.
+  const needsFormula = rows.some((r) => r.provider.kind !== 'platform');
+  let formula: { platformMultiplier: number; fixedAdminFee: number } | null = null;
+  if (needsFormula) {
+    const { data: f } = await supabase
+      .from('pricing_formula_settings')
+      .select('platform_multiplier, fixed_admin_fee')
+      .eq('id', 'default')
+      .maybeSingle();
+    if (f) {
+      formula = {
+        platformMultiplier: f.platform_multiplier,
+        fixedAdminFee: f.fixed_admin_fee,
+      };
+    }
+  }
+
+  return rows
+    .map(({ row, provider }) => {
+      const approved = row.approved_price as number;
+      const isPlatform = provider.kind === 'platform';
+      const price = isPlatform
+        ? approved
+        : formula
+          ? calculateFinalSessionPrice(approved, formula)
+          : approved;
+
       return {
         offerId: row.id,
-        instructorId: joined.id,
-        displayName: joined.display_name,
-        bio: joined.bio,
-        yearsExperience: joined.years_experience,
-        price: row.approved_price,
-      };
+        providerId: provider.id,
+        kind: provider.kind,
+        instructorId: provider.instructor_id,
+        displayName: provider.display_name,
+        bio: provider.bio,
+        yearsExperience: provider.instructor_id
+          ? (experience.get(provider.instructor_id) ?? 0)
+          : 0,
+        price,
+        providerEarning: isPlatform ? null : approved,
+      } satisfies ServiceProvider;
     })
-    .filter((p): p is ServiceProvider => p !== null)
     .sort((a, b) => a.price - b.price);
 }
 

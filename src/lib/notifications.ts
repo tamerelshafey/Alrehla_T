@@ -47,3 +47,23 @@ export async function getInstructorUserId(instructorId: string): Promise<string 
     .maybeSingle();
   return data?.user_id ?? null;
 }
+
+/**
+ * حساب مقدّم الخدمة اللي بيستقبل الإشعارات على الطلب.
+ *
+ * بترجع فاضي لما المنصة هي المقدّم — مفيش شخص بعينه يتبعتله إشعار،
+ * والإدارة بتشوف الطلب في لوحتها أصلًا.
+ */
+export async function getProviderUserId(providerId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('service_providers')
+    .select('kind, user_id, instructor_id')
+    .eq('id', providerId)
+    .maybeSingle();
+
+  if (!data || data.kind === 'platform') return null;
+  if (data.user_id) return data.user_id;
+  if (data.instructor_id) return getInstructorUserId(data.instructor_id);
+  return null;
+}
