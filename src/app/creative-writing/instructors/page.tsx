@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
 
@@ -44,7 +45,7 @@ export default async function InstructorsPage() {
             <Card
               key={instructor.id}
               accentColor="emerald"
-              className="relative flex flex-col overflow-hidden p-8"
+              className="relative flex flex-col overflow-hidden p-8 transition-all hover:-translate-y-1 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/10"
             >
               {instructor.isSample && (
                 <div className="absolute top-4 right-4 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
@@ -58,7 +59,12 @@ export default async function InstructorsPage() {
                 </div>
                 <div>
                   <h2 className="mb-2 text-2xl font-black text-slate-800">
-                    {instructor.displayName}
+                    <Link
+                      href={`/creative-writing/instructors/${instructor.id}`}
+                      className="hover:text-emerald-700 hover:underline"
+                    >
+                      {instructor.displayName}
+                    </Link>
                   </h2>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <div className="flex items-center gap-2 text-sm font-bold text-emerald-600">
@@ -94,6 +100,15 @@ export default async function InstructorsPage() {
                   ))}
                 </div>
               </div>
+
+              {/* الكارت كان مالوش أي لينك: صفحة المدرب موجودة وشغّالة،
+                  وما كانش فيه طريق يوصّلك ليها من القايمة. */}
+              <Link
+                href={`/creative-writing/instructors/${instructor.id}`}
+                className="mt-8 block rounded-xl bg-slate-900 px-6 py-3 text-center font-bold text-white transition-colors hover:bg-slate-800"
+              >
+                عرض الملف الكامل
+              </Link>
             </Card>
           ))}
         </div>

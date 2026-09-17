@@ -1,4 +1,4 @@
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, decodeSlug } from '@/lib/utils';
 import {
   WritingPackage, Instructor, PersonalizedProduct, AddonProduct, SubscriptionTier, 
   Testimonial, CreativeService, BlogPost, UserProfile, Booking, Order, 
@@ -145,7 +145,8 @@ export const getPublishers = async (): Promise<Publisher[]> => {
   }));
 };
 
-export const getPublisherBySlug = async (slug: string): Promise<Publisher | null> => {
+export const getPublisherBySlug = async (rawSlug: string): Promise<Publisher | null> => {
+  const slug = decodeSlug(rawSlug);
   const supabase = createPublicClient();
   const { data, error } = await supabase.from('publishers')
     .select('*')
@@ -167,7 +168,8 @@ export const getPublisherBySlug = async (slug: string): Promise<Publisher | null
   };
 };
 
-export const getProductBySlug = async (slug: string): Promise<PersonalizedProduct | null> => {
+export const getProductBySlug = async (rawSlug: string): Promise<PersonalizedProduct | null> => {
+  const slug = decodeSlug(rawSlug);
   const supabase = createPublicClient();
   const { data, error } = await supabase.from('personalized_products')
     .select('*')

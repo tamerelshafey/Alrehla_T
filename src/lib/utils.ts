@@ -47,3 +47,19 @@ export function calculateAge(birthDate: string | null | undefined): number | nul
   if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
   return age < 0 ? null : age;
 }
+
+/**
+ * فك تشفير الاسم اللي في الرابط.
+ *
+ * الأسماء العربية بتتشفّر في الروابط (%D8%A7…)، والمقارنة باللي متخزّن
+ * في القاعدة بتفشل من غير فك التشفير — وده اللي كان بيخلي مقالات
+ * المدونة تطلع «غير موجودة» وهي ظاهرة في القايمة.
+ */
+export function decodeSlug(slug: string): string {
+  try {
+    return decodeURIComponent(slug);
+  } catch {
+    // رابط مشفّر بشكل غلط — بنرجّعه زي ما هو.
+    return slug;
+  }
+}

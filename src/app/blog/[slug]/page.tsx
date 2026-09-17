@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { PageContainer } from '@/components/PageContainer';
 import { ArrowLeft, Calendar, User, BookOpen, Share2, Facebook, Twitter, Linkedin } from 'lucide-react';
-import { getBlogPosts } from '@/data/domains/content';
+import { getBlogPosts, getBlogPostBySlug } from '@/data/domains/content';
 import { notFound } from 'next/navigation';
 import { Section } from '@/components/ui/Section';
 import { Button } from '@/components/ui/Button';
@@ -16,8 +16,7 @@ import { getSiteSettings } from '@/data/domains/content';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
-  const posts = await getBlogPosts();
-  const post = posts.find(p => p.slug === resolvedParams.slug);
+  const post = await getBlogPostBySlug(resolvedParams.slug);
   if (!post) return { title: 'مقال غير موجود' };
   return pageMetadata({
     title: post.title,
@@ -31,10 +30,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
-  const posts = await getBlogPosts();
-  // An unknown slug used to silently render the first article as if it were the
-  // one requested.
-  const post = posts.find((p) => p.slug === resolvedParams.slug);
+  // الاسم في الرابط بيوصل مشفّر لأن العناوين عربية، فالمقارنة النصية
+  // المباشرة كانت بتفشل والمقال بيطلع «غير موجود» وهو موجود.
+  const post = await getBlogPostBySlug(resolvedParams.slug);
 
   if (!post) {
     notFound();
