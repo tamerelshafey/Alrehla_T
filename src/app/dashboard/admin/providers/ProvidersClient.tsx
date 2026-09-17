@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus, Save, Trash2, Search } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 import {
@@ -10,6 +11,7 @@ import {
   createIndividualProvider,
 } from '@/actions/providers';
 import type { ProviderWithOfferings } from '@/data/domains/providers';
+import type { ActionResult } from '@/actions/providers';
 
 type CatalogService = { id: string; name: string; price: number };
 
@@ -48,6 +50,7 @@ export function ProvidersClient({
   const [openId, setOpenId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   const filtered = useMemo(
     () =>
@@ -63,13 +66,20 @@ export function ProvidersClient({
     [providers, kindFilter, statusFilter, query],
   );
 
-  const run = (fn: () => Promise<unknown>) => {
+  // الإجراءات بترجّع { ok, error } بدل ما ترمي، لأن Next بيخفي رسائل
+  // الأخطاء المرمية في الإنتاج. الـcatch هنا للأعطال الحقيقية بس.
+  const run = (fn: () => Promise<ActionResult>) => {
     setError('');
     startTransition(async () => {
       try {
-        await fn();
+        const result = await fn();
+        if (!result.ok) setError(result.error);
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'حصل خطأ');
+        setError(
+          e instanceof Error && e.message
+            ? e.message
+            : 'حصل عطل غير متوقع. راجع سجلات الخادم في Vercel.',
+        );
       }
     });
   };
@@ -82,7 +92,27 @@ export function ProvidersClient({
         </p>
       )}
 
-      <AddProvider onSubmit={(v) => run(() => createIndividualProvider(v))} busy={pending} />
+      <AddProvider
+        onSubmit={async (v) => {
+          setError('');
+          try {
+            const result = await createIndividualProvider(v);
+            if (!result.ok) {
+              setError(result.error);
+              return false;
+            }
+            router.refresh();
+            return true;
+          } catch (e) {
+            setError(
+              e instanceof Error && e.message
+                ? e.message
+                : 'حصل عطل غير متوقع. راجع سجلات الخادم في Vercel.',
+            );
+            return false;
+          }
+        }}
+      />
 
       {/* الفلاتر */}
       <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4">
@@ -143,15 +173,20 @@ export function ProvidersClient({
 
 function AddProvider({
   onSubmit,
-  busy,
 }: {
-  onSubmit: (v: { email: string; displayName: string; bio: string }) => void;
-  busy: boolean;
+  /** بترجّع true لو نجحت. الفورم بيفضل مفتوح لو فشلت — عشان اللي كتبته
+   *  ما يضيعش وإنت بتقرا سبب الرفض. */
+  onSubmit: (v: {
+    email: string;
+    displayName: string;
+    bio: string;
+  }) => Promise<boolean>;
 }) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
+  const [busy, setBusy] = useState(false);
 
   if (!open) {
     return (
@@ -197,16 +232,20 @@ function AddProvider({
       <div className="flex gap-2">
         <button
           disabled={busy}
-          onClick={() => {
-            onSubmit({ email, displayName, bio });
-            setEmail('');
-            setDisplayName('');
-            setBio('');
-            setOpen(false);
+          onClick={async () => {
+            setBusy(true);
+            const ok = await onSubmit({ email, displayName, bio });
+            setBusy(false);
+            if (ok) {
+              setEmail('');
+              setDisplayName('');
+              setBio('');
+              setOpen(false);
+            }
           }}
           className="rounded-xl bg-emerald-600 px-5 py-2 font-bold text-white disabled:opacity-50"
         >
-          إضافة
+          {busy ? 'جارٍ الإضافة…' : 'إضافة'}
         </button>
         <button
           onClick={() => setOpen(false)}
@@ -236,7 +275,7 @@ function ProviderCard({
   open: boolean;
   onToggle: () => void;
   busy: boolean;
-  run: (fn: () => Promise<unknown>) => void;
+  run: (fn: () => Promise<ActionResult>) => void;
 }) {
   const [name, setName] = useState(provider.displayName);
   const [bio, setBio] = useState(provider.bio);
@@ -415,7 +454,7 @@ function OfferingRow({
   isPlatform: boolean;
   isNew?: boolean;
   busy: boolean;
-  run: (fn: () => Promise<unknown>) => void;
+  run: (fn: () => Promise<ActionResult>) => void;
 }) {
   const [price, setPrice] = useState(initialPrice?.toString() ?? '');
   const [status, setStatus] = useState(initialStatus);

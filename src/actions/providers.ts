@@ -12,7 +12,17 @@ import type { ProviderKind } from '@/types';
  * ⚠️ الدوال دي **مش** الحارس. الحارس الحقيقي هو صلاحيات قاعدة البيانات
  * والمحفّزات اللي في ملف 30 — لأنها بتشتغل حتى لو حد كلّم قاعدة البيانات
  * مباشرة وتجاهل الموقع.
+ *
+ * ليه بترجّع الخطأ بدل ما ترميه:
+ *   Next.js في الإنتاج بيخفي أي رسالة خطأ جاية من الخادم ويستبدلها بنص
+ *   عام، عشان ما تتسربش تفاصيل حساسة. يعني رسالة زي «مفيش حساب بالبريد
+ *   ده» ما بتوصلش للإدارة أصلًا — بيوصلها نص إنجليزي ما بيقولش حصل إيه.
+ *
+ *   فالرسائل اللي الإدارة المفروض تقراها بترجع كنتيجة عادية، والرمي
+ *   بيفضل للأعطال الحقيقية اللي مالهاش رسالة مفيدة.
  */
+export type ActionResult = { ok: true } | { ok: false; error: string };
+
 function requireProvidersAdmin() {
   return requireAdmin('canManageInstructors', 'غير مصرح لك بإدارة مقدّمي الخدمة');
 }
@@ -28,10 +38,10 @@ export async function saveProviderDetails(params: {
   displayName: string;
   bio: string;
   status: 'pending' | 'active' | 'suspended';
-}) {
+}): Promise<ActionResult> {
   const admin = await requireProvidersAdmin();
   const name = params.displayName.trim();
-  if (!name) throw new Error('اكتب اسم مقدّم الخدمة');
+  if (!name) return { ok: false, error: 'اكتب اسم مقدّم الخدمة' };
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -46,7 +56,7 @@ export async function saveProviderDetails(params: {
 
   if (error) {
     console.error('Error saving provider', error);
-    throw new Error('تعذّر حفظ بيانات مقدّم الخدمة');
+    return { ok: false, error: `تعذّر حفظ بيانات مقدّم الخدمة: ${error.message}` };
   }
 
   await logAuditAction({
@@ -72,25 +82,32 @@ export async function createIndividualProvider(params: {
   email: string;
   displayName: string;
   bio: string;
-}) {
+}): Promise<ActionResult> {
   const admin = await requireProvidersAdmin();
   const email = params.email.trim().toLowerCase();
   const name = params.displayName.trim();
-  if (!email) throw new Error('اكتب بريد صاحب الحساب');
-  if (!name) throw new Error('اكتب اسم مقدّم الخدمة');
+  if (!email) return { ok: false, error: 'اكتب بريد صاحب الحساب' };
+  if (!name) return { ok: false, error: 'اكتب اسم مقدّم الخدمة' };
 
   const supabase = await createClient();
 
-  const { data: found } = await supabase
+  const { data: found, error: lookupError } = await supabase
     .from('user_emails')
     .select('user_id')
     .eq('email', email)
     .maybeSingle();
 
+  if (lookupError) {
+    console.error('Error looking up email', lookupError);
+    return { ok: false, error: `تعذّر البحث عن البريد: ${lookupError.message}` };
+  }
+
   if (!found) {
-    throw new Error(
-      'مفيش حساب بالبريد ده. اطلب منه يسجّل أولاً، أو أضِف المستخدم من شاشة المستخدمين.',
-    );
+    return {
+      ok: false,
+      error:
+        'مفيش حساب بالبريد ده. اطلب منه يسجّل أولاً، أو أضِف المستخدم من شاشة المستخدمين.',
+    };
   }
 
   // مدرب بالفعل؟ يبقى له صف مقدّم أصلًا، ومفيش داعي لصف تاني.
@@ -101,9 +118,11 @@ export async function createIndividualProvider(params: {
     .maybeSingle();
 
   if (asInstructor) {
-    throw new Error(
-      'صاحب الحساب ده مدرب بالفعل، وله صف مقدّم خدمة جاهز. عدّل عروضه من نفس الشاشة.',
-    );
+    return {
+      ok: false,
+      error:
+        'صاحب الحساب ده مدرب بالفعل، وله صف مقدّم خدمة جاهز. عدّل عروضه من نفس الشاشة.',
+    };
   }
 
   const { error } = await supabase.from('service_providers').insert({
@@ -118,8 +137,9 @@ export async function createIndividualProvider(params: {
 
   if (error) {
     console.error('Error creating provider', error);
-    // الفهرس الفريد بيمنع مقدّمين لنفس الحساب.
-    throw new Error('تعذّر الإضافة. غالبًا الحساب ده مضاف كمقدّم خدمة بالفعل.');
+    // رسالة قاعدة البيانات نفسها بتتعرض: من غيرها الإدارة بتشوف «تعذّر»
+    // وما تعرفش السبب — قيد تفرّد ولا صلاحية ولا حاجة تالتة.
+    return { ok: false, error: `تعذّرت الإضافة: ${error.message}` };
   }
 
   await logAuditAction({
@@ -150,16 +170,16 @@ export async function saveProviderOffering(params: {
   status: 'pending' | 'approved' | 'rejected';
   isActive: boolean;
   adminNotes?: string;
-}) {
+}): Promise<ActionResult> {
   const admin = await requireProvidersAdmin();
 
   const price = params.approvedPrice;
   if (price != null && (!Number.isFinite(price) || price < 0)) {
-    throw new Error('السعر غير صحيح');
+    return { ok: false, error: 'السعر غير صحيح' };
   }
   // عرض معتمد من غير سعر بيوصل للعميل كخيار بلا رقم.
   if (params.status === 'approved' && (price == null || price <= 0)) {
-    throw new Error('لا يمكن اعتماد عرض بدون سعر');
+    return { ok: false, error: 'لا يمكن اعتماد عرض بدون سعر' };
   }
 
   const supabase = await createClient();
@@ -186,7 +206,7 @@ export async function saveProviderOffering(params: {
 
   if (error) {
     console.error('Error saving offering', error);
-    throw new Error('تعذّر حفظ العرض');
+    return { ok: false, error: `تعذّر حفظ العرض: ${error.message}` };
   }
 
   await logAuditAction({
@@ -202,7 +222,10 @@ export async function saveProviderOffering(params: {
 }
 
 /** إزالة عرض بالكامل — المقدّم يبقى مش بيقدّم الخدمة دي خالص. */
-export async function removeProviderOffering(providerId: string, serviceId: string) {
+export async function removeProviderOffering(
+  providerId: string,
+  serviceId: string,
+): Promise<ActionResult> {
   const admin = await requireProvidersAdmin();
   const supabase = await createClient();
 
@@ -214,7 +237,7 @@ export async function removeProviderOffering(providerId: string, serviceId: stri
 
   if (error) {
     console.error('Error removing offering', error);
-    throw new Error('تعذّر حذف العرض');
+    return { ok: false, error: `تعذّر حذف العرض: ${error.message}` };
   }
 
   await logAuditAction({
