@@ -275,9 +275,12 @@ export type Testimonial = {
 // إضافة إضافية لمنتج
 export type AddonProduct = {
   id: string;
+  slug: string;
   name: string;
   price: number;
   description?: string;
+  isActive: boolean;
+  sortOrder: number;
 };
 
 // خطة اشتراك

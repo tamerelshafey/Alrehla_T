@@ -39,6 +39,8 @@ export type NewOrderItem = {
   productId: string;
   quantity: number;
   customizationData?: unknown;
+  /** أرقام الإضافات — أسعارها بتتقرا في القاعدة. */
+  addonIds?: string[];
 };
 
 export type CreateOrderResult =
@@ -63,6 +65,7 @@ export async function createOrder(
       product_id: item.productId,
       quantity: Math.max(1, Math.trunc(item.quantity) || 1),
       customization_data: (item.customizationData ?? null) as Json,
+      addon_ids: item.addonIds ?? [],
     })),
     p_shipping: shipping
       ? {

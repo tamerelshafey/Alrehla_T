@@ -95,11 +95,19 @@ export function CheckoutClient({ user, paymentWalletNumber, paymentQrUrl, shippi
       // الواجهة بتبعت إيه اتطلب وبس. الأسعار والشحن بيتحسبوا في القاعدة،
       // فالأرقام المعروضة فوق للعرض بس — مش هي اللي بتتحسب على العميل.
       const result = await createOrder(
-        items.map((i: { productId: string; quantity: number; customizationData?: unknown }) => ({
-          productId: i.productId,
-          quantity: i.quantity,
-          customizationData: i.customizationData,
-        })),
+        items.map(
+          (i: {
+            productId: string;
+            quantity: number;
+            customizationData?: unknown;
+            addonIds?: string[];
+          }) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            customizationData: i.customizationData,
+            addonIds: i.addonIds,
+          }),
+        ),
         {
           recipientName: shippingInfo.name,
           recipientPhone: shippingInfo.phone,

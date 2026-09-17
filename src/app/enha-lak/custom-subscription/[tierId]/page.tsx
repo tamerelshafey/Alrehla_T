@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 import { notFound } from 'next/navigation';
-import { getSubscriptionTiers } from '@/data/domains/products';
+import { getSubscriptionTiers, getAddonProducts } from '@/data/domains/products';
 import { PageContainer } from '@/components/PageContainer';
 import { Section } from '@/components/ui/Section';
 import { PersonalizationWizard } from '@/components/enha-lak/PersonalizationWizard';
@@ -25,7 +25,10 @@ interface PageProps {
 
 export default async function CustomSubscriptionPage({ params }: PageProps) {
   const { tierId } = await params;
-  const tiers = await getSubscriptionTiers();
+  const [tiers, addons] = await Promise.all([
+    getSubscriptionTiers(),
+    getAddonProducts(),
+  ]);
   const tier = tiers.find(t => t.id === tierId);
 
   if (!tier) {
@@ -55,7 +58,7 @@ export default async function CustomSubscriptionPage({ params }: PageProps) {
           <h1 className="text-3xl font-black text-rose-700">تخصيص صندوق الرحلة</h1>
           <p className="mt-2 text-slate-600">قم بإعداد تفاصيل البطل للاشتراك ({tier.name})</p>
         </div>
-        <PersonalizationWizard product={product} />
+        <PersonalizationWizard product={product} addons={addons} />
       </Section>
     </PageContainer>
   );

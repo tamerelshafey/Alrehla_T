@@ -6,7 +6,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { PersonalizedProduct } from '@/types';
+import { AddonProduct, PersonalizedProduct } from '@/types';
 
 import { WizardStepper } from './wizard-steps/WizardStepper';
 import { OrderSummarySidebar } from './wizard-steps/OrderSummarySidebar';
@@ -26,12 +26,23 @@ const wizardSchema = z.object({
   heroDescription: z.string().min(5, 'يجب إدخال وصف للبطل'),
   familyMemberNames: z.string().optional(),
   storyGoal: z.string().min(2, 'الرجاء اختيار الهدف التربوي'),
+  /** لما العميل يختار «هدف آخر» بيكتب هدفه بكلامه هنا. */
+  customStoryGoal: z.string().optional(),
+  /** إهداء يتكتب في أول الكتاب — نفس فكرة معالج المكتبة. */
+  dedicationText: z.string().optional(),
   facePhotoFile: z.any().refine((file) => file !== null && file !== undefined, 'الصورة الشخصية مطلوبة'),
   secondPhotoFile: z.any().optional(),
 
   selectedAddonIds: z.array(z.string()),
 
 }).superRefine((data, ctx) => {
+  if (data.storyGoal === 'other' && !data.customStoryGoal?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'اكتب الهدف اللي في بالك',
+      path: ['customStoryGoal'],
+    });
+  }
   if (!data.familyMemberId && !data.newChildName) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -43,7 +54,14 @@ const wizardSchema = z.object({
 
 type WizardFormValues = z.infer<typeof wizardSchema>;
 
-export function PersonalizationWizard({ product }: { product: PersonalizedProduct }) {
+export function PersonalizationWizard({
+  product,
+  addons = [],
+}: {
+  product: PersonalizedProduct;
+  /** الإضافات المتاحة — بتيجي من القاعدة عن طريق الصفحة. */
+  addons?: AddonProduct[];
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -150,10 +168,16 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
         childPhotoUrl: facePhotoUrl,
         secondPhotoUrl,
         heroDescription: data.heroDescription,
-        storyGoal: data.storyGoal,
+        // «هدف آخر» بيتحفظ بنص العميل نفسه، مش بكلمة 'other'.
+        storyGoal:
+          data.storyGoal === 'other'
+            ? (data.customStoryGoal ?? '').trim()
+            : data.storyGoal,
+        dedicationText: data.dedicationText?.trim() || undefined,
         familyMemberNames: data.familyMemberNames,
         selectedAddonIds: data.selectedAddonIds,
-      }
+      },
+      addonIds: data.selectedAddonIds
     });
 
     // Clear session storage
@@ -180,8 +204,8 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
 
             <div className="mt-8">
               {currentStep === 1 && <Step1ChildInfo onNext={() => handleNext(['familyMemberId', 'newChildName', 'newChildBirthDate', 'newChildGender'])} />}
-              {currentStep === 2 && <Step2Details onNext={() => handleNext(['heroDescription', 'familyMemberNames', 'storyGoal', 'facePhotoFile'])} onPrev={handlePrev} />}
-              {currentStep === 3 && <Step3Addons onNext={() => handleNext(['selectedAddonIds'])} onPrev={handlePrev} />}
+              {currentStep === 2 && <Step2Details onNext={() => handleNext(['heroDescription', 'familyMemberNames', 'storyGoal', 'customStoryGoal', 'facePhotoFile'])} onPrev={handlePrev} />}
+              {currentStep === 3 && <Step3Addons addons={addons} onNext={() => handleNext(['selectedAddonIds'])} onPrev={handlePrev} />}
               {currentStep === 4 && <Step4Review onPrev={handlePrev} product={product} />}
             </div>
           </div>

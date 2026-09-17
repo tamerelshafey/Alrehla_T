@@ -52,10 +52,37 @@ export const getPersonalizedProducts = async (): Promise<PersonalizedProduct[]> 
  * Add-on products have no table in the database yet — the shape and business
  * rules still need deciding. Until then a customer must never be offered one:
  * they would be selecting, and paying for, something that does not exist.
- * Sample data is kept for local development only.
+ * الإضافات المتاحة مع المنتجات المخصّصة.
+ *
+ * كانت بترجّع قايمة فاضية دايمًا في الإنتاج، وقبلها كانت تلات إضافات
+ * بأسعار مكتوبة في كود المتصفح مالهاش جدول. دلوقتي من `addon_products`.
  */
-export const getAddonProducts = async (): Promise<AddonProduct[]> => {
-  return [];
+export const getAddonProducts = async (
+  options: { includeInactive?: boolean } = {},
+): Promise<AddonProduct[]> => {
+  const supabase = await createClient();
+
+  const query = supabase
+    .from('addon_products')
+    .select('id, slug, name, description, price, is_active, sort_order')
+    .order('sort_order', { ascending: true })
+    .order('name', { ascending: true });
+
+  const { data, error } = options.includeInactive
+    ? await query
+    : await query.eq('is_active', true);
+
+  if (error || !data) return [];
+
+  return data.map((a) => ({
+    id: a.id,
+    slug: a.slug,
+    name: a.name,
+    description: a.description ?? undefined,
+    price: a.price,
+    isActive: a.is_active,
+    sortOrder: a.sort_order,
+  }));
 };
 
 export const getSubscriptionTiers = async (

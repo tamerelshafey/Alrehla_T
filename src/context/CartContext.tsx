@@ -17,6 +17,8 @@ export type CartItem = {
   quantity: number;
   imageUrl?: string;
   type: 'book' | 'custom' | 'subscription' | 'package';
+  /** أرقام الإضافات المختارة — السعر بيتحسب في القاعدة، مش هنا. */
+  addonIds?: string[];
   customizationData?: any;
 };
 

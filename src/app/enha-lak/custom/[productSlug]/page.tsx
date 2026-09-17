@@ -12,14 +12,17 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-import { getProductBySlug } from '@/data/domains/products';
+import { getProductBySlug, getAddonProducts } from '@/data/domains/products';
 import { PageContainer } from '@/components/PageContainer';
 import Link from 'next/link';
 import { PersonalizationWizard } from '@/components/enha-lak/PersonalizationWizard';
 
 export default async function CustomProductPage({ params }: { params: Promise<{ productSlug: string }> }) {
   const { productSlug } = await params;
-  const product = await getProductBySlug(productSlug);
+  const [product, addons] = await Promise.all([
+    getProductBySlug(productSlug),
+    getAddonProducts(),
+  ]);
 
   if (!product || product.ownerType !== 'platform') {
     return (
@@ -36,7 +39,7 @@ export default async function CustomProductPage({ params }: { params: Promise<{ 
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <PersonalizationWizard product={product} />
+      <PersonalizationWizard product={product} addons={addons} />
     </div>
   );
 }

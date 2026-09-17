@@ -1,17 +1,24 @@
 import { formatPrice } from '@/lib/utils';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { AddonProduct } from '@/types';
 
-export function Step3Addons({ onNext, onPrev }: { onNext: () => void, onPrev: () => void }) {
+/**
+ * الإضافات بتيجي من قاعدة البيانات (جدول `addon_products`) عن طريق
+ * الصفحة، مش مكتوبة هنا. قبل كده كانت تلات إضافات بأسعار في كود
+ * المتصفح، وبعدين قايمة فاضية ثابتة.
+ */
+export function Step3Addons({
+  onNext,
+  onPrev,
+  addons,
+}: {
+  onNext: () => void;
+  onPrev: () => void;
+  addons: AddonProduct[];
+}) {
   const { watch, setValue } = useFormContext();
   const selectedAddons: string[] = watch('selectedAddonIds') || [];
-  
-  // Three add-ons used to be listed here and priced into the customer's
-  // total — a plush toy, gift wrapping and a PDF copy. None of them exists:
-  // there is no add-on products table at all, and nothing downstream could
-  // ever have fulfilled an order for one.
-  const [addons] = useState<AddonProduct[]>([]);
 
   const toggleAddon = (id: string) => {
     if (selectedAddons.includes(id)) {
@@ -27,6 +34,11 @@ export function Step3Addons({ onNext, onPrev }: { onNext: () => void, onPrev: ()
       <p className="text-slate-600">اجعل هديتك أكثر تميزاً بإضافة بعض اللمسات الخاصة.</p>
 
       <div className="space-y-4 mt-6">
+        {addons.length === 0 && (
+          <p className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm font-medium text-slate-500">
+            مفيش إضافات متاحة حاليًا — كمّل عادي.
+          </p>
+        )}
         {addons.map((addon) => {
           const isSelected = selectedAddons.includes(addon.id);
           return (

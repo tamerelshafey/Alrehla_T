@@ -26,6 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { label: 'مقدّمو الخدمة', href: '/dashboard/admin/providers', icon: UserCheck, permission: 'canManageInstructors' },
     { label: 'الناشرون', href: '/dashboard/admin/publishers', icon: BookOpen, permission: 'canManagePublishers' },
     { label: 'المنتجات والمكتبة', href: '/dashboard/admin/products', icon: Box, permission: 'canManagePublishers' },
+    { label: 'إضافات المنتجات', href: '/dashboard/admin/addons', icon: Package, permission: 'canManageCatalog' },
     { label: 'باقات الكتابة', href: '/dashboard/admin/writing/packages', icon: LayoutDashboard, permission: 'canManageCatalog' },
     { label: 'الخدمات الإبداعية', href: '/dashboard/admin/writing/services', icon: LayoutDashboard, permission: 'canManageCatalog' },    
     { label: 'إعدادات تسعير الكتابة', href: '/dashboard/admin/settings/creative-writing-pricing', icon: Settings, permission: 'canManageCatalog' },

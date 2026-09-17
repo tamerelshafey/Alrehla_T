@@ -52,8 +52,32 @@ export function Step2Details({ onNext, onPrev }: { onNext: () => void, onPrev: (
           <option value="ثقة">بناء الثقة بالنفس</option>
           <option value="حل المشكلات">تعلم حل المشكلات</option>
           <option value="تعاون">التعاون مع الآخرين</option>
+          <option value="other">هدف آخر — أكتبه بنفسي</option>
         </select>
         {errors.storyGoal && <span className="text-sm text-red-500">{errors.storyGoal.message as string}</span>}
+      </div>
+
+      {watch('storyGoal') === 'other' && (
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-slate-700">اكتب الهدف بكلامك</label>
+          <textarea
+            {...register('customStoryGoal')}
+            className="h-20 w-full rounded-xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            placeholder="مثال: يتعوّد ينام في أوضته لوحده من غير خوف"
+          />
+          {errors.customStoryGoal && (
+            <span className="text-sm text-red-500">{errors.customStoryGoal.message as string}</span>
+          )}
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <label className="text-sm font-bold text-slate-700">إهداء أو رسالة في أول الكتاب (اختياري)</label>
+        <textarea
+          {...register('dedicationText')}
+          className="h-20 w-full rounded-xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          placeholder="مثال: إلى نور… من بابا وماما، بكل الحب"
+        />
       </div>
 
       <div className="space-y-2">
