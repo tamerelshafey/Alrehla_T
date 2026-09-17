@@ -2,7 +2,16 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export type CartItem = {
+  /** رقم سطر العربة — بيفرّق بين نسختين متخصصتين من نفس المنتج. */
   id: string;
+  /**
+   * رقم المنتج الحقيقي في قاعدة البيانات.
+   *
+   * كان الطلب بيتخزّن برقم السطر المركّب (رقم المنتج + التوقيت)، فعناصر
+   * الطلبات ما كانتش موصولة بالمنتجات، والخادم ما كانش يقدر يجيب السعر
+   * الصح. الرقم ده هو اللي بيتبعت للخادم.
+   */
+  productId: string;
   name: string;
   price: number;
   quantity: number;

@@ -152,6 +152,7 @@ export default async function CustomPage() {
                 <AddToCartButton 
                   product={{
                     id: addon.id,
+                    productId: addon.id,
                     name: addon.name,
                     price: addon.price,
                     quantity: 1,

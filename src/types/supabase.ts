@@ -1637,6 +1637,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      create_customer_order: {
+        Args: {
+          p_items: Json
+          p_shipping?: Json | null
+        }
+        Returns: string
+      }
     }
     Enums: {
       age_group: "under_12" | "12_plus"

@@ -111,6 +111,7 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
 
     addItem({
       id: `${product.id}-${Date.now()}`,
+      productId: product.id,
       name: product.name,
       price: product.price,
       quantity: 1,

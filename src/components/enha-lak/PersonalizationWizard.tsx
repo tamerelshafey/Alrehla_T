@@ -128,23 +128,15 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
        childName = 'مشارك موجود'; 
     }
 
-    // Calculate addon price
-    let addonsPrice = 0;
-    const addonsData = [
-      { id: 'addon-1', price: 150 },
-      { id: 'addon-2', price: 50 },
-      { id: 'addon-3', price: 100 }
-    ];
-    data.selectedAddonIds.forEach(id => {
-      const addon = addonsData.find(a => a.id === id);
-      if (addon) addonsPrice += addon.price;
-    });
-
+    // الإضافات: مفيش جدول ليها ولا أسعار حقيقية، وخطوة اختيارها فاضية
+    // في الإنتاج. الأرقام اللي كانت مكتوبة هنا (150 و50 و100) كانت من
+    // النموذج الأولي ومالهاش مصدر — واتشالت عشان ما تتحسبش على عميل.
     // 2. Add to cart
     addItem({
       id: product.id + '-' + Date.now(),
+      productId: product.id,
       name: product.name,
-      price: product.price + addonsPrice,
+      price: product.price,
       quantity: 1,
       type: product.category === 'subscription' ? 'subscription' : 'custom',
       imageUrl: product.coverImageUrl || undefined,

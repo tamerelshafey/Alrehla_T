@@ -10,7 +10,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
-import { createDummyOrder, submitPaymentProof } from '@/actions/orders';
+import { createOrder, submitPaymentProof } from '@/actions/orders';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -35,6 +35,7 @@ export function CheckoutClient({ user, paymentWalletNumber, paymentQrUrl, shippi
   // payment gateway is integrated, transfer is the only method on offer.
   const [isProcessing, setIsProcessing] = useState(false);
   const [transactionRef, setTransactionRef] = useState('');
+  const [orderError, setOrderError] = useState('');
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isSuccess, setIsSuccess] = useState(false);
@@ -79,16 +80,16 @@ export function CheckoutClient({ user, paymentWalletNumber, paymentQrUrl, shippi
   const handlePaymentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
+    setOrderError('');
     startTransition(async () => {
-      // Create order
-      const orderId = await createDummyOrder(
-        items.map((i: { id: string; quantity: number; price: number; customizationData?: unknown }) => ({
-          productId: i.id,
+      // الواجهة بتبعت إيه اتطلب وبس. الأسعار والشحن بيتحسبوا في القاعدة،
+      // فالأرقام المعروضة فوق للعرض بس — مش هي اللي بتتحسب على العميل.
+      const result = await createOrder(
+        items.map((i: { productId: string; quantity: number; customizationData?: unknown }) => ({
+          productId: i.productId,
           quantity: i.quantity,
-          unitPrice: i.price,
           customizationData: i.customizationData,
-        })) as Parameters<typeof createDummyOrder>[0],
-        grandTotal,
+        })),
         {
           recipientName: shippingInfo.name,
           recipientPhone: shippingInfo.phone,
@@ -97,13 +98,19 @@ export function CheckoutClient({ user, paymentWalletNumber, paymentQrUrl, shippi
           governorate: shippingInfo.gov,
           notes: shippingInfo.notes,
         },
-        shipping
       );
 
-      await submitPaymentProof(orderId, transactionRef);
+      if (!result.ok) {
+        // العربة ما بتتفضّاش عند الفشل: العميل يصحّح ويعيد المحاولة.
+        setOrderError(result.error);
+        setIsProcessing(false);
+        return;
+      }
+
+      await submitPaymentProof(result.orderId, transactionRef);
 
       clearCart();
-      router.push('/enha-lak/order-confirmation?id=' + orderId);
+      router.push('/enha-lak/order-confirmation?id=' + result.orderId);
     });
   };
 
@@ -288,6 +295,12 @@ export function CheckoutClient({ user, paymentWalletNumber, paymentQrUrl, shippi
                 طلبك يُسجَّل فورًا، وتُراجعه الإدارة وتؤكد استلام المبلغ.
               </p>
             </div>
+
+            {orderError && (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+                {orderError}
+              </div>
+            )}
 
             <div className="pt-6">
               <button 

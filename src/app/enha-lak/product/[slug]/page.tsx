@@ -147,6 +147,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <AddToCartButton 
                     product={{
                       id: product.id,
+                      productId: product.id,
                       name: product.name,
                       price: product.price,
                       quantity: 1,
