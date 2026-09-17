@@ -22,7 +22,7 @@ export default async function Page() {
       <DashboardPageHeader title="إدارة المستخدمين والعائلات" />
       {!canInvite && (
         <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-medium text-amber-900">
-          دعوة المستخدمين غير مفعّلة: متغير{' '}
+          إضافة المستخدمين غير مفعّلة: متغير{' '}
           <code dir="ltr">SUPABASE_SERVICE_ROLE_KEY</code> غير موجود على الخادم.
         </div>
       )}

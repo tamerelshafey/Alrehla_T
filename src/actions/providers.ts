@@ -142,6 +142,25 @@ export async function createIndividualProvider(params: {
     return { ok: false, error: `تعذّرت الإضافة: ${error.message}` };
   }
 
+  // ترقية دور الحساب لـ«مقدّم خدمة» عشان الدخول يوديه على لوحته.
+  // بنرقّي الأدوار العادية بس: مفيش خطر إننا ننزّل مشرفًا أو ناشرًا من
+  // دوره من غير ما حد يقصد.
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', found.user_id)
+    .maybeSingle();
+
+  if (profile && ['visitor', 'customer', 'student'].includes(profile.role)) {
+    const { error: roleError } = await supabase
+      .from('user_profiles')
+      .update({ role: 'service_provider', updated_at: new Date().toISOString() })
+      .eq('id', found.user_id);
+    // الدور مش شرط لعمل الصف: لو فشل، المقدّم اتضاف فعلًا والإدارة تقدر
+    // تغيّر الدور من شاشة المستخدمين. فبنسجّل ولا نفشّل العملية.
+    if (roleError) console.error('Error upgrading provider role', roleError);
+  }
+
   await logAuditAction({
     actorProfileId: admin.id,
     actorName: admin.fullName,

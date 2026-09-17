@@ -7,21 +7,146 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { logAuditAction } from '@/lib/audit';
 import type { UserRole } from '@/types';
 
+/**
+ * ليه النتيجة بترجع بدل ما الخطأ يترمي:
+ *   Next.js في الإنتاج بيخفي أي رسالة خطأ جاية من الخادم ويستبدلها بنص
+ *   إنجليزي عام. يعني رسالة زي «فيه حساب بالبريد ده بالفعل» ما بتوصلش
+ *   للإدارة أصلًا. فالرسائل اللي المفروض تتقرا بترجع كنتيجة عادية.
+ */
+export type UserActionResult<T = unknown> =
+  | ({ ok: true } & T)
+  | { ok: false; error: string };
+
+/**
+ * الأدوار اللي تتحدد من شاشة المستخدمين.
+ *
+ * ❗ «مدرب» مش هنا عن قصد: المدرب محتاج ملف مدرب كامل (تخصص، سعر،
+ * مواعيد)، ولو اتحدد دوره من هنا بس هيبقى عنده دور من غير ملف — لوحة
+ * فاضية وحساب مكسور. المدرب بيتضاف من شاشة «المدربين» وحدها.
+ */
 const ASSIGNABLE_ROLES: UserRole[] = [
   'student',
-  'instructor',
+  'service_provider',
   'publisher',
   'general_supervisor',
   'super_admin',
 ];
+
+const ADMIN_ROLES: UserRole[] = ['super_admin', 'general_supervisor'];
+
+function checkRole(role: UserRole, actorRole: UserRole): string | null {
+  if (!ASSIGNABLE_ROLES.includes(role)) {
+    if (role === 'instructor') {
+      return 'دور المدرب بيتحدد من شاشة «المدربين» عشان يتعمل له ملف مدرب كامل.';
+    }
+    return 'الدور المختار غير صالح';
+  }
+  // منح صلاحيات إدارية قرار خطير: مدير النظام وحده يقدر يعمله.
+  if (ADMIN_ROLES.includes(role) && actorRole !== 'super_admin') {
+    return 'منح صلاحيات إدارية متاح لمدير النظام فقط';
+  }
+  return null;
+}
+
+/** كلمة مرور عشوائية قوية — بتتعرض للإدارة مرة واحدة وما بتتخزّنش عندنا. */
+function generatePassword(): string {
+  const alphabet = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%';
+  const bytes = new Uint32Array(16);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join('');
+}
+
+/** كتابة الملف الشخصي بعد إنشاء الحساب — مشتركة بين الطريقتين. */
+async function writeProfile(userId: string, fullName: string, role: UserRole) {
+  const supabaseAdmin = createAdminClient();
+  // الملف الشخصي قد يكون أُنشئ بمحفّز عند التسجيل — upsert بتتعامل مع
+  // الحالتين من غير ما تكسر لو الصف موجود.
+  return supabaseAdmin
+    .from('user_profiles')
+    .upsert({ id: userId, full_name: fullName, role }, { onConflict: 'id' });
+}
+
+/**
+ * إنشاء حساب مباشرة بكلمة مرور — من غير دعوة.
+ *
+ * الحساب بيتعمل مفعّل وجاهز للدخول فورًا. كلمة المرور بترجع للإدارة
+ * مرة واحدة عشان تسلّمها لصاحبها؛ إحنا ما بنخزّنهاش في أي مكان عندنا
+ * (Supabase بتخزّن بصمتها المشفّرة بس).
+ *
+ * ⚠️ الفرق عن الدعوة: هنا الإدارة بتعرف كلمة المرور الأولى. لو ده مش
+ * مطلوب، استخدم الدعوة — الشخص بيحدد كلمة مروره بنفسه.
+ */
+export async function createUserDirectly(params: {
+  email: string;
+  fullName: string;
+  role: UserRole;
+  password?: string;
+}): Promise<UserActionResult<{ userId: string; password: string }>> {
+  const admin = await requireAdmin('canManageUsers', 'غير مصرح لك بإضافة مستخدمين');
+
+  const email = params.email.trim().toLowerCase();
+  const fullName = params.fullName.trim();
+  const typed = params.password?.trim() ?? '';
+
+  if (!email || !email.includes('@')) return { ok: false, error: 'اكتب بريدًا إلكترونيًا صحيحًا' };
+  if (!fullName) return { ok: false, error: 'اكتب اسم الشخص' };
+  if (typed && typed.length < 8) {
+    return { ok: false, error: 'كلمة المرور لازم تكون 8 حروف على الأقل' };
+  }
+
+  const roleError = checkRole(params.role, admin.role);
+  if (roleError) return { ok: false, error: roleError };
+
+  const password = typed || generatePassword();
+  const supabaseAdmin = createAdminClient();
+
+  const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password,
+    // مفعّل فورًا: مفيش بريد تأكيد بيتبعت، ودي فكرة «إنشاء مباشر» أصلًا.
+    email_confirm: true,
+    user_metadata: { full_name: fullName },
+  });
+
+  if (error) {
+    console.error('Error creating user', error);
+    if (error.message?.toLowerCase().includes('already')) {
+      return { ok: false, error: 'فيه حساب بالبريد ده بالفعل' };
+    }
+    return { ok: false, error: `تعذّر إنشاء الحساب: ${error.message}` };
+  }
+
+  const userId = data.user?.id;
+  if (!userId) return { ok: false, error: 'تعذّر إنشاء الحساب' };
+
+  const { error: profileError } = await writeProfile(userId, fullName, params.role);
+  if (profileError) {
+    console.error('Error creating profile', profileError);
+    return {
+      ok: false,
+      error: 'الحساب اتعمل لكن تعذّر حفظ بياناته — عدّل الدور من الجدول يدويًا',
+    };
+  }
+
+  await logAuditAction({
+    actorProfileId: admin.id,
+    actorName: admin.fullName,
+    action: 'user_created',
+    entityType: 'UserProfile',
+    entityId: userId,
+    metadata: { email, role: params.role },
+  });
+
+  revalidatePath('/dashboard/admin/users');
+  return { ok: true, userId, password };
+}
 
 /**
  * دعوة شخص للانضمام للمنصة.
  *
  * بنولّد **رابط دعوة** ونرجّعه للإدارة عشان تبعته بنفسها (واتساب مثلًا)،
  * بدل ما نعتمد على خدمة بريد. الرابط بيوصّل الشخص لصفحة يحط فيها كلمة
- * مروره بنفسه — فمفيش كلمة مرور بتمر على الإدارة ولا بتتخزّن في أي مكان،
- * وهي الخاصية الأمنية اللي كنا عايزينها من الدعوة بالبريد أصلًا.
+ * مروره بنفسه — فمفيش كلمة مرور بتمر على الإدارة ولا بتتخزّن في أي مكان.
  *
  * ⚠️ الرابط ده مفتاح: أي حد يفتحه يقدر يحدد كلمة المرور. يتبعت للشخص
  * المقصود وحده.
@@ -30,23 +155,17 @@ export async function inviteUser(params: {
   email: string;
   fullName: string;
   role: UserRole;
-}) {
+}): Promise<UserActionResult<{ userId: string; inviteLink: string }>> {
   const admin = await requireAdmin('canManageUsers', 'غير مصرح لك بإضافة مستخدمين');
 
   const email = params.email.trim().toLowerCase();
   const fullName = params.fullName.trim();
 
-  if (!email || !email.includes('@')) throw new Error('اكتب بريدًا إلكترونيًا صحيحًا');
-  if (!fullName) throw new Error('اكتب اسم الشخص');
-  if (!ASSIGNABLE_ROLES.includes(params.role)) throw new Error('الدور المختار غير صالح');
+  if (!email || !email.includes('@')) return { ok: false, error: 'اكتب بريدًا إلكترونيًا صحيحًا' };
+  if (!fullName) return { ok: false, error: 'اكتب اسم الشخص' };
 
-  // منح صلاحيات إدارية قرار خطير: مدير النظام وحده يقدر يعمله.
-  if (
-    (params.role === 'super_admin' || params.role === 'general_supervisor') &&
-    admin.role !== 'super_admin'
-  ) {
-    throw new Error('منح صلاحيات إدارية متاح لمدير النظام فقط');
-  }
+  const roleError = checkRole(params.role, admin.role);
+  if (roleError) return { ok: false, error: roleError };
 
   const supabaseAdmin = createAdminClient();
 
@@ -59,24 +178,22 @@ export async function inviteUser(params: {
   if (error) {
     console.error('Error generating invite link', error);
     if (error.message?.toLowerCase().includes('already')) {
-      throw new Error('فيه حساب بالبريد ده بالفعل');
+      return { ok: false, error: 'فيه حساب بالبريد ده بالفعل' };
     }
-    throw new Error('تعذّر إنشاء الدعوة');
+    return { ok: false, error: `تعذّر إنشاء الدعوة: ${error.message}` };
   }
 
   const newUserId = data.user?.id;
   const actionLink = data.properties?.action_link;
-  if (!newUserId || !actionLink) throw new Error('تعذّر إنشاء الحساب');
+  if (!newUserId || !actionLink) return { ok: false, error: 'تعذّر إنشاء الحساب' };
 
-  // الملف الشخصي قد يكون أُنشئ بمحفّز عند التسجيل — upsert بتتعامل مع
-  // الحالتين من غير ما تكسر لو الصف موجود.
-  const { error: profileError } = await supabaseAdmin
-    .from('user_profiles')
-    .upsert({ id: newUserId, full_name: fullName, role: params.role }, { onConflict: 'id' });
-
+  const { error: profileError } = await writeProfile(newUserId, fullName, params.role);
   if (profileError) {
     console.error('Error creating profile for invited user', profileError);
-    throw new Error('اتبعتت الدعوة لكن تعذّر حفظ بيانات المستخدم — راجع الحساب يدويًا');
+    return {
+      ok: false,
+      error: 'اتعملت الدعوة لكن تعذّر حفظ بيانات المستخدم — راجع الحساب يدويًا',
+    };
   }
 
   await logAuditAction({
@@ -97,17 +214,14 @@ export async function inviteUser(params: {
  *
  * عملية جدول عادية — بتمر بصلاحيات قاعدة البيانات، مش بمفتاح الإدارة.
  */
-export async function updateUserRole(userId: string, role: UserRole) {
+export async function updateUserRole(
+  userId: string,
+  role: UserRole,
+): Promise<UserActionResult> {
   const admin = await requireAdmin('canManageUsers', 'غير مصرح لك بتعديل أدوار المستخدمين');
 
-  if (!ASSIGNABLE_ROLES.includes(role)) throw new Error('الدور المختار غير صالح');
-
-  if (
-    (role === 'super_admin' || role === 'general_supervisor') &&
-    admin.role !== 'super_admin'
-  ) {
-    throw new Error('منح صلاحيات إدارية متاح لمدير النظام فقط');
-  }
+  const roleError = checkRole(role, admin.role);
+  if (roleError) return { ok: false, error: roleError };
 
   // حماية من قفل النظام على نفسه: آخر مدير نظام ما يقدرش ينزّل دور نفسه.
   if (userId === admin.id && role !== admin.role && admin.role === 'super_admin') {
@@ -117,7 +231,10 @@ export async function updateUserRole(userId: string, role: UserRole) {
       .select('id', { count: 'exact', head: true })
       .eq('role', 'super_admin');
     if ((count ?? 0) <= 1) {
-      throw new Error('ما ينفعش تنزّل دورك وإنت آخر مدير نظام — عيّن غيرك الأول');
+      return {
+        ok: false,
+        error: 'ما ينفعش تنزّل دورك وإنت آخر مدير نظام — عيّن غيرك الأول',
+      };
     }
   }
 
@@ -129,7 +246,7 @@ export async function updateUserRole(userId: string, role: UserRole) {
 
   if (error) {
     console.error('Error updating user role', error);
-    throw new Error('تعذّر تغيير الدور');
+    return { ok: false, error: `تعذّر تغيير الدور: ${error.message}` };
   }
 
   await logAuditAction({

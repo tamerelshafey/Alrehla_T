@@ -78,6 +78,11 @@ export async function middleware(request: NextRequest) {
   } else if (pathname.startsWith('/dashboard/instructor')) {
     const redirectResponse = requireAuth(['instructor']);
     if (redirectResponse) return redirectResponse;
+  } else if (pathname.startsWith('/dashboard/provider')) {
+    // مش بنحدد دور هنا: المدرب اللي بيقدّم خدمة دوره لسه «مدرب»، والصفحة
+    // نفسها بتتأكد إن للمستخدم صف مقدّم خدمة وبتحوّله لو مالوش.
+    const redirectResponse = requireAuth();
+    if (redirectResponse) return redirectResponse;
   } else if (pathname.startsWith('/dashboard/publisher')) {
     const redirectResponse = requireAuth(['publisher']);
     if (redirectResponse) return redirectResponse;

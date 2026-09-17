@@ -1,8 +1,20 @@
+-- ============================================================
+-- ⚠️ ملف تاريخي — ممنوع تشغيله
+-- ============================================================
+-- الملف ده جزء من أول إنشاء لقاعدة البيانات، وما بيوصفش الوضع الحالي.
+-- القاعدة اتغيّرت بعده بعشرات التعديلات (شوف supabase/README.md).
+--
+-- سطور الحذف (DROP TABLE … CASCADE) اللي كانت فوق **اتعطّلت بالتعليق**
+-- عن قصد: لو حد شغّل الملف ده بالغلط على قاعدة الإنتاج كان هيمسح
+-- الجداول دي وكل المرتبط بيها. التعطيل ده بيخلي أسوأ نتيجة ممكنة هي
+-- خطأ «الجدول موجود بالفعل» بدل ضياع بيانات.
+-- ============================================================
+
 -- Drop old tables if they exist to avoid conflicts
-DROP TABLE IF EXISTS portfolio_documents CASCADE;
-DROP TABLE IF EXISTS instructor_payouts CASCADE;
-DROP TABLE IF EXISTS publisher_payouts CASCADE;
-DROP TABLE IF EXISTS publishers CASCADE;
+-- DROP TABLE IF EXISTS portfolio_documents CASCADE;   -- ⚠️ معطّل: كان بيمسح الجدول وكل المرتبط بيه
+-- DROP TABLE IF EXISTS instructor_payouts CASCADE;   -- ⚠️ معطّل: كان بيمسح الجدول وكل المرتبط بيه
+-- DROP TABLE IF EXISTS publisher_payouts CASCADE;   -- ⚠️ معطّل: كان بيمسح الجدول وكل المرتبط بيه
+-- DROP TABLE IF EXISTS publishers CASCADE;   -- ⚠️ معطّل: كان بيمسح الجدول وكل المرتبط بيه
 
 -- Drop old types
 DROP TYPE IF EXISTS publisher_status_enum CASCADE;

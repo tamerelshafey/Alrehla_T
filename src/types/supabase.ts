@@ -1660,7 +1660,7 @@ export type Database = {
       support_session_status_enum: "pending" | "contacted" | "resolved"
       ticket_status_enum: "open" | "answered" | "closed"
       update_request_status: "pending" | "approved" | "rejected"
-      user_role_enum: "visitor" | "customer" | "student" | "instructor" | "publisher" | "general_supervisor" | "super_admin"
+      user_role_enum: "visitor" | "customer" | "student" | "instructor" | "service_provider" | "publisher" | "general_supervisor" | "super_admin"
       work_model_enum: "per_session" | "monthly"
     }
     CompositeTypes: {
