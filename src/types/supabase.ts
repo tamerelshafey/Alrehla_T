@@ -381,6 +381,7 @@ export type Database = {
           prerequisite_package_id: string | null
           short_description: string | null
           full_description: string | null
+          track: string | null
           is_active: boolean
           created_at: string
           updated_at: string
@@ -399,6 +400,7 @@ export type Database = {
           prerequisite_package_id?: string | null
           short_description?: string | null
           full_description?: string | null
+          track?: string | null
           is_active?: boolean
           created_at?: string
           updated_at?: string
@@ -417,6 +419,7 @@ export type Database = {
           prerequisite_package_id?: string | null
           short_description?: string | null
           full_description?: string | null
+          track?: string | null
           is_active?: boolean
           created_at?: string
           updated_at?: string

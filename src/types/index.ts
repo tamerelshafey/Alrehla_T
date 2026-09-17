@@ -18,11 +18,15 @@ export type UserProfile = {
 export type AgeGroup = 'under_12' | '12_plus';
 
 // باقة الكتابة الإبداعية
+/** مسار الباقة — مستقل عن الفئة العمرية: مسارين ممكن يكونوا لنفس السن. */
+export type PackageTrack = 'foundation' | 'youth' | 'specialization';
+
 export type WritingPackage = {
   id: string;
   slug: string;
   name: string;
   ageGroup: AgeGroup;
+  track?: PackageTrack | null;
   price: number;
   durationText: string;
   sessionsCount: number;

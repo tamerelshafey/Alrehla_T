@@ -24,14 +24,36 @@ import { Button } from '@/components/ui/Button';
 export default async function PackagesPage() {
   const packages = await getWritingPackages();
 
-  const activePackages = packages.filter(p => p.isActive);
-  const under12 = activePackages.filter((p) => p.ageGroup === 'under_12');
-  const over12 = activePackages.filter((p) => p.ageGroup === '12_plus');
-  // أي باقة فئتها العمرية مش واحدة من الاتنين كانت **بتختفي من الصفحة**
-  // وتفضل ظاهرة في معالج الحجز — فالقايمتين مختلفتين.
-  const others = activePackages.filter(
-    (p) => p.ageGroup !== 'under_12' && p.ageGroup !== '12_plus',
-  );
+  const activePackages = packages.filter((p) => p.isActive);
+
+  /**
+   * التقسيم بقى بالمسار مش بالسن.
+   *
+   * السبب: مسار اليافعين ومسار التخصص **نفس الفئة العمرية**، فالسن
+   * ما بيفرّقش بينهم. والفئة العمرية بتفضل ظاهرة كتوضيح على الكارت.
+   *
+   * وأي باقة لسه بلا مسار بتظهر في مجموعة أخيرة بدل ما تختفي من الصفحة
+   * زي ما كان بيحصل قبل كده.
+   */
+  const tracks = [
+    {
+      key: 'foundation' as const,
+      title: 'مسار التأسيس',
+      subtitle: 'دون 12 سنة',
+    },
+    {
+      key: 'youth' as const,
+      title: 'مسار اليافعين والكبار',
+      subtitle: '12 سنة فأعلى',
+    },
+    {
+      key: 'specialization' as const,
+      title: 'مسار التخصص',
+      subtitle: '12 سنة فأعلى — لمن أنهى مسارًا سابقًا أو يكتب بالفعل',
+    },
+  ].map((t) => ({ ...t, items: activePackages.filter((p) => p.track === t.key) }));
+
+  const untracked = activePackages.filter((p) => !p.track);
 
   return (
     <PageContainer className="!py-0 !space-y-0">
@@ -40,52 +62,37 @@ export default async function PackagesPage() {
         <SectionHeader
           title="باقات «بداية الرحلة»"
           
-          description="ست رحلات تختلف في طول المسار وعدد الجلسات، موزعة على مسارين عمريين. قارن ما تتضمنه كل رحلة ثم اختر ما يناسب المشارك."
+          description="رحلات تختلف في طول المسار وعدد الجلسات، موزعة على ثلاثة مسارات. قارن ما تتضمنه كل رحلة ثم اختر ما يناسب المشارك."
         />
       </Section>
 
-      {/* Tabs / Filters (Visual only for now, can be implemented with state later) */}
       <div className="mx-auto w-full max-w-6xl space-y-20 pb-20">
-        {/* Track 1: Under 12 */}
-        <Section>
-          <div className="mb-10 text-center md:text-right">
-            <h2 className="text-3xl font-black text-slate-800">
-              مسار الإبداع التأسيسي
-            </h2>
-            <p className="mt-2 font-medium text-slate-500">لأعمار دون 12 سنة</p>
-          </div>
-          <div className="grid gap-8 lg:grid-cols-2">
-            {under12.map((pkg) => (
-              <PackageCard key={pkg.id} pkg={pkg} />
-            ))}
-          </div>
-        </Section>
+        {tracks.map((track) =>
+          track.items.length === 0 ? null : (
+            <Section key={track.key}>
+              <div className="mb-10 text-center md:text-right">
+                <h2 className="text-3xl font-black text-slate-800">{track.title}</h2>
+                <p className="mt-2 font-medium text-slate-500">{track.subtitle}</p>
+              </div>
+              <div className="grid gap-8 lg:grid-cols-2">
+                {track.items.map((pkg) => (
+                  <PackageCard key={pkg.id} pkg={pkg} />
+                ))}
+              </div>
+            </Section>
+          ),
+        )}
 
-        {/* Track 2: 12 Plus */}
-        <Section>
-          <div className="mb-10 text-center md:text-right">
-            <h2 className="text-3xl font-black text-slate-800">
-              مسار اليافعين والكبار
-            </h2>
-            <p className="mt-2 font-medium text-slate-500">12 سنة فأعلى</p>
-          </div>
-          <div className="grid gap-8 lg:grid-cols-2">
-            {over12.map((pkg) => (
-              <PackageCard key={pkg.id} pkg={pkg} />
-            ))}
-          </div>
-        </Section>
-
-        {others.length > 0 && (
+        {untracked.length > 0 && (
           <Section>
             <div className="mb-10 text-center md:text-right">
               <h2 className="text-3xl font-black text-slate-800">باقات أخرى</h2>
               <p className="mt-2 font-medium text-slate-500">
-                باقات لم تُحدَّد فئتها العمرية بعد
+                لم يُحدَّد مسارها بعد
               </p>
             </div>
             <div className="grid gap-8 lg:grid-cols-2">
-              {others.map((pkg) => (
+              {untracked.map((pkg) => (
                 <PackageCard key={pkg.id} pkg={pkg} />
               ))}
             </div>

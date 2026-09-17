@@ -33,6 +33,7 @@ export const getWritingPackages = async (): Promise<WritingPackage[]> => {
     slug: p.slug,
     name: p.name,
     ageGroup: p.age_group,
+    track: (p.track as import('@/types').PackageTrack | null) ?? null,
     price: p.price,
     durationText: p.duration_text,
     sessionsCount: p.sessions_count,

@@ -12,6 +12,8 @@ export async function saveWritingPackage(formData: FormData) {
   
   const name = formData.get('name') as string;
   const ageGroup = formData.get('ageGroup') as 'under_12' | '12_plus';
+  // المسار مستقل عن الفئة العمرية: مسارين ممكن يكونوا لنفس السن.
+  const track = (formData.get('track') as string) || null;
   const price = Number(formData.get('price'));
   const durationText = formData.get('durationText') as string;
   const sessionsCount = Number(formData.get('sessionsCount'));
@@ -29,6 +31,7 @@ export async function saveWritingPackage(formData: FormData) {
     slug,
     name,
     age_group: ageGroup,
+    track,
     price,
     duration_text: durationText,
     sessions_count: sessionsCount,

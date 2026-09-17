@@ -43,6 +43,18 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 <option value="12_plus">12 سنة فأكثر</option>
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">المسار</label>
+              <select name="track" defaultValue={target.track ?? ''} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <option value="">بدون مسار</option>
+                <option value="foundation">مسار التأسيس</option>
+                <option value="youth">مسار اليافعين والكبار</option>
+                <option value="specialization">مسار التخصص</option>
+              </select>
+              <p className="mt-2 text-xs font-medium text-slate-500">
+                المسار مستقل عن الفئة العمرية — مسارين ممكن يكونوا لنفس السن.
+              </p>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
