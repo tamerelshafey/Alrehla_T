@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient, isAdminApiConfigured } from '@/lib/supabase/admin';
-import { notifyUser, getProviderUserId, getInstructorUserId } from '@/lib/notifications';
+import { getProviderUserId, getInstructorUserId } from '@/lib/notifications';
 import { SERVICE_DUE_WARNING_DAYS, OPEN_SERVICE_STATUSES } from '@/lib/service-delivery';
 
 export const dynamic = 'force-dynamic';
@@ -24,6 +24,12 @@ export const runtime = 'nodejs';
  * الصلاحيات: المهمة دي بتقرا طلبات كل الناس، فبتستخدم مفتاح الخدمة —
  * مفيش مستخدم مسجّل دخوله وقت تشغيلها. ولأن ده المفتاح اللي بيتخطى كل
  * قواعد الحماية، الطلب نفسه لازم يثبت إنه جاي من الجدولة.
+ *
+ * الإشعارات هنا بتتكتب **مباشرة** في الجدول، مش من خلال دالة
+ * `notify_user`. الدالة دي بتتأكد إن المُرسِل طرف في الطلب أو إداري —
+ * والمهمة مالهاش مُرسِل أصلًا، فالدالة كانت هترفض. مفتاح الخدمة بيتخطى
+ * الحماية بحكم طبيعته، فالكتابة المباشرة هي الصح هنا؛ والبديل كان
+ * توسيع الدالة عشان تقبل استدعاء بلا مستخدم — وده باب أوسع من اللازم.
  */
 export async function GET(request: Request) {
   // Vercel بتبعت المفتاح ده مع كل تشغيل. من غير الفحص ده أي حد يعرف
@@ -93,27 +99,31 @@ export async function GET(request: Request) {
       ? `طلب «${serviceName}» تجاوز موعد التسليم المتفق عليه. تواصل معنا إذا لم يصلك رد.`
       : `اقترب موعد تسليم طلب «${serviceName}».`;
 
-    if (providerUserId) {
-      await notifyUser(
-        {
-          recipientProfileId: providerUserId,
-          title,
-          message: forProvider,
-          link: `/dashboard/provider/orders/${order.id}`,
-        },
-        supabase,
-      );
-    }
-
-    await notifyUser(
+    const rows = [
       {
-        recipientProfileId: order.buyer_profile_id,
+        recipient_profile_id: order.buyer_profile_id,
         title,
         message: forBuyer,
         link: `/account/orders/creative-writing/${order.id}`,
       },
-      supabase,
-    );
+    ];
+    // المنصة كمقدّم مالهاش حساب شخص — الطلب بيظهر في لوحة الإدارة.
+    if (providerUserId) {
+      rows.push({
+        recipient_profile_id: providerUserId,
+        title,
+        message: forProvider,
+        link: `/dashboard/provider/orders/${order.id}`,
+      });
+    }
+
+    const { error: notifyError } = await supabase.from('notifications').insert(rows);
+    if (notifyError) {
+      // الإشعار مش حِمل أساسي: بنسجّل وبنكمّل بدل ما نوقف المهمة كلها
+      // على طلب واحد.
+      console.error('service-due cron: notify failed', order.id, notifyError);
+      continue;
+    }
 
     await supabase
       .from('service_orders')

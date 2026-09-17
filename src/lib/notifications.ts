@@ -1,6 +1,4 @@
 import { createClient } from '@/lib/supabase/server';
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '@/types/supabase';
 
 /**
  * Sending an in-app notification.
@@ -16,24 +14,17 @@ import type { Database } from '@/types/supabase';
  * Notifications are never load-bearing. A failure is logged and swallowed so
  * that it can never turn a successful approval or delivery into an error.
  */
-export async function notifyUser(
-  params: {
-    recipientProfileId: string | null | undefined;
-    title: string;
-    message?: string;
-    link?: string;
-  },
-  /**
-   * عميل بديل. المهمة اليومية بتشتغل من غير مستخدم مسجّل دخوله، فبتمرر
-   * عميل مفتاح الخدمة بدل عميل الكوكيز — وإلا الاستدعاء بيتم كمجهول.
-   */
-  client?: SupabaseClient<Database>,
-) {
+export async function notifyUser(params: {
+  recipientProfileId: string | null | undefined;
+  title: string;
+  message?: string;
+  link?: string;
+}) {
   const { recipientProfileId, title, message, link } = params;
   if (!recipientProfileId || !title.trim()) return;
 
   try {
-    const supabase = client ?? (await createClient());
+    const supabase = await createClient();
     const { error } = await supabase.rpc('notify_user', {
       p_recipient: recipientProfileId,
       p_title: title,
