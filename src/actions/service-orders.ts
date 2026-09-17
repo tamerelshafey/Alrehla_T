@@ -109,8 +109,36 @@ export async function createServiceOrder(params: {
           })
         : providerEarning;
     }
-  } else if (service.price_type === 'starts_from') {
-    throw new Error('يجب اختيار مقدّم للخدمة');
+  } else {
+    // مفيش مقدّم متحدد في الرابط: المنصة هي المسؤولة الافتراضية.
+    //
+    // من غير ده الطلب بيتعمل بلا مقدّم خدمة مكلَّف — فمحدش بياخد إشعار،
+    // ومش بيظهر في لوحة أي مقدّم، والمهلة مالهاش مخاطَب.
+    const { data: platform } = await supabase
+      .from('service_providers')
+      .select('id')
+      .eq('kind', 'platform')
+      .eq('status', 'active')
+      .maybeSingle();
+
+    const { data: platformOffer } = platform
+      ? await supabase
+          .from('provider_services')
+          .select('approved_price')
+          .eq('service_id', serviceId)
+          .eq('provider_id', platform.id)
+          .eq('status', 'approved')
+          .eq('is_active', true)
+          .maybeSingle()
+      : { data: null };
+
+    if (!platform || !platformOffer || platformOffer.approved_price == null) {
+      throw new Error('يجب اختيار مقدّم للخدمة');
+    }
+
+    providerId = platform.id;
+    amount = platformOffer.approved_price;
+    providerEarning = null;
   }
 
   const { data: order, error } = await supabase

@@ -51,11 +51,17 @@ export default async function OrderServicePage({
   let providerName: string | null = null;
   let providerId: string | null = null;
 
-  if (providerParam || instructorParam || service.priceType === 'starts_from') {
+  // مقدّم الخدمة بيتحدد هنا دايمًا — حتى للخدمة ذات السعر الثابت. السعر
+  // المعروض لازم يطلع من نفس المصدر اللي الخادم بيحاسب منه.
+  {
     const providers = await getProvidersForService(serviceId);
     const provider = providerParam
       ? providers.find((p) => p.providerId === providerParam)
-      : providers.find((p) => p.instructorId === instructorParam);
+      : instructorParam
+        ? providers.find((p) => p.instructorId === instructorParam)
+        : // بلا اختيار: المنصة لو بتقدّم الخدمة، وإلا الوحيد المتاح.
+          (providers.find((p) => p.kind === 'platform') ??
+            (providers.length === 1 ? providers[0] : undefined));
 
     if (!provider) {
       redirect(`/creative-writing/services/${serviceId}`);

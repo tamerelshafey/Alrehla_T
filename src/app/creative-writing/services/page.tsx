@@ -49,13 +49,20 @@ async function buildCategories() {
 
   const cards: (ServiceCard & { category: string })[] = await Promise.all(
     services.map(async (service) => {
-      const byProvider = service.priceType === 'starts_from';
+      // السعر بييجي من عرض مقدّم الخدمة المعتمد، **لكل الخدمات** — مش من
+      // كتالوج الخدمات.
+      //
+      // قبل كده الخدمة ذات السعر الثابت كانت بتعرض سعر الكتالوج وتروح
+      // لصفحة الطلب على طول. ده كان بيعمل حاجتين غلط: الطلب بيتعمل من
+      // غير مقدّم خدمة مكلَّف بيه (فمحدش بياخد إشعار ومش بيظهر في لوحة
+      // حد)، وأول ما يتعدّل سعر المنصة من اللوحة يختلف المعروض عن
+      // المحاسَب.
+      const providers = await getProvidersForService(service.id);
+      const available = providers.length > 0;
+      const price = available ? providers[0].price : service.price;
 
-      // For a "starts from" service the honest price is the cheapest approved
-      // provider, not a number typed into the code.
-      const providers = byProvider ? await getProvidersForService(service.id) : [];
-      const available = !byProvider || providers.length > 0;
-      const price = byProvider && providers.length > 0 ? providers[0].price : service.price;
+      // مقدّم واحد: الزائر ما يحتاجش يختار من واحد. أكتر من واحد: يختار.
+      const single = providers.length === 1 ? providers[0] : null;
 
       return {
         id: service.id,
@@ -64,14 +71,14 @@ async function buildCategories() {
         description: service.description,
         price,
         priceType: service.priceType,
-        ctaText: byProvider
-          ? available
-            ? 'عرض مقدمي الخدمة'
-            : 'قريباً'
-          : 'اطلب الآن',
-        ctaLink: byProvider
-          ? `/creative-writing/services/${service.id}`
-          : `/creative-writing/services/${service.id}/order`,
+        ctaText: !available
+          ? 'قريباً'
+          : single
+            ? 'اطلب الآن'
+            : 'عرض مقدمي الخدمة',
+        ctaLink: single
+          ? `/creative-writing/services/${service.id}/order?provider=${single.providerId}`
+          : `/creative-writing/services/${service.id}`,
         available,
       };
     })
