@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser } from '@/data/domains/auth';
-import { getProvidersForAdmin } from '@/data/domains/providers';
+import { getProvidersForAdmin, getProviderCandidates } from '@/data/domains/providers';
 import { getStandaloneServices } from '@/data/domains/services';
 import { getPricingFormulaSettings } from '@/data/domains/writing';
 import { hasAdminPermission } from '@/lib/utils';
@@ -22,10 +22,11 @@ export default async function Page() {
     return <Unauthorized />;
   }
 
-  const [providers, services, formula] = await Promise.all([
+  const [providers, services, formula, candidates] = await Promise.all([
     getProvidersForAdmin(),
     getStandaloneServices(),
     getPricingFormulaSettings(),
+    getProviderCandidates(),
   ]);
 
   return (
@@ -43,6 +44,7 @@ export default async function Page() {
         services={services.map((s) => ({ id: s.id, name: s.name, price: s.price }))}
         platformMultiplier={formula?.platformMultiplier ?? null}
         fixedAdminFee={formula?.fixedAdminFee ?? null}
+        candidates={candidates}
       />
     </div>
   );

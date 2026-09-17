@@ -10,7 +10,7 @@ import {
   removeProviderOffering,
   createIndividualProvider,
 } from '@/actions/providers';
-import type { ProviderWithOfferings } from '@/data/domains/providers';
+import type { ProviderWithOfferings, ProviderCandidate } from '@/data/domains/providers';
 import type { ActionResult } from '@/actions/providers';
 
 type CatalogService = { id: string; name: string; price: number };
@@ -38,11 +38,13 @@ export function ProvidersClient({
   services,
   platformMultiplier,
   fixedAdminFee,
+  candidates,
 }: {
   providers: ProviderWithOfferings[];
   services: CatalogService[];
   platformMultiplier: number | null;
   fixedAdminFee: number | null;
+  candidates: ProviderCandidate[];
 }) {
   const [query, setQuery] = useState('');
   const [kindFilter, setKindFilter] = useState('');
@@ -93,6 +95,7 @@ export function ProvidersClient({
       )}
 
       <AddProvider
+        candidates={candidates}
         onSubmit={async (v) => {
           setError('');
           try {
@@ -173,7 +176,9 @@ export function ProvidersClient({
 
 function AddProvider({
   onSubmit,
+  candidates,
 }: {
+  candidates: ProviderCandidate[];
   /** بترجّع true لو نجحت. الفورم بيفضل مفتوح لو فشلت — عشان اللي كتبته
    *  ما يضيعش وإنت بتقرا سبب الرفض. */
   onSubmit: (v: {
@@ -204,17 +209,36 @@ function AddProvider({
     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
       <h3 className="font-black text-slate-800">مقدّم خدمة مستقل</h3>
       <p className="text-sm font-medium text-slate-500">
-        بيتربط بحساب موجود بالفعل. لو لسه مالوش حساب، أضِفه من شاشة المستخدمين الأول.
-        بيدخل «معلّق» لحد ما تفعّله.
+        بيتربط بحساب موجود بالفعل. القايمة بتعرض الحسابات الصالحة بس — المدربون
+        ومن هو مقدّم بالفعل مستبعدين. بيدخل «معلّق» لحد ما تفعّله.
       </p>
-      <div className="grid gap-3 md:grid-cols-2">
-        <input
+
+      {candidates.length === 0 ? (
+        <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900">
+          مفيش حساب صالح دلوقتي. كل الحسابات إما مدربين أو مقدّمين بالفعل. اطلب
+          من الشخص يسجّل في الموقع، أو أضِفه من شاشة «المستخدمون والعائلات».
+        </p>
+      ) : (
+        <>
+          <div className="grid gap-3 md:grid-cols-2">
+        <select
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="بريد صاحب الحساب"
-          dir="ltr"
+          onChange={(e) => {
+            setEmail(e.target.value);
+            // الاسم بيتملّى من الحساب، وتقدر تغيّره — ده الاسم اللي
+            // العميل هيشوفه مش اسم الحساب بالضرورة.
+            const picked = candidates.find((c) => c.email === e.target.value);
+            if (picked && !displayName.trim()) setDisplayName(picked.fullName);
+          }}
           className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-        />
+        >
+          <option value="">اختر الحساب…</option>
+          {candidates.map((c) => (
+            <option key={c.userId} value={c.email}>
+              {c.fullName ? `${c.fullName} — ${c.email}` : c.email}
+            </option>
+          ))}
+        </select>
         <input
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
@@ -254,6 +278,17 @@ function AddProvider({
           إلغاء
         </button>
       </div>
+        </>
+      )}
+
+      {candidates.length === 0 && (
+        <button
+          onClick={() => setOpen(false)}
+          className="rounded-xl border border-slate-200 px-5 py-2 font-bold text-slate-600"
+        >
+          إغلاق
+        </button>
+      )}
     </div>
   );
 }

@@ -140,3 +140,52 @@ export async function getMyProvider(): Promise<ServiceProviderAccount | null> {
   return viaInstructor ? mapProvider(viaInstructor) : null;
 }
 
+
+/** حساب صالح لإضافته كمقدّم خدمة مستقل. */
+export type ProviderCandidate = {
+  userId: string;
+  email: string;
+  fullName: string;
+};
+
+/**
+ * الحسابات اللي ينفع تتضاف كمقدّمي خدمة مستقلين.
+ *
+ * بنستبعد المدربين (ليهم صف مقدّم تلقائي) واللي مضاف كمقدّم بالفعل —
+ * عشان الإدارة تختار من قايمة كل اللي فيها ينفع، بدل ما تكتب بريد
+ * وتكتشف بعد الحفظ إنه مش صالح.
+ */
+export async function getProviderCandidates(): Promise<ProviderCandidate[]> {
+  const supabase = await createClient();
+
+  const [{ data: emails }, { data: instructors }, { data: providers }] =
+    await Promise.all([
+      supabase.from('user_emails').select('user_id, email'),
+      supabase.from('instructors').select('user_id'),
+      supabase.from('service_providers').select('user_id'),
+    ]);
+
+  if (!emails) return [];
+
+  const taken = new Set<string>();
+  for (const i of instructors ?? []) if (i.user_id) taken.add(String(i.user_id));
+  for (const p of providers ?? []) if (p.user_id) taken.add(String(p.user_id));
+
+  const free = emails.filter((e) => !taken.has(String(e.user_id)));
+  if (free.length === 0) return [];
+
+  const { data: profiles } = await supabase
+    .from('user_profiles')
+    .select('id, full_name')
+    .in('id', free.map((e) => e.user_id));
+
+  const nameById = new Map((profiles ?? []).map((p) => [String(p.id), p.full_name]));
+
+  return free
+    .map((e) => ({
+      userId: String(e.user_id),
+      email: e.email,
+      fullName: nameById.get(String(e.user_id)) ?? '',
+    }))
+    .sort((a, b) => a.email.localeCompare(b.email));
+}
