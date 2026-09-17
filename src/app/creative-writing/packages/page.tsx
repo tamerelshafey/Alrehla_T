@@ -27,6 +27,11 @@ export default async function PackagesPage() {
   const activePackages = packages.filter(p => p.isActive);
   const under12 = activePackages.filter((p) => p.ageGroup === 'under_12');
   const over12 = activePackages.filter((p) => p.ageGroup === '12_plus');
+  // أي باقة فئتها العمرية مش واحدة من الاتنين كانت **بتختفي من الصفحة**
+  // وتفضل ظاهرة في معالج الحجز — فالقايمتين مختلفتين.
+  const others = activePackages.filter(
+    (p) => p.ageGroup !== 'under_12' && p.ageGroup !== '12_plus',
+  );
 
   return (
     <PageContainer className="!py-0 !space-y-0">
@@ -70,6 +75,22 @@ export default async function PackagesPage() {
             ))}
           </div>
         </Section>
+
+        {others.length > 0 && (
+          <Section>
+            <div className="mb-10 text-center md:text-right">
+              <h2 className="text-3xl font-black text-slate-800">باقات أخرى</h2>
+              <p className="mt-2 font-medium text-slate-500">
+                باقات لم تُحدَّد فئتها العمرية بعد
+              </p>
+            </div>
+            <div className="grid gap-8 lg:grid-cols-2">
+              {others.map((pkg) => (
+                <PackageCard key={pkg.id} pkg={pkg} />
+              ))}
+            </div>
+          </Section>
+        )}
       </div>
 
       {/* Help Link */}
@@ -112,7 +133,9 @@ function PackageCard({ pkg }: { pkg: WritingPackage }) {
           <Calendar className="mx-auto mb-2 h-5 w-5 text-slate-400" />
           <div className="text-xs font-medium text-slate-500">المدة</div>
           <div className="text-sm font-bold text-slate-800">
-            {pkg.durationText}
+            {/* الخانة بتفضل ظاهرة حتى لو المدة مش متسجّلة، عشان الكروت
+                ما تبقاش مختلفة الشكل من باقة للتانية. */}
+            {pkg.durationText || '—'}
           </div>
         </div>
         <div className="rounded-xl bg-slate-50 p-3 text-center">

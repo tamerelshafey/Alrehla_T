@@ -2,6 +2,7 @@
 import { requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
+import { notifyAdmins } from '@/lib/notifications';
 import { createClient } from '@/lib/supabase/server';
 
 /**
@@ -33,6 +34,12 @@ export async function submitSupportSessionRequest(
     console.error('Error submitting support session request', error);
     throw new Error('تعذّر إرسال الطلب، برجاء المحاولة مرة أخرى');
   }
+
+  await notifyAdmins({
+    title: 'طلب جلسة دعم جديد',
+    message: `${contactName} طلب جلسة دعم.`,
+    link: '/dashboard/admin/support/session-requests',
+  });
 
   revalidatePath('/dashboard/admin/support/session-requests');
   revalidatePath('/account/support');
@@ -92,6 +99,12 @@ export async function createSupportTicket(params: {
   });
 
   if (messageError) console.error('Error adding first ticket message', messageError);
+
+  await notifyAdmins({
+    title: 'تذكرة دعم جديدة',
+    message: subject,
+    link: `/dashboard/admin/support/tickets/${ticket.id}`,
+  });
 
   revalidatePath('/account/support');
   revalidatePath('/dashboard/admin/support/tickets');

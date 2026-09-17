@@ -4,6 +4,7 @@ import { requireUser, requireAdmin } from '@/lib/auth-guard';
 import { revalidatePath } from 'next/cache';
 
 import { logAuditAction } from '@/lib/audit';
+import { notifyAdmins } from '@/lib/notifications';
 
 import { createClient } from '@/lib/supabase/server';
 import type { Json } from '@/types/supabase';
@@ -161,6 +162,14 @@ export async function submitPaymentProof(
     entityType: 'Order',
     entityId: orderId,
     metadata: { method: payment.method },
+  });
+
+  // الإدارة لازم تعرف إن فيه تحويل مستني مراجعة — من غير كده الطلب
+  // بيستنى لحد ما حد يفتح الشاشة بالصدفة.
+  await notifyAdmins({
+    title: 'إثبات دفع جديد بانتظار المراجعة',
+    message: 'عميل رفع إيصال تحويل لطلب من المتجر.',
+    link: `/dashboard/admin/orders/${orderId}`,
   });
 
   revalidatePath('/account/orders');

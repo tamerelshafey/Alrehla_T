@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
 import { hasAdminPermission, calculateFinalSessionPrice } from '@/lib/utils';
-import { notifyUser, getInstructorUserId, getProviderUserId } from '@/lib/notifications';
+import { notifyUser, notifyAdmins, getInstructorUserId, getProviderUserId } from '@/lib/notifications';
 import { SERVICE_DUE_DAYS } from '@/lib/service-delivery';
 
 /**
@@ -609,15 +609,18 @@ export async function setServiceOrderDueDate(
   orderId: string,
   dueAt: string | null,
   note: string,
-) {
+): Promise<{ ok: true } | { ok: false; error: string }> {
   const admin = await requireOrdersAdmin();
 
+  // الرسائل بترجع بدل ما تترمي: Next بيخفي أي رسالة مرمية في الإنتاج
+  // ويستبدلها بنص إنجليزي عام — فاللي بيعدّل المهلة كان بيشوف «حصل خطأ»
+  // من غير ما يعرف إن السبب هو إنه ساب خانة السبب فاضية.
   const reason = note.trim();
   if (dueAt && !reason) {
-    throw new Error('اكتب سبب تغيير المهلة');
+    return { ok: false, error: 'اكتب سبب تغيير المهلة — بيظهر للطرفين' };
   }
   if (dueAt && Number.isNaN(new Date(dueAt).getTime())) {
-    throw new Error('التاريخ غير صحيح');
+    return { ok: false, error: 'التاريخ غير صحيح' };
   }
 
   const supabase = await createClient();
@@ -631,7 +634,7 @@ export async function setServiceOrderDueDate(
 
   if (error) {
     console.error('Error setting due date', error);
-    throw new Error('تعذّر تعديل المهلة');
+    return { ok: false, error: `تعذّر تعديل المهلة: ${error.message}` };
   }
 
   // الطرفين يعرفوا. تمديد من غير إخطار بيخلي العميل مستني من غير ما يفهم.
@@ -715,6 +718,12 @@ export async function submitServiceOrderPayment(
     console.error('Error submitting service order payment', error);
     return { ok: false, error: 'تعذّر إرسال الإيصال' };
   }
+
+  await notifyAdmins({
+    title: 'إثبات دفع طلب خدمة بانتظار المراجعة',
+    message: 'عميل رفع إيصال تحويل لطلب خدمة إبداعية.',
+    link: `/dashboard/admin/orders/services/${orderId}`,
+  });
 
   revalidatePath('/account/orders/creative-writing');
   revalidatePath('/dashboard/admin/orders/services');

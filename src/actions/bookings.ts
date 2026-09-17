@@ -4,6 +4,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
+import { notifyAdmins } from '@/lib/notifications';
 import { getCurrentUser } from '@/data/domains/auth';
 
 export type BookingResult =
@@ -105,6 +106,12 @@ export async function submitBookingPaymentProof(
     console.error('Error submitting payment proof:', error);
     return { success: false, error: 'Failed' };
   }
+
+  await notifyAdmins({
+    title: 'إثبات دفع حجز بانتظار المراجعة',
+    message: 'عميل رفع إيصال تحويل لحجز باقة كتابة.',
+    link: `/dashboard/admin/bookings/${subscriptionId}`,
+  });
 
   revalidatePath('/creative-writing/booking/confirm');
   revalidatePath('/account/orders/creative-writing');

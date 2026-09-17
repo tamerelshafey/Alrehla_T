@@ -89,6 +89,12 @@ export function BookingWizardClient({ instructors, packages }: BookingWizardProp
 
               <div className="space-y-4">
                 <label className="text-sm font-bold text-slate-700">المدرب المفضل</label>
+                {activeInstructors.length === 0 && (
+                  <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-bold text-amber-800">
+                    مفيش مدربين مفعّلين حاليًا. المدرب لازم تكون حالته
+                    «مفعّل» في لوحة الإدارة عشان يظهر هنا بمواعيده.
+                  </p>
+                )}
                 <div className="grid gap-4 md:grid-cols-2">
                   {activeInstructors.map(inst => (
                     <div 
@@ -108,6 +114,31 @@ export function BookingWizardClient({ instructors, packages }: BookingWizardProp
                           <h4 className="font-bold text-slate-800">{inst.displayName}</h4>
                           <p className="text-xs text-slate-500">{inst.specialties.join('، ')}</p>
                         </div>
+                      </div>
+
+                      {/* نبذة وخبرة المدرب في نفس الصفحة: كان لازم العميل
+                          يخرج لصفحة المدرب عشان يقرر. */}
+                      {inst.bio && (
+                        <p className="mt-3 text-sm leading-relaxed text-slate-600 line-clamp-3">
+                          {inst.bio}
+                        </p>
+                      )}
+
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold">
+                        {inst.yearsExperience > 0 && (
+                          <span className="rounded-md bg-slate-100 px-2 py-1 text-slate-600">
+                            {inst.yearsExperience} سنة خبرة
+                          </span>
+                        )}
+                        <a
+                          href={`/creative-writing/instructors/${inst.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-emerald-700 underline"
+                        >
+                          الملف الكامل
+                        </a>
                       </div>
                     </div>
                   ))}

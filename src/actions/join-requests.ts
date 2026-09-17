@@ -2,6 +2,7 @@
 import { requireAdmin } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
+import { notifyAdmins } from '@/lib/notifications';
 import { createClient } from '@/lib/supabase/server';
 import { logAuditAction } from '@/lib/audit';
 
@@ -83,6 +84,18 @@ export async function submitJoinRequest(params: {
     console.error('Error submitting join request', error);
     throw new Error('تعذّر إرسال الطلب، برجاء المحاولة مرة أخرى');
   }
+
+  await notifyAdmins({
+    title: 'طلب انضمام جديد',
+    message: `${applicantName} قدّم طلب انضمام.`,
+    link: '/dashboard/admin/join-requests',
+  });
+
+  await notifyAdmins({
+    title: 'طلب انضمام جديد',
+    message: `${applicantName} قدّم طلب انضمام.`,
+    link: '/dashboard/admin/join-requests',
+  });
 
   revalidatePath('/dashboard/admin/join-requests');
   revalidatePath('/dashboard/admin');

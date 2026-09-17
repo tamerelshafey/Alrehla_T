@@ -1745,6 +1745,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      notify_admins: {
+        Args: {
+          p_title: string
+          p_message?: string | null
+          p_link?: string | null
+        }
+        Returns: number
+      }
       create_course_booking: {
         Args: {
           p_package_id: string

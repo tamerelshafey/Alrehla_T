@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
 import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/types/supabase';
-import { notifyUser, getInstructorUserId } from '@/lib/notifications';
+import { notifyUser, getInstructorUserId, notifyAdmins } from '@/lib/notifications';
 
 /**
  * Instructor profile changes, certification and pricing settings.
@@ -58,6 +58,14 @@ export async function submitInstructorProfileUpdate(
     console.error('Error submitting profile update request', error);
     throw new Error('تعذّر إرسال الطلب');
   }
+
+  // من غير الإشعار ده، طلب المراجعة بيستنى لحد ما حد يفتح شاشة المدرب
+  // بالصدفة — وده اللي كان بيحصل.
+  await notifyAdmins({
+    title: 'طلب تعديل ملف مدرب',
+    message: 'مدرب طلب تعديل بياناته وبيستنى المراجعة.',
+    link: `/dashboard/admin/instructors/${instructorId}`,
+  });
 
   revalidatePath('/dashboard/instructor/settings');
   revalidatePath(`/dashboard/admin/instructors/${instructorId}`);

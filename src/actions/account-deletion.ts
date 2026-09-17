@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser, requireAdmin } from '@/lib/auth-guard';
 import { logAuditAction } from '@/lib/audit';
+import { notifyAdmins } from '@/lib/notifications';
 
 /**
  * طلبات حذف الحساب.
@@ -51,6 +52,12 @@ export async function requestAccountDeletion(reason: string): Promise<DeletionRe
     action: 'account_deletion_requested',
     entityType: 'UserProfile',
     entityId: user.id,
+  });
+
+  await notifyAdmins({
+    title: 'طلب حذف حساب',
+    message: `${user.fullName} طلب حذف حسابه.`,
+    link: '/dashboard/admin/users/deletion-requests',
   });
 
   revalidatePath('/account');

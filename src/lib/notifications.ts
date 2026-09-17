@@ -37,6 +37,36 @@ export async function notifyUser(params: {
   }
 }
 
+/**
+ * إشعار لكل الإدارة.
+ *
+ * `notifyUser` ما بتنفعش هنا: بترفض أي مُرسِل مش إداري ومش طرف في طلب
+ * يجمعه بالمستلِم — والعميل اللي بيرفع إثبات دفع أو بيطلب مراجعة مش
+ * واحد منهم. فكل الإشعارات الجاية للإدارة كانت بتسقط بصمت.
+ *
+ * الدالة دي ما بتاخدش مستلِم أصلًا: القاعدة هي اللي بتختار الإداريين،
+ * فمفيش طريق لإرسال إشعار لأي حد تاني.
+ */
+export async function notifyAdmins(params: {
+  title: string;
+  message?: string;
+  link?: string;
+}) {
+  if (!params.title.trim()) return;
+
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc('notify_admins', {
+      p_title: params.title,
+      p_message: params.message ?? null,
+      p_link: params.link ?? null,
+    });
+    if (error) console.error('Error notifying admins', error);
+  } catch (err) {
+    console.error('Error notifying admins', err);
+  }
+}
+
 /** The user profile behind an instructor record, for notifying them. */
 export async function getInstructorUserId(instructorId: string): Promise<string | null> {
   const supabase = await createClient();

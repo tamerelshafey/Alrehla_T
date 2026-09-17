@@ -454,11 +454,15 @@ function DuePanel({
     setBusy(true);
     setError('');
     try {
-      await setServiceOrderDueDate(order.id, date || null, note);
+      const result = await setServiceOrderDueDate(order.id, date || null, note);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
       setEditing(false);
       router.refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'تعذّر الحفظ');
+    } catch {
+      setError('تعذّر الحفظ — جرّب تاني');
     } finally {
       setBusy(false);
     }
