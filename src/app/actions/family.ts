@@ -20,12 +20,17 @@ export async function fetchFamilyMembers(): Promise<ChildProfile[]> {
     userProfileId: child.user_profile_id,
     fullName: child.full_name,
     birthDate: child.birth_date,
+    gender: (child.gender as 'male' | 'female' | null) ?? null,
     avatarUrl: child.avatar_url,
     createdAt: child.created_at
   }));
 }
 
-export async function createFamilyMember(fullName: string, birthDate: string): Promise<ChildProfile | null> {
+export async function createFamilyMember(
+  fullName: string,
+  birthDate: string,
+  gender?: 'male' | 'female' | null,
+): Promise<ChildProfile | null> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
@@ -34,7 +39,8 @@ export async function createFamilyMember(fullName: string, birthDate: string): P
     .insert({
       user_profile_id: user.id,
       full_name: fullName,
-      birth_date: birthDate
+      birth_date: birthDate,
+      gender: gender ?? null
     })
     .select('*')
     .single();
@@ -51,18 +57,24 @@ export async function createFamilyMember(fullName: string, birthDate: string): P
     userProfileId: data.user_profile_id,
     fullName: data.full_name,
     birthDate: data.birth_date,
+    gender: (data.gender as 'male' | 'female' | null) ?? null,
     avatarUrl: data.avatar_url,
     createdAt: data.created_at
   };
 }
 
-export async function updateFamilyMember(id: string, fullName: string, birthDate: string): Promise<boolean> {
+export async function updateFamilyMember(
+  id: string,
+  fullName: string,
+  birthDate: string,
+  gender?: 'male' | 'female' | null,
+): Promise<boolean> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
 
   const { error } = await supabase.from('child_profiles')
-    .update({ full_name: fullName, birth_date: birthDate })
+    .update({ full_name: fullName, birth_date: birthDate, gender: gender ?? null })
     .eq('id', id)
     .eq('user_profile_id', user.id);
 

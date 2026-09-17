@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Instructor, WeeklySlot } from '@/types';
 import { formatPrice } from '@/lib/utils';
 import { Calendar, Clock, User, ArrowRight, Video } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 
@@ -23,8 +23,15 @@ interface BookingWizardProps {
 
 export function BookingWizardClient({ instructors, packages }: BookingWizardProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // الباقة اللي جاية من صفحة الباقات، لو كانت لسه متاحة.
+  const requestedPackage = searchParams?.get('package') ?? '';
   const [step, setStep] = useState(1);
-  const [selectedPackage, setSelectedPackage] = useState(packages[0]?.id ?? '');
+  const [selectedPackage, setSelectedPackage] = useState(
+    packages.some((pkg) => pkg.id === requestedPackage)
+      ? requestedPackage
+      : (packages[0]?.id ?? ''),
+  );
   const [selectedInstructorId, setSelectedInstructorId] = useState<string>('');
   const [selectedSlot, setSelectedSlot] = useState<WeeklySlot | null>(null);
 

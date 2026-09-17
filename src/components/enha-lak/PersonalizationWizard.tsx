@@ -136,7 +136,12 @@ export function PersonalizationWizard({
     let childName = data.newChildName || '';
     let finalChildId = data.familyMemberId || '';
     if (data.newChildName && data.newChildBirthDate && data.newChildGender && !data.familyMemberId) {
-      const newMember = await createFamilyMember(data.newChildName, `${data.newChildBirthDate}-01-01`);
+      // النوع كان بيتسأل عنه هنا ويترمي — العمود اتضاف في ملف 51.
+      const newMember = await createFamilyMember(
+        data.newChildName,
+        `${data.newChildBirthDate}-01-01`,
+        data.newChildGender ?? null,
+      );
       if (newMember) {
         childName = newMember.fullName;
         finalChildId = newMember.id;

@@ -27,6 +27,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          id: string
+          user_id: string
+          reason: string | null
+          status: string
+          admin_notes: string | null
+          created_at: string
+          handled_at: string | null
+          handled_by: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          reason?: string | null
+          status?: string
+          admin_notes?: string | null
+          created_at?: string
+          handled_at?: string | null
+          handled_by?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          reason?: string | null
+          status?: string
+          admin_notes?: string | null
+          created_at?: string
+          handled_at?: string | null
+          handled_by?: string | null
+        }
+        Relationships: []
+      }
       addon_products: {
         Row: {
           id: string
@@ -258,6 +291,7 @@ export type Database = {
           user_profile_id: string
           full_name: string
           birth_date: string | null
+          gender: string | null
           avatar_url: string | null
           created_at: string
         }
@@ -266,6 +300,7 @@ export type Database = {
           user_profile_id: string
           full_name: string
           birth_date?: string | null
+          gender?: string | null
           avatar_url?: string | null
           created_at?: string
         }
@@ -274,6 +309,7 @@ export type Database = {
           user_profile_id?: string
           full_name?: string
           birth_date?: string | null
+          gender?: string | null
           avatar_url?: string | null
           created_at?: string
         }

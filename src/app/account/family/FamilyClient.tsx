@@ -14,16 +14,26 @@ export function FamilyClient({ initialMembers }: { initialMembers: ChildProfile[
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   
-  const [formData, setFormData] = useState({ fullName: '', birthDate: '' });
+  const [formData, setFormData] = useState<{
+    fullName: string;
+    birthDate: string;
+    gender: 'male' | 'female' | '';
+  }>({ fullName: '', birthDate: '', gender: '' });
+  const [error, setError] = useState('');
 
   const resetForm = () => {
-    setFormData({ fullName: '', birthDate: '' });
+    setFormData({ fullName: '', birthDate: '', gender: '' });
     setEditingId(null);
     setShowForm(false);
+    setError('');
   };
 
   const handleEdit = (child: ChildProfile) => {
-    setFormData({ fullName: child.fullName, birthDate: child.birthDate || '' });
+    setFormData({
+      fullName: child.fullName,
+      birthDate: child.birthDate || '',
+      gender: child.gender ?? '',
+    });
     setEditingId(child.id);
     setShowForm(true);
   };
@@ -40,21 +50,53 @@ export function FamilyClient({ initialMembers }: { initialMembers: ChildProfile[
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullName || !formData.birthDate) return;
+    setError('');
+
+    // كان بيرجع من غير أي رسالة لو تاريخ الميلاد فاضي — الزرار يتضغط
+    // وما يحصلش حاجة ومحدش يعرف ليه.
+    if (!formData.fullName.trim()) {
+      setError('اكتب اسم الطفل');
+      return;
+    }
+    if (!formData.birthDate) {
+      setError('حدّد تاريخ الميلاد');
+      return;
+    }
+
+    const gender = formData.gender || null;
 
     startTransition(async () => {
-      if (editingId) {
-        const success = await updateFamilyMember(editingId, formData.fullName, formData.birthDate);
-        if (success) {
-          setMembers(prev => prev.map(m => m.id === editingId ? { ...m, fullName: formData.fullName, birthDate: formData.birthDate } : m));
+      try {
+        if (editingId) {
+          const success = await updateFamilyMember(
+            editingId,
+            formData.fullName,
+            formData.birthDate,
+            gender,
+          );
+          if (!success) {
+            setError('تعذّر الحفظ — جرّب تاني');
+            return;
+          }
+          setMembers(prev => prev.map(m => m.id === editingId
+            ? { ...m, fullName: formData.fullName, birthDate: formData.birthDate, gender }
+            : m));
           resetForm();
-        }
-      } else {
-        const newChild = await createFamilyMember(formData.fullName, formData.birthDate);
-        if (newChild) {
+        } else {
+          const newChild = await createFamilyMember(
+            formData.fullName,
+            formData.birthDate,
+            gender,
+          );
+          if (!newChild) {
+            setError('تعذّر الإضافة — جرّب تاني');
+            return;
+          }
           setMembers(prev => [...prev, newChild]);
           resetForm();
         }
+      } catch {
+        setError('تعذّر الحفظ — جرّب تاني');
       }
     });
   };
@@ -92,6 +134,11 @@ export function FamilyClient({ initialMembers }: { initialMembers: ChildProfile[
 
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-wrap gap-4 items-end">
+          {error && (
+            <div className="w-full rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700">
+              {error}
+            </div>
+          )}
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-bold text-slate-700 mb-2">اسم الطفل</label>
             <input 
@@ -108,6 +155,20 @@ export function FamilyClient({ initialMembers }: { initialMembers: ChildProfile[
               value={formData.birthDate}
               onChange={(v) => setFormData({ ...formData, birthDate: v })}
             />
+          </div>
+          <div className="w-40">
+            <label className="block text-sm font-bold text-slate-700 mb-2">النوع</label>
+            <select
+              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 outline-none focus:border-emerald-500"
+              value={formData.gender}
+              onChange={(e) =>
+                setFormData({ ...formData, gender: e.target.value as 'male' | 'female' | '' })
+              }
+            >
+              <option value="">غير محدد</option>
+              <option value="male">ذكر</option>
+              <option value="female">أنثى</option>
+            </select>
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
             <Button type="submit" disabled={isPending} accentColor="emerald" className="flex-1">حفظ</Button>

@@ -46,7 +46,7 @@ export default async function CustomPage() {
             <Card
               key={product.id}
               accentColor="rose"
-              className="flex flex-col overflow-hidden relative p-0"
+              className="flex flex-col overflow-hidden relative p-0 transition-all hover:-translate-y-1 hover:border-rose-300 hover:shadow-xl hover:shadow-rose-500/10"
             >
               <div className="relative h-64 w-full bg-slate-100">
                 {product.coverImageUrl ? (

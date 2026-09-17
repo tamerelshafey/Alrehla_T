@@ -10,6 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
+import { Suspense } from 'react';
 import { PageContainer } from '@/components/PageContainer';
 import { BookingWizardClient } from '@/components/creative-writing/BookingWizardClient';
 import { getInstructors, getWritingPackages } from '@/data/domains/writing';
@@ -27,12 +28,14 @@ export default async function BookingPage() {
         <p className="mx-auto mb-12 max-w-2xl text-center text-lg font-medium text-slate-500">
           اختر الباقة المناسبة والمدرب، ثم حدد موعدك الأسبوعي الثابت طوال فترة التدريب.
         </p>
+        <Suspense fallback={<div className="p-8 text-center font-medium text-slate-500">جاري التحميل…</div>}>
         <BookingWizardClient
           instructors={instructors}
           packages={packages
             .filter((pkg) => pkg.isActive)
             .map((pkg) => ({ id: pkg.id, name: pkg.name, price: pkg.price }))}
         />
+        </Suspense>
       </Section>
     </PageContainer>
   );

@@ -152,7 +152,9 @@ function PackageCard({ pkg }: { pkg: WritingPackage }) {
       </div>
 
       <Button
-        href="/creative-writing/booking"
+        // الباقة بتتبعت في الرابط: قبل كده كان اللي بيختار باقة معيّنة
+        // يوصل للمعالج وهو مختار أول باقة في القايمة.
+        href={`/creative-writing/booking?package=${encodeURIComponent(pkg.id)}`}
         accentColor="emerald"
         className="mt-auto w-full py-4 text-center"
       >

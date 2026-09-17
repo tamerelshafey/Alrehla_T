@@ -579,6 +579,8 @@ export interface ChildProfile {
   userProfileId: string;
   fullName: string;
   birthDate: string | null;
+  /** ذكر/أنثى — تُستخدم في صياغة القصة. كانت تُجمع في المعالج وتُهمل. */
+  gender?: 'male' | 'female' | null;
   avatarUrl?: string | null;
   createdAt: string;
 }

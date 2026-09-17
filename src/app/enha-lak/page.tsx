@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/Button';
 
 export async function generateMetadata(): Promise<Metadata> {
   return pageMetadata({
-    title: 'قسم إنهى لك',
-    description: 'تصفح المتجر واكتشف أحدث منتجات وإصدارات إنهى لك.',
+    title: 'قسم إنها لك',
+    description: 'تصفح المتجر واكتشف أحدث منتجات وإصدارات إنها لك.',
     path: '/enha-lak',
   });
 }

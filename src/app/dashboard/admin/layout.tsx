@@ -20,6 +20,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const sidebarLinks: { label: string; href: string; icon: LucideIcon; permission: AdminPermission }[] = [
     { label: 'المستخدمون والعائلات', href: '/dashboard/admin/users', icon: Users, permission: 'canManageUsers' },
+    { label: 'طلبات حذف الحسابات', href: '/dashboard/admin/users/deletion-requests', icon: Users, permission: 'canManageUsers' },
     { label: 'المدربون', href: '/dashboard/admin/instructors', icon: UserCheck, permission: 'canManageInstructors' },
     // مقدّمو الخدمة: المنصة والمدربون والمستقلون. مكان واحد لتحديد
     // مين بيقدّم أي خدمة إبداعية وبكام.

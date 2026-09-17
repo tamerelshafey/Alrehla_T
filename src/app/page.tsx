@@ -106,11 +106,13 @@ export default async function Home() {
               {content['home.hero.subtitle']}
             </p>
             <div className="flex flex-wrap gap-4">
+              {/* الزرارين بنفس اللون وبنفس الفعل: القسمين متساويين في الأهمية،
+                  فمفيش سبب إن واحد يبان أساسي والتاني ثانوي. */}
               <Button href="/enha-lak" variant="primary" accentColor="amber">
                 استكشف إنها لك
               </Button>
-              <Button href="/creative-writing" variant="secondary" accentColor="amber" className="!border-none !bg-white !shadow-sm">
-                بداية الرحلة
+              <Button href="/creative-writing" variant="primary" accentColor="amber">
+                استكشف بداية الرحلة
               </Button>
             </div>
           </div>
@@ -208,14 +210,19 @@ export default async function Home() {
             <h2 className="text-3xl font-black text-slate-800 mb-2">{content['home.instructors.title']}</h2>
             <p className="text-slate-500 font-medium max-w-2xl">{content['home.instructors.text']}</p>
           </div>
-          <Button href="/creative-writing" variant="secondary" className="w-full md:w-auto">عرض جميع المدربين</Button>
+          <Button href="/creative-writing/instructors" variant="secondary" className="w-full md:w-auto">عرض جميع المدربين</Button>
         </div>
         
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {topInstructors.length === 0 ? (
           <div className="col-span-full py-12 text-center text-slate-500 font-medium">قريبًا</div>
         ) : topInstructors.map((instructor: any) => (
-            <div key={instructor.id} className="group relative rounded-3xl border border-slate-200 bg-white p-6 transition-all hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/10">
+            // الكارت كان div بتأثير hover: بيبان قابل للضغط وما بيفتحش حاجة.
+            <Link
+              href={`/creative-writing/instructors/${instructor.id}`}
+              key={instructor.id}
+              className="group relative block rounded-3xl border border-slate-200 bg-white p-6 transition-all hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/10"
+            >
               <div className="flex flex-col items-center text-center">
                 <div className="mb-4 relative h-24 w-24 overflow-hidden rounded-full border-4 border-emerald-50">
                   <Image 
@@ -231,7 +238,7 @@ export default async function Home() {
                   ★ {instructor.rating}
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </Section>
@@ -243,7 +250,7 @@ export default async function Home() {
             <h2 className="text-3xl font-black text-slate-800 mb-2">{content['home.publishers.title']}</h2>
             <p className="text-slate-500 font-medium max-w-2xl">{content['home.publishers.text']}</p>
           </div>
-          <Button href="/enha-lak" variant="secondary" className="w-full md:w-auto">استكشف المكتبة</Button>
+          <Button href="/enha-lak/library" variant="secondary" className="w-full md:w-auto">استكشف المكتبة</Button>
         </div>
         
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

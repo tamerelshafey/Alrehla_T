@@ -1,7 +1,7 @@
 
 import Link from 'next/link';
 import { PageContainer } from '@/components/PageContainer';
-import { Users, ShoppingBag, Calendar, Package, HelpCircle, Bell, User } from 'lucide-react';
+import { Users, ShoppingBag, Calendar, Package, HelpCircle, Bell, User, Settings } from 'lucide-react';
 
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -14,6 +14,9 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
           </Link>
           <Link href="/account/family" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-amber-600">
             <Users className="h-4 w-4" /> أفراد العائلة
+          </Link>
+          <Link href="/account/settings" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-amber-600">
+            <Settings className="h-4 w-4" /> إعدادات الحساب
           </Link>
           <div className="pt-4 pb-2">
             <p className="px-3 text-xs font-bold tracking-wider text-slate-400 uppercase">الطلبات والمواعيد</p>
