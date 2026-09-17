@@ -1,14 +1,17 @@
+import { notFound } from 'next/navigation';
 import { formatPrice } from '@/lib/utils';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
-import { getPersonalizedProducts, getPublishers } from '@/data/domains/products';
+import { getPersonalizedProducts, getMyPublisher } from '@/data/domains/products';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
 export default async function PublisherProductsPage() {
-  const publishers = await getPublishers();
-  const myPublisher = publishers[0]; 
+  // الناشر بتاع الحساب اللي داخل. كان مكتوب هنا «أول ناشر في
+  // الجدول» — يعني أي ناشر كان بيشوف بيانات الناشر الأول مش بتاعته.
+  const myPublisher = await getMyPublisher();
+  if (!myPublisher) notFound();
   
   const allProducts = await getPersonalizedProducts();
   const myProducts = allProducts.filter(p => p.publisherId === myPublisher.id);

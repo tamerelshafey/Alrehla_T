@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getMessagesForTicket } from '@/data/domains/account';
@@ -19,7 +20,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   const { id } = await params;
   const tickets = await getAllSupportTickets();
-  const target = tickets.find(t => t.id === id) || tickets[0];
+  const target = tickets.find(t => t.id === id);
+  // مفيش سجل بالرقم ده: بنعرض صفحة «غير موجود».
+  // كان مكتوب هنا «ولا هات أول واحد في القايمة» — يعني اللي بيفتح
+  // رقم مش موجود كان بيشوف سجل حد تاني وهو فاكر إنه بتاعه.
+  if (!target) notFound();
   
   const messages = await getMessagesForTicket(target.id);
   

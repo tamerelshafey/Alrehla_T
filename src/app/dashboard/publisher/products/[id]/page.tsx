@@ -1,17 +1,27 @@
+import { notFound } from 'next/navigation';
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getPersonalizedProducts, getPublishers } from '@/data/domains/products';
+import { getPersonalizedProducts, getMyPublisher } from '@/data/domains/products';
 import { saveProduct } from '@/actions/products';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const publishers = await getPublishers();
-  const myPublisher = publishers[0]; 
+  // الناشر بتاع الحساب اللي داخل. كان مكتوب هنا «أول ناشر في
+  // الجدول» — يعني أي ناشر كان بيشوف بيانات الناشر الأول مش بتاعته.
+  const myPublisher = await getMyPublisher();
+  if (!myPublisher) notFound();
 
   const allProducts = await getPersonalizedProducts();
-  const target = allProducts.find(p => p.id === id) || allProducts[0];
+  const target = allProducts.find(p => p.id === id);
+  // مفيش سجل بالرقم ده: بنعرض صفحة «غير موجود».
+  // كان مكتوب هنا «ولا هات أول واحد في القايمة» — يعني اللي بيفتح
+  // رقم مش موجود كان بيشوف سجل حد تاني وهو فاكر إنه بتاعه.
+  if (!target) notFound();
+  // المنتج لازم يكون بتاع الناشر ده. من غير السطر ده، ناشر يقدر يفتح
+  // صفحة تعديل منتج ناشر تاني بمجرد إنه يعرف رقمه.
+  if (target.publisherId !== myPublisher.id) notFound();
 
   return (
     <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">

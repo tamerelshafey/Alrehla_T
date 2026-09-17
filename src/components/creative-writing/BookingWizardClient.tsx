@@ -1,23 +1,35 @@
 'use client';
 import React, { useState } from 'react';
 import { Instructor, WeeklySlot } from '@/types';
+import { formatPrice } from '@/lib/utils';
 import { Calendar, Clock, User, ArrowRight, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 
+type PackageOption = { id: string; name: string; price: number };
+
 interface BookingWizardProps {
   instructors: Instructor[];
+  /**
+   * الباقات الحقيقية من قاعدة البيانات.
+   *
+   * كانت القايمة تلات أسماء مكتوبة في الكود، **والاسم نفسه** هو اللي
+   * بيتبعت كرقم الباقة ويتخزن في الاشتراك. يعني الاشتراكات كانت
+   * مربوطة بنص مش بباقة.
+   */
+  packages: PackageOption[];
 }
 
-export function BookingWizardClient({ instructors }: BookingWizardProps) {
+export function BookingWizardClient({ instructors, packages }: BookingWizardProps) {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [selectedPackage, setSelectedPackage] = useState('شغف الكتابة (3 أشهر)');
+  const [selectedPackage, setSelectedPackage] = useState(packages[0]?.id ?? '');
   const [selectedInstructorId, setSelectedInstructorId] = useState<string>('');
   const [selectedSlot, setSelectedSlot] = useState<WeeklySlot | null>(null);
 
   const activeInstructors = instructors.filter(i => i.status === 'active');
+  const chosenPackage = packages.find((pkg) => pkg.id === selectedPackage);
   const selectedInstructor = activeInstructors.find(i => i.id === selectedInstructorId);
 
   const handleNext = () => setStep(prev => prev + 1);
@@ -48,9 +60,11 @@ export function BookingWizardClient({ instructors }: BookingWizardProps) {
                   onChange={(e) => setSelectedPackage(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 outline-none focus:border-emerald-500"
                 >
-                  <option>بذرة الخيال (شهر واحد)</option>
-                  <option>شغف الكتابة (3 أشهر)</option>
-                  <option>مشروع كاتب (6 أشهر)</option>
+                  {packages.map((pkg) => (
+                    <option key={pkg.id} value={pkg.id}>
+                      {pkg.name} — {formatPrice(pkg.price)}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -194,7 +208,13 @@ export function BookingWizardClient({ instructors }: BookingWizardProps) {
                 <ul className="space-y-3 text-sm text-slate-600">
                   <li className="flex justify-between border-b border-slate-200 pb-2">
                     <span>الباقة:</span>
-                    <span className="font-bold text-slate-800">{selectedPackage}</span>
+                    <span className="font-bold text-slate-800">{chosenPackage?.name ?? '—'}</span>
+                  </li>
+                  <li className="flex justify-between border-b border-slate-200 pb-2">
+                    <span>سعر الباقة:</span>
+                    <span className="font-bold text-slate-800">
+                      {chosenPackage ? formatPrice(chosenPackage.price) : '—'}
+                    </span>
                   </li>
                   <li className="flex justify-between border-b border-slate-200 pb-2">
                     <span>المدرب:</span>

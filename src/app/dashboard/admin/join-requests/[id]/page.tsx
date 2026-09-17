@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getJoinRequests } from '@/data/domains/admin';
@@ -19,7 +20,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   const { id } = await params;
   const requests = await getJoinRequests();
-  const target = requests.find(r => r.id === id) || requests[0];
+  const target = requests.find(r => r.id === id);
+  // مفيش سجل بالرقم ده: بنعرض صفحة «غير موجود».
+  // كان مكتوب هنا «ولا هات أول واحد في القايمة» — يعني اللي بيفتح
+  // رقم مش موجود كان بيشوف سجل حد تاني وهو فاكر إنه بتاعه.
+  if (!target) notFound();
 
   return (
     <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">

@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getAllUsers, getCurrentUser } from '@/data/domains/auth';
@@ -17,7 +18,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   
   const { id } = await params;
   const allUsers = await getAllUsers();
-  const targetUser = allUsers.find(u => u.id === id) || allUsers[0];
+  const targetUser = allUsers.find(u => u.id === id);
+  // مفيش سجل بالرقم ده: بنعرض صفحة «غير موجود».
+  // كان مكتوب هنا «ولا هات أول واحد في القايمة» — يعني اللي بيفتح
+  // رقم مش موجود كان بيشوف سجل حد تاني وهو فاكر إنه بتاعه.
+  if (!targetUser) notFound();
 
   const supabase = await createClient();
   const { data: childrenData } = await supabase.from('child_profiles')

@@ -4,7 +4,20 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
 import { getCurrentUser } from '@/data/domains/auth';
+import { getMyPublisher } from '@/data/domains/products';
+import { hasAdminPermission } from '@/lib/utils';
 
+/**
+ * حفظ منتج — من لوحة الإدارة أو من لوحة الناشر.
+ *
+ * التحقق هنا كان **مفقود بالكامل**: الدالة كانت بتاخد رقم الناشر من حقل
+ * مخفي في الفورم وتكتب بيه من غير ما تسأل مين اللي بيحفظ. يعني أي حساب
+ * مسجّل كان يقدر يعدّل أي منتج وينسبه لأي ناشر — والحماية الوحيدة كانت
+ * صلاحيات قاعدة البيانات.
+ *
+ * دلوقتي: الإدارة تعدّل أي حاجة، والناشر منتجاته هو بس، وأي حد تاني
+ * بيترفض.
+ */
 export async function saveProduct(formData: FormData) {
   const supabase = await createClient();
   
@@ -19,6 +32,31 @@ export async function saveProduct(formData: FormData) {
   const coverImageUrl = formData.get('coverImageUrl') as string || null;
   const publisherId = formData.get('publisherId') as string || null;
   const ownerType = formData.get('ownerType') as 'platform' | 'publisher';
+
+  const currentUser = await getCurrentUser();
+  const isAdmin = hasAdminPermission(currentUser, 'canManageCatalog');
+  let effectivePublisherId = publisherId;
+
+  if (!isAdmin) {
+    // مش إداري؟ يبقى لازم يكون ناشر، والمنتج لازم يكون بتاعه.
+    const myPublisher = await getMyPublisher();
+    if (!myPublisher) throw new Error('غير مصرح لك بحفظ المنتجات');
+
+    // رقم الناشر بيتاخد من الحساب، مش من الفورم.
+    effectivePublisherId = myPublisher.id;
+
+    if (!isNew) {
+      const { data: existing } = await supabase
+        .from('personalized_products')
+        .select('publisher_id')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (!existing || existing.publisher_id !== myPublisher.id) {
+        throw new Error('غير مصرح لك بتعديل هذا المنتج');
+      }
+    }
+  }
   
   // Basic slug generation
   const slug = isNew ? `prod-${Date.now()}` : formData.get('slug') as string || `prod-${Date.now()}`;
@@ -31,7 +69,7 @@ export async function saveProduct(formData: FormData) {
     electronic_price: electronicPrice,
     short_description: shortDescription,
     cover_image_url: coverImageUrl,
-    publisher_id: publisherId,
+    publisher_id: effectivePublisherId,
     owner_type: ownerType,
   };
 
@@ -61,7 +99,6 @@ export async function saveProduct(formData: FormData) {
     }
   }
 
-  const currentUser = await getCurrentUser();
   await logAuditAction({
     actorProfileId: currentUser.id,
     actorName: currentUser.fullName,

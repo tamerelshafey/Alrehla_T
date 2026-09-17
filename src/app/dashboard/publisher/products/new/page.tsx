@@ -1,13 +1,16 @@
+import { notFound } from 'next/navigation';
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { getPublishers } from '@/data/domains/products';
+import { getMyPublisher } from '@/data/domains/products';
 import { saveProduct } from '@/actions/products';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {
-  const publishers = await getPublishers();
-  const myPublisher = publishers[0]; 
+  // الناشر بتاع الحساب اللي داخل. كان مكتوب هنا «أول ناشر في
+  // الجدول» — يعني أي ناشر كان بيشوف بيانات الناشر الأول مش بتاعته.
+  const myPublisher = await getMyPublisher();
+  if (!myPublisher) notFound();
 
   return (
     <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">

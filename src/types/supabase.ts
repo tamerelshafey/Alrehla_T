@@ -253,6 +253,9 @@ export type Database = {
           status: string
           started_at: string | null
           created_at: string
+          amount: number | null
+          transaction_reference: string | null
+          preferred_instructor_id: string | null
         }
         Insert: {
           id?: string
@@ -263,6 +266,9 @@ export type Database = {
           status?: string
           started_at?: string | null
           created_at?: string
+          amount?: number | null
+          transaction_reference?: string | null
+          preferred_instructor_id?: string | null
         }
         Update: {
           id?: string
@@ -273,6 +279,9 @@ export type Database = {
           status?: string
           started_at?: string | null
           created_at?: string
+          amount?: number | null
+          transaction_reference?: string | null
+          preferred_instructor_id?: string | null
         }
         Relationships: []
       }
@@ -1636,6 +1645,15 @@ export type Database = {
           p_link?: string | null
         }
         Returns: undefined
+      }
+      create_course_booking: {
+        Args: {
+          p_package_id: string
+          p_instructor_id?: string | null
+          p_participant_type?: string | null
+          p_child_id?: string | null
+        }
+        Returns: string
       }
       create_customer_order: {
         Args: {

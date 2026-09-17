@@ -3,21 +3,27 @@ import { formatPrice } from '@/lib/utils';
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { Calendar, Clock, User, CheckCircle2, ArrowRight } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { createDummyBookingServiceOrder, submitBookingPaymentProof } from '@/actions/bookings';
+import { createCourseBooking, submitBookingPaymentProof } from '@/actions/bookings';
 import { Button } from '@/components/ui/Button';
 import { TransferInstructions } from '@/components/checkout/TransferInstructions';
 
 export function BookingConfirmClient({
   paymentWalletNumber,
   paymentQrUrl,
+  packageId,
+  packageName,
+  packagePrice,
+  instructorId,
+  instructorName,
 }: {
   paymentWalletNumber: string;
   paymentQrUrl?: string;
+  packageId: string;
+  packageName: string;
+  packagePrice: number;
+  instructorId?: string;
+  instructorName?: string;
 }) {
-  const searchParams = useSearchParams();
-  const packageId = searchParams?.get('package') || 'dummy-package';
-  const instructorId = searchParams?.get('instructor') || 'dummy-instructor';
   const [participantType, setParticipantType] = useState<'self' | 'child'>('self');
   const [childId, setChildId] = useState<string>('');
   const [children, setChildren] = useState<{id:string, name:string}[]>([]);
@@ -28,18 +34,32 @@ export function BookingConfirmClient({
 
   const [transactionRef, setTransactionRef] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
-  const [orderIdState, setOrderIdState] = useState('');
+  const [error, setError] = useState('');
   const [isPending, startTransition] = useTransition();
 
   const handlePaymentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     startTransition(async () => {
-      if (participantType === 'child' && !childId) { alert('الرجاء اختيار الطفل'); return; }
-const orderId = await createDummyBookingServiceOrder(250, packageId, instructorId, participantType, childId);
-      setOrderIdState(orderId);
-      
-      await submitBookingPaymentProof(orderId, transactionRef);
-      
+      setError('');
+      if (participantType === 'child' && !childId) {
+        setError('اختار المشارك الأول');
+        return;
+      }
+
+      // المبلغ مش بيتبعت من هنا: القاعدة بتاخده من سعر الباقة.
+      const result = await createCourseBooking({
+        packageId,
+        instructorId,
+        participantType,
+        childId: childId || undefined,
+      });
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      await submitBookingPaymentProof(result.subscriptionId, transactionRef);
       setIsSuccess(true);
     });
   };
@@ -78,21 +98,25 @@ const orderId = await createDummyBookingServiceOrder(250, packageId, instructorI
               <User className="h-5 w-5 text-emerald-500" />
               <span>المدرب</span>
             </div>
-            <span className="font-bold text-slate-900">سارة أحمد</span>
+            <span className="font-bold text-slate-900">
+              {instructorName ?? 'يحدده فريق المنصة'}
+            </span>
           </div>
           <div className="flex items-center justify-between font-medium text-slate-600">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-emerald-500" />
-              <span>التاريخ</span>
+              <span>الباقة</span>
             </div>
-            <span className="font-bold text-slate-900">{new Date().toLocaleDateString('ar-EG')}</span>
+            <span className="font-bold text-slate-900">{packageName}</span>
           </div>
+          {/* التاريخ والوقت كانوا معروضين هنا: تاريخ النهاردة و«04:30 مساءً»
+              مكتوبين في الكود. الجدولة الحقيقية بتحصل بعد تأكيد الدفع. */}
           <div className="flex items-center justify-between font-medium text-slate-600">
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-emerald-500" />
-              <span>الوقت</span>
+              <span>الموعد</span>
             </div>
-            <span className="font-bold text-slate-900">04:30 مساءً</span>
+            <span className="font-bold text-slate-900">يتحدد بعد تأكيد الدفع</span>
           </div>
         </div>
       </div>
@@ -100,13 +124,19 @@ const orderId = await createDummyBookingServiceOrder(250, packageId, instructorI
       <div className="mb-8 rounded-2xl bg-emerald-50 p-6 border border-emerald-100">
         <h2 className="mb-4 text-lg font-bold text-slate-800">ملخص الدفع</h2>
         <div className="flex justify-between text-xl font-black text-slate-900">
-          <span>قيمة الجلسة الاستشارية</span>
-          <span className="text-emerald-700">{formatPrice(250)}</span>
+          <span>قيمة الباقة</span>
+          <span className="text-emerald-700">{formatPrice(packagePrice)}</span>
         </div>
       </div>
 
       <form onSubmit={handlePaymentSubmit} className="space-y-6">
         <h2 className="text-xl font-black text-slate-800">طريقة الدفع</h2>
+
+        {error && (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+            {error}
+          </div>
+        )}
         
         {/* A card form used to sit here whose inputs nothing ever read: the
             customer typed a real card number and was shown a success screen

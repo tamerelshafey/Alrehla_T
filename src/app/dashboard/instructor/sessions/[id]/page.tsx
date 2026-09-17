@@ -1,6 +1,6 @@
 import { getCurrentUser } from '@/data/domains/auth';
 import { getSessions } from '@/data/domains/writing';
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { InstructorSessionClient } from './InstructorSessionClient';
 
@@ -13,8 +13,11 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
   }
 
   const { id } = await params;
-  const bookings = await getSessions();
-  const session = bookings[0]; // Just mock first booking for demo
+  // رقم الجلسة في الرابط كان بيتقرا وما بيتستخدمش: الصفحة كانت بتعرض
+  // **أول جلسة في القايمة** مهما كان الرابط، بتعليق «mock first booking».
+  const sessions = await getSessions();
+  const session = sessions.find((s) => s.id === id);
+  if (!session) notFound();
 
   return (
     <div className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">

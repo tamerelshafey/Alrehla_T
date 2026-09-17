@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser } from '@/data/domains/auth';
@@ -30,7 +31,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   }
   const { id } = await params;
   const orders = await getAllOrders();
-  const target = orders.find(o => o.id === id) || orders[0];
+  const target = orders.find(o => o.id === id);
+  // مفيش سجل بالرقم ده: بنعرض صفحة «غير موجود».
+  // كان مكتوب هنا «ولا هات أول واحد في القايمة» — يعني اللي بيفتح
+  // رقم مش موجود كان بيشوف سجل حد تاني وهو فاكر إنه بتاعه.
+  if (!target) notFound();
   const products = await getPersonalizedProducts();
   const formattedItems = target.items.map((item: any, idx: number) => {
     const product = products.find(p => p.id === item.productId);

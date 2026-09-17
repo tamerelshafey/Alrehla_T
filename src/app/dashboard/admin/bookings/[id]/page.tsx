@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser } from '@/data/domains/auth';
@@ -17,7 +18,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   }
   const { id } = await params;
   const allBookings = await getSessions();
-  const target = allBookings.find(b => b.id === id) || allBookings[0];
+  const target = allBookings.find(b => b.id === id);
+  // مفيش سجل بالرقم ده: بنعرض صفحة «غير موجود».
+  // كان مكتوب هنا «ولا هات أول واحد في القايمة» — يعني اللي بيفتح
+  // رقم مش موجود كان بيشوف سجل حد تاني وهو فاكر إنه بتاعه.
+  if (!target) notFound();
   
   const allServiceOrders = await getAllServiceOrders();
   const serviceOrder = allServiceOrders.find(so => so.id === target.id); // Assuming 1:1 mapping by ID for now based on dummy logic

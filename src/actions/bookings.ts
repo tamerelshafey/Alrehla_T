@@ -6,66 +6,52 @@ import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
 import { getCurrentUser } from '@/data/domains/auth';
 
-export async function createDummyBookingServiceOrder(
-  amount: number, 
-  packageId: string, 
-  instructorId: string, 
-  participantType: 'self' | 'child' = 'self', 
-  childId?: string
-) {
+export type BookingResult =
+  | { ok: true; subscriptionId: string }
+  | { ok: false; error: string };
+
+/**
+ * حجز مسار الكتابة الإبداعية.
+ *
+ * اللي كان بيحصل قبل كده:
+ *   • الواجهة بتبعت مبلغ (250 مكتوبة في الكود) والدالة بتتجاهله — ومفيش
+ *     عمود مبلغ في الجدول أصلًا، فالإدارة بتأكد دفع بلا رقم.
+ *   • رقم الباقة اللي بيتخزن كان **اسم** الباقة، لأن قايمة الباقات في
+ *     المعالج كانت تلات أسماء مكتوبة في الكود.
+ *   • أول جلسة بتتعمل تلقائيًا بتاريخ «بعد 3 أيام» مخترع، ولو فشلت
+ *     بيتم تجاهل الفشل.
+ *
+ * دلوقتي: دالة في القاعدة بتتأكد إن الباقة موجودة ومفعّلة، وبتاخد
+ * السعر منها، وبتتأكد إن المدرب مفعّل وإن المشارك يخص صاحب الحساب.
+ * والجدولة بتحصل بعد تأكيد الدفع بتاريخ حقيقي.
+ */
+export async function createCourseBooking(params: {
+  packageId: string;
+  instructorId?: string;
+  participantType: 'self' | 'child';
+  childId?: string;
+}): Promise<BookingResult> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'لازم تسجّل الدخول قبل الحجز' };
 
-  if (!user) throw new Error('Unauthorized');
+  const { data, error } = await supabase.rpc('create_course_booking', {
+    p_package_id: params.packageId,
+    p_instructor_id: params.instructorId || null,
+    p_participant_type: params.participantType,
+    p_child_id: params.childId || null,
+  });
 
-  if (participantType === 'child' && childId) {
-    const { data: validChild, error: childError } = await supabase
-      .from('child_profiles')
-      .select('id')
-      .eq('user_profile_id', user.id)
-      .eq('id', childId)
-      .single();
-    
-    if (childError || !validChild) {
-      throw new Error(`Invalid child ID: ${childId}. It does not belong to the current user.`);
-    }
+  if (error || !data) {
+    console.error('Error creating booking:', error);
+    return { ok: false, error: error?.message ?? 'تعذّر تسجيل الحجز' };
   }
 
-  // Insert course subscription
-  const { data: subscription, error: subError } = await supabase
-    .from('course_subscriptions')
-    .insert({
-      package_id: packageId,
-      user_id: user.id,
-      participant_type: participantType,
-      child_id: participantType === 'child' ? childId : null,
-      status: 'pending'
-    })
-    .select('id')
-    .single();
-
-  if (subError || !subscription) {
-    console.error('Error creating subscription:', subError);
-    throw new Error('Failed to create subscription');
-  }
-
-  // Insert initial session
-  const { error: sessionError } = await supabase
-    .from('sessions')
-    .insert({
-      course_subscription_id: subscription.id,
-      instructor_id: instructorId,
-      session_number: 1,
-      scheduled_at: new Date(Date.now() + 86400000 * 3).toISOString(), // Dummy 3 days later
-      status: 'scheduled'
-    });
-
-  if (sessionError) {
-    console.error('Error creating session:', sessionError);
-    // Don't throw, let the subscription stand
-  }
-
-  return subscription.id;
+  revalidatePath('/account/orders/creative-writing');
+  revalidatePath('/dashboard/admin/bookings');
+  return { ok: true, subscriptionId: data as unknown as string };
 }
 
 export async function submitBookingPaymentProof(subscriptionId: string, transactionReference: string) {
@@ -86,10 +72,14 @@ export async function submitBookingPaymentProof(subscriptionId: string, transact
     return { success: false, error: 'Unauthorized' };
   }
   
-  // We don't have transactionReference on course_subscriptions in the types, but we'll just update status
+  // رقم التحويل كان بيترمي هنا: الحالة بتتغيّر والرقم بيضيع، فالإدارة
+  // بتأكد دفع من غير مرجع. العمود اتضاف في ملف 46.
   const { error } = await supabase
     .from('course_subscriptions')
-    .update({ status: 'awaiting_verification' })
+    .update({
+      status: 'awaiting_verification',
+      transaction_reference: transactionReference.trim(),
+    })
     .eq('id', subscriptionId);
 
   if (error) {

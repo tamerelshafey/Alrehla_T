@@ -12,11 +12,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 import { PageContainer } from '@/components/PageContainer';
 import { BookingWizardClient } from '@/components/creative-writing/BookingWizardClient';
-import { getInstructors } from '@/data/domains/writing';
+import { getInstructors, getWritingPackages } from '@/data/domains/writing';
 import { Section } from '@/components/ui/Section';
 
 export default async function BookingPage() {
-  const instructors = await getInstructors();
+  const [instructors, packages] = await Promise.all([
+    getInstructors(),
+    getWritingPackages(),
+  ]);
   return (
     <PageContainer className="!py-0 !space-y-0">
       <Section containerClassName="mx-auto w-full max-w-4xl pt-12 pb-24">
@@ -24,7 +27,12 @@ export default async function BookingPage() {
         <p className="mx-auto mb-12 max-w-2xl text-center text-lg font-medium text-slate-500">
           اختر الباقة المناسبة والمدرب، ثم حدد موعدك الأسبوعي الثابت طوال فترة التدريب.
         </p>
-        <BookingWizardClient instructors={instructors} />
+        <BookingWizardClient
+          instructors={instructors}
+          packages={packages
+            .filter((pkg) => pkg.isActive)
+            .map((pkg) => ({ id: pkg.id, name: pkg.name, price: pkg.price }))}
+        />
       </Section>
     </PageContainer>
   );

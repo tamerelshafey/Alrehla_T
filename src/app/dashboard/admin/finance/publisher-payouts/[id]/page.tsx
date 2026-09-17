@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getPublisherPayouts } from '@/data/domains/admin';
@@ -17,7 +18,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   const { id } = await params;
   const payouts = await getPublisherPayouts();
-  const target = payouts.find(p => p.id === id) || payouts[0];
+  const target = payouts.find(p => p.id === id);
+  // مفيش سجل بالرقم ده: بنعرض صفحة «غير موجود».
+  // كان مكتوب هنا «ولا هات أول واحد في القايمة» — يعني اللي بيفتح
+  // رقم مش موجود كان بيشوف سجل حد تاني وهو فاكر إنه بتاعه.
+  if (!target) notFound();
   
   const publishers = await getPublishers();
   const publisher = publishers.find(p => p.id === target.publisherId);

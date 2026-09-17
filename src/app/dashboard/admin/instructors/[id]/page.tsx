@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser } from '@/data/domains/auth';
@@ -20,7 +21,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   const { id } = await params;
   const instructors = await getInstructors();
-  const target = instructors.find(i => i.id === id) || instructors[0];
+  const target = instructors.find(i => i.id === id);
+  // مفيش سجل بالرقم ده: بنعرض صفحة «غير موجود».
+  // كان مكتوب هنا «ولا هات أول واحد في القايمة» — يعني اللي بيفتح
+  // رقم مش موجود كان بيشوف سجل حد تاني وهو فاكر إنه بتاعه.
+  if (!target) notFound();
   const updateRequests = await getProfileUpdateRequestsByInstructor(target.id);
   const certification = await getInstructorCertification(target.id);
   const services = await getStandaloneServices();

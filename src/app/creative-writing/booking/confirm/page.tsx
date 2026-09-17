@@ -11,6 +11,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 import { getSiteSettings } from '@/data/domains/content';
+import { getWritingPackages, getInstructors } from '@/data/domains/writing';
+import Link from 'next/link';
 
 import { PageContainer } from '@/components/PageContainer';
 import { BookingConfirmClient } from './BookingConfirmClient';
@@ -20,8 +22,45 @@ import { Card } from '@/components/ui/Card';
 
 export const dynamic = 'force-dynamic';
 
-export default async function BookingConfirmPage() {
-  const settings = await getSiteSettings();
+export default async function BookingConfirmPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ package?: string; instructor?: string }>;
+}) {
+  // الباقة والمدرب بيتقروا من القاعدة هنا، مش في المتصفح. الصفحة كانت
+  // بتعرض اسم مدرب ثابت («سارة أحمد») وتاريخ النهاردة ووقت مخترع وسعر
+  // 250 مكتوب في الكود — كل ده مالوش علاقة باللي العميل اختاره.
+  const { package: packageId, instructor: instructorId } = await searchParams;
+  const [settings, packages, instructors] = await Promise.all([
+    getSiteSettings(),
+    getWritingPackages(),
+    getInstructors(),
+  ]);
+
+  const chosenPackage = packages.find((pkg) => pkg.id === packageId);
+  const chosenInstructor = instructors.find((i) => i.id === instructorId);
+
+  // من غير باقة صحيحة مفيش حجز. كان الكود بيحط 'dummy-package' ويكمّل.
+  if (!chosenPackage) {
+    return (
+      <PageContainer className="!py-0 !space-y-0">
+        <Section containerClassName="mx-auto w-full max-w-2xl py-24 text-center">
+          <h1 className="mb-4 text-2xl font-black text-slate-800">
+            الباقة مش محددة
+          </h1>
+          <p className="mb-8 font-medium text-slate-500">
+            ابدأ الحجز من الأول واختار الباقة والمدرب.
+          </p>
+          <Link
+            href="/creative-writing/booking"
+            className="rounded-xl bg-slate-900 px-8 py-3 font-bold text-white"
+          >
+            الرجوع لصفحة الحجز
+          </Link>
+        </Section>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer className="!py-0 !space-y-0">
@@ -32,6 +71,11 @@ export default async function BookingConfirmPage() {
             <BookingConfirmClient
               paymentWalletNumber={settings.paymentWalletNumber}
               paymentQrUrl={settings.paymentQrUrl}
+              packageId={chosenPackage.id}
+              packageName={chosenPackage.name}
+              packagePrice={chosenPackage.price}
+              instructorId={chosenInstructor?.id}
+              instructorName={chosenInstructor?.displayName}
             />
           </Suspense>
         </Card>
