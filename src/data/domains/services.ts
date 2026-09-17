@@ -313,6 +313,21 @@ export async function getServiceOrdersForInstructor(
   return mapServiceOrders(data);
 }
 
+/** طلبات مقدّم خدمة بعينه — المنصة أو مدرب أو مستقل. */
+export async function getServiceOrdersByProvider(
+  providerId: string
+): Promise<ServiceOrderRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('service_orders')
+    .select(SERVICE_ORDER_SELECT)
+    .eq('provider_id', providerId)
+    .order('created_at', { ascending: false });
+
+  if (error || !data) return [];
+  return mapServiceOrders(data);
+}
+
 /**
  * One service order, for the order screen.
  *

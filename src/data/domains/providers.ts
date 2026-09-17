@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+export { getServiceOrdersByProvider } from '@/data/domains/services';
 import type { ProviderKind, ServiceProviderAccount } from '@/types';
 
 /**
@@ -138,3 +139,4 @@ export async function getMyProvider(): Promise<ServiceProviderAccount | null> {
 
   return viaInstructor ? mapProvider(viaInstructor) : null;
 }
+

@@ -1166,6 +1166,8 @@ export type Database = {
           provider_id: string | null
           due_at: string | null
           due_note: string | null
+          due_warned_at: string | null
+          due_overdue_notified_at: string | null
         }
         Insert: {
           id?: string
@@ -1183,6 +1185,8 @@ export type Database = {
           provider_id?: string | null
           due_at?: string | null
           due_note?: string | null
+          due_warned_at?: string | null
+          due_overdue_notified_at?: string | null
         }
         Update: {
           id?: string
@@ -1200,6 +1204,8 @@ export type Database = {
           provider_id?: string | null
           due_at?: string | null
           due_note?: string | null
+          due_warned_at?: string | null
+          due_overdue_notified_at?: string | null
         }
         Relationships: []
       }

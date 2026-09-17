@@ -142,7 +142,7 @@ export async function createServiceOrder(params: {
         recipientProfileId: recipient,
         title: 'طلب خدمة جديد',
         message: 'وصلك طلب خدمة إبداعية جديد. سيظهر للتنفيذ بعد تأكيد الدفع.',
-        link: `/dashboard/instructor/services/orders/${order.id}`,
+        link: `/dashboard/provider/orders/${order.id}`,
       });
     }
   }
@@ -197,6 +197,8 @@ function revalidateOrder(orderId: string) {
   revalidatePath('/account/orders/creative-writing');
   revalidatePath(`/dashboard/instructor/services/orders/${orderId}`);
   revalidatePath('/dashboard/instructor/services');
+  revalidatePath(`/dashboard/provider/orders/${orderId}`);
+  revalidatePath('/dashboard/provider');
   revalidatePath(`/dashboard/admin/orders/services/${orderId}`);
   revalidatePath('/dashboard/admin/orders/services');
   revalidatePath('/dashboard/admin');
@@ -247,7 +249,7 @@ export async function sendServiceOrderMessage(
       user.id === order.buyer_profile_id ? providerUserId : order.buyer_profile_id;
     const link =
       user.id === order.buyer_profile_id
-        ? `/dashboard/instructor/services/orders/${orderId}`
+        ? `/dashboard/provider/orders/${orderId}`
         : `/account/orders/creative-writing/${orderId}`;
 
     await notifyUser({
@@ -471,7 +473,7 @@ export async function confirmServiceOrderPayment(orderId: string) {
         recipientProfileId: providerUserId,
         title: 'طلب جاهز للتنفيذ',
         message: `تم تأكيد الدفع — يمكنك بدء التنفيذ الآن. المهلة ${SERVICE_DUE_DAYS} يومًا.`,
-        link: `/dashboard/instructor/services/orders/${orderId}`,
+        link: `/dashboard/provider/orders/${orderId}`,
       });
     }
   }
@@ -628,7 +630,7 @@ export async function setServiceOrderDueDate(
         recipientProfileId: providerUserId,
         title: 'تعديل مهلة التسليم',
         message,
-        link: `/dashboard/instructor/services/orders/${orderId}`,
+        link: `/dashboard/provider/orders/${orderId}`,
       });
     }
   }
