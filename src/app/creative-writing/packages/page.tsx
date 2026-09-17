@@ -95,6 +95,11 @@ function PackageCard({ pkg }: { pkg: WritingPackage }) {
     <Card accentColor="emerald" className="flex flex-col p-8">
       <div className="mb-6 flex items-start justify-between">
         <h3 className="text-2xl font-black text-slate-800">{pkg.name}</h3>
+        {/* الفئة العمرية توضيح للأهل، مش شرط بيتفحص: الباقة متاحة للحجز
+            في كل الأحوال. */}
+        <span className="mt-1 inline-block rounded-md bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-600">
+          {pkg.ageGroup === 'under_12' ? 'مناسبة لأقل من 12 سنة' : 'مناسبة لـ 12 سنة فأكثر'}
+        </span>
         <div className="rounded-xl bg-emerald-50 px-4 py-2 font-black text-emerald-700">
           {formatPrice(pkg.price)}
         </div>

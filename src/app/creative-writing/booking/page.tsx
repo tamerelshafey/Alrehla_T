@@ -33,7 +33,12 @@ export default async function BookingPage() {
           instructors={instructors}
           packages={packages
             .filter((pkg) => pkg.isActive)
-            .map((pkg) => ({ id: pkg.id, name: pkg.name, price: pkg.price }))}
+            .map((pkg) => ({
+              id: pkg.id,
+              name: pkg.name,
+              price: pkg.price,
+              ageGroup: pkg.ageGroup,
+            }))}
         />
         </Suspense>
       </Section>

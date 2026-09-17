@@ -14,7 +14,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 import Link from 'next/link';
 
-import { getTestimonials, getSiteContent } from '@/data/domains/content';
+import { getTestimonials, getSiteContent, getSiteSettings } from '@/data/domains/content';
+import { HeroCarousel } from '@/components/HeroCarousel';
 
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
@@ -42,6 +43,43 @@ import {
 export default async function EnhaLakPage() {
   const testimonials = await getTestimonials();
   const content = await getSiteContent();
+  const settings = await getSiteSettings();
+
+  // الشرائح كانت في layout القسم، يعني بتظهر فوق كل صفحة جواه. مكانها
+  // الصفحة الرئيسية للقسم وبس.
+
+  const enhaLakSlides = [
+    {
+      id: '1',
+      title: 'قصتك أنت البطل فيها',
+      description: 'نصنع قصصاً مخصصة تجعل طفلك محور الأحداث وتغرس فيه أجمل القيم.',
+      image: settings.images.enhaLakSlide1 ?? '',
+      slotKey: 'enhaLakSlide1' as const,
+      ctaText: 'اصنع قصتك',
+      ctaLink: '/enha-lak/custom',
+      theme: 'violet' as const,
+    },
+    {
+      id: '2',
+      title: 'صندوق الرحلة السحري',
+      description: 'اشتراكات شهرية مليئة بالمفاجآت والكتب الممتعة لتنمية حب القراءة.',
+      image: settings.images.enhaLakSlide2 ?? '',
+      slotKey: 'enhaLakSlide2' as const,
+      ctaText: 'اكتشف الصندوق',
+      ctaLink: '/enha-lak/subscription',
+      theme: 'rose' as const,
+    },
+    {
+      id: '3',
+      title: 'مكتبة الخيال الواسعة',
+      description: 'تصفح قصصنا وإصداراتنا المتنوعة التي تناسب مختلف الأعمار.',
+      image: settings.images.enhaLakSlide3 ?? '',
+      slotKey: 'enhaLakSlide3' as const,
+      ctaText: 'تصفح المكتبة',
+      ctaLink: '/enha-lak/library',
+      theme: 'violet' as const,
+    }
+  ];
 
   // الأيقونات والألوان ثابتة؛ النصوص من لوحة الإدارة ← محتوى الصفحات.
   const benefits = [
@@ -67,6 +105,10 @@ export default async function EnhaLakPage() {
 
   return (
     <PageContainer className="!py-0 !space-y-0">
+      <section className="mx-auto w-full max-w-7xl px-4 pb-12 md:px-8">
+        <HeroCarousel slides={enhaLakSlides} />
+      </section>
+
             {/* Hero Section */}
       <Section containerClassName="max-w-4xl text-center py-12 md:py-20">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 mb-6 leading-tight">

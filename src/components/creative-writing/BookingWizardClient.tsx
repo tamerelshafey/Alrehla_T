@@ -7,7 +7,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 
-type PackageOption = { id: string; name: string; price: number };
+type PackageOption = {
+  id: string;
+  name: string;
+  price: number;
+  ageGroup: 'under_12' | '12_plus';
+};
 
 interface BookingWizardProps {
   instructors: Instructor[];
@@ -73,6 +78,13 @@ export function BookingWizardClient({ instructors, packages }: BookingWizardProp
                     </option>
                   ))}
                 </select>
+                {chosenPackage && (
+                  <p className="text-xs font-medium text-slate-500">
+                    {chosenPackage.ageGroup === 'under_12'
+                      ? 'الباقة دي مصمّمة لأقل من 12 سنة — توضيح للمساعدة في الاختيار، والحجز متاح في كل الأحوال.'
+                      : 'الباقة دي مصمّمة لـ 12 سنة فأكثر — توضيح للمساعدة في الاختيار، والحجز متاح في كل الأحوال.'}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-4">

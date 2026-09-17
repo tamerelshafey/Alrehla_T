@@ -109,10 +109,10 @@ export default async function Home() {
               {/* الزرارين بنفس اللون وبنفس الفعل: القسمين متساويين في الأهمية،
                   فمفيش سبب إن واحد يبان أساسي والتاني ثانوي. */}
               <Button href="/enha-lak" variant="primary" accentColor="amber">
-                استكشف إنها لك
+                {content['home.hero.cta1']}
               </Button>
               <Button href="/creative-writing" variant="primary" accentColor="amber">
-                استكشف بداية الرحلة
+                {content['home.hero.cta2']}
               </Button>
             </div>
           </div>
@@ -364,10 +364,10 @@ export default async function Home() {
         </h2>
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Button href="/enha-lak" variant="primary" accentColor="amber" size="lg" className="!bg-blue-600 hover:!bg-blue-700 !shadow-blue-200">
-            استكشف قصص "إنها لك"
+            {content['home.cta.button1']}
           </Button>
           <Button href="/creative-writing/booking" variant="primary" accentColor="amber" size="lg">
-            احجز مقعداً في "بداية الرحلة"
+            {content['home.cta.button2']}
           </Button>
         </div>
       </Section>

@@ -10,7 +10,8 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-import { getTestimonials, getSiteContent } from '@/data/domains/content';
+import { getTestimonials, getSiteContent, getSiteSettings } from '@/data/domains/content';
+import { HeroCarousel } from '@/components/HeroCarousel';
 import { PageContainer } from '@/components/PageContainer';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
@@ -36,6 +37,42 @@ export default async function CreativeWritingPage() {
   );
 
   const content = await getSiteContent();
+  const settings = await getSiteSettings();
+
+  // الشرائح كانت في layout القسم، يعني بتظهر فوق كل صفحة جواه.
+
+  const creativeSlides = [
+    {
+      id: '1',
+      title: 'رحلة كتابة، لا درس كتابة',
+      description: 'أكاديمية بداية الرحلة للكتابة الإبداعية تساعد الشباب والأطفال على اكتشاف أصواتهم.',
+      image: settings.images.creativeSlide1 ?? '',
+      slotKey: 'creativeSlide1' as const,
+      ctaText: 'استكشف الباقات',
+      ctaLink: '/creative-writing/packages',
+      theme: 'emerald' as const,
+    },
+    {
+      id: '2',
+      title: 'تطوير المهارات برعاية خبراء',
+      description: 'جلسات تفاعلية، توجيه فردي، وتطوير مستمر لمهارات السرد والتعبير.',
+      image: settings.images.creativeSlide2 ?? '',
+      slotKey: 'creativeSlide2' as const,
+      ctaText: 'تعرف على مدربينا',
+      ctaLink: '/creative-writing/instructors',
+      theme: 'teal' as const,
+    },
+    {
+      id: '3',
+      title: 'خدمات إبداعية متكاملة',
+      description: 'من التحرير والتدقيق إلى الاستشارات الأدبية، نحن هنا لدعم قلمك.',
+      image: settings.images.creativeSlide3 ?? '',
+      slotKey: 'creativeSlide3' as const,
+      ctaText: 'عرض الخدمات',
+      ctaLink: '/creative-writing/services',
+      theme: 'emerald' as const,
+    }
+  ];
 
   // الأيقونات والألوان ثابتة؛ النصوص من لوحة الإدارة ← محتوى الصفحات.
   const suitableFor = [
@@ -57,6 +94,10 @@ export default async function CreativeWritingPage() {
 
   return (
     <PageContainer className="!py-0 !space-y-0">
+      <section className="mx-auto w-full max-w-7xl px-4 pb-12 md:px-8">
+        <HeroCarousel slides={creativeSlides} />
+      </section>
+
       {/* Hero Section */}
       <Section containerClassName="mx-auto max-w-4xl text-center pt-8">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 mb-6 leading-tight">

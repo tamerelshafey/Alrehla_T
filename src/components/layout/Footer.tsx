@@ -1,15 +1,39 @@
 import Link from 'next/link';
+import Image from 'next/image';
+import { getSiteSettings } from '@/data/domains/content';
+import { optimizedImageUrl } from '@/lib/cloudinary';
 
-export default function Footer() {
+/**
+ * الفوتر.
+ *
+ * «الشعار على خلفية داكنة» كان بيترفع من لوحة الإدارة و**ما بيظهرش في أي
+ * مكان** — الفوتر ما كانش فيه صورة أصلًا، اسم نصي بس. دلوقتي بيستخدمه،
+ * وبيرجع للشعار العادي لو النسخة الداكنة مترفعتش.
+ */
+export default async function Footer() {
+  const settings = await getSiteSettings();
+  const logo = settings.images.logoDark || settings.images.logo;
+
   return (
     <footer className="mt-auto border-t border-slate-200 bg-white px-6 py-8 md:px-12 md:py-12">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 md:flex-row md:items-start">
         <div className="space-y-4 text-center md:text-right">
-          <Link
-            href="/"
-            className="block text-2xl font-black tracking-tighter text-amber-500"
-          >
-            الرحلة
+          <Link href="/" className="inline-block">
+            {logo ? (
+              <span className="relative block h-12 w-36">
+                <Image
+                  src={optimizedImageUrl(logo, 300)}
+                  alt="الرحلة"
+                  fill
+                  sizes="144px"
+                  className="object-contain"
+                />
+              </span>
+            ) : (
+              <span className="block text-2xl font-black tracking-tighter text-amber-500">
+                الرحلة
+              </span>
+            )}
           </Link>
           <p className="max-w-xs text-sm text-slate-500">
             منصة تعليمية متطورة لتعلّم الكتابة الإبداعية وتقديم قصص مخصصة.
