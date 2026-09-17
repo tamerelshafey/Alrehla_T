@@ -15,7 +15,7 @@ import { Step2Details } from './wizard-steps/Step2Details';
 import { Step3Addons } from './wizard-steps/Step3Addons';
 import { Step4Review } from './wizard-steps/Step4Review';
 import { useCart } from '@/context/CartContext';
-import { createFamilyMember } from '@/app/actions/family';
+import { createFamilyMember, fetchFamilyMembers } from '@/app/actions/family';
 
 const wizardSchema = z.object({
   familyMemberId: z.string().optional(),
@@ -124,8 +124,11 @@ export function PersonalizationWizard({ product }: { product: PersonalizedProduc
         finalChildId = newMember.id;
       }
     } else if (data.familyMemberId) {
-       // In real app, we fetch the name. For now let's just use placeholder
-       childName = 'مشارك موجود'; 
+      // كان بيتحط هنا نص ثابت «مشارك موجود» ويتخزن في الطلب بدل الاسم
+      // الحقيقي — والاسم ده هو اللي بيتطبع في الكتاب.
+      const members = await fetchFamilyMembers();
+      childName =
+        members?.find((m: { id: string }) => m.id === data.familyMemberId)?.fullName ?? '';
     }
 
     // الإضافات: مفيش جدول ليها ولا أسعار حقيقية، وخطوة اختيارها فاضية

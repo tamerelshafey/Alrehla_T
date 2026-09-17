@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
@@ -11,24 +12,27 @@ export const dynamic = 'force-dynamic';
 export default async function StudentDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: studentId } = await params;
   
-  // For the sake of this mock, we just get all students and find the first or mock one
+  // كان مكتوب هنا: «هات كل الطلاب وخد أول واحد» — يعني لو الرقم مش
+  // موجود بيتعرض طالب تاني. وقايمة الجلسات كانت **كل** الجلسات في
+  // المنصة مرقّمة من الأول، وروابطها مبنية على رقم الصف مش رقم الجلسة.
   const students = await getInstructorStudents();
-  const student = students.find(s => s.id === studentId) || students[0];
-  
-  // We mock the sessions list based on bookings
-  const bookings = await getSessions();
+  const student = students.find(s => s.id === studentId);
+  if (!student) notFound();
 
-  const sessions = bookings.map((b, index) => ({
-    sessionNumber: `الجلسة ${index + 1}`,
-    date: formatDate(b.createdAt),
-    status: b.status === 'confirmed' ? (
+  const allSessions = await getSessions();
+  const studentSessions = allSessions.filter((s) => s.userId === studentId);
+
+  const sessions = studentSessions.map((s) => ({
+    sessionNumber: `الجلسة ${s.sessionNumber}`,
+    date: formatDate(s.scheduledAt),
+    status: s.status === 'completed' ? (
       <StatusBadge type="success" label="مكتملة" />
     ) : (
       <StatusBadge type="warning" label="قادمة" />
     ),
     action: (
       <Link 
-        href={`/dashboard/instructor/sessions/s-${index}`} 
+        href={`/dashboard/instructor/sessions/${s.id}`} 
         className="text-blue-600 font-bold hover:underline"
       >
         دخول مساحة الجلسة

@@ -10,6 +10,7 @@ import {
 } from '@/types';
 import { cookies } from 'next/headers';
 import { createPublicClient } from '@/lib/supabase/public';
+import { getParticipantName } from '@/data/domains/account';
 import { createClient } from '@/lib/supabase/server';
 
 // Import from auth if needed
@@ -159,39 +160,158 @@ export const getInstructorById = async (
 
 
 
+/**
+ * رسائل الجلسة.
+ *
+ * كانت بترجّع رسالتين مكتوبتين في الكود من أشخاص مخترعين بتواريخ 2024،
+ * وبتتعرض في صفحة الجلسة في لوحة الإدارة كأنها محادثة حقيقية.
+ *
+ * ملاحظة: عمود الربط في الجدول اسمه `booking_id` من تسمية قديمة، وبنمرّر
+ * له رقم الجلسة — ده الربط الوحيد الموجود.
+ */
 export const getSessionMessages = async (sessionId: string): Promise<SessionMessage[]> => {
-  return [
-    { id: '1', sessionId, senderName: 'سارة أحمد', message: 'مرحباً، أهلاً بك في الجلسة القادمة.', createdAt: '2024-06-14T10:00:00Z' },
-    { id: '2', sessionId, senderName: 'ياسمين طارق', message: 'أهلاً بك أستاذة، أنا متحمسة جداً!', createdAt: '2024-06-14T10:05:00Z' }
-  ];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('session_messages')
+    .select('id, booking_id, sender_profile_id, message, created_at')
+    .eq('booking_id', sessionId)
+    .order('created_at', { ascending: true });
+
+  if (error || !data || data.length === 0) return [];
+
+  const senderIds = [...new Set(data.map((m) => m.sender_profile_id).filter(Boolean))];
+  const { data: profiles } = await supabase
+    .from('user_profiles')
+    .select('id, full_name')
+    .in('id', senderIds);
+
+  const nameById = new Map((profiles ?? []).map((p) => [String(p.id), p.full_name]));
+
+  return data.map((m) => ({
+    id: m.id,
+    sessionId: m.booking_id,
+    senderName: nameById.get(String(m.sender_profile_id)) ?? 'مستخدم',
+    message: m.message,
+    createdAt: m.created_at,
+  }));
 };
 
+/** مرفقات الجلسة. كانت ملفين مخترعين بروابط «#» ما بتفتحش حاجة. */
 export const getSessionAttachments = async (sessionId: string): Promise<SessionAttachment[]> => {
-  return [
-    { id: '1', sessionId, fileName: 'ملخص_الأساسيات.pdf', fileUrl: '#' },
-    { id: '2', sessionId, fileName: 'تدريب_الخيال.docx', fileUrl: '#' }
-  ];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('session_attachments')
+    .select('id, booking_id, file_name, file_url')
+    .eq('booking_id', sessionId);
+
+  if (error || !data) return [];
+
+  return data.map((a) => ({
+    id: a.id,
+    sessionId: a.booking_id,
+    fileName: a.file_name,
+    fileUrl: a.file_url,
+  }));
 };
 
+/**
+ * المواد الدراسية.
+ *
+ * كانت تلات مواد مخترعة مربوطة بأسماء باقات مخترعة — وكل طالب في المنصة
+ * بيشوف نفس التلاتة.
+ */
 export const getStudyMaterials = async (): Promise<StudyMaterial[]> => {
-  return [
-    { id: '1', title: 'مقدمة في بناء الشخصيات', description: 'ملف تفصيلي لخطوات بناء شخصيات ثلاثية الأبعاد', packageName: 'باقة الإبحار (4 أسابيع)' },
-    { id: '2', title: 'أساسيات الحبكة', description: 'دليل لترتيب أحداث القصة بشكل مشوق', packageName: 'باقة الغوص (12 أسبوع)' },
-    { id: '3', title: 'تمارين تحفيز الخيال', description: 'تمارين يومية سريعة لكسر حاجز الكتابة', packageName: 'جلسة استشارية فردية' }
-  ];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('study_materials')
+    .select('id, title, description, package_id')
+    .order('title', { ascending: true });
+
+  if (error || !data || data.length === 0) return [];
+
+  const packageIds = [...new Set(data.map((m) => m.package_id).filter(Boolean))] as string[];
+  const { data: packages } = packageIds.length
+    ? await supabase
+        .from('creative_writing_packages')
+        .select('id, name')
+        .in('id', packageIds)
+    : { data: [] as { id: string; name: string }[] };
+
+  const packageName = new Map((packages ?? []).map((p) => [p.id, p.name]));
+
+  return data.map((m) => ({
+    id: m.id,
+    title: m.title,
+    description: m.description ?? '',
+    packageName: m.package_id ? (packageName.get(m.package_id) ?? '—') : '—',
+  }));
 };
 
+/**
+ * طلاب المدرب الحالي.
+ *
+ * كانت بترجّع تلات طلاب مخترعين لكل مدرب في المنصة: أسماء وتقدّم مالهمش
+ * وجود في قاعدة البيانات.
+ *
+ * التعريف الحقيقي لـ«طالبي»: صاحب اشتراك ليه جلسة مسندة ليّا. ودي نفس
+ * العلاقة اللي صلاحيات القاعدة بتستخدمها (دالة `instructor_teaches`)،
+ * عشان اللي الشاشة بتعرضه يبقى هو نفسه اللي الصلاحيات بتسمح بيه.
+ *
+ * ملاحظة: لو المشارك طفل، النصوص مربوطة بحساب ولي الأمر — فالرقم
+ * المستخدم هو رقم الحساب، والاسم المعروض هو اسم المشارك.
+ */
 export const getInstructorStudents = async (): Promise<InstructorStudent[]> => {
-  return [
-    { id: 'st-1', name: 'ياسمين طارق', packageName: 'باقة الإبحار (4 أسابيع)', sessionsCompleted: 2, totalSessions: 4 },
-    { id: 'st-2', name: 'عمر طارق', packageName: 'باقة الغوص (12 أسبوع)', sessionsCompleted: 5, totalSessions: 12 },
-    { id: 'st-3', name: 'مريم أحمد', packageName: 'جلسة استشارية فردية', sessionsCompleted: 1, totalSessions: 1 },
-  ];
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data: instructor } = await supabase
+    .from('instructors')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  if (!instructor) return [];
+
+  const { data: sessions } = await supabase
+    .from('sessions')
+    .select('id, status, course_subscription_id')
+    .eq('instructor_id', instructor.id);
+
+  if (!sessions || sessions.length === 0) return [];
+
+  const subscriptionIds = [...new Set(sessions.map((s) => s.course_subscription_id))];
+  const { data: subscriptions } = await supabase
+    .from('course_subscriptions')
+    .select('id, user_id, child_id, package_id')
+    .in('id', subscriptionIds);
+
+  if (!subscriptions || subscriptions.length === 0) return [];
+
+  const packageIds = [...new Set(subscriptions.map((sub) => sub.package_id).filter(Boolean))];
+  const { data: packages } = await supabase
+    .from('creative_writing_packages')
+    .select('id, name, sessions_count')
+    .in('id', packageIds);
+
+  const packageById = new Map((packages ?? []).map((p) => [p.id, p]));
+
+  const rows: InstructorStudent[] = [];
+  for (const sub of subscriptions) {
+    const mine = sessions.filter((s) => s.course_subscription_id === sub.id);
+    const pkg = packageById.get(sub.package_id);
+    rows.push({
+      id: String(sub.user_id),
+      name: await getParticipantName(sub.child_id ?? undefined, String(sub.user_id)),
+      packageName: pkg?.name ?? 'باقة محذوفة',
+      sessionsCompleted: mine.filter((s) => s.status === 'completed').length,
+      totalSessions: pkg?.sessions_count ?? mine.length,
+    });
+  }
+
+  return rows;
 };
-
-
-
-
 
 export async function getCourseSubscriptions(): Promise<CourseSubscription[]> {
   const supabase = await createClient();

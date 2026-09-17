@@ -1,6 +1,6 @@
 import { getCurrentUser } from '@/data/domains/auth';
 import { getDocumentById, getInstructorStudents } from '@/data/domains/writing';
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { InstructorDocumentClient } from './InstructorDocumentClient';
 
@@ -14,8 +14,11 @@ export default async function InstructorDocumentPage({ params }: { params: Promi
 
   const { id: studentId, docId } = await params;
   
+  // من غير الطالب ده في قايمة طلابي، مفيش صفحة. كان بيعرض اسم أول
+  // طالب في القايمة بدل ما يقول إن الرقم مش بتاعه.
   const students = await getInstructorStudents();
-  const student = students.find(s => s.id === studentId) || students[0];
+  const student = students.find(s => s.id === studentId);
+  if (!student) notFound();
 
   const document = await getDocumentById(docId);
 
