@@ -16,6 +16,7 @@ import { Step1ChildInfo } from './wizard-steps/Step1ChildInfo';
 import { Step2CoverDetails } from './wizard-steps/Step2CoverDetails';
 import { Step3LibraryReview } from './wizard-steps/Step3LibraryReview';
 import Image from 'next/image';
+import { resolveWizardChild } from '@/app/actions/family';
 
 const librarySchema = z.object({
   familyMemberId: z.string().optional(),
@@ -109,6 +110,25 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
       return;
     }
 
+    // بيانات الطفل كانت بتتجمع هنا و**ما بتتحفظش خالص**، والاسم اللي
+    // بيتكتب في الطلب كان نص ثابت «مشارك من العائلة» لو الخانة فاضية —
+    // حتى لو العميل اختار طفل من عيلته. يعني الكتاب يتطبع باسم غلط.
+    let childName = '';
+    let childId: string | undefined;
+    try {
+      const resolved = await resolveWizardChild({
+        familyMemberId: data.familyMemberId,
+        newChildName: data.newChildName,
+        newChildBirthDate: data.newChildBirthDate,
+        newChildGender: data.newChildGender as 'male' | 'female' | '' | undefined,
+      });
+      childName = resolved.childName;
+      childId = resolved.childId;
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'تعذّر حفظ بيانات المشارك');
+      return;
+    }
+
     addItem({
       id: `${product.id}-${Date.now()}`,
       productId: product.id,
@@ -118,7 +138,9 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
       type: 'book',
       imageUrl: product.coverImageUrl || undefined,
       customizationData: {
-        childName: data.newChildName || 'مشارك من العائلة',
+        recipientType: 'child',
+        childId,
+        childName,
         dedicationText: data.dedicationText,
         coverPhotoUrl,
       }

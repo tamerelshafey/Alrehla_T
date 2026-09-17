@@ -15,7 +15,7 @@ import { Step2Details } from './wizard-steps/Step2Details';
 import { Step3Addons } from './wizard-steps/Step3Addons';
 import { Step4Review } from './wizard-steps/Step4Review';
 import { useCart } from '@/context/CartContext';
-import { createFamilyMember, fetchFamilyMembers } from '@/app/actions/family';
+import { resolveWizardChild } from '@/app/actions/family';
 
 const wizardSchema = z.object({
   familyMemberId: z.string().optional(),
@@ -132,31 +132,24 @@ export function PersonalizationWizard({
       return;
     }
 
-    // 1. Create family member if new
-    let childName = data.newChildName || '';
-    let finalChildId = data.familyMemberId || '';
-    if (data.newChildName && data.newChildBirthDate && data.newChildGender && !data.familyMemberId) {
-      // النوع كان بيتسأل عنه هنا ويترمي — العمود اتضاف في ملف 51.
-      const newMember = await createFamilyMember(
-        data.newChildName,
-        `${data.newChildBirthDate}-01-01`,
-        data.newChildGender ?? null,
-      );
-      if (newMember) {
-        childName = newMember.fullName;
-        finalChildId = newMember.id;
-      }
-    } else if (data.familyMemberId) {
-      // كان بيتحط هنا نص ثابت «مشارك موجود» ويتخزن في الطلب بدل الاسم
-      // الحقيقي — والاسم ده هو اللي بيتطبع في الكتاب.
-      const members = await fetchFamilyMembers();
-      childName =
-        members?.find((m: { id: string }) => m.id === data.familyMemberId)?.fullName ?? '';
+    // المشارك: اختيار من العائلة أو إضافة جديد — والدالة بتعيد استخدام
+    // الملف الموجود بدل ما تعمل نسخة جديدة مع كل طلب.
+    let childName = '';
+    let finalChildId = '';
+    try {
+      const resolved = await resolveWizardChild({
+        familyMemberId: data.familyMemberId,
+        newChildName: data.newChildName,
+        newChildBirthDate: data.newChildBirthDate,
+        newChildGender: data.newChildGender,
+      });
+      childName = resolved.childName;
+      finalChildId = resolved.childId ?? '';
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'تعذّر حفظ بيانات المشارك');
+      return;
     }
 
-    // الإضافات: مفيش جدول ليها ولا أسعار حقيقية، وخطوة اختيارها فاضية
-    // في الإنتاج. الأرقام اللي كانت مكتوبة هنا (150 و50 و100) كانت من
-    // النموذج الأولي ومالهاش مصدر — واتشالت عشان ما تتحسبش على عميل.
     // 2. Add to cart
     addItem({
       id: product.id + '-' + Date.now(),

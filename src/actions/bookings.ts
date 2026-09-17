@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
 import { notifyAdmins } from '@/lib/notifications';
+import { hasAdminPermission } from '@/lib/utils';
 import { getCurrentUser } from '@/data/domains/auth';
 
 export type BookingResult =
@@ -121,9 +122,11 @@ export async function submitBookingPaymentProof(
 }
 
 export async function confirmBookingPayment(subscriptionId: string) {
+  // كان بيتحقق من الدور مباشرة — مختلف عن كل الإجراءات التانية اللي
+  // بتمر على نظام الصلاحيات. يعني تعديل صلاحيات حساب ما كانش بيأثر هنا.
   const user = await getCurrentUser();
-  if (user.role !== 'super_admin' && user.role !== 'general_supervisor') {
-    return { success: false, error: 'Unauthorized' };
+  if (!hasAdminPermission(user, 'canManageBookings')) {
+    return { success: false, error: 'غير مصرح لك بتأكيد الحجوزات' };
   }
 
   const supabase = await createClient();

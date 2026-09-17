@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FamilyMember } from '@/types';
 import { fetchFamilyMembers } from '@/app/actions/family';
+import { BirthDatePicker } from '@/components/ui/BirthDatePicker';
 
 export function Step1ChildInfo({ onNext }: { onNext: () => void }) {
   const { register, watch, setValue, formState: { errors } } = useFormContext();
@@ -85,12 +86,12 @@ export function Step1ChildInfo({ onNext }: { onNext: () => void }) {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700">سنة الميلاد</label>
-            <input 
-              type="number" 
-              {...register('newChildBirthDate')}
-              className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="2015"
+            <label className="text-sm font-bold text-slate-700">تاريخ الميلاد</label>
+            {/* كانت سنة بس، والكود بيكمّلها «أول يناير» — فكل طفل اتضاف
+                من المعالج بقى عيد ميلاده 1 يناير. */}
+            <BirthDatePicker
+              value={watch('newChildBirthDate') || ''}
+              onChange={(v) => setValue('newChildBirthDate', v, { shouldValidate: true })}
             />
           </div>
           <div className="space-y-2">
