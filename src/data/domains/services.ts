@@ -194,6 +194,9 @@ export type ServiceOrderRow = {
   amount: number;
   status: string;
   transactionReference: string | null;
+  paymentReference: string | null;
+  paymentMethod: string | null;
+  paymentReceiptUrl: string | null;
   createdAt: string;
   deliveredAt: string | null;
   completedAt: string | null;
@@ -223,6 +226,9 @@ async function mapServiceOrders(rows: any[]): Promise<ServiceOrderRow[]> {
       amount: row.amount,
       status: row.status,
       transactionReference: row.transaction_reference,
+      paymentReference: row.payment_reference ?? null,
+      paymentMethod: row.payment_method ?? null,
+      paymentReceiptUrl: row.payment_receipt_url ?? null,
       createdAt: row.created_at,
       deliveredAt: row.delivered_at ?? null,
       completedAt: row.completed_at ?? null,
@@ -232,7 +238,7 @@ async function mapServiceOrders(rows: any[]): Promise<ServiceOrderRow[]> {
 }
 
 const SERVICE_ORDER_SELECT =
-  'id, buyer_profile_id, standalone_service_id, instructor_id, provider_id, due_at, due_note, amount, status, transaction_reference, created_at, delivered_at, completed_at, instructor_earning, standalone_services(name), instructors(display_name), service_providers(display_name, kind)';
+  'id, buyer_profile_id, standalone_service_id, instructor_id, provider_id, due_at, due_note, amount, status, transaction_reference, payment_reference, payment_method, payment_receipt_url, created_at, delivered_at, completed_at, instructor_earning, standalone_services(name), instructors(display_name), service_providers(display_name, kind)';
 
 /** Every service order — row-level security limits this to admins. */
 export async function getAllServiceOrders(): Promise<ServiceOrderRow[]> {

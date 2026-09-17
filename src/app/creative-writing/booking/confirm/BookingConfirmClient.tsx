@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { Calendar, Clock, User, CheckCircle2, ArrowRight } from 'lucide-react';
 import { createCourseBooking, submitBookingPaymentProof } from '@/actions/bookings';
+import { PaymentProofForm, type PaymentMethod } from '@/components/checkout/PaymentProofForm';
 import { Button } from '@/components/ui/Button';
 import { TransferInstructions } from '@/components/checkout/TransferInstructions';
 
@@ -32,12 +33,13 @@ export function BookingConfirmClient({
     import('@/app/actions/family').then(mod => mod.fetchFamilyMembers()).then(data => setChildren(data ? data.map((d: any) => ({id: d.id, name: d.fullName})) : []));
   }, []);
 
-  const [transactionRef, setTransactionRef] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [booking, setBooking] = useState<{ id: string; reference: string } | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const handlePaymentSubmit = (e: React.FormEvent) => {
+  /** الخطوة الأولى: تسجيل الحجز — منها بييجي الرقم المرجعي. */
+  const handleRegisterBooking = (e: React.FormEvent) => {
     e.preventDefault();
     startTransition(async () => {
       setError('');
@@ -59,7 +61,20 @@ export function BookingConfirmClient({
         return;
       }
 
-      await submitBookingPaymentProof(result.subscriptionId, transactionRef);
+      setBooking({ id: result.subscriptionId, reference: result.paymentReference });
+    });
+  };
+
+  /** الخطوة التانية: الإيصال بعد التحويل. */
+  const handleReceipt = (payment: { method: PaymentMethod; receiptUrl: string }) => {
+    if (!booking) return;
+    startTransition(async () => {
+      setError('');
+      const result = await submitBookingPaymentProof(booking.id, payment);
+      if (!result.success) {
+        setError(result.error ?? 'تعذّر إرسال الإيصال');
+        return;
+      }
       setIsSuccess(true);
     });
   };
@@ -129,66 +144,53 @@ export function BookingConfirmClient({
         </div>
       </div>
 
-      <form onSubmit={handlePaymentSubmit} className="space-y-6">
-        <h2 className="text-xl font-black text-slate-800">طريقة الدفع</h2>
+      {error && (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+          {error}
+        </div>
+      )}
 
-        {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
-            {error}
+      {booking ? (
+        <PaymentProofForm
+          reference={booking.reference}
+          amount={packagePrice}
+          walletNumber={paymentWalletNumber}
+          qrUrl={paymentQrUrl}
+          accent="emerald"
+          busy={isPending}
+          onSubmit={handleReceipt}
+        />
+      ) : (
+        <form onSubmit={handleRegisterBooking} className="space-y-6">
+          <h2 className="text-xl font-black text-slate-800">طريقة الدفع</h2>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm font-medium text-slate-600">
+            الدفع بالتحويل (إنستاباي أو فودافون كاش). سجّل الحجز الأول، وهيظهرلك
+            رقم مرجعي تكتبه في ملاحظة التحويل، وبعدها ترفع صورة الإيصال.
           </div>
-        )}
-        
-        {/* A card form used to sit here whose inputs nothing ever read: the
-            customer typed a real card number and was shown a success screen
-            without a penny being charged. Transfer only until a real payment
-            gateway is integrated. */}
-        <div className="animate-in fade-in slide-in-from-top-2 rounded-2xl border border-slate-200 bg-slate-50 p-6">
-          <p className="mb-2 text-sm font-bold text-slate-700">
-            تعليمات التحويل (إنستاباي / محفظة إلكترونية)
-          </p>
-          <TransferInstructions
-            walletNumber={paymentWalletNumber}
-            qrUrl={paymentQrUrl}
-            accent="emerald"
-          />
-          <label className="mb-2 block text-sm font-bold text-slate-700">
-            رقم العملية / المرجع (Transaction Reference)
-          </label>
-          <input
-            type="text"
-            required
-            value={transactionRef}
-            onChange={(e) => setTransactionRef(e.target.value)}
-            placeholder="رقم العملية أو المرجع"
-            dir="ltr"
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-right font-mono outline-none focus:border-emerald-500"
-          />
-          <p className="mt-2 text-xs font-medium text-slate-500">
-            حجزك يُسجَّل فورًا، وتُراجعه الإدارة وتؤكد استلام المبلغ.
-          </p>
-        </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 pt-4">
-          <Button
-            type="submit"
-            disabled={isPending}
-            accentColor="emerald"
-            className="flex-1 py-4 text-center disabled:opacity-70"
-          >
-            {isPending ? 'جارٍ تسجيل الحجز…' : 'لقد قمت بالتحويل'}
-            {!isPending && <CheckCircle2 className="h-5 w-5" />}
-          </Button>
-          <Button
-            href="/creative-writing/booking"
-            variant="secondary"
-            accentColor="emerald"
-            className="sm:w-1/3 py-4 text-center"
-          >
-            <ArrowRight className="h-5 w-5" />
-            تعديل الموعد
-          </Button>
-        </div>
-      </form>
+          <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <Button
+              type="submit"
+              disabled={isPending}
+              accentColor="emerald"
+              className="flex-1 py-4 text-center disabled:opacity-70"
+            >
+              {isPending ? 'جارٍ تسجيل الحجز…' : 'سجّل الحجز واعرض بيانات التحويل'}
+              {!isPending && <CheckCircle2 className="h-5 w-5" />}
+            </Button>
+            <Button
+              href="/creative-writing/booking"
+              variant="secondary"
+              accentColor="emerald"
+              className="sm:w-1/3 py-4 text-center"
+            >
+              <ArrowRight className="h-5 w-5" />
+              تعديل الاختيار
+            </Button>
+          </div>
+        </form>
+      )}
     </>
   );
 }

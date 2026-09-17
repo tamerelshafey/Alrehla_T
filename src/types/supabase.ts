@@ -256,6 +256,9 @@ export type Database = {
           amount: number | null
           transaction_reference: string | null
           preferred_instructor_id: string | null
+          payment_reference: string | null
+          payment_method: string | null
+          payment_receipt_url: string | null
         }
         Insert: {
           id?: string
@@ -269,6 +272,9 @@ export type Database = {
           amount?: number | null
           transaction_reference?: string | null
           preferred_instructor_id?: string | null
+          payment_reference?: string | null
+          payment_method?: string | null
+          payment_receipt_url?: string | null
         }
         Update: {
           id?: string
@@ -282,6 +288,9 @@ export type Database = {
           amount?: number | null
           transaction_reference?: string | null
           preferred_instructor_id?: string | null
+          payment_reference?: string | null
+          payment_method?: string | null
+          payment_receipt_url?: string | null
         }
         Relationships: []
       }
@@ -733,6 +742,9 @@ export type Database = {
           delivered_at: string | null
           tracking_reference: string | null
           admin_notes: string | null
+          payment_reference: string | null
+          payment_method: string | null
+          payment_receipt_url: string | null
         }
         Insert: {
           id?: string
@@ -755,6 +767,9 @@ export type Database = {
           delivered_at?: string | null
           tracking_reference?: string | null
           admin_notes?: string | null
+          payment_reference?: string | null
+          payment_method?: string | null
+          payment_receipt_url?: string | null
         }
         Update: {
           id?: string
@@ -777,6 +792,9 @@ export type Database = {
           delivered_at?: string | null
           tracking_reference?: string | null
           admin_notes?: string | null
+          payment_reference?: string | null
+          payment_method?: string | null
+          payment_receipt_url?: string | null
         }
         Relationships: []
       }
@@ -1177,6 +1195,9 @@ export type Database = {
           due_note: string | null
           due_warned_at: string | null
           due_overdue_notified_at: string | null
+          payment_reference: string | null
+          payment_method: string | null
+          payment_receipt_url: string | null
         }
         Insert: {
           id?: string
@@ -1196,6 +1217,9 @@ export type Database = {
           due_note?: string | null
           due_warned_at?: string | null
           due_overdue_notified_at?: string | null
+          payment_reference?: string | null
+          payment_method?: string | null
+          payment_receipt_url?: string | null
         }
         Update: {
           id?: string
@@ -1215,6 +1239,9 @@ export type Database = {
           due_note?: string | null
           due_warned_at?: string | null
           due_overdue_notified_at?: string | null
+          payment_reference?: string | null
+          payment_method?: string | null
+          payment_receipt_url?: string | null
         }
         Relationships: []
       }

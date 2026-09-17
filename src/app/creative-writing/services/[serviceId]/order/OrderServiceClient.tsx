@@ -4,8 +4,8 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2 } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
-import { createServiceOrder } from '@/actions/service-orders';
-import { TransferInstructions } from '@/components/checkout/TransferInstructions';
+import { createServiceOrder, submitServiceOrderPayment } from '@/actions/service-orders';
+import { PaymentProofForm, type PaymentMethod } from '@/components/checkout/PaymentProofForm';
 
 interface Props {
   /** Read from site settings — it used to be the placeholder {paymentWalletNumber}. */
@@ -29,33 +29,40 @@ export function OrderServiceClient({
   paymentQrUrl,
 }: Props) {
   const router = useRouter();
-  const [transactionRef, setTransactionRef] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [placed, setPlaced] = useState<{ id: string; reference: string } | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  /** الخطوة الأولى: تسجيل الطلب — منه بييجي الرقم المرجعي. */
+  const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!transactionRef.trim()) {
-      setError('من فضلك أدخل رقم العملية بعد التحويل');
-      return;
-    }
     setError(null);
     startTransition(async () => {
       try {
-        await createServiceOrder({
-          serviceId,
-          providerId,
-          transactionReference: transactionRef.trim(),
-        });
-        router.push('/account/orders/creative-writing');
+        const result = await createServiceOrder({ serviceId, providerId });
+        setPlaced({ id: result.orderId, reference: result.paymentReference });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'تعذّر إنشاء الطلب');
       }
     });
   };
 
+  /** الخطوة التانية: الإيصال بعد التحويل. */
+  const handleReceipt = (payment: { method: PaymentMethod; receiptUrl: string }) => {
+    if (!placed) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await submitServiceOrderPayment(placed.id, payment);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      router.push('/account/orders/creative-writing');
+    });
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <div className="rounded-3xl border border-slate-200 bg-white p-8">
         <h2 className="mb-6 text-xl font-black text-slate-800">ملخص الطلب</h2>
 
@@ -77,45 +84,39 @@ export function OrderServiceClient({
         </div>
       </div>
 
-      <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8">
-        <p className="mb-2 text-sm font-bold text-slate-700">تعليمات الدفع عبر إنستاباي</p>
-        <TransferInstructions
-          walletNumber={paymentWalletNumber}
-          qrUrl={paymentQrUrl}
-          accent="emerald"
-        />
-
-        <label htmlFor="ref" className="mb-2 block text-sm font-bold text-slate-700">
-          رقم العملية / المرجع
-        </label>
-        <input
-          id="ref"
-          type="text"
-          dir="ltr"
-          value={transactionRef}
-          onChange={(e) => setTransactionRef(e.target.value)}
-          placeholder="رقم العملية أو المرجع"
-          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-right font-mono outline-none focus:border-emerald-500"
-        />
-        <p className="mt-2 text-xs text-slate-500">
-          سيتم مراجعة التحويل وتأكيد الطلب من قِبل الإدارة.
-        </p>
-      </div>
-
       {error && (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
           {error}
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-8 py-4 font-black text-white shadow-lg transition-colors hover:bg-emerald-700 disabled:opacity-70"
-      >
-        <CheckCircle2 className="h-5 w-5" />
-        {isPending ? 'جاري إرسال الطلب...' : 'لقد قمت بالتحويل'}
-      </button>
-    </form>
+      {placed ? (
+        <PaymentProofForm
+          reference={placed.reference}
+          amount={amount}
+          walletNumber={paymentWalletNumber}
+          qrUrl={paymentQrUrl}
+          accent="emerald"
+          busy={isPending}
+          onSubmit={handleReceipt}
+        />
+      ) : (
+        <form onSubmit={handleRegister} className="flex flex-col gap-6">
+          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8 text-sm font-medium text-slate-600">
+            الدفع بالتحويل (إنستاباي أو فودافون كاش). سجّل الطلب الأول، وهيظهرلك
+            رقم مرجعي تكتبه في ملاحظة التحويل، وبعدها ترفع صورة الإيصال.
+          </div>
+
+          <button
+            type="submit"
+            disabled={isPending}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-8 py-4 font-black text-white shadow-lg transition-colors hover:bg-emerald-700 disabled:opacity-70"
+          >
+            <CheckCircle2 className="h-5 w-5" />
+            {isPending ? 'جاري تسجيل الطلب...' : 'سجّل الطلب واعرض بيانات التحويل'}
+          </button>
+        </form>
+      )}
+    </div>
   );
 }

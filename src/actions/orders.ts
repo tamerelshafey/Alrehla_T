@@ -42,8 +42,11 @@ export type NewOrderItem = {
 };
 
 export type CreateOrderResult =
-  | { ok: true; orderId: string }
+  | { ok: true; orderId: string; paymentReference: string }
   | { ok: false; error: string };
+
+/** وسائل الدفع المتاحة — نفس القيم المسموح بيها في قاعدة البيانات. */
+export type PaymentMethod = 'instapay' | 'vodafone_cash';
 
 export async function createOrder(
   items: NewOrderItem[],
@@ -80,22 +83,42 @@ export async function createOrder(
     return { ok: false, error: error?.message ?? 'تعذّر إنشاء الطلب' };
   }
 
-  return { ok: true, orderId: data as unknown as string };
+  const orderId = data as unknown as string;
+
+  // الرقم المرجعي بيتولّد في القاعدة مع الطلب، والعميل محتاجه يكتبه في
+  // ملاحظة التحويل — فبنرجّعه معانا بدل ما يدوّر عليه.
+  const { data: row } = await supabase
+    .from('orders')
+    .select('payment_reference')
+    .eq('id', orderId)
+    .maybeSingle();
+
+  return {
+    ok: true,
+    orderId,
+    paymentReference: row?.payment_reference ?? '',
+  };
 }
 
 /**
- * العميل بيقول «حوّلت» ويسيب رقم العملية.
+ * العميل بيقول «حوّلت» ويرفع الإيصال.
  *
- * التحقق هنا بيدّي رسالة مفهومة؛ الحارس الحقيقي هو محفّز `guard_order_fields`
- * في قاعدة البيانات، اللي بيسمح بانتقال واحد بس: قيد الانتظار →
- * بانتظار التأكيد. «مدفوع» قرار الإدارة وحدها.
+ * كان بيكتب «رقم عملية» بإيده والإدارة بتأكد الدفع من غير ما تشوف أي
+ * إثبات. دلوقتي: وسيلة الدفع + صورة الإيصال، والرقم المرجعي بتاعنا
+ * بيتولّد مع الطلب ومش بيتكتب من الواجهة أصلًا.
+ *
+ * التحقق هنا بيدّي رسالة مفهومة؛ الحارس الحقيقي هو محفّز
+ * `guard_order_fields`، اللي بيسمح بانتقال واحد بس: قيد الانتظار →
+ * بانتظار التأكيد، والإيصال بيتكتب مرة واحدة معاه.
  */
-export async function submitPaymentProof(orderId: string, transactionReference: string) {
+export async function submitPaymentProof(
+  orderId: string,
+  payment: { method: PaymentMethod; receiptUrl: string },
+) {
   const user = await requireUser();
 
-  const reference = transactionReference.trim();
-  if (!reference) {
-    return { success: false, error: 'اكتب رقم عملية التحويل' };
+  if (!payment.receiptUrl) {
+    return { success: false, error: 'ارفع صورة إيصال التحويل' };
   }
 
   const supabase = await createClient();
@@ -116,30 +139,34 @@ export async function submitPaymentProof(orderId: string, transactionReference: 
 
   const { error } = await supabase
     .from('orders')
-    .update({ 
+    .update({
       status: 'awaiting_verification',
-      transaction_reference: reference 
+      payment_method: payment.method,
+      payment_receipt_url: payment.receiptUrl,
     })
     .eq('id', orderId);
 
   if (error) {
-    console.error('Error updating payment proof:', error);
-    return { success: false, error: 'Order not found or update failed' };
+    console.error('Error submitting payment proof:', error);
+    return { success: false, error: 'تعذّر إرسال إثبات الدفع' };
   }
 
-  revalidatePath('/enha-lak/checkout');
-  revalidatePath('/account/orders/enha-lak');
+  await logAuditAction({
+    actorProfileId: user.id,
+    actorName: user.fullName,
+    action: 'order_payment_proof_submitted',
+    entityType: 'Order',
+    entityId: orderId,
+    metadata: { method: payment.method },
+  });
+
+  revalidatePath('/account/orders');
+  revalidatePath(`/account/orders/${orderId}`);
   revalidatePath('/dashboard/admin/orders');
+
   return { success: true };
 }
 
-/**
- * الإدارة بتأكّد إنها شافت التحويل.
- *
- * دي كانت أخطر دالة في المشروع: كانت بتحوّل الطلب لـ«مدفوع» من غير أي
- * تحقق، وصلاحية الجدول بتسمح للعميل يعدّل طلبه — فالعميل كان يقدر
- * يأكّد دفع نفسه من غير ما يدفع.
- */
 export async function confirmOrderPayment(orderId: string) {
   const currentUser = await requireAdmin(
     'canManageOrders',

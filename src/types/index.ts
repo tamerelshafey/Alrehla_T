@@ -234,6 +234,10 @@ export type Order = {
   status: OrderStatus;
   createdAt: string;
   transactionReference?: string;
+  /** رقم مرجعي بيتولّد في القاعدة مع الطلب — العميل بيكتبه في ملاحظة التحويل. */
+  paymentReference?: string;
+  paymentMethod?: 'instapay' | 'vodafone_cash';
+  paymentReceiptUrl?: string;
   /** Fulfilment — the order used to stop at "paid" with nothing after it. */
   trackingReference?: string;
   shippedAt?: string;

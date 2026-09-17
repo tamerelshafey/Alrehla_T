@@ -7,7 +7,7 @@ import { logAuditAction } from '@/lib/audit';
 import { getCurrentUser } from '@/data/domains/auth';
 
 export type BookingResult =
-  | { ok: true; subscriptionId: string }
+  | { ok: true; subscriptionId: string; paymentReference: string }
   | { ok: false; error: string };
 
 /**
@@ -49,12 +49,29 @@ export async function createCourseBooking(params: {
     return { ok: false, error: error?.message ?? 'تعذّر تسجيل الحجز' };
   }
 
+  const subscriptionId = data as unknown as string;
+
+  // الرقم المرجعي بيتولّد في القاعدة مع الحجز، والعميل بيكتبه في ملاحظة
+  // التحويل.
+  const { data: row } = await supabase
+    .from('course_subscriptions')
+    .select('payment_reference')
+    .eq('id', subscriptionId)
+    .maybeSingle();
+
   revalidatePath('/account/orders/creative-writing');
   revalidatePath('/dashboard/admin/bookings');
-  return { ok: true, subscriptionId: data as unknown as string };
+  return {
+    ok: true,
+    subscriptionId,
+    paymentReference: row?.payment_reference ?? '',
+  };
 }
 
-export async function submitBookingPaymentProof(subscriptionId: string, transactionReference: string) {
+export async function submitBookingPaymentProof(
+  subscriptionId: string,
+  payment: { method: 'instapay' | 'vodafone_cash'; receiptUrl: string },
+) {
   const supabase = await createClient();
   const user = await getCurrentUser();
 
@@ -72,13 +89,15 @@ export async function submitBookingPaymentProof(subscriptionId: string, transact
     return { success: false, error: 'Unauthorized' };
   }
   
-  // رقم التحويل كان بيترمي هنا: الحالة بتتغيّر والرقم بيضيع، فالإدارة
-  // بتأكد دفع من غير مرجع. العمود اتضاف في ملف 46.
+  // إثبات الدفع كان بيترمي هنا بالكامل: الحالة بتتغيّر ومفيش مرجع ولا
+  // إيصال. دلوقتي وسيلة الدفع وصورة الإيصال بيتخزنوا، والرقم المرجعي
+  // بتاعنا اتولّد مع الحجز.
   const { error } = await supabase
     .from('course_subscriptions')
     .update({
       status: 'awaiting_verification',
-      transaction_reference: transactionReference.trim(),
+      payment_method: payment.method,
+      payment_receipt_url: payment.receiptUrl,
     })
     .eq('id', subscriptionId);
 

@@ -11,6 +11,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { createOrder, submitPaymentProof } from '@/actions/orders';
+import type { PaymentMethod } from '@/actions/orders';
+import { PaymentProofForm } from '@/components/checkout/PaymentProofForm';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -36,6 +38,7 @@ export function CheckoutClient({ user, paymentWalletNumber, paymentQrUrl, shippi
   const [isProcessing, setIsProcessing] = useState(false);
   const [transactionRef, setTransactionRef] = useState('');
   const [orderError, setOrderError] = useState('');
+  const [placedOrder, setPlacedOrder] = useState<{ id: string; reference: string } | null>(null);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isSuccess, setIsSuccess] = useState(false);
@@ -77,7 +80,14 @@ export function CheckoutClient({ user, paymentWalletNumber, paymentQrUrl, shippi
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handlePaymentSubmit = (e: React.FormEvent) => {
+  /**
+   * الخطوة الأولى: تسجيل الطلب.
+   *
+   * الطلب بيتسجّل **قبل** الدفع عشان الرقم المرجعي يتولّد ويوصل للعميل
+   * يكتبه في ملاحظة التحويل. قبل كده كان الطلب والإيصال بيتبعتوا مرة
+   * واحدة، فما كانش فيه رقم يربط التحويل بالطلب.
+   */
+  const handleRegisterOrder = (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
     setOrderError('');
@@ -100,17 +110,34 @@ export function CheckoutClient({ user, paymentWalletNumber, paymentQrUrl, shippi
         },
       );
 
+      setIsProcessing(false);
+
       if (!result.ok) {
         // العربة ما بتتفضّاش عند الفشل: العميل يصحّح ويعيد المحاولة.
         setOrderError(result.error);
-        setIsProcessing(false);
         return;
       }
 
-      await submitPaymentProof(result.orderId, transactionRef);
+      setPlacedOrder({ id: result.orderId, reference: result.paymentReference });
+    });
+  };
+
+  /** الخطوة التانية: الإيصال بعد التحويل. */
+  const handleReceipt = (payment: { method: PaymentMethod; receiptUrl: string }) => {
+    if (!placedOrder) return;
+    setIsProcessing(true);
+    setOrderError('');
+    startTransition(async () => {
+      const result = await submitPaymentProof(placedOrder.id, payment);
+      setIsProcessing(false);
+
+      if (!result.success) {
+        setOrderError(result.error ?? 'تعذّر إرسال الإيصال');
+        return;
+      }
 
       clearCart();
-      router.push('/enha-lak/order-confirmation?id=' + result.orderId);
+      router.push('/enha-lak/order-confirmation?id=' + placedOrder.id);
     });
   };
 
@@ -261,57 +288,51 @@ export function CheckoutClient({ user, paymentWalletNumber, paymentQrUrl, shippi
             <h2 className="text-xl font-black text-slate-800">طريقة الدفع</h2>
           </div>
 
-          <form onSubmit={handlePaymentSubmit} className="space-y-6">
-            <div className="flex gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
-              <ShieldCheck className="h-5 w-5 shrink-0" />
-              <p>
-                الدفع حاليًا بالتحويل فقط. الدفع بالبطاقة سيُتاح عند ربط بوابة دفع رسمية —
-                ولن نطلب منك بيانات بطاقتك على هذه الصفحة أبدًا.
-              </p>
-            </div>
-
-            <div className="animate-in fade-in slide-in-from-top-2 rounded-2xl border border-slate-200 bg-slate-50 p-6">
-              <p className="mb-2 text-sm font-bold text-slate-700">
-                تعليمات التحويل (إنستاباي / محفظة إلكترونية)
-              </p>
-              <TransferInstructions
+          {placedOrder ? (
+            <>
+              <PaymentProofForm
+                reference={placedOrder.reference}
+                amount={grandTotal}
                 walletNumber={paymentWalletNumber}
                 qrUrl={paymentQrUrl}
                 accent="rose"
+                busy={isProcessing || isPending}
+                onSubmit={handleReceipt}
               />
-              <label className="mb-2 block text-sm font-bold text-slate-700">
-                رقم العملية / المرجع (Transaction Reference)
-              </label>
-              <input
-                type="text"
-                required
-                value={transactionRef}
-                onChange={(e) => setTransactionRef(e.target.value)}
-                placeholder="رقم العملية أو المرجع"
-                dir="ltr"
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-right font-mono outline-none focus:border-rose-500"
-              />
-              <p className="mt-2 text-xs font-medium text-slate-500">
-                طلبك يُسجَّل فورًا، وتُراجعه الإدارة وتؤكد استلام المبلغ.
-              </p>
-            </div>
-
-            {orderError && (
-              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
-                {orderError}
+              {orderError && (
+                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+                  {orderError}
+                </div>
+              )}
+            </>
+          ) : (
+            <form onSubmit={handleRegisterOrder} className="space-y-6">
+              <div className="flex gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+                <ShieldCheck className="h-5 w-5 shrink-0" />
+                <p>
+                  الدفع بالتحويل (إنستاباي أو فودافون كاش). هتسجّل الطلب الأول،
+                  وهيظهرلك رقم مرجعي تكتبه في ملاحظة التحويل، وبعدها ترفع الإيصال.
+                  ولن نطلب منك بيانات بطاقتك على هذه الصفحة أبدًا.
+                </p>
               </div>
-            )}
 
-            <div className="pt-6">
-              <button 
-                type="submit" 
-                disabled={isProcessing}
-                className="w-full flex justify-center items-center gap-2 rounded-xl bg-rose-600 px-8 py-4 font-black text-white hover:bg-rose-700 transition-colors shadow-lg disabled:opacity-70"
-              >
-                {isPending || isProcessing ? 'جارٍ تسجيل الطلب…' : 'لقد قمت بالتحويل'}
-              </button>
-            </div>
-          </form>
+              {orderError && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+                  {orderError}
+                </div>
+              )}
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isProcessing || !shippingKnown}
+                  className="w-full flex justify-center items-center gap-2 rounded-xl bg-rose-600 px-8 py-4 font-black text-white hover:bg-rose-700 transition-colors shadow-lg disabled:opacity-70"
+                >
+                  {isPending || isProcessing ? 'جارٍ تسجيل الطلب…' : 'سجّل الطلب واعرض بيانات التحويل'}
+                </button>
+              </div>
+            </form>
+          )}
         </Card>
 
       </div>

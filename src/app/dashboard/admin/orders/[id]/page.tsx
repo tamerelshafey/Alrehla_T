@@ -9,6 +9,7 @@ import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { confirmOrderPayment } from '@/actions/orders';
 import { FulfilmentPanel } from './FulfilmentPanel';
+import { PaymentReviewPanel } from '@/components/admin/PaymentReviewPanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,13 +66,23 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
       <DashboardPageHeader title={`تفاصيل الطلب #${target.id.split('-')[1]}`} backHref="/dashboard/admin/orders" />
       
+      <PaymentReviewPanel
+        reference={target.paymentReference}
+        amount={target.totalAmount}
+        method={target.paymentMethod}
+        receiptUrl={target.paymentReceiptUrl}
+        legacyReference={target.transactionReference}
+      />
+
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm mb-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
           <div>
             <div className="text-sm text-slate-500 mb-1">تاريخ الطلب: {formatDate(target.createdAt)}</div>
             <div className="text-sm text-slate-500 mb-1">حالة الطلب: {ORDER_STATUS_LABEL[target.status] ?? target.status}</div>
-            {target.transactionReference && (
-              <div className="text-sm text-slate-500 font-mono text-blue-600">رقم العملية (InstaPay): {target.transactionReference}</div>
+            {target.paymentReference && (
+              <div dir="ltr" className="text-right font-mono text-sm font-bold text-blue-600">
+                {target.paymentReference}
+              </div>
             )}
           </div>
           <div className="flex gap-3">

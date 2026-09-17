@@ -1,31 +1,41 @@
-import { notFound } from 'next/navigation';
 import React from 'react';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser } from '@/data/domains/auth';
-import { getSessions } from '@/data/domains/writing';
-import { getAllServiceOrders } from '@/data/domains/services';
+import { getCourseBookingsForAdmin } from '@/data/domains/writing';
 import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
-import Link from 'next/link';
+import { PaymentReviewPanel } from '@/components/admin/PaymentReviewPanel';
 import { confirmBookingPayment } from '@/actions/bookings';
 
 export const dynamic = 'force-dynamic';
 
+const STATUS_LABEL: Record<string, string> = {
+  pending: 'بانتظار الدفع',
+  awaiting_verification: 'بانتظار مراجعة التحويل',
+  active: 'نشط',
+  completed: 'مكتمل',
+  cancelled: 'ملغي',
+};
+
+/**
+ * تفاصيل حجز كتابة.
+ *
+ * الصفحة كانت بتقرا **جلسة** وبتطابقها بطلب خدمة بنفس الرقم، وبتبعت رقم
+ * الجلسة لدالة تأكيد الدفع اللي بتنتظر رقم اشتراك. دلوقتي الصفحة على
+ * الاشتراك نفسه، فالتأكيد بيوصل للصف الصح.
+ */
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
   if (!hasAdminPermission(user, 'canManageBookings')) {
     return <Unauthorized />;
   }
+
   const { id } = await params;
-  const allBookings = await getSessions();
-  const target = allBookings.find(b => b.id === id);
-  // مفيش سجل بالرقم ده: بنعرض صفحة «غير موجود».
-  // كان مكتوب هنا «ولا هات أول واحد في القايمة» — يعني اللي بيفتح
-  // رقم مش موجود كان بيشوف سجل حد تاني وهو فاكر إنه بتاعه.
+  const bookings = await getCourseBookingsForAdmin();
+  const target = bookings.find((b) => b.id === id);
   if (!target) notFound();
-  
-  const allServiceOrders = await getAllServiceOrders();
-  const serviceOrder = allServiceOrders.find(so => so.id === target.id); // Assuming 1:1 mapping by ID for now based on dummy logic
 
   const confirmPaymentAction = async () => {
     'use server';
@@ -34,52 +44,73 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   return (
     <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">
-      <DashboardPageHeader title={`تفاصيل الحجز #${target.id.split('-')[1]}`} backHref="/dashboard/admin/bookings" />
-      
+      <DashboardPageHeader
+        title={`تفاصيل الحجز ${target.paymentReference ?? ''}`}
+        backHref="/dashboard/admin/bookings"
+      />
+
+      <PaymentReviewPanel
+        reference={target.paymentReference}
+        amount={target.amount ?? 0}
+        method={target.paymentMethod}
+        receiptUrl={target.paymentReceiptUrl}
+      />
+
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-2">
           <div>
-            <div className="text-sm text-slate-500 mb-1">الموعد</div>
-            <div className="font-bold text-slate-800 text-lg">{formatDate(target.scheduledAt)}</div>
+            <div className="mb-1 text-sm text-slate-500">المشارك</div>
+            <div className="text-lg font-bold text-slate-800">{target.participantName}</div>
           </div>
           <div>
-            <div className="text-sm text-slate-500 mb-1">حالة الحجز</div>
-            <div className="font-bold text-slate-800 text-lg">{target.status === 'confirmed' ? 'مؤكد' : target.status === 'pending' ? 'قيد الانتظار' : target.status}</div>
+            <div className="mb-1 text-sm text-slate-500">الباقة</div>
+            <div className="text-lg font-bold text-slate-800">{target.packageName}</div>
           </div>
           <div>
-            <div className="text-sm text-slate-500 mb-1">معرف الطالب</div>
-            <div className="font-bold text-slate-800 text-lg">{target?.userId}</div>
-          </div>
-          <div>
-            <div className="text-sm text-slate-500 mb-1">معرف المدرب</div>
-            <div className="font-bold text-slate-800 text-lg">{target.instructorId}</div>
-          </div>
-          
-          {serviceOrder && (
-            <div className="col-span-1 md:col-span-2 p-4 bg-slate-50 rounded-xl border border-slate-100">
-              <div className="text-sm text-slate-500 mb-1">بيانات الدفع (الطلب #{serviceOrder.id})</div>
-              <div className="font-bold text-slate-800">حالة الدفع: {serviceOrder.status === 'awaiting_verification' ? 'بانتظار تأكيد الدفع' : serviceOrder.status === 'paid' ? 'مدفوع' : serviceOrder.status}</div>
-              {serviceOrder.transactionReference && (
-                <div className="text-sm text-blue-600 font-mono mt-1">المرجع: {serviceOrder.transactionReference}</div>
-              )}
-              {serviceOrder.status === 'awaiting_verification' && (
-                <form action={confirmPaymentAction} className="mt-4">
-                  <button type="submit" className="rounded-xl bg-emerald-600 px-6 py-2 font-bold text-white transition-colors hover:bg-emerald-700">
-                    تأكيد استلام الدفع
-                  </button>
-                </form>
-              )}
+            <div className="mb-1 text-sm text-slate-500">حالة الحجز</div>
+            <div className="text-lg font-bold text-slate-800">
+              {STATUS_LABEL[target.status] ?? target.status}
             </div>
-          )}
+          </div>
+          <div>
+            <div className="mb-1 text-sm text-slate-500">المدرب المفضل</div>
+            <div className="text-lg font-bold text-slate-800">
+              {target.preferredInstructorName ?? 'لم يُحدَّد'}
+            </div>
+          </div>
+          <div>
+            <div className="mb-1 text-sm text-slate-500">تاريخ الحجز</div>
+            <div className="text-lg font-bold text-slate-800">{formatDate(target.createdAt)}</div>
+          </div>
+          <div>
+            <div className="mb-1 text-sm text-slate-500">الجلسات</div>
+            <div className="text-lg font-bold text-slate-800">
+              {target.sessionsCount > 0 ? `${target.sessionsCount} جلسة` : 'لم تُجدول بعد'}
+            </div>
+          </div>
         </div>
-        
-        <div className="pt-6 border-t border-slate-100 flex gap-4">
-          <Link href={`/dashboard/admin/sessions/${target.id}`} className="rounded-xl bg-blue-600 px-6 py-3 font-bold text-white transition-colors hover:bg-blue-700">
-            الدخول إلى قاعة الجلسة
+
+        {target.status === 'awaiting_verification' && (
+          <form action={confirmPaymentAction} className="mb-6">
+            <button
+              type="submit"
+              className="rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white transition-colors hover:bg-emerald-700"
+            >
+              تأكيد استلام الدفع وتفعيل الحجز
+            </button>
+            <p className="mt-2 text-xs font-medium text-slate-500">
+              راجع الإيصال والمبلغ فوق قبل التأكيد. بعد التفعيل تُجدول الجلسات.
+            </p>
+          </form>
+        )}
+
+        <div className="flex gap-4 border-t border-slate-100 pt-6">
+          <Link
+            href="/dashboard/admin/bookings/calendar"
+            className="rounded-xl bg-blue-600 px-6 py-3 font-bold text-white transition-colors hover:bg-blue-700"
+          >
+            تقويم الجلسات
           </Link>
-          <button className="rounded-xl bg-red-50 px-6 py-3 font-bold text-red-600 transition-colors hover:bg-red-100" disabled title="غير متاح حاليًا">
-            إلغاء الحجز (غير متاح)
-          </button>
         </div>
       </div>
     </div>

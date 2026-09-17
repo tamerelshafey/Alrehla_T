@@ -25,7 +25,6 @@ export async function createServiceOrder(params: {
   providerId?: string | null;
   /** الاسم القديم — بيفضل مقبول لحد ما كل الروابط تتحدّث. */
   instructorId?: string | null;
-  transactionReference?: string | null;
 }) {
   const supabase = await createClient();
 
@@ -34,7 +33,7 @@ export async function createServiceOrder(params: {
   } = await supabase.auth.getUser();
   if (!user) throw new Error('يجب تسجيل الدخول أولاً');
 
-  const { serviceId, transactionReference } = params;
+  const { serviceId } = params;
   let providerId = params.providerId ?? null;
 
   // رابط قديم بيبعت معرّف مدرب: نلاقي صف المقدّم بتاعه.
@@ -150,10 +149,11 @@ export async function createServiceOrder(params: {
       provider_id: providerId,
       amount,
       instructor_earning: providerEarning,
-      status: transactionReference ? 'awaiting_verification' : 'pending',
-      transaction_reference: transactionReference || null,
+      // الطلب بيبدأ «بانتظار الدفع» دايمًا: الإيصال بيترفع في خطوة تانية
+      // بعد ما العميل يشوف الرقم المرجعي ويحوّل.
+      status: 'pending',
     })
-    .select('id')
+    .select('id, payment_reference')
     .single();
 
   if (error || !order) {
@@ -178,7 +178,12 @@ export async function createServiceOrder(params: {
   revalidatePath('/account/orders/creative-writing');
   revalidatePath('/dashboard/admin/orders/services');
 
-  return { ok: true, orderId: order.id, amount };
+  return {
+    ok: true,
+    orderId: order.id,
+    amount,
+    paymentReference: order.payment_reference ?? '',
+  };
 }
 
 /* ================================================================
@@ -672,5 +677,46 @@ export async function setServiceOrderDueDate(
   });
 
   revalidateOrder(orderId);
+  return { ok: true };
+}
+
+/**
+ * إثبات دفع طلب خدمة: وسيلة الدفع + صورة الإيصال.
+ *
+ * الحارس الحقيقي محفّز `guard_service_order_fields`: المشتري مسموح له
+ * بانتقال واحد هنا — «بانتظار الدفع» → «بانتظار التأكيد» — والإيصال
+ * بيتكتب مرة واحدة معاه.
+ */
+export async function submitServiceOrderPayment(
+  orderId: string,
+  payment: { method: 'instapay' | 'vodafone_cash'; receiptUrl: string },
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!payment.receiptUrl) return { ok: false, error: 'ارفع صورة إيصال التحويل' };
+
+  const { supabase, user, order } = await loadOrderFor(orderId);
+
+  if (order.buyer_profile_id !== user.id) {
+    return { ok: false, error: 'الطلب غير موجود' };
+  }
+  if (order.status !== 'pending') {
+    return { ok: false, error: 'تم إرسال إثبات الدفع لهذا الطلب بالفعل' };
+  }
+
+  const { error } = await supabase
+    .from('service_orders')
+    .update({
+      status: 'awaiting_verification',
+      payment_method: payment.method,
+      payment_receipt_url: payment.receiptUrl,
+    })
+    .eq('id', orderId);
+
+  if (error) {
+    console.error('Error submitting service order payment', error);
+    return { ok: false, error: 'تعذّر إرسال الإيصال' };
+  }
+
+  revalidatePath('/account/orders/creative-writing');
+  revalidatePath('/dashboard/admin/orders/services');
   return { ok: true };
 }
