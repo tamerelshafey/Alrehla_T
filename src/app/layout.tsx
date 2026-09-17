@@ -4,7 +4,6 @@ import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ScrollToTop from '@/components/layout/ScrollToTop';
-import DevAuthToolbar from '@/components/dev/DevAuthToolbar';
 import { Providers } from '@/components/providers/Providers';
 import { getSiteSettings } from '@/data/domains/content';
 import { slotImageUrl } from '@/lib/cloudinary';
@@ -91,7 +90,6 @@ export default function RootLayout({
           <Header />
           <main className="relative flex w-full flex-1 flex-col">{children}</main>
           <Footer />
-          <DevAuthToolbar />
         </Providers>
       </body>
     </html>

@@ -26,20 +26,6 @@ export function formatDate(dateInput: string | Date): string {
 }
 
 
-export function assertSingleParticipant(
-  dependentId?: string,
-  independentId?: string,
-  requireOne: boolean = true
-): void {
-  const count = [dependentId, independentId].filter(Boolean).length;
-  if (requireOne && count !== 1) {
-    throw new Error('يجب تحديد مشارك واحد بالضبط: إما تابع أو مستقل');
-  }
-  if (!requireOne && count > 1) {
-    throw new Error('لا يمكن تحديد أكثر من مشارك واحد');
-  }
-}
-
 export function calculateFinalSessionPrice(
   basePricePerSession: number,
   formula: { platformMultiplier: number; fixedAdminFee: number }

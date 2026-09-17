@@ -7,8 +7,8 @@ import { PersonalizedProduct } from '@/types';
 import Image from 'next/image';
 import { optimizedImageUrl } from '@/lib/cloudinary';
 
-// We just mock the addons for now, or we can fetch them. Let's hardcode a few prices or assume each addon is 150.
-// In a real app we would import mockAddonProducts. For now, let's say an addon is 150 EGP.
+// مفيش إضافات دلوقتي: مفيش جدول ليها ومفيش أسعار حقيقية، فالإجمالي
+// بيتحسب من سعر المنتج وحده.
 
 export function OrderSummarySidebar({ product }: { product: PersonalizedProduct }) {
   const { watch } = useFormContext();

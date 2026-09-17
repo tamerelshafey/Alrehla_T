@@ -177,19 +177,6 @@ export async function getProvidersForService(
     .sort((a, b) => a.price - b.price);
 }
 
-/**
- * The lowest approved price across all providers of a service — this is the
- * number behind "يبدأ من" on the services page. Returns null when nobody
- * offers it yet, so the page can say so instead of inventing a price.
- */
-export async function getStartingPriceForService(
-  serviceId: string
-): Promise<number | null> {
-  const providers = await getProvidersForService(serviceId);
-  return providers.length > 0 ? providers[0].price : null;
-}
-
-/** A service order enriched with the names needed to display it. */
 export type ServiceOrderRow = {
   id: string;
   buyerProfileId: string;
@@ -390,23 +377,3 @@ export async function getServiceOrderMessages(
   }));
 }
 
-/**
- * Orders delivered more than `days` ago that the customer has not confirmed.
- *
- * There is no scheduled job behind this: the condition is evaluated when an
- * admin opens their dashboard, which is the only moment it matters.
- */
-export async function getStalledServiceOrders(days = 7): Promise<ServiceOrderRow[]> {
-  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from('service_orders')
-    .select(SERVICE_ORDER_SELECT)
-    .eq('status', 'delivered')
-    .lt('delivered_at', cutoff)
-    .order('delivered_at', { ascending: true });
-
-  if (error || !data) return [];
-  return mapServiceOrders(data);
-}

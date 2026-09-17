@@ -11,17 +11,15 @@ import {
 import { cookies } from 'next/headers';
 
 // Import from auth if needed
-import { mockAllUsers, mockCurrentUser } from '../fixtures/auth';
 
 
 import { createClient } from '@/lib/supabase/server';
-import { mockOrders } from '@/data/fixtures/orders';
 
 export const getOrders = async (): Promise<Order[]> => {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
-  if (!user) { if (process.env.NODE_ENV === 'development') return mockOrders; return []; }
+  if (!user) return [];
 
   const { data, error } = await supabase
     .from('orders')
@@ -33,9 +31,6 @@ export const getOrders = async (): Promise<Order[]> => {
     .order('created_at', { ascending: false });
 
   if ((error || !data || data.length === 0)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockOrders;
-    }
     return [];
   }
 

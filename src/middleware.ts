@@ -50,14 +50,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Development mock fallback
-  if (!user && process.env.NODE_ENV === 'development') {
-    const mockRole = request.cookies.get('mockRole')?.value;
-    if (mockRole) {
-      role = mockRole as UserRole;
-      isAuthenticated = true; // treat as authenticated for mock routing
-    }
-  }
+  // كان هنا باب تطوير: كوكي اسمه mockRole بيدّي أي زائر أي دور ويعتبره
+  // مسجّل دخوله. اتشال هو والشريط اللي كان بيكتبه ودالة المستخدم الوهمي.
 
   const pathname = request.nextUrl.pathname;
 

@@ -50,7 +50,7 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
     } else if (sortBy === 'price-desc') {
       result.sort((a, b) => b.price - a.price);
     } else if (sortBy === 'newest') {
-      // Mock newest by reversing or sorting by id if dates aren't available
+      // «الأحدث» بيترتب بالرقم لأن تاريخ الإضافة مش موجود في بيانات الواجهة.
       result.sort((a, b) => b.id.localeCompare(a.id));
     }
 

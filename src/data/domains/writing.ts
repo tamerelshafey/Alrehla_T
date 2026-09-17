@@ -14,8 +14,6 @@ import { getParticipantName } from '@/data/domains/account';
 import { createClient } from '@/lib/supabase/server';
 
 // Import from auth if needed
-import { mockAllUsers, mockCurrentUser } from '../fixtures/auth';
-import { mockCourseSubscriptions, mockDocuments, mockInstructorCertifications, mockInstructorCompensationProfiles, mockInstructorPricingOptions, mockInstructors, mockPricingFormulaSettings, mockServiceOrders, mockSessions, mockWritingPackages } from '@/data/fixtures/writing';
 
 
 
@@ -27,9 +25,6 @@ export const getWritingPackages = async (): Promise<WritingPackage[]> => {
     .order('created_at', { ascending: true });
 
   if ((error || !data || data.length === 0)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockWritingPackages;
-    }
     return [];
   }
 
@@ -51,41 +46,6 @@ export const getWritingPackages = async (): Promise<WritingPackage[]> => {
   }));
 };
 
-export const getWritingPackageBySlug = async (
-  slug: string
-): Promise<WritingPackage | null> => {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase.from('creative_writing_packages')
-    .select('*')
-    .eq('slug', slug)
-    .single();
-
-  // Sample data is for local development only — it must never stand in for
-  // a real record on the live site.
-  if (error || !data) {
-    if (process.env.NODE_ENV !== 'development') return null;
-    const pkg = mockWritingPackages.find((p) => p.slug === slug);
-    return pkg || null;
-  }
-
-  return {
-    id: data.id,
-    slug: data.slug,
-    name: data.name,
-    ageGroup: data.age_group,
-    price: data.price,
-    durationText: data.duration_text ?? '',
-    sessionsCount: data.sessions_count ?? 0,
-    sessionDuration: data.session_duration || undefined,
-    targetAudience: data.target_audience ?? '',
-    prerequisiteNote: data.prerequisite_note || undefined,
-    prerequisitePackageId: data.prerequisite_package_id || undefined,
-    shortDescription: data.short_description ?? '',
-    fullDescription: data.full_description ?? '',
-    isActive: data.is_active
-  };
-};
-
 export const getInstructors = async (): Promise<Instructor[]> => {
   const supabase = createPublicClient();
   const { data, error } = await supabase.from('instructors')
@@ -93,9 +53,6 @@ export const getInstructors = async (): Promise<Instructor[]> => {
     .order('created_at', { ascending: false });
 
   if ((error || !data || data.length === 0)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockInstructors;
-    }
     return [];
   }
 
@@ -128,13 +85,7 @@ export const getInstructorById = async (
     .eq('id', id)
     .single();
 
-  // Sample data is for local development only — it must never stand in for
-  // a real record on the live site.
-  if (error || !data) {
-    if (process.env.NODE_ENV !== 'development') return null;
-    const inst = mockInstructors.find((i) => i.id === id);
-    return inst || null;
-  }
+  if (error || !data) return null;
 
   return {
     id: data.id,
@@ -344,9 +295,6 @@ export async function getStudentDocuments(studentId: string) {
     .order('created_at', { ascending: false });
 
   if ((error || !data || data.length === 0)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockDocuments.filter(d => d.studentId === studentId);
-    }
     return [];
   }
 
@@ -369,9 +317,6 @@ export async function getDocumentById(id: string) {
     .single();
 
   if ((error || !data)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockDocuments.find(d => d.id === id);
-    }
     return null;
   }
 
@@ -404,9 +349,6 @@ export const getPricingFormulaSettings = async () => {
     .single();
 
   if (error || !data) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockPricingFormulaSettings[0];
-    }
     return { id: 'default', platformMultiplier: 1, fixedAdminFee: 0, updatedAt: new Date().toISOString() };
   }
 
@@ -417,33 +359,6 @@ export const getPricingFormulaSettings = async () => {
     updatedAt: data.updated_at
   };
 };
-
-export async function getInstructorCompensationProfile(
-  instructorId: string
-): Promise<InstructorCompensationProfile | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('instructor_compensation_profiles')
-    .select('*')
-    .eq('instructor_id', instructorId)
-    .maybeSingle();
-
-  if (error || !data) return null;
-
-  return {
-    id: data.id,
-    instructorId: data.instructor_id,
-    billingModel: data.billing_model as InstructorCompensationProfile['billingModel'],
-    selectedPricingOptionId: data.selected_pricing_option_id ?? '',
-    monthlyMinimumHours: data.monthly_minimum_hours ?? 0,
-    overtimeRatePerHour: data.overtime_rate_per_hour ?? undefined,
-    approvalStatus: data.approval_status as InstructorCompensationProfile['approvalStatus'],
-    adminNotes: data.admin_notes ?? undefined,
-    reviewedByProfileId: data.reviewed_by_profile_id ?? undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
-  };
-}
 
 export async function getInstructorCertification(
   instructorId: string
@@ -497,9 +412,6 @@ export const getSessions = async (): Promise<SessionWithDetails[]> => {
     .order('scheduled_at', { ascending: true });
 
   if ((error || !data || data.length === 0)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockSessions;
-    }
     return [];
   }
 
@@ -524,21 +436,6 @@ export const getSessions = async (): Promise<SessionWithDetails[]> => {
   });
 };
 
-export const getBookings = async (): Promise<Booking[]> => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from('bookings')
-    .select('*');
-  if (error || !data) return [];
-  return data.map((b: any) => ({
-    id: b.id,
-    sessionId: b.session_id,
-    status: b.status as any,
-    bookedAt: b.booked_at
-  }));
-};
-
-
-/** The pricing tiers an instructor can choose from. */
 export async function getInstructorPricingOptions(): Promise<InstructorPricingOption[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -548,7 +445,6 @@ export async function getInstructorPricingOptions(): Promise<InstructorPricingOp
     .order('base_price_per_session', { ascending: true });
 
   if (error || !data) {
-    if (process.env.NODE_ENV === 'development') return mockInstructorPricingOptions;
     return [];
   }
 

@@ -11,10 +11,8 @@ import {
 import { cookies } from 'next/headers';
 
 // Import from auth if needed
-import { mockAllUsers, mockCurrentUser } from '../fixtures/auth';
 
 import { createClient } from '@/lib/supabase/server';
-import { mockBoxSubscriptions } from '@/data/fixtures/subscriptions';
 
 
 export const getBoxSubscriptions = async (): Promise<BoxSubscription[]> => {
@@ -25,9 +23,6 @@ export const getBoxSubscriptions = async (): Promise<BoxSubscription[]> => {
     .order('created_at', { ascending: false });
 
   if ((error || !data || data.length === 0)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockBoxSubscriptions;
-    }
     return [];
   }
 

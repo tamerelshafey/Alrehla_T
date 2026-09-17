@@ -11,7 +11,6 @@ import {
 import { cookies } from 'next/headers';
 
 // Import from auth if needed
-import { mockAllUsers, mockCurrentUser } from '../fixtures/auth';
 
 
 
@@ -22,9 +21,6 @@ export const getInstructorPayouts = async (): Promise<InstructorPayout[]> => {
     .order('created_at', { ascending: false });
 
   if ((error || !data || data.length === 0)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockInstructorPayouts;
-    }
     return [];
   }
 
@@ -44,9 +40,6 @@ export const getPublisherPayouts = async (): Promise<PublisherPayout[]> => {
     .order('created_at', { ascending: false });
 
   if ((error || !data || data.length === 0)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockPublisherPayouts;
-    }
     return [];
   }
 
@@ -61,7 +54,6 @@ export const getPublisherPayouts = async (): Promise<PublisherPayout[]> => {
 
 
 import { createClient } from '@/lib/supabase/server';
-import { mockAllSupportTickets, mockInstructorPayouts, mockJoinRequests, mockPublisherPayouts, mockPublisherPricingSettings, mockSupportSessionRequests, mockWithdrawalRequests } from '@/data/fixtures/admin';
 
 export const getAllSupportTickets = async (): Promise<SupportTicket[]> => {
   const supabase = await createClient();
@@ -70,9 +62,6 @@ export const getAllSupportTickets = async (): Promise<SupportTicket[]> => {
     .order('created_at', { ascending: false });
 
   if ((error || !data || data.length === 0)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockAllSupportTickets;
-    }
     return [];
   }
 
@@ -94,9 +83,6 @@ export const getJoinRequests = async (): Promise<JoinRequest[]> => {
     .order('created_at', { ascending: false });
 
   if ((error || !data || data.length === 0)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockJoinRequests;
-    }
     return [];
   }
 
@@ -121,9 +107,6 @@ export const getSupportSessionRequests = async (): Promise<SupportSessionRequest
     .order('created_at', { ascending: false });
 
   if ((error || !data || data.length === 0)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockSupportSessionRequests;
-    }
     return [];
   }
 
@@ -187,9 +170,6 @@ export const getPublisherPricingSettings = async (): Promise<PricingFormulaSetti
     .single();
 
   if (error || !data) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockPublisherPricingSettings[0];
-    }
     return { id: 'publisher-default', platformMultiplier: 1, fixedAdminFee: 0, updatedAt: new Date().toISOString() };
   }
 

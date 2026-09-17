@@ -140,31 +140,6 @@ export async function getInstructorRatingSummary(
   return summaries.get(instructorId) ?? { average: null, count: 0 };
 }
 
-/** How a service itself has been rated, across every instructor providing it. */
-export async function getServiceRatingSummary(serviceId: string): Promise<RatingSummary> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('reviews')
-    .select('service_rating')
-    .eq('standalone_service_id', serviceId)
-    .eq('is_hidden', false)
-    .not('service_rating', 'is', null);
-
-  if (error || !data || data.length === 0) return { average: null, count: 0 };
-
-  const ratings = data
-    .map((r) => r.service_rating)
-    .filter((r): r is number => r != null);
-
-  if (ratings.length === 0) return { average: null, count: 0 };
-
-  return {
-    average: ratings.reduce((a, b) => a + b, 0) / ratings.length,
-    count: ratings.length,
-  };
-}
-
-/** Whether this order has already been reviewed. */
 export async function hasReviewForOrder(orderId: string): Promise<boolean> {
   const supabase = await createClient();
   const { data } = await supabase

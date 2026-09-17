@@ -1,10 +1,8 @@
 import {
   UserProfile, UserRole, AdminPermission
 } from '@/types';
-import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { User } from '@supabase/supabase-js';
-import { mockAllUsers, mockCurrentUser } from '@/data/fixtures/auth';
 
 
 // Safe profile synchronization helper
@@ -48,46 +46,19 @@ export const getCurrentUser = async (): Promise<UserProfile> => {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  // If no user is logged in, use the mock role cookie for local development UI testing ONLY
+  // مفيش مستخدم مسجّل = زائر.
+  //
+  // كان هنا باب تاني: في بيئة التطوير الكود كان بيقرا كوكي `mockRole`
+  // ويركّب مستخدم وهمي **بصلاحيات مدير نظام كاملة** من غير أي تسجيل
+  // دخول. اتشال هو وشريط تبديل الأدوار اللي كان بيكتب الكوكي.
   if (!user) {
-    if (process.env.NODE_ENV === 'development') {
-      const cookieStore = await cookies();
-      const mockRoleCookie = cookieStore.get('mockRole');
-      const role = (mockRoleCookie?.value as UserRole) || 'visitor';
-      
-      let permissions: AdminPermission[] = [];
-      if (role === 'super_admin') {
-        permissions = [
-          'canManageUsers', 'canManageInstructors', 'canManagePublishers', 
-          'canManageCatalog', 'canManageSubscriptions', 'canManageOrders', 
-          'canManageBookings', 'canManageSupport', 'canManageContent', 
-          'canManageFinance', 'canViewAuditLogs'
-        ];
-      } else if (role === 'general_supervisor') {
-        permissions = [
-          'canManageUsers', 'canManageInstructors', 'canManagePublishers', 
-          'canManageCatalog', 'canManageSubscriptions', 'canManageOrders', 
-          'canManageBookings', 'canManageSupport', 'canManageContent'
-        ];
-      }
-      return {
-        id: 'current-user',
-        fullName: role === 'visitor' ? 'زائر تجريبي' : `مستخدم تجريبي (${role})`,
-        email: `${role}@example.com`,
-        role: role,
-        createdAt: '2023-01-01T00:00:00Z',
-        ...(permissions.length > 0 ? { permissions } : {})
-      };
-    } else {
-      // In production, unauthenticated users are just visitors
-      return {
-        id: 'visitor-user',
-        fullName: 'زائر',
-        email: '',
-        role: 'visitor',
-        createdAt: new Date().toISOString(),
-      };
-    }
+    return {
+      id: 'visitor-user',
+      fullName: 'زائر',
+      email: '',
+      role: 'visitor',
+      createdAt: new Date().toISOString(),
+    };
   }
 
   // Fetch or synchronize actual profile from Supabase
@@ -132,10 +103,7 @@ export const getAllUsers = async (): Promise<UserProfile[]> => {
     .order('created_at', { ascending: false });
 
   if (error || !profiles || profiles.length === 0) {
-    console.error("Error fetching users or none found, falling back to mock", error);
-    if (process.env.NODE_ENV === 'development') {
-        return mockAllUsers;
-    }
+    if (error) console.error('Error fetching users', error);
     return [];
   }
 

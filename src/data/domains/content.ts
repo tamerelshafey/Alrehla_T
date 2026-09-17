@@ -11,7 +11,6 @@ import {
 import { cookies } from 'next/headers';
 
 // Import from auth if needed
-import { mockAllUsers, mockCurrentUser } from '../fixtures/auth';
 
 
 
@@ -44,14 +43,6 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
     .single();
 
   if (error || !data) {
-    if (process.env.NODE_ENV === 'development') {
-      return {
-        ...mockSiteSettings,
-        paymentWalletNumber: DEFAULT_PAYMENT_WALLET,
-        paymentQrUrl: '',
-        images: {},
-      };
-    }
     return {
       siteName: '',
       contactEmail: '',
@@ -80,7 +71,6 @@ import { createClient } from '@/lib/supabase/server';
 import { createPublicClient } from '@/lib/supabase/public';
 import type { SiteImages } from '@/lib/site-images';
 import { CONTENT_DEFAULTS, type SiteContent } from '@/lib/site-content';
-import { mockBlogPosts, mockSiteSettings, mockTestimonials } from '@/data/fixtures/content';
 
 /**
  * نصوص الصفحات.
@@ -117,9 +107,6 @@ export const getTestimonials = async (): Promise<Testimonial[]> => {
     .order('created_at', { ascending: false });
 
   if ((error || !data || data.length === 0)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockTestimonials;
-    }
     return [];
   }
 
@@ -143,9 +130,6 @@ export const getBlogPosts = async (
   const { data, error } = await query.order('published_at', { ascending: false });
 
   if ((error || !data || data.length === 0)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockBlogPosts;
-    }
     return [];
   }
 
@@ -161,37 +145,6 @@ export const getBlogPosts = async (
   }));
 };
 
-export const getBlogPostBySlug = async (
-  slug: string
-): Promise<BlogPost | null> => {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase.from('blog_posts')
-    .select('*')
-    .eq('slug', slug)
-    .single();
-
-  // Sample data is for local development only — it must never stand in for
-  // a real record on the live site.
-  if (error || !data) {
-    if (process.env.NODE_ENV !== 'development') return null;
-    const post = mockBlogPosts.find((p) => p.slug === slug);
-    return post || null;
-  }
-
-  return {
-    id: data.id,
-    slug: data.slug,
-    title: data.title,
-    excerpt: data.excerpt,
-    content: data.content,
-    coverImageUrl: data.cover_image_url || undefined,
-    authorName: data.author_name || 'فريق الرحلة',
-    publishedAt: data.published_at
-  };
-};
-
-
-/** One post by id — for the admin editor, which works on ids not slugs. */
 export const getBlogPostById = async (id: string): Promise<BlogPost | null> => {
   const supabase = await createClient();
   const { data, error } = await supabase

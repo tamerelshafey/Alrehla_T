@@ -12,7 +12,6 @@ import {
 import { cookies } from 'next/headers';
 
 // Import from auth if needed
-import { mockAllUsers, mockCurrentUser } from '../fixtures/auth';
 
 
 
@@ -20,7 +19,6 @@ import { mockAllUsers, mockCurrentUser } from '../fixtures/auth';
 import { createPublicClient } from '@/lib/supabase/public';
 import { createClient } from '@/lib/supabase/server';
 import { getPublisherPricingSettings } from '@/data/domains/admin';
-import { mockAddonProducts, mockProducts, mockPublishers, mockSubscriptionTiers } from '@/data/fixtures/products';
 
 export const getPersonalizedProducts = async (): Promise<PersonalizedProduct[]> => {
   const supabase = createPublicClient();
@@ -31,9 +29,6 @@ export const getPersonalizedProducts = async (): Promise<PersonalizedProduct[]> 
   if (error || !data || data.length === 0) {
     if (error) {
       console.error('Error fetching personalized products:', error);
-    }
-    if (process.env.NODE_ENV === 'development') {
-      return mockProducts; // Fallback to mock data in development
     }
     return [];
   }
@@ -60,9 +55,6 @@ export const getPersonalizedProducts = async (): Promise<PersonalizedProduct[]> 
  * Sample data is kept for local development only.
  */
 export const getAddonProducts = async (): Promise<AddonProduct[]> => {
-  if (process.env.NODE_ENV === 'development') {
-    return mockAddonProducts;
-  }
   return [];
 };
 
@@ -86,9 +78,6 @@ export const getSubscriptionTiers = async (
   const { data, error } = await query;
 
   if (error || !data || data.length === 0) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockSubscriptionTiers;
-    }
     return [];
   }
 
@@ -115,9 +104,6 @@ export const getPublishers = async (): Promise<Publisher[]> => {
     .order('created_at', { ascending: false });
 
   if ((error || !data || data.length === 0)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockPublishers;
-    }
     return [];
   }
 
@@ -140,9 +126,6 @@ export const getPublisherBySlug = async (slug: string): Promise<Publisher | null
     .single();
 
   if ((error || !data)) {
-    if (process.env.NODE_ENV === 'development') {
-      return mockPublishers.find(p => p.slug === slug) || null;
-    }
     return null;
   }
 
@@ -164,19 +147,9 @@ export const getProductBySlug = async (slug: string): Promise<PersonalizedProduc
     .eq('slug', slug)
     .single();
 
-  // Sample data is for local development only — it must never stand in for
-  // a real record on the live site.
-  if (error || !data) {
-    if (process.env.NODE_ENV !== 'development') return null;
-    const product = mockProducts.find(p => p.slug === slug);
-    if (product && product.ownerType === 'platform') {
-      return product;
-    }
-    return null;
-  }
+  if (error || !data) return null;
 
   // Ensure ownerType matches if the original logic required 'platform'
-  // But maybe it's better to just return the found product.
   // We'll keep the original logic for fallback, but for DB we can return any found product.
   if (data.owner_type === 'platform') {
     return {
