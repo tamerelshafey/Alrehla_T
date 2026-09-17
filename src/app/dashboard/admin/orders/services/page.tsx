@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { formatDate } from '@/lib/utils';
 import { StatusBadge } from '@/components/StatusBadge';
+import { dueLabel, isOverdue, OPEN_SERVICE_STATUSES } from '@/lib/service-delivery';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,6 +43,20 @@ export default async function Page() {
     ),
     dateDisplay: formatDate(order.createdAt),
     amountDisplay: `${formatPrice(order.amount)}`,
+    providerDisplay: order.providerName ?? '—',
+    // المهلة بتهم بس وهو لسه مستنّي تسليم. طلب مكتمل أو ملغي مالوش معنى
+    // إنه «متأخر».
+    dueDisplay: (OPEN_SERVICE_STATUSES as readonly string[]).includes(order.status) ? (
+      <span
+        className={`font-bold ${
+          isOverdue(order.dueAt) ? 'text-red-600' : 'text-slate-600'
+        }`}
+      >
+        {dueLabel(order.dueAt)}
+      </span>
+    ) : (
+      <span className="text-slate-300">—</span>
+    ),
     statusDisplay: (
       <StatusBadge
         type={ORDER_STATUS[order.status]?.type ?? 'warning'}
@@ -54,9 +69,10 @@ export default async function Page() {
     { header: 'رقم الطلب', accessorKey: 'idDisplay' },
     { header: 'معرّف المشتري', accessorKey: 'buyerProfileId' },
     { header: 'الخدمة', accessorKey: 'serviceName' },
-    { header: 'المدرب', accessorKey: 'instructorName' },
+    { header: 'مقدّم الخدمة', accessorKey: 'providerDisplay' },
     { header: 'تاريخ الدفع', accessorKey: 'dateDisplay' },
     { header: 'المبلغ الإجمالي', accessorKey: 'amountDisplay' },
+    { header: 'المهلة', accessorKey: 'dueDisplay' },
     { header: 'الحالة', accessorKey: 'statusDisplay' }
   ];
 

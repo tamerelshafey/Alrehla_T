@@ -21,6 +21,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const sidebarLinks: { label: string; href: string; icon: LucideIcon; permission: AdminPermission }[] = [
     { label: 'المستخدمون والعائلات', href: '/dashboard/admin/users', icon: Users, permission: 'canManageUsers' },
     { label: 'المدربون', href: '/dashboard/admin/instructors', icon: UserCheck, permission: 'canManageInstructors' },
+    // مقدّمو الخدمة: المنصة والمدربون والمستقلون. مكان واحد لتحديد
+    // مين بيقدّم أي خدمة إبداعية وبكام.
+    { label: 'مقدّمو الخدمة', href: '/dashboard/admin/providers', icon: UserCheck, permission: 'canManageInstructors' },
     { label: 'الناشرون', href: '/dashboard/admin/publishers', icon: BookOpen, permission: 'canManagePublishers' },
     { label: 'المنتجات والمكتبة', href: '/dashboard/admin/products', icon: Box, permission: 'canManagePublishers' },
     { label: 'باقات الكتابة', href: '/dashboard/admin/writing/packages', icon: LayoutDashboard, permission: 'canManageCatalog' },

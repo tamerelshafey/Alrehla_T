@@ -562,3 +562,85 @@ export async function setServiceOrderStatusByAdmin(
   revalidateOrder(orderId);
   return { ok: true };
 }
+
+/**
+ * تعديل مهلة التسليم لطلب بعينه.
+ *
+ * المهلة الطبيعية 14 يومًا من تأكيد الدفع. الدالة دي للحالة اللي الطرفين
+ * فيها اتفقوا على غير كده — والسبب بيتكتب وبيفضل ظاهر للطرفين، عشان
+ * ما يبقاش فيه تمديد من غير ما حد يعرف ليه.
+ */
+export async function setServiceOrderDueDate(
+  orderId: string,
+  dueAt: string | null,
+  note: string,
+) {
+  const admin = await requireOrdersAdmin();
+
+  const reason = note.trim();
+  if (dueAt && !reason) {
+    throw new Error('اكتب سبب تغيير المهلة');
+  }
+  if (dueAt && Number.isNaN(new Date(dueAt).getTime())) {
+    throw new Error('التاريخ غير صحيح');
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('service_orders')
+    .update({
+      due_at: dueAt ? new Date(dueAt).toISOString() : null,
+      due_note: dueAt ? reason : null,
+    })
+    .eq('id', orderId);
+
+  if (error) {
+    console.error('Error setting due date', error);
+    throw new Error('تعذّر تعديل المهلة');
+  }
+
+  // الطرفين يعرفوا. تمديد من غير إخطار بيخلي العميل مستني من غير ما يفهم.
+  const { data: order } = await supabase
+    .from('service_orders')
+    .select('buyer_profile_id, instructor_id, provider_id')
+    .eq('id', orderId)
+    .maybeSingle();
+
+  if (order) {
+    const message = dueAt
+      ? `المهلة الجديدة: ${new Date(dueAt).toLocaleDateString('ar-EG')} — ${reason}`
+      : 'تم رفع المهلة عن هذا الطلب.';
+
+    await notifyUser({
+      recipientProfileId: order.buyer_profile_id,
+      title: 'تعديل مهلة التسليم',
+      message,
+      link: `/account/orders/creative-writing/${orderId}`,
+    });
+
+    const providerUserId = order.provider_id
+      ? await getProviderUserId(order.provider_id)
+      : order.instructor_id
+        ? await getInstructorUserId(order.instructor_id)
+        : null;
+    if (providerUserId) {
+      await notifyUser({
+        recipientProfileId: providerUserId,
+        title: 'تعديل مهلة التسليم',
+        message,
+        link: `/dashboard/instructor/services/orders/${orderId}`,
+      });
+    }
+  }
+
+  await logAuditAction({
+    actorProfileId: admin.id,
+    actorName: admin.fullName,
+    action: 'service_order_due_date_changed',
+    entityType: 'ServiceOrder',
+    entityId: orderId,
+  });
+
+  revalidateOrder(orderId);
+  return { ok: true };
+}

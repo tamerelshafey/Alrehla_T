@@ -197,6 +197,13 @@ export type ServiceOrderRow = {
   serviceName: string;
   instructorId: string | null;
   instructorName: string | null;
+  providerId: string | null;
+  /** اسم مقدّم الخدمة — المنصة أو المدرب أو المستقل. */
+  providerName: string | null;
+  providerKind: 'platform' | 'instructor' | 'individual' | null;
+  /** موعد التسليم المتفق عليه. بيتحط وقت تأكيد الدفع. */
+  dueAt: string | null;
+  dueNote: string | null;
   amount: number;
   status: string;
   transactionReference: string | null;
@@ -210,6 +217,9 @@ async function mapServiceOrders(rows: any[]): Promise<ServiceOrderRow[]> {
   return rows.map((row) => {
     const service = row.standalone_services as { name: string } | null;
     const instructor = row.instructors as { display_name: string } | null;
+    const provider = row.service_providers as
+      | { display_name: string; kind: 'platform' | 'instructor' | 'individual' }
+      | null;
     return {
       id: row.id,
       buyerProfileId: row.buyer_profile_id,
@@ -217,6 +227,12 @@ async function mapServiceOrders(rows: any[]): Promise<ServiceOrderRow[]> {
       serviceName: service?.name ?? 'خدمة غير معروفة',
       instructorId: row.instructor_id,
       instructorName: instructor?.display_name ?? null,
+      providerId: row.provider_id ?? null,
+      // الاسم القديم بيفضل احتياطي للطلبات اللي اتعملت قبل نظام المقدّمين.
+      providerName: provider?.display_name ?? instructor?.display_name ?? null,
+      providerKind: provider?.kind ?? (instructor ? 'instructor' : null),
+      dueAt: row.due_at ?? null,
+      dueNote: row.due_note ?? null,
       amount: row.amount,
       status: row.status,
       transactionReference: row.transaction_reference,
@@ -229,7 +245,7 @@ async function mapServiceOrders(rows: any[]): Promise<ServiceOrderRow[]> {
 }
 
 const SERVICE_ORDER_SELECT =
-  'id, buyer_profile_id, standalone_service_id, instructor_id, amount, status, transaction_reference, created_at, delivered_at, completed_at, instructor_earning, standalone_services(name), instructors(display_name)';
+  'id, buyer_profile_id, standalone_service_id, instructor_id, provider_id, due_at, due_note, amount, status, transaction_reference, created_at, delivered_at, completed_at, instructor_earning, standalone_services(name), instructors(display_name), service_providers(display_name, kind)';
 
 /** Every service order — row-level security limits this to admins. */
 export async function getAllServiceOrders(): Promise<ServiceOrderRow[]> {

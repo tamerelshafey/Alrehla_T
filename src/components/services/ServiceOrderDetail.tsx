@@ -13,7 +13,14 @@ import {
   confirmServiceOrderPayment,
   closeServiceOrderByAdmin,
   setServiceOrderStatusByAdmin,
+  setServiceOrderDueDate,
 } from '@/actions/service-orders';
+import {
+  SERVICE_DUE_DAYS,
+  dueLabel,
+  isOverdue,
+  OPEN_SERVICE_STATUSES,
+} from '@/lib/service-delivery';
 
 export type OrderViewer = 'customer' | 'instructor' | 'admin';
 
@@ -104,7 +111,7 @@ export function ServiceOrderDetail({ order, messages, viewer, currentProfileId }
             </div>
             <p className="mt-1 text-sm font-medium text-slate-500">
               طلب #{order.id.slice(0, 8)} · {formatDate(order.createdAt)}
-              {order.instructorName && ` · المدرب: ${order.instructorName}`}
+              {order.providerName && ` · مقدّم الخدمة: ${order.providerName}`}
             </p>
           </div>
           <div className="text-left">
@@ -116,11 +123,21 @@ export function ServiceOrderDetail({ order, messages, viewer, currentProfileId }
             <p className="mt-2 text-2xl font-black text-slate-800">{formatPrice(order.amount)}</p>
             {viewer !== 'customer' && order.instructorEarning != null && (
               <p className="text-xs font-bold text-slate-400">
-                حصيلة المدرب: {formatPrice(order.instructorEarning)}
+                حصيلة مقدّم الخدمة: {formatPrice(order.instructorEarning)}
+              </p>
+            )}
+            {viewer !== 'customer' && order.providerKind === 'platform' && (
+              <p className="text-xs font-bold text-slate-400">
+                المنصة هي مقدّم الخدمة — لا مستحق يُدفع
               </p>
             )}
           </div>
         </div>
+
+        {/* المهلة — بتظهر للتلاتة، وبتتعدّل من الإدارة وحدها. */}
+        {(OPEN_SERVICE_STATUSES as readonly string[]).includes(order.status) && (
+          <DuePanel order={order} viewer={viewer} />
+        )}
 
         {/* Progress */}
         {!['refunded', 'cancelled'].includes(order.status) && (
@@ -406,6 +423,111 @@ export function ServiceOrderDetail({ order, messages, viewer, currentProfileId }
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+
+/**
+ * مهلة التسليم.
+ *
+ * الطرفين بيشوفوا نفس الرقم ونفس السبب. الإدارة وحدها بتغيّره — لأن
+ * المهلة التزام تجاه العميل، ومقدّم الخدمة ما ينفعش يمدّها لنفسه.
+ */
+function DuePanel({
+  order,
+  viewer,
+}: {
+  order: ServiceOrderRow;
+  viewer: OrderViewer;
+}) {
+  const router = useRouter();
+  const [editing, setEditing] = useState(false);
+  const [date, setDate] = useState(order.dueAt ? order.dueAt.slice(0, 10) : '');
+  const [note, setNote] = useState(order.dueNote ?? '');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const late = isOverdue(order.dueAt);
+
+  const save = async () => {
+    setBusy(true);
+    setError('');
+    try {
+      await setServiceOrderDueDate(order.id, date || null, note);
+      setEditing(false);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'تعذّر الحفظ');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div
+      className={`mt-4 rounded-2xl border p-4 ${
+        late ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-slate-50'
+      }`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className={`font-bold ${late ? 'text-red-700' : 'text-slate-700'}`}>
+            مهلة التسليم: {dueLabel(order.dueAt)}
+          </p>
+          {order.dueNote ? (
+            <p className="mt-1 text-sm font-medium text-slate-500">{order.dueNote}</p>
+          ) : (
+            <p className="mt-1 text-sm font-medium text-slate-400">
+              المهلة الطبيعية {SERVICE_DUE_DAYS} يومًا من تأكيد الدفع.
+            </p>
+          )}
+        </div>
+
+        {viewer === 'admin' && !editing && (
+          <button
+            onClick={() => setEditing(true)}
+            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700"
+          >
+            تعديل المهلة
+          </button>
+        )}
+      </div>
+
+      {viewer === 'admin' && editing && (
+        <div className="mt-4 space-y-3">
+          <div className="flex flex-wrap gap-3">
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold"
+            />
+            <input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="سبب التغيير — بيظهر للطرفين"
+              className="min-w-[220px] flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm"
+            />
+          </div>
+          {error && <p className="text-sm font-bold text-red-600">{error}</p>}
+          <div className="flex gap-2">
+            <button
+              disabled={busy}
+              onClick={save}
+              className="rounded-xl bg-slate-800 px-5 py-2 text-sm font-bold text-white disabled:opacity-50"
+            >
+              حفظ
+            </button>
+            <button
+              onClick={() => setEditing(false)}
+              className="rounded-xl border border-slate-200 px-5 py-2 text-sm font-bold text-slate-600"
+            >
+              إلغاء
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
