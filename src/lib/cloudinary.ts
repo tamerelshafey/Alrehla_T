@@ -73,7 +73,7 @@ export function optimizedImageUrl(url: string | null | undefined, width = 800): 
   if (!url.includes('res.cloudinary.com') || !url.includes('/upload/')) return url;
   // Don't stack transformations on a URL that already carries some.
   if (/\/upload\/[a-z]{1,3}_/.test(url)) return url;
-  return url.replace('/upload/', `/upload/f_auto,q_auto,c_limit,w_${width}/`);
+  return url.replace('/upload/', `/upload/f_auto,q_auto:good,c_limit,w_${width}/`);
 }
 
 /**
@@ -110,7 +110,9 @@ export function slotImageUrl(
   const slot = SITE_IMAGE_BY_KEY[key];
   if (!slot) return optimizedImageUrl(url);
 
-  const parts = ['f_auto', 'q_auto', 'dpr_auto', `w_${slot.w}`];
+  // q_auto لوحدها بتنزل لجودة منخفضة على الصور اللي فيها تدرّجات
+  // ناعمة، فبتبان مبقّعة. :good بيحط حد أدنى للجودة والفرق في الحجم بسيط.
+  const parts = ['f_auto', 'q_auto:good', 'dpr_auto', `w_${slot.w}`];
   if (slot.fit === 'pad') {
     parts.push('c_pad', 'b_auto');
     if (slot.ar) parts.push(`ar_${slot.ar}`);

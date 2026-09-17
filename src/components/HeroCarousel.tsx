@@ -90,9 +90,13 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
           ) : (
             <div className="h-full w-full bg-gradient-to-br from-slate-700 to-slate-900" />
           )}
-          {/* Gradients to ensure text readability */}
-          <div className="absolute inset-0 bg-gradient-to-l from-black/80 via-black/40 to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+          {/*
+            تدرّج واحد على جهة النص بس.
+            كان فيه **اتنين فوق بعض** (80% من الجنب + 60% من تحت)، فالصورة
+            كلها بتبان مغمّقة كأن عليها فلتر. الغرض الحقيقي هو إن النص
+            الأبيض يبان — والنص على جهة واحدة، فالتدرّج يفضل عليها.
+          */}
+          <div className="absolute inset-0 bg-gradient-to-l from-black/60 via-black/15 to-transparent"></div>
         </div>
       ))}
 

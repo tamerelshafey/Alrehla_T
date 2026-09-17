@@ -157,7 +157,8 @@ export default async function Home() {
             ) : (
               <ImagePlaceholder label="إنها لك" />
             )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+              {/* اتشال تدرّج أسود كان فوق الصورة: النص بتاع الكارت تحتها
+                  مش فوقها، فالتغميق ما كانش بيخدم قراءة أي حاجة. */}
             </div>
             <div className="relative flex flex-1 flex-col p-8">
               <div className="absolute top-0 right-0 -z-0 h-32 w-32 rounded-bl-full bg-violet-50 transition-transform group-hover:scale-110"></div>
@@ -187,7 +188,8 @@ export default async function Home() {
             ) : (
               <ImagePlaceholder label="بداية الرحلة" />
             )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+              {/* اتشال تدرّج أسود كان فوق الصورة: النص بتاع الكارت تحتها
+                  مش فوقها، فالتغميق ما كانش بيخدم قراءة أي حاجة. */}
             </div>
             <div className="relative flex flex-1 flex-col p-8">
               <div className="absolute top-0 right-0 -z-0 h-32 w-32 rounded-bl-full bg-emerald-50 transition-transform group-hover:scale-110"></div>
