@@ -56,6 +56,42 @@ describe('buildSessionSchedule', () => {
     expect(first.getHours()).toBe(18);
   });
 
+  it('اختيار العميل بيغلب أول ميعاد في جدول المدرب', () => {
+    // الجدول أوله الأحد، والعميل اختار الأربعاء. الجلسات لازم تبقى
+    // على اختيار العميل — ده اللي شافه في ملخص الحجز.
+    const schedule: WeeklySlot[] = [
+      { day: 'sunday', time: '09:00' },
+      { day: 'wednesday', time: '19:00' },
+    ];
+    const dates = buildSessionSchedule({
+      count: 3,
+      from: FROM,
+      weeklySchedule: schedule,
+      preferredSlot: { day: 'wednesday', time: '19:00' },
+    });
+    expect(dates).toHaveLength(3);
+    for (const iso of dates) {
+      const d = new Date(iso);
+      expect(d.getDay()).toBe(3);
+      expect(d.getHours()).toBe(19);
+    }
+  });
+
+  it('اختيار بايظ بيترجع لجدول المدرب بدل ما يولّد مواعيد غلط', () => {
+    const schedule: WeeklySlot[] = [{ day: 'monday', time: '17:30' }];
+    const first = new Date(
+      buildSessionSchedule({
+        count: 1,
+        from: FROM,
+        weeklySchedule: schedule,
+        // يوم مش موجود في أيام الأسبوع
+        preferredSlot: { day: 'funday' as never, time: '19:00' },
+      })[0]
+    );
+    expect(first.getDay()).toBe(1);
+    expect(first.getHours()).toBe(17);
+  });
+
   it('جدول فاضي = أسبوعي من أول ميعاد متاح بعد يومين', () => {
     const dates = buildSessionSchedule({ count: 2, from: FROM, weeklySchedule: [] });
     expect(dates).toHaveLength(2);

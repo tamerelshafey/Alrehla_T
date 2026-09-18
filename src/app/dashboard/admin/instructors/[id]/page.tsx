@@ -28,7 +28,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   if (!target) notFound();
   const updateRequests = await getProfileUpdateRequestsByInstructor(target.id);
   const certification = await getInstructorCertification(target.id);
-  const services = await getStandaloneServices();
+  const services = await getStandaloneServices({ includeInactive: true });
   const serviceOffers = await getInstructorServiceOffers(target.id);
   const formula = await getPricingFormulaSettings();
 

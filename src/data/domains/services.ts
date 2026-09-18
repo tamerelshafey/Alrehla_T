@@ -16,11 +16,21 @@ import type {
  * the site. One source of truth, deliberately.
  */
 
-export async function getStandaloneServices(): Promise<CreativeService[]> {
+export async function getStandaloneServices(options?: {
+  /**
+   * شاشات الإدارة بس. الموقع العام والمدرب بيشوفوا المفعّل بس، عشان
+   * خدمة موقوفة ما تتطلبش وما تتعرضش للعميل.
+   */
+  includeInactive?: boolean;
+}): Promise<CreativeService[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from('standalone_services')
-    .select('id, name, price, description, category, price_type, sort_order')
+    .select('id, name, price, description, category, price_type, sort_order, is_active');
+
+  if (!options?.includeInactive) query = query.eq('is_active', true);
+
+  const { data, error } = await query
     .order('sort_order', { ascending: true, nullsFirst: false })
     .order('id', { ascending: true });
 
@@ -34,6 +44,7 @@ export async function getStandaloneServices(): Promise<CreativeService[]> {
     category: row.category ?? undefined,
     priceType: row.price_type === 'starts_from' ? 'starts_from' : 'fixed',
     sortOrder: row.sort_order ?? undefined,
+    isActive: row.is_active,
   }));
 }
 

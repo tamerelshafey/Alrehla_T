@@ -2,13 +2,13 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Pencil, Trash2, X, Check } from 'lucide-react';
+import { Plus, Pencil, Eye, EyeOff, X, Check } from 'lucide-react';
 import { CreativeService } from '@/types';
 import { formatPrice } from '@/lib/utils';
 import {
   createStandaloneService,
   updateStandaloneService,
-  deleteStandaloneService,
+  setStandaloneServiceActive,
   type ServiceInput,
 } from '@/actions/standalone-services';
 
@@ -223,6 +223,12 @@ export function ServicesManagerClient({ services }: Props) {
                       {service.category}
                     </span>
                   )}
+                  {/* الشاشة دي بتعرض الموقوف كمان — لازم يبان من نظرة. */}
+                  {!service.isActive && (
+                    <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">
+                      موقوفة — مش ظاهرة للعملاء
+                    </span>
+                  )}
                 </div>
                 <p className="mt-1 text-sm font-medium text-slate-500">
                   {service.description || '—'}
@@ -247,13 +253,26 @@ export function ServicesManagerClient({ services }: Props) {
                 >
                   <Pencil className="h-4 w-4" /> تعديل
                 </button>
+                {/*
+                  كان زرار «حذف» بيمسح الخدمة نهائيًا — مخالف لقاعدة
+                  «الإيقاف بدل الحذف»، وكان بيترفض أصلًا لو على الخدمة
+                  طلبات أو عروض مدربين، فالإدارة تفضل عالقة معاها.
+                */}
                 <button
                   type="button"
                   disabled={busy}
-                  onClick={() => run(() => deleteStandaloneService(service.id))}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-white px-3 py-2 text-sm font-bold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                  onClick={() => run(() => setStandaloneServiceActive(service.id, !service.isActive))}
+                  className={
+                    service.isActive
+                      ? 'inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm font-bold text-amber-700 transition-colors hover:bg-amber-50 disabled:opacity-50'
+                      : 'inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm font-bold text-emerald-700 transition-colors hover:bg-emerald-50 disabled:opacity-50'
+                  }
                 >
-                  <Trash2 className="h-4 w-4" /> حذف
+                  {service.isActive ? (
+                    <><EyeOff className="h-4 w-4" /> إيقاف</>
+                  ) : (
+                    <><Eye className="h-4 w-4" /> إعادة تفعيل</>
+                  )}
                 </button>
               </div>
             </div>

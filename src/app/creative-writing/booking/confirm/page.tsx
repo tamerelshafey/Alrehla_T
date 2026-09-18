@@ -25,12 +25,22 @@ export const dynamic = 'force-dynamic';
 export default async function BookingConfirmPage({
   searchParams,
 }: {
-  searchParams: Promise<{ package?: string; instructor?: string }>;
+  searchParams: Promise<{
+    package?: string;
+    instructor?: string;
+    day?: string;
+    time?: string;
+  }>;
 }) {
   // الباقة والمدرب بيتقروا من القاعدة هنا، مش في المتصفح. الصفحة كانت
   // بتعرض اسم مدرب ثابت («سارة أحمد») وتاريخ النهاردة ووقت مخترع وسعر
   // 250 مكتوب في الكود — كل ده مالوش علاقة باللي العميل اختاره.
-  const { package: packageId, instructor: instructorId } = await searchParams;
+  const {
+    package: packageId,
+    instructor: instructorId,
+    day: slotDay,
+    time: slotTime,
+  } = await searchParams;
   const [settings, packages, instructors] = await Promise.all([
     getSiteSettings(),
     getWritingPackages(),
@@ -76,6 +86,17 @@ export default async function BookingConfirmPage({
               packagePrice={chosenPackage.price}
               instructorId={chosenInstructor?.id}
               instructorName={chosenInstructor?.displayName}
+              preferredSlot={
+                // بنتأكد إن الميعاد ده موجود فعلًا في جدول المدرب قبل ما
+                // نمرّره. رابط متلاعب فيه ما يقدرش يحجز ميعاد المدرب مش
+                // فاتحه.
+                slotDay && slotTime &&
+                (chosenInstructor?.weeklySchedule ?? []).some(
+                  (s) => s.day === slotDay && s.time === slotTime && !s.isBooked,
+                )
+                  ? { day: slotDay, time: slotTime }
+                  : undefined
+              }
             />
           </Suspense>
         </Card>

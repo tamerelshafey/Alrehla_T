@@ -16,6 +16,7 @@ export function BookingConfirmClient({
   packagePrice,
   instructorId,
   instructorName,
+  preferredSlot,
 }: {
   paymentWalletNumber: string;
   paymentQrUrl?: string;
@@ -24,6 +25,8 @@ export function BookingConfirmClient({
   packagePrice: number;
   instructorId?: string;
   instructorName?: string;
+  /** الموعد الأسبوعي اللي العميل اختاره في المعالج، بعد التأكد إنه في جدول المدرب. */
+  preferredSlot?: { day: string; time: string };
 }) {
   const [participantType, setParticipantType] = useState<'self' | 'child'>('self');
   const [childId, setChildId] = useState<string>('');
@@ -54,6 +57,7 @@ export function BookingConfirmClient({
         instructorId,
         participantType,
         childId: childId || undefined,
+        preferredSlot,
       });
 
       if (!result.ok) {

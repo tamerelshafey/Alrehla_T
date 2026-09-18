@@ -14,7 +14,7 @@ export default async function Page() {
     return <Unauthorized />;
   }
 
-  const services = await getStandaloneServices();
+  const services = await getStandaloneServices({ includeInactive: true });
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">

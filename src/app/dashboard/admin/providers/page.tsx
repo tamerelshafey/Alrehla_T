@@ -24,7 +24,7 @@ export default async function Page() {
 
   const [providers, services, formula, candidates] = await Promise.all([
     getProvidersForAdmin(),
-    getStandaloneServices(),
+    getStandaloneServices({ includeInactive: true }),
     getPricingFormulaSettings(),
     getProviderCandidates(),
   ]);

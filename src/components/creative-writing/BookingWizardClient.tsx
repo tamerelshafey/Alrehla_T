@@ -49,7 +49,19 @@ export function BookingWizardClient({ instructors, packages }: BookingWizardProp
 
   const handleConfirm = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(`/creative-writing/booking/confirm?package=${encodeURIComponent(selectedPackage)}&instructor=${encodeURIComponent(selectedInstructorId)}`);
+    // الموعد اللي العميل اختاره في الخطوة التانية كان بيقف هنا: الرابط
+    // كان بيشيل الباقة والمدرب وبس، فالاختيار يضيع في المتصفح والجلسات
+    // تتولّد بعدين من أول ميعاد فاضي في جدول المدرب. العميل يختار
+    // الثلاثاء ٦م ويتجدول الأحد ٤م.
+    const params = new URLSearchParams({
+      package: selectedPackage,
+      instructor: selectedInstructorId,
+    });
+    if (selectedSlot) {
+      params.set('day', selectedSlot.day);
+      params.set('time', selectedSlot.time);
+    }
+    router.push(`/creative-writing/booking/confirm?${params.toString()}`);
   };
 
   return (

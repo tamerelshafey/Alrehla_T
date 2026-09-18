@@ -331,6 +331,7 @@ export type Database = {
           payment_reference: string | null
           payment_method: string | null
           payment_receipt_url: string | null
+          preferred_slot: Json | null
         }
         Insert: {
           id?: string
@@ -347,6 +348,7 @@ export type Database = {
           payment_reference?: string | null
           payment_method?: string | null
           payment_receipt_url?: string | null
+          preferred_slot?: Json | null
         }
         Update: {
           id?: string
@@ -363,6 +365,7 @@ export type Database = {
           payment_reference?: string | null
           payment_method?: string | null
           payment_receipt_url?: string | null
+          preferred_slot?: Json | null
         }
         Relationships: []
       }
@@ -1485,6 +1488,7 @@ export type Database = {
           category: string | null
           sort_order: number | null
           price_type: string
+          is_active: boolean
         }
         Insert: {
           id?: string
@@ -1494,6 +1498,7 @@ export type Database = {
           category?: string | null
           sort_order?: number | null
           price_type?: string
+          is_active?: boolean
         }
         Update: {
           id?: string
@@ -1503,6 +1508,7 @@ export type Database = {
           category?: string | null
           sort_order?: number | null
           price_type?: string
+          is_active?: boolean
         }
         Relationships: []
       }

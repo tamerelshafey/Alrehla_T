@@ -112,6 +112,8 @@ export type CreativeService = {
   /** 'fixed' = one platform price. 'starts_from' = depends on the instructor. */
   priceType: 'fixed' | 'starts_from';
   sortOrder?: number;
+  /** خدمة موقوفة تختفي من الموقع، وطلباتها القديمة تفضل زي ما هي. */
+  isActive: boolean;
 };
 
 /** One instructor's offer to provide one creative service, at a price. */

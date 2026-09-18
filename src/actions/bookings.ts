@@ -34,6 +34,14 @@ export async function createCourseBooking(params: {
   instructorId?: string;
   participantType: 'self' | 'child';
   childId?: string;
+  /**
+   * الموعد الأسبوعي اللي العميل اختاره في المعالج.
+   *
+   * الدالة اللي في القاعدة (`create_course_booking`) مبتاخدهوش، فبيتكتب
+   * على الصف بعد ما يتعمل. لو الكتابة فشلت مش بنلغي الحجز — الحجز
+   * اتسجّل فعلًا، والإدارة تقدر تظبّط الميعاد من شاشة الحجوزات.
+   */
+  preferredSlot?: { day: string; time: string };
 }): Promise<BookingResult> {
   const supabase = await createClient();
   const {
@@ -54,6 +62,15 @@ export async function createCourseBooking(params: {
   }
 
   const subscriptionId = data as unknown as string;
+
+  if (params.preferredSlot) {
+    const { error: slotError } = await supabase
+      .from('course_subscriptions')
+      .update({ preferred_slot: params.preferredSlot })
+      .eq('id', subscriptionId)
+      .select('id');
+    if (slotError) console.error('Error saving preferred slot', slotError);
+  }
 
   // الرقم المرجعي بيتولّد في القاعدة مع الحجز، والعميل بيكتبه في ملاحظة
   // التحويل.
@@ -145,7 +162,12 @@ export async function submitBookingPaymentProof(
  */
 async function createSessionsForSubscription(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  params: { subscriptionId: string; packageId: string; instructorId: string | null }
+  params: {
+    subscriptionId: string;
+    packageId: string;
+    instructorId: string | null;
+    preferredSlot: WeeklySlot | null;
+  }
 ): Promise<number> {
   const { data: existing } = await supabase
     .from('sessions')
@@ -177,7 +199,14 @@ async function createSessionsForSubscription(
     weeklySchedule = (instructor?.weekly_schedule as WeeklySlot[] | null) ?? null;
   }
 
-  const dates = buildSessionSchedule({ count, weeklySchedule });
+  // الموعد اللي العميل اختاره له الأولوية على أول ميعاد فاضي في جدول
+  // المدرب. من غير ده العميل كان بيتجدول في ميعاد تاني خالص غير اللي
+  // وافق عليه في ملخص الحجز.
+  const dates = buildSessionSchedule({
+    count,
+    weeklySchedule,
+    preferredSlot: params.preferredSlot,
+  });
 
   const { data: inserted, error } = await supabase
     .from('sessions')
@@ -216,7 +245,7 @@ export async function confirmBookingPayment(subscriptionId: string) {
     .from('course_subscriptions')
     .update({ status: 'active', started_at: new Date().toISOString() })
     .eq('id', subscriptionId)
-    .select('id, user_id, child_id, package_id, preferred_instructor_id')
+    .select('id, user_id, child_id, package_id, preferred_instructor_id, preferred_slot')
     .maybeSingle();
 
   if (error || !updated) {
@@ -233,6 +262,7 @@ export async function confirmBookingPayment(subscriptionId: string) {
     subscriptionId: updated.id,
     packageId: updated.package_id,
     instructorId: updated.preferred_instructor_id ?? null,
+    preferredSlot: (updated.preferred_slot as WeeklySlot | null) ?? null,
   });
 
   if (sessionsCreated > 0) {

@@ -106,48 +106,37 @@ export async function updateStandaloneService(id: string, input: ServiceInput) {
 }
 
 /**
- * Removing a service.
+ * إيقاف الخدمة بدل حذفها.
  *
- * A service that has been ordered, or that instructors are offering, is not
- * deleted: removing it would break those records. The admin is told why.
+ * كان هنا `DELETE` حقيقي — مخالف لقاعدة المشروع «لا حذف نهائي من واجهة
+ * الويب». والحذف كان بيتمنع لو عليها طلبات أو عروض مدربين، يعني الإدارة
+ * بتفضل شايفة خدمة قديمة في القايمة ومش قادرة تشيلها ولا توقفها.
+ *
+ * الإيقاف بيخفيها من الموقع ومن قوائم الطلب، وطلباتها القديمة وعروض
+ * المدربين عليها بتفضل زي ما هي — والإدارة تقدر ترجّعها في أي وقت.
  */
-export async function deleteStandaloneService(id: string) {
+export async function setStandaloneServiceActive(id: string, isActive: boolean) {
   const user = await requireCatalogAdmin();
   const supabase = await createClient();
 
-  const { count: orderCount } = await supabase
-    .from('service_orders')
-    .select('id', { count: 'exact', head: true })
-    .eq('standalone_service_id', id);
-
-  if (orderCount && orderCount > 0) {
-    throw new Error(
-      `لا يمكن حذف الخدمة لأن عليها ${orderCount} طلب مسجّل. يمكنك تعديلها بدل حذفها.`
-    );
-  }
-
-  const { count: offerCount } = await supabase
-    .from('instructor_services')
-    .select('id', { count: 'exact', head: true })
-    .eq('service_id', id);
-
-  if (offerCount && offerCount > 0) {
-    throw new Error(
-      `لا يمكن حذف الخدمة لأن ${offerCount} مدرب مسنَدة له. احذف الإسناد أولاً من صفحة المدرب.`
-    );
-  }
-
-  const { error } = await supabase.from('standalone_services').delete().eq('id', id);
+  const { data: saved, error } = await supabase
+    .from('standalone_services')
+    .update({ is_active: isActive })
+    .eq('id', id)
+    .select('id');
 
   if (error) {
-    console.error('Error deleting standalone service', error);
-    throw new Error('تعذّر حذف الخدمة');
+    console.error('Error toggling standalone service', error);
+    throw new Error(isActive ? 'تعذّر إعادة تفعيل الخدمة' : 'تعذّر إيقاف الخدمة');
+  }
+  if (!saved || saved.length === 0) {
+    throw new Error('الخدمة مش موجودة — التغيير مروّحش للقاعدة.');
   }
 
   await logAuditAction({
     actorProfileId: user.id,
     actorName: user.fullName,
-    action: 'standalone_service_deleted',
+    action: isActive ? 'standalone_service_activated' : 'standalone_service_deactivated',
     entityType: 'StandaloneService',
     entityId: id,
   });
