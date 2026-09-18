@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/data/domains/auth';
 import { getSiteSettings } from '@/data/domains/content';
 import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
-import { updateSiteSettings } from '@/actions/content';
+import { SettingsForm } from './SettingsForm';
 import { PaymentQrUploader } from './PaymentQrUploader';
 
 export const dynamic = 'force-dynamic';
@@ -31,7 +31,7 @@ export default async function Page() {
     <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">
       <DashboardPageHeader title="الإعدادات العامة للمنصة" />
 
-      <form action={updateSiteSettings} className="space-y-6">
+      <SettingsForm>
         {/* ---------- الهوية ---------- */}
         <Section
           title="هوية الموقع"
@@ -170,15 +170,7 @@ export default async function Page() {
           </div>
         </Section>
 
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="rounded-xl bg-slate-900 px-8 py-3 font-bold text-white shadow-md transition-colors hover:bg-slate-800"
-          >
-            حفظ الإعدادات
-          </button>
-        </div>
-      </form>
+      </SettingsForm>
     </div>
   );
 }

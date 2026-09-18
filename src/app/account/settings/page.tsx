@@ -4,6 +4,7 @@ import { pageMetadata } from '@/lib/seo';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser } from '@/data/domains/auth';
 import { DeleteAccountClient } from './DeleteAccountClient';
+import { ProfileForm } from './ProfileForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,12 +32,7 @@ export default async function Page() {
     <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
       <h1 className="mb-8 text-2xl font-black text-slate-800">إعدادات الحساب</h1>
 
-      <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-6">
-        <h2 className="mb-1 font-black text-slate-800">{user.fullName}</h2>
-        <p dir="ltr" className="text-right text-sm font-medium text-slate-500">
-          {user.email}
-        </p>
-      </div>
+      <ProfileForm fullName={user.fullName} email={user.email} />
 
       <DeleteAccountClient hasOpenRequest={Boolean(openRequest)} />
     </div>

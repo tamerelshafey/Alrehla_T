@@ -13,8 +13,18 @@ import { CONTENT_DEFAULTS, CONTENT_FIELDS } from '@/lib/site-content';
  * contact email, see it saved, and find it reverted after the next restart.
  * It now updates the single `site_settings` row the footer reads.
  */
-export async function updateSiteSettings(formData: FormData) {
-  const user = await requireAdmin('canManageContent', 'غير مصرح لك بتعديل إعدادات الموقع');
+export type SiteSettingsResult = { ok: true } | { ok: false; error: string };
+
+export async function updateSiteSettings(
+  _prev: SiteSettingsResult | null,
+  formData: FormData,
+): Promise<SiteSettingsResult> {
+  let user;
+  try {
+    user = await requireAdmin('canManageContent', 'غير مصرح لك بتعديل إعدادات الموقع');
+  } catch {
+    return { ok: false, error: 'غير مصرح لك بتعديل إعدادات الموقع' };
+  }
 
   const supabase = await createClient();
 
@@ -67,14 +77,28 @@ export async function updateSiteSettings(formData: FormData) {
     };
   }
 
-  const { error } = await supabase
+  // upsert مش update.
+  //
+  // `update` على صف مش موجود بينجح ومبيغيّرش أي حاجة — صفر صفوف، صفر
+  // أخطاء. فالشاشة كانت بتقفل الفورم كأن كل حاجة تمام، والقيم ترجع زي
+  // ما هي بعد التحديث. لو صف `general` مش موجود في القاعدة، ده بالظبط
+  // اللي كان بيحصل.
+  const { data: saved, error } = await supabase
     .from('site_settings')
-    .update({ value: next as never })
-    .eq('key', 'general');
+    .upsert({ key: 'general', value: next as never }, { onConflict: 'key' })
+    .select('key');
 
   if (error) {
     console.error('Error updating site settings', error);
-    throw new Error('تعذّر حفظ الإعدادات');
+    return { ok: false, error: `تعذّر الحفظ: ${error.message}` };
+  }
+
+  // صفر صفوف من غير خطأ = صلاحيات القاعدة رفضت الكتابة بصمت.
+  if (!saved || saved.length === 0) {
+    return {
+      ok: false,
+      error: 'الحفظ مروّحش للقاعدة — صلاحيات جدول الإعدادات مش سامحة بالكتابة.',
+    };
   }
 
   await logAuditAction({
@@ -90,6 +114,7 @@ export async function updateSiteSettings(formData: FormData) {
   revalidatePath('/enha-lak/checkout');
   revalidatePath('/creative-writing/booking/confirm');
   revalidatePath('/', 'layout');
+  return { ok: true };
 }
 
 /**
@@ -120,14 +145,19 @@ export async function saveSiteImage(params: { key: string; url: string }) {
     next.images = images;
   }
 
-  const { error } = await supabase
+  // نفس سبب الـ upsert فوق: صف مش موجود = حفظ بيعدّي من غير ما يكتب حاجة.
+  const { data: saved, error } = await supabase
     .from('site_settings')
-    .update({ value: next as never })
-    .eq('key', 'general');
+    .upsert({ key: 'general', value: next as never }, { onConflict: 'key' })
+    .select('key');
 
   if (error) {
     console.error('Error saving site image', error);
-    throw new Error('تعذّر حفظ الصورة');
+    throw new Error(`تعذّر حفظ الصورة: ${error.message}`);
+  }
+
+  if (!saved || saved.length === 0) {
+    throw new Error('الحفظ مروّحش للقاعدة — صلاحيات جدول الإعدادات مش سامحة بالكتابة.');
   }
 
   await logAuditAction({
