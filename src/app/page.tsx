@@ -1,9 +1,8 @@
 import React from 'react';
 import { getPublishers } from '@/data/domains/products';
-import { getInstructors } from '@/data/domains/writing';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, Quote } from 'lucide-react';
+import { Star, Quote, BookOpen, PenTool, Search, Wand2, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Section } from '@/components/ui/Section';
@@ -69,8 +68,6 @@ export default async function Home() {
   const testimonials = await getTestimonials();
   const publishers = await getPublishers();
   const activePublishers = publishers.filter((p: any) => p.status === 'active').slice(0, 4);
-  const instructors = await getInstructors();
-  const topInstructors = instructors.filter((i: any) => i.status === 'active').slice(0, 4);
   const siteName = settings.siteName?.trim() || 'الرحلة';
 
   return (
@@ -136,114 +133,61 @@ export default async function Home() {
         </div>
       </Section>
 
-      {/* Pillars Section */}
+      {/* أقسامنا الرئيسية — كروت بنص وأيقونة بلا صور.
+          الصور هنا كانت بتملا فراغ مش بتقول حاجة: عنوان القسم والشرح
+          بيقولوا كل اللي محتاج يتقال. */}
       <Section>
-        <div className="grid gap-8 md:grid-cols-2 lg:gap-12">
+        <div className="mb-10 text-center">
+          <h2 className="mb-3 text-3xl font-black text-slate-800">
+            {content['home.pillars.title']}
+          </h2>
+          <p className="mx-auto max-w-2xl font-medium text-slate-500">
+            {content['home.pillars.text']}
+          </p>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-2">
           <Link
             href="/enha-lak"
-            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 group relative flex flex-col overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white transition-all duration-300 hover:border-violet-300 hover:shadow-2xl hover:shadow-violet-500/10"
+            className="group flex flex-col rounded-[2rem] border border-slate-200 bg-white p-10 transition-all duration-300 hover:-translate-y-1 hover:border-violet-300 hover:shadow-xl hover:shadow-violet-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
           >
-            <div className="relative h-64 w-full overflow-hidden bg-slate-100">
-              {settings.images.homeReading ? (
-              <Image 
-                src={slotImageUrl(settings.images.homeReading, 'homeReading')}
-                alt="إنها لك"
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                placeholder={blurPlaceholder(settings.images.homeReading) ? 'blur' : 'empty'}
-                blurDataURL={blurPlaceholder(settings.images.homeReading)}
-                className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer"
-              />
-            ) : (
-              <ImagePlaceholder label="إنها لك" />
-            )}
-              {/* اتشال تدرّج أسود كان فوق الصورة: النص بتاع الكارت تحتها
-                  مش فوقها، فالتغميق ما كانش بيخدم قراءة أي حاجة. */}
-            </div>
-            <div className="relative flex flex-1 flex-col p-8">
-              <div className="absolute top-0 right-0 -z-0 h-32 w-32 rounded-bl-full bg-violet-50 transition-transform group-hover:scale-110"></div>
-              <h3 className="relative z-10 mb-4 text-2xl font-bold text-violet-700">
-                {content['home.pillar.enhaLak.title']}
-              </h3>
-              <p className="relative z-10 leading-relaxed font-medium text-slate-600">
-                {content['home.pillar.enhaLak.text']}
-              </p>
-            </div>
+            <span className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-violet-600">
+              <BookOpen className="h-7 w-7" />
+            </span>
+            <h3 className="mb-4 text-2xl font-bold text-violet-700">
+              {content['home.pillar.enhaLak.title']}
+            </h3>
+            <p className="flex-1 leading-relaxed font-medium text-slate-600">
+              {content['home.pillar.enhaLak.text']}
+            </p>
+            <span className="mt-6 font-bold text-violet-700 group-hover:underline">
+              ادخل القسم ←
+            </span>
           </Link>
+
           <Link
             href="/creative-writing"
-            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 group relative flex flex-col overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white transition-all duration-300 hover:border-emerald-300 hover:shadow-2xl hover:shadow-emerald-500/10"
+            className="group flex flex-col rounded-[2rem] border border-slate-200 bg-white p-10 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
           >
-            <div className="relative h-64 w-full overflow-hidden bg-slate-100">
-              {settings.images.homeWriting ? (
-              <Image 
-                src={slotImageUrl(settings.images.homeWriting, 'homeWriting')}
-                alt="بداية الرحلة"
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                placeholder={blurPlaceholder(settings.images.homeWriting) ? 'blur' : 'empty'}
-                blurDataURL={blurPlaceholder(settings.images.homeWriting)}
-                className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer"
-              />
-            ) : (
-              <ImagePlaceholder label="بداية الرحلة" />
-            )}
-              {/* اتشال تدرّج أسود كان فوق الصورة: النص بتاع الكارت تحتها
-                  مش فوقها، فالتغميق ما كانش بيخدم قراءة أي حاجة. */}
-            </div>
-            <div className="relative flex flex-1 flex-col p-8">
-              <div className="absolute top-0 right-0 -z-0 h-32 w-32 rounded-bl-full bg-emerald-50 transition-transform group-hover:scale-110"></div>
-              <h3 className="relative z-10 mb-4 text-2xl font-bold text-emerald-600">
-                {content['home.pillar.writing.title']}
-              </h3>
-              <p className="relative z-10 leading-relaxed font-medium text-slate-600">
-                {content['home.pillar.writing.text']}
-              </p>
-            </div>
+            <span className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+              <PenTool className="h-7 w-7" />
+            </span>
+            <h3 className="mb-4 text-2xl font-bold text-emerald-600">
+              {content['home.pillar.writing.title']}
+            </h3>
+            <p className="flex-1 leading-relaxed font-medium text-slate-600">
+              {content['home.pillar.writing.text']}
+            </p>
+            <span className="mt-6 font-bold text-emerald-700 group-hover:underline">
+              ادخل القسم ←
+            </span>
           </Link>
         </div>
       </Section>
 
-      
-      {/* Featured Instructors */}
-      <Section className="bg-slate-50 border-y border-slate-100">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-          <div>
-            <h2 className="text-3xl font-black text-slate-800 mb-2">{content['home.instructors.title']}</h2>
-            <p className="text-slate-500 font-medium max-w-2xl">{content['home.instructors.text']}</p>
-          </div>
-          <Button href="/creative-writing/instructors" variant="secondary" className="w-full md:w-auto">عرض جميع المدربين</Button>
-        </div>
-        
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {topInstructors.length === 0 ? (
-          <div className="col-span-full py-12 text-center text-slate-500 font-medium">قريبًا</div>
-        ) : topInstructors.map((instructor: any) => (
-            // الكارت كان div بتأثير hover: بيبان قابل للضغط وما بيفتحش حاجة.
-            <Link
-              href={`/creative-writing/instructors/${instructor.id}`}
-              key={instructor.id}
-              className="group relative block rounded-3xl border border-slate-200 bg-white p-6 transition-all hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/10"
-            >
-              <div className="flex flex-col items-center text-center">
-                <div className="mb-4 relative h-24 w-24 overflow-hidden rounded-full border-4 border-emerald-50">
-                  <Image 
-                    src={optimizedImageUrl(instructor.avatarUrl, 300) || `https://ui-avatars.com/api/?name=${encodeURIComponent(instructor.displayName)}&background=10b981&color=fff`}
-                    alt={instructor.displayName}
-                    fill sizes="96px" className="object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-                <h3 className="text-lg font-bold text-slate-800 mb-1">{instructor.displayName}</h3>
-                <p className="text-sm font-medium text-slate-500 mb-4 line-clamp-2">{instructor.bio}</p>
-                <div className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full text-sm font-bold">
-                  ★ {instructor.rating}
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </Section>
+      {/* قسم المدربين اتشال من الصفحة الرئيسية: صفحة المدربين نفسها
+          بتعرضهم بتفاصيل أوفى، والرئيسية المفروض تقول الفكرة مش تعرض
+          كل حاجة. */}
 
       {/* Featured Publishers */}
       <Section>
@@ -277,6 +221,35 @@ export default async function Home() {
               <h3 className="text-lg font-bold text-slate-800 mb-2">{publisher.name}</h3>
               <p className="text-sm font-medium text-slate-500 line-clamp-2">{publisher.bio}</p>
             </Link>
+          ))}
+        </div>
+      </Section>
+
+      {/* رحلتنا في 3 خطوات — شرح الفكرة قبل ما نطلب من الزائر أي حاجة. */}
+      <Section containerClassName="max-w-5xl">
+        <h2 className="mb-12 text-center text-3xl font-black text-slate-800">
+          {content['home.steps.title']}
+        </h2>
+        <div className="grid gap-8 md:grid-cols-3">
+          {[
+            { key: 'step1', icon: Search },
+            { key: 'step2', icon: Wand2 },
+            { key: 'step3', icon: Gift },
+          ].map((step, index) => (
+            <div key={step.key} className="text-center">
+              <span className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+                <step.icon className="h-8 w-8" />
+              </span>
+              <div className="mb-2 text-sm font-black text-amber-500">
+                {index + 1}
+              </div>
+              <h3 className="mb-3 text-xl font-bold text-slate-800">
+                {content[`home.${step.key}.title`]}
+              </h3>
+              <p className="leading-relaxed font-medium text-slate-600">
+                {content[`home.${step.key}.text`]}
+              </p>
+            </div>
           ))}
         </div>
       </Section>
