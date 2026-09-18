@@ -1,4 +1,7 @@
 import Link from 'next/link';
+import { DependentRequestButton } from '@/components/services/DependentRequestButton';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getDependentGuardian } from '@/lib/auth-guard';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Award } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
@@ -41,6 +44,11 @@ export default async function ServiceProvidersPage({
   if (!service) notFound();
 
   const providers = await getProvidersForService(serviceId);
+
+  // حساب الطفل التابع بيشوف زرار «اطلب من ولي أمرك» بدل زرار الشراء.
+  const user = await getCurrentUser();
+  const isDependent =
+    user.role !== 'visitor' && Boolean(await getDependentGuardian(user.id));
 
   return (
     <PageContainer>
@@ -108,13 +116,26 @@ export default async function ServiceProvidersPage({
                   </span>
                 </div>
 
-                <Link
-                  href={`/creative-writing/services/${serviceId}/order?provider=${provider.providerId}`}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-8 py-4 font-bold text-white shadow-md transition-colors hover:bg-amber-600"
-                >
-                  اطلب من هذا المقدّم
-                  <ArrowLeft className="h-5 w-5" />
-                </Link>
+                {/*
+                  حساب الطفل ممنوع من الشراء المباشر، فالزرار العادي كان
+                  هيوديه لشاشة بترفضه. بدله بيبعت طلب لولي أمره.
+                */}
+                {isDependent ? (
+                  <DependentRequestButton
+                    kind="service"
+                    serviceId={serviceId}
+                    providerId={provider.providerId}
+                    label="اطلب من ولي أمرك"
+                  />
+                ) : (
+                  <Link
+                    href={`/creative-writing/services/${serviceId}/order?provider=${provider.providerId}`}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-8 py-4 font-bold text-white shadow-md transition-colors hover:bg-amber-600"
+                  >
+                    اطلب من هذا المقدّم
+                    <ArrowLeft className="h-5 w-5" />
+                  </Link>
+                )}
               </div>
             ))}
           </div>

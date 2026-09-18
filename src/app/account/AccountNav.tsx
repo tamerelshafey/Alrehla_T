@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Users, ShoppingBag, Calendar, Package, HelpCircle, Bell, User, Settings, PenTool,
+  Users, ShoppingBag, Calendar, Package, HelpCircle, Bell, User, Settings, PenTool, Inbox,
 } from 'lucide-react';
 
 /**
@@ -50,6 +50,7 @@ const GROUPS: NavGroup[] = [
     items: [
       { href: '/account', label: 'نظرة عامة', Icon: User },
       { href: '/account/family', label: 'أفراد العائلة', Icon: Users },
+      { href: '/account/family/requests', label: 'طلبات الأبناء', Icon: Inbox },
       { href: '/account/settings', label: 'إعدادات الحساب', Icon: Settings },
     ],
   },
@@ -85,8 +86,12 @@ const GROUPS: NavGroup[] = [
 export function AccountNav() {
   const pathname = usePathname() ?? '';
 
-  const isActive = (href: string) =>
-    href === '/account' ? pathname === '/account' : pathname.startsWith(href);
+  const isActive = (href: string) => {
+    if (href === '/account') return pathname === '/account';
+    // `/account/family` ما تفضلش نشطة وإحنا في `/account/family/requests`.
+    if (href === '/account/family') return pathname === '/account/family';
+    return pathname.startsWith(href);
+  };
 
   return (
     <nav className="space-y-1">

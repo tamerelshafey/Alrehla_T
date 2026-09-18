@@ -432,6 +432,68 @@ export type Database = {
         }
         Relationships: []
       }
+      dependent_requests: {
+        Row: {
+          id: string
+          child_profile_id: string
+          guardian_profile_id: string
+          requester_profile_id: string | null
+          kind: string
+          service_id: string | null
+          provider_id: string | null
+          package_id: string | null
+          instructor_id: string | null
+          preferred_slot: Json | null
+          note: string | null
+          status: string
+          guardian_note: string | null
+          decided_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          child_profile_id: string
+          guardian_profile_id: string
+          requester_profile_id?: string | null
+          kind: string
+          service_id?: string | null
+          provider_id?: string | null
+          package_id?: string | null
+          instructor_id?: string | null
+          preferred_slot?: Json | null
+          note?: string | null
+          status?: string
+          guardian_note?: string | null
+          decided_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          child_profile_id?: string
+          guardian_profile_id?: string
+          requester_profile_id?: string | null
+          kind?: string
+          service_id?: string | null
+          provider_id?: string | null
+          package_id?: string | null
+          instructor_id?: string | null
+          preferred_slot?: Json | null
+          note?: string | null
+          status?: string
+          guardian_note?: string | null
+          decided_at?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dependent_requests_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       instructor_certifications: {
         Row: {
           id: string
