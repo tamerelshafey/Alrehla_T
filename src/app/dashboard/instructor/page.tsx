@@ -1,6 +1,5 @@
 import { getCurrentUser } from '@/data/domains/auth';
-import { getSessions } from '@/data/domains/writing';
-import { getParticipantName } from '@/data/domains/account';
+import { getInstructorSessions } from '@/data/domains/writing';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Users, Calendar, Video, Clock, Wallet, User, CalendarDays, Settings, Sparkles } from 'lucide-react';
@@ -16,7 +15,11 @@ export default async function InstructorDashboard() {
     redirect('/dashboard');
   }
 
-  const allBookings = await getSessions();
+  // الاسم بييجي مع الجلسة من دالة القاعدة. `getSessions()` العامة
+  // كانت بتعمل join على `course_subscriptions` والمدرب ممنوع منه، فكل
+  // الجلسات كانت بتاخد `userId = 'unknown'` — ومنها «مشارك غير معروف»
+  // وعدّاد الطلاب اللي كان بيعدّ قيمة واحدة مكررة مش طالب.
+  const allBookings = await getInstructorSessions();
   // الجلسات اللي لسه قدّام: أي حالة ما عدا الملغاة والمنتهية.
   //
   // كان الفلتر على «مؤكدة» بس — والجلسات اللي بتتولّد بعد تأكيد الدفع
@@ -32,20 +35,13 @@ export default async function InstructorDashboard() {
       new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
   );
 
-  // Count unique students
-  const uniqueStudents = new Set(allBookings.map((b) => b?.userId)).size;
+  // عدّ الطلاب المختلفين. كان بيعدّ `userId` اللي بيبقى `'unknown'`
+  // لكل الجلسات لما الاشتراك ما يوصلش — فالرقم كان «1» دايمًا مهما
+  // كان عدد الطلاب الحقيقي.
+  const uniqueStudents = new Set(allBookings.map((b) => b.studentRef)).size;
 
-  // الأسماء الحقيقية بدل جزء من رقم الحساب.
   const names = new Map<string, string>(
-    await Promise.all(
-      upcomingSessions.map(
-        async (s) =>
-          [
-            s.id,
-            `جلسة ${s.sessionNumber} مع ${await getParticipantName(s.childId, s.userId)}`,
-          ] as [string, string]
-      )
-    )
+    upcomingSessions.map((s) => [s.id, `جلسة ${s.sessionNumber} مع ${s.participantName}`]),
   );
 
   return (
@@ -145,7 +141,7 @@ export default async function InstructorDashboard() {
                       تفاصيل الجلسة
                     </Link>
                     <Link 
-                      href={`/dashboard/instructor/students/${(session?.childId || session?.userId || '')}`}
+                      href={`/dashboard/instructor/students/${session.studentRef}`}
                       className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-center text-sm font-bold whitespace-nowrap text-slate-700 transition-colors hover:bg-slate-50"
                     >
                       الملف

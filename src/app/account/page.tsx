@@ -1,6 +1,5 @@
 import Link from 'next/link';
-import { PageContainer } from '@/components/PageContainer';
-import { User, Clock, Star, Bell, Shield, BookOpen, PenTool } from 'lucide-react';
+import { Clock, PenTool } from 'lucide-react';
 import { getCurrentUser } from '@/data/domains/auth';
 import { fetchFamilyMembers } from '@/app/actions/family';
 import { getMyServiceOrders } from '@/data/domains/services';
@@ -29,56 +28,8 @@ export default async function AccountOverviewPage() {
   const recent = serviceOrders.slice(0, 3);
   const firstName = (user.fullName || '').trim().split(/\s+/)[0] || '';
   return (
-    <PageContainer>
-      <div className="mx-auto w-full max-w-7xl pt-12 pb-24">
-        
-        {/* Main Content Layout */}
-        <div className="flex flex-col gap-8 md:flex-row">
-          
-          {/* Sidebar Navigation */}
-          <aside className="w-full md:w-64 shrink-0">
-            <nav className="flex flex-col gap-2 sticky top-24">
-              <Link href="/account" className="flex items-center gap-3 rounded-xl bg-amber-50 text-amber-700 px-4 py-3 font-bold">
-                <User className="h-5 w-5" />
-                <span>نظرة عامة</span>
-              </Link>
-              <Link href="/account/family" className="flex items-center gap-3 rounded-xl hover:bg-slate-50 text-slate-600 px-4 py-3 font-bold transition-colors">
-                <Shield className="h-5 w-5" />
-                <span>عائلتي</span>
-              </Link>
-              <Link href="/account/orders/enha-lak" className="flex items-center gap-3 rounded-xl hover:bg-slate-50 text-slate-600 px-4 py-3 font-bold transition-colors">
-                <BookOpen className="h-5 w-5" />
-                <span>طلبات "إنها لك"</span>
-              </Link>
-              <Link href="/account/orders/creative-writing" className="flex items-center gap-3 rounded-xl hover:bg-slate-50 text-slate-600 px-4 py-3 font-bold transition-colors">
-                <PenTool className="h-5 w-5" />
-                <span>حجوزات بداية الرحلة</span>
-              </Link>
-              <Link href="/account/subscriptions/box" className="flex items-center gap-3 rounded-xl hover:bg-slate-50 text-slate-600 px-4 py-3 font-bold transition-colors">
-                <Star className="h-5 w-5" />
-                <span>اشتراكات الصندوق</span>
-              </Link>
-              <Link href="/account/support" className="flex items-center gap-3 rounded-xl hover:bg-slate-50 text-slate-600 px-4 py-3 font-bold transition-colors">
-                <Bell className="h-5 w-5" />
-                <span>تذاكر الدعم</span>
-              </Link>
-                            <Link href="/account/subscriptions/course" className="flex items-center gap-3 rounded-xl hover:bg-slate-50 text-slate-600 px-4 py-3 font-bold transition-colors">
-                <BookOpen className="h-5 w-5" />
-                <span>باقات بداية الرحلة</span>
-              </Link>
-              <Link href="/account/bookings" className="flex items-center gap-3 rounded-xl hover:bg-slate-50 text-slate-600 px-4 py-3 font-bold transition-colors">
-                <Clock className="h-5 w-5" />
-                <span>المواعيد والجلسات</span>
-              </Link>
-              <Link href="/notifications" className="flex items-center gap-3 rounded-xl hover:bg-slate-50 text-slate-600 px-4 py-3 font-bold transition-colors">
-                <Bell className="h-5 w-5" />
-                <span>الإشعارات</span>
-              </Link>
-            </nav>
-          </aside>
+    <>
 
-          {/* Main Area */}
-          <main className="flex-1 space-y-8">
             {/* Greeting */}
             <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
               <h1 className="mb-2 text-3xl font-black text-slate-800">
@@ -141,9 +92,6 @@ export default async function AccountOverviewPage() {
               )}
             </div>
 
-          </main>
-        </div>
-      </div>
-    </PageContainer>
+    </>
   );
 }

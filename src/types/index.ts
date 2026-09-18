@@ -418,6 +418,27 @@ export interface StudyMaterial {
   packageName: string;
 }
 
+/**
+ * جلسة كما يراها المدرب — بلا أي بيانات دفع.
+ *
+ * بتيجي من دالة `instructor_sessions` في القاعدة، مش من join على
+ * `course_subscriptions` (اللي المدرب ممنوع منه).
+ */
+export interface InstructorSession {
+  id: string;
+  sessionNumber: number;
+  scheduledAt: string;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  meetingUrl?: string;
+  courseSubscriptionId: string;
+  participantName: string;
+  packageName: string;
+  packageId: string;
+  /** معرّف صاحب الحساب — هو اللي روابط ملف الطالب بتستخدمه. */
+  studentRef: string;
+  childId?: string;
+}
+
 export interface InstructorStudent {
   id: string;
   name: string;
@@ -627,4 +648,8 @@ export type SessionWithDetails = Session & {
   participantType: 'self' | 'child';
   childId?: string;
   packageId: string;
+  /** اسم الباقة — الشاشات كانت بتعرض `packageId` الخام («pkg-3») للعميل. */
+  packageName?: string;
+  /** الرقم المرجعي للحجز (ALR-000012-R3) — هو «رقم الحجز» عند العميل، لا معرّف الجلسة. */
+  paymentReference?: string;
 };

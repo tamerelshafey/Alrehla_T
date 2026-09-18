@@ -1790,6 +1790,35 @@ export type Database = {
         }
         Returns: string
       }
+      instructor_sessions: {
+        Args: Record<string, never>
+        Returns: {
+          session_id: string
+          session_number: number
+          scheduled_at: string
+          status: string
+          meeting_url: string | null
+          subscription_id: string
+          participant_name: string
+          package_name: string
+          package_id: string
+          user_ref: string
+          child_ref: string | null
+        }[]
+      }
+      instructor_students: {
+        Args: Record<string, never>
+        Returns: {
+          subscription_id: string
+          user_ref: string
+          child_ref: string | null
+          participant_name: string
+          package_name: string
+          sessions_total: number
+          sessions_completed: number
+          subscription_status: string
+        }[]
+      }
     }
     Enums: {
       age_group: "under_12" | "12_plus"

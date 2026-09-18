@@ -3,7 +3,7 @@ import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
-import { getInstructorStudents, getSessions, getStudentDocuments } from '@/data/domains/writing';
+import { getInstructorStudents, getInstructorSessions, getStudentDocuments } from '@/data/domains/writing';
 import { User, Calendar, FileText } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
 
@@ -19,8 +19,8 @@ export default async function StudentDetailsPage({ params }: { params: Promise<{
   const student = students.find(s => s.id === studentId);
   if (!student) notFound();
 
-  const allSessions = await getSessions();
-  const studentSessions = allSessions.filter((s) => s.userId === studentId);
+  const allSessions = await getInstructorSessions();
+  const studentSessions = allSessions.filter((s) => s.studentRef === studentId);
 
   const sessions = studentSessions.map((s) => ({
     sessionNumber: `الجلسة ${s.sessionNumber}`,

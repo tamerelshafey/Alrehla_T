@@ -7,7 +7,7 @@ import {
   SupportTicketMessage, FamilyMember, NotificationItem, UserRole,
   PublisherOrder,
   InstructorPricingOption, PricingFormulaSettings, InstructorCompensationProfile, InstructorCertification,
-  BookedSlot, DayOfWeek
+  BookedSlot, DayOfWeek, InstructorSession
 } from '@/types';
 import { cookies } from 'next/headers';
 import { createPublicClient } from '@/lib/supabase/public';
@@ -214,109 +214,98 @@ export const getStudyMaterials = async (): Promise<StudyMaterial[]> => {
  * ملاحظة: لو المشارك طفل، النصوص مربوطة بحساب ولي الأمر — فالرقم
  * المستخدم هو رقم الحساب، والاسم المعروض هو اسم المشارك.
  */
+/**
+ * طلاب المدرب.
+ *
+ * ── ليه بقت دالة في القاعدة ─────────────────────────────────
+ *
+ * كانت بتقرا `course_subscriptions` مباشرةً — وصلاحيات القاعدة **مش
+ * سامحة للمدرب** بقراءة الجدول ده (سياستين بس: الإدارة، وصاحب
+ * الحساب). فالاستعلام كان بيرجع فاضي دايمًا والقايمة تفضل فاضية،
+ * مهما كان عنده طلاب.
+ *
+ * والحل مش سياسة قراءة: الصلاحيات بتحمي الصفوف لا الأعمدة، فالسياسة
+ * كانت هتدّي المدرب الصف كله — وفيه صورة إيصال التحويل البنكي لولي
+ * الأمر والمبلغ. الدالة بترجّع الاسم والباقة والتقدم وبس.
+ */
 export const getInstructorStudents = async (): Promise<InstructorStudent[]> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return [];
+  const { data, error } = await supabase.rpc('instructor_students');
 
-  const { data: instructor } = await supabase
-    .from('instructors')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle();
-  if (!instructor) return [];
-
-  // ── ليه التعريف اتغيّر ──────────────────────────────────────
-  //
-  // القايمة كانت بتتبني من **جدول الجلسات وحده**: بنجيب جلسات المدرب،
-  // ومنها نوصل للاشتراكات. يعني أي متدرب:
-  //   • اشتراكه اتأكد قبل ما توليد الجلسات يتضاف للمشروع، أو
-  //   • جلساته اتعملت بلا مدرب (العميل ما اختارش واحد في المعالج)، أو
-  //   • اتعيّنله مدرب على الاشتراك من غير ما الجلسات تتولّد
-  // كان **مش بيظهر خالص** — والقايمة تفضل فاضية والمدرب عنده متدربين
-  // فعلًا.
-  //
-  // «متدرب المدرب» = اشتراك مربوط بيه. الجلسات مصدر «التقدم» بس، مش
-  // مصدر وجود المتدرب من أصله.
-  const [{ data: byPreference }, { data: mySessions }] = await Promise.all([
-    supabase
-      .from('course_subscriptions')
-      .select('id, user_id, child_id, package_id')
-      .eq('preferred_instructor_id', instructor.id),
-    supabase
-      .from('sessions')
-      .select('id, status, course_subscription_id')
-      .eq('instructor_id', instructor.id),
-  ]);
-
-  // اشتراك جلساته مسنَدة للمدرب من غير ما يكون هو «المدرب المفضّل»
-  // (الإدارة عيّنته على الجلسات) — ده متدربه برضه.
-  const known = new Set((byPreference ?? []).map((s) => s.id));
-  const extraIds = [
-    ...new Set(
-      (mySessions ?? [])
-        .map((s) => s.course_subscription_id)
-        .filter((id): id is string => Boolean(id) && !known.has(id)),
-    ),
-  ];
-
-  let extra: typeof byPreference = [];
-  if (extraIds.length > 0) {
-    const { data } = await supabase
-      .from('course_subscriptions')
-      .select('id, user_id, child_id, package_id')
-      .in('id', extraIds);
-    extra = data ?? [];
+  if (error || !data) {
+    if (error) console.error('Error loading instructor students', error);
+    return [];
   }
 
-  const subscriptions = [...(byPreference ?? []), ...(extra ?? [])];
-  if (subscriptions.length === 0) return [];
-
-  const packageIds = [...new Set(subscriptions.map((sub) => sub.package_id).filter(Boolean))];
-  const { data: packages } = await supabase
-    .from('creative_writing_packages')
-    .select('id, name, sessions_count')
-    .in('id', packageIds);
-
-  const packageById = new Map((packages ?? []).map((p) => [p.id, p]));
-
-  const rows: InstructorStudent[] = [];
-  for (const sub of subscriptions) {
-    const mine = (mySessions ?? []).filter((s) => s.course_subscription_id === sub.id);
-    const pkg = packageById.get(sub.package_id);
-    rows.push({
-      id: String(sub.user_id),
-      name: await getParticipantName(sub.child_id ?? undefined, String(sub.user_id)),
-      packageName: pkg?.name ?? 'باقة محذوفة',
-      sessionsCompleted: mine.filter((s) => s.status === 'completed').length,
-      // عدد جلسات الباقة هو المرجع. لو الجلسات لسه ماتولّدتش، التقدم
-      // بيبقى «0 / 8» بدل ما المتدرب يختفي.
-      totalSessions: pkg?.sessions_count ?? mine.length,
-    });
-  }
-
-  return rows;
+  return data.map((row) => ({
+    // المعرّف ده هو اللي روابط «الملف» بتستخدمه، فلازم يبقى نفسه في
+    // اللوحة الرئيسية وفي القايمة — كانوا مختلفين قبل كده.
+    id: row.user_ref,
+    name: row.participant_name,
+    packageName: row.package_name,
+    sessionsCompleted: row.sessions_completed,
+    totalSessions: row.sessions_total,
+  }));
 };
 
+type InstructorStudentRow = {
+  subscription_id: string;
+  user_ref: string;
+  child_ref: string | null;
+  participant_name: string;
+  package_name: string;
+  sessions_total: number;
+  sessions_completed: number;
+  subscription_status: string;
+};
+
+type InstructorSessionRow = {
+  session_id: string;
+  session_number: number;
+  scheduled_at: string;
+  status: string;
+  meeting_url: string | null;
+  subscription_id: string;
+  participant_name: string;
+  package_name: string;
+  package_id: string;
+  user_ref: string;
+  child_ref: string | null;
+};
 
 /**
- * المواعيد المحجوزة فعلًا لكل مدرب.
+ * جلسات المدرب، ومعاها اسم المشارك واسم الباقة.
  *
- * ليه موجودة: `WeeklySlot.isBooked` **مفيش حاجة في المشروع بتكتبه** —
- * ولا سطر. فمعالج الحجز كان بيعرض كل مواعيد المدرب لكل عميل إلى الأبد،
- * وعميلين يقدروا يحجزوا نفس المدرب في نفس الساعة من نفس اليوم.
- *
- * الحساب من الواقع لا من علامة يدوية: أي **جلسة قادمة** للمدرب بتشغّل
- * ميعادها، والميعاد بيفضى بعد آخر جلسة فيه. يعني باقة ماشية شهرين
- * بتقفل ميعادها شهرين — وده اللي كان مطلوب.
- *
- * اليوم والساعة بيتقروا بتوقيت القاهرة — نفس الأساس اللي جدول المدرب
- * مكتوب بيه واللي `buildSessionSchedule` بيولّد بيه. قراءتها بتوقيت
- * الخادم (UTC على Vercel) كانت هتخلي ميعاد «18:00» في الجدول ما
- * يقابلش الجلسة المسجّلة له.
+ * `getSessions()` العامة بتعمل join على `course_subscriptions`، والـjoin
+ * ده **بيرجع فاضي للمدرب** لأن صلاحيات القاعدة مانعاه من الجدول. فكل
+ * جلساته كانت بتاخد `userId = 'unknown'`، ومنها «مشارك غير معروف»
+ * و«الطالب #»، وعدّاد «الطلاب الحاليين: 1» اللي كان بيعدّ قيمة
+ * `'unknown'` واحدة مش طالب.
  */
+export async function getInstructorSessions(): Promise<InstructorSession[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc('instructor_sessions');
+
+  if (error || !data) {
+    if (error) console.error('Error loading instructor sessions', error);
+    return [];
+  }
+
+  return data.map((row) => ({
+    id: row.session_id,
+    sessionNumber: row.session_number,
+    scheduledAt: row.scheduled_at,
+    status: row.status as InstructorSession['status'],
+    meetingUrl: row.meeting_url ?? undefined,
+    courseSubscriptionId: row.subscription_id,
+    participantName: row.participant_name,
+    packageName: row.package_name,
+    packageId: row.package_id,
+    studentRef: row.user_ref,
+    childId: row.child_ref ?? undefined,
+  }));
+}
+
 export async function getBookedSlotsByInstructor(
   instructorIds: string[],
 ): Promise<Record<string, BookedSlot[]>> {
@@ -515,11 +504,20 @@ export async function getProfileUpdateRequestsByInstructor(
 
 export const getSessions = async (): Promise<SessionWithDetails[]> => {
   const supabase = await createClient();
-  const { data, error } = await supabase.from('sessions')
-    .select('*, course_subscriptions(*)')
+  // اسم الباقة والرقم المرجعي بيتجابوا مع الجلسة.
+  //
+  // شاشة «المواعيد والجلسات» عند العميل كانت بتعرض `package_id` الخام
+  // («pkg-3») تحت عنوان «الباقة»، ورقم الجلسة الداخلي (UUID) تحت عنوان
+  // «رقم الحجز» — وهو مش رقم الحجز أصلًا. العميل بيشوف تلات أعمدة
+  // مالهاش أي معنى عنده.
+  const { data, error } = await supabase
+    .from('sessions')
+    .select(
+      '*, course_subscriptions(*, creative_writing_packages(name))'
+    )
     .order('scheduled_at', { ascending: true });
 
-  if ((error || !data || data.length === 0)) {
+  if (error || !data || data.length === 0) {
     return [];
   }
 
@@ -540,6 +538,8 @@ export const getSessions = async (): Promise<SessionWithDetails[]> => {
       participantType: sub?.participant_type || 'self',
       childId: sub?.child_id || undefined,
       packageId: sub?.package_id || 'unknown',
+      packageName: sub?.creative_writing_packages?.name || undefined,
+      paymentReference: sub?.payment_reference || undefined,
     };
   });
 };

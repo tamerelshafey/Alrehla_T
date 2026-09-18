@@ -1,8 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SessionsList, SessionRow } from '@/components/dashboard/SessionsList';
-import { getSessions, getWritingPackages } from '@/data/domains/writing';
-import { getParticipantName } from '@/data/domains/account';
+import { getInstructorSessions } from '@/data/domains/writing';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,24 +13,20 @@ export const dynamic = 'force-dynamic';
  * جدوله كله.
  */
 export default async function Page() {
-  const [sessions, packages] = await Promise.all([getSessions(), getWritingPackages()]);
-  const packageById = new Map(packages.map((p) => [p.id, p.name]));
+  // الاسم والباقة بييجوا مع الجلسة من دالة القاعدة. `getSessions()`
+  // العامة كانت بتعمل join على `course_subscriptions` — والمدرب ممنوع
+  // من الجدول ده، فالاسم كان بيطلع «مشارك غير معروف» دايمًا.
+  const sessions = await getInstructorSessions();
 
-  const rows: SessionRow[] = await Promise.all(
-    sessions.map(async (session) => ({
-      id: session.id,
-      href: `/dashboard/instructor/sessions/${session.id}`,
-      // الاسم الحقيقي — الصفحة الرئيسية كانت بتعرض جزء من رقم الحساب.
-      title: `جلسة ${session.sessionNumber} مع ${await getParticipantName(
-        session.childId,
-        session.userId
-      )}`,
-      subtitle: packageById.get(session.packageId),
-      scheduledAt: session.scheduledAt,
-      status: session.status,
-      meetingUrl: session.meetingUrl,
-    }))
-  );
+  const rows: SessionRow[] = sessions.map((session) => ({
+    id: session.id,
+    href: `/dashboard/instructor/sessions/${session.id}`,
+    title: `جلسة ${session.sessionNumber} مع ${session.participantName}`,
+    subtitle: session.packageName,
+    scheduledAt: session.scheduledAt,
+    status: session.status,
+    meetingUrl: session.meetingUrl,
+  }));
 
   const upcoming = rows.filter((r) => new Date(r.scheduledAt).getTime() >= Date.now());
   const past = rows

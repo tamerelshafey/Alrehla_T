@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { SessionWithDetails } from '@/types';
+import { InstructorSession } from '@/types';
 import { Video, Clock, User, CheckCircle2, AlertCircle, FileText, Send } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -8,7 +8,7 @@ import { saveSessionReport } from '@/actions/sessions';
 import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 interface Props {
-  session: SessionWithDetails;
+  session: InstructorSession;
 }
 
 export function InstructorSessionClient({ session }: Props) {
@@ -38,7 +38,9 @@ export function InstructorSessionClient({ session }: Props) {
     }
   };
 
-  const studentId = session.childId || session.userId;
+  // كان الاسم بيتعرض كـ«الطالب #» + جزء من رقم الحساب المقطوع على
+  // الشرطة. الاسم الحقيقي بييجي مع الجلسة دلوقتي.
+  const studentId = session.studentRef;
 
   return (
     <div className="space-y-8">
@@ -59,7 +61,7 @@ export function InstructorSessionClient({ session }: Props) {
                 })}
               </span>
               <span>•</span>
-              <span className="flex items-center gap-1"><User className="h-4 w-4" /> مع الطالب #{studentId?.split('-')[1]}</span>
+              <span className="flex items-center gap-1"><User className="h-4 w-4" /> مع {session.participantName}</span>
             </div>
           </div>
         </div>
@@ -106,7 +108,7 @@ export function InstructorSessionClient({ session }: Props) {
             <div className="flex items-center gap-4 mb-4">
               <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500">ط</div>
               <div>
-                <Link href={`/dashboard/instructor/students/${studentId}`} className="font-bold text-blue-600 hover:underline">الطالب #{studentId?.split('-')[1]}</Link>
+                <Link href={`/dashboard/instructor/students/${studentId}`} className="font-bold text-blue-600 hover:underline">{session.participantName}</Link>
                 <p className="text-xs text-slate-500">باقة شغف الكتابة (الشهر الثاني)</p>
               </div>
             </div>

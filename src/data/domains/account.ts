@@ -94,23 +94,54 @@ export async function getMessagesForTicket(ticketId: string): Promise<SupportTic
   }));
 }
 
-export const getParticipantName = async (dependentId?: string, independentId?: string): Promise<string> => {
+/**
+ * اسم المشارك في الحجز.
+ *
+ * ── ترتيب البحث اتعكس ───────────────────────────────────────
+ *
+ * كانت بتبص على صاحب الحساب **الأول**. ولأن `user_id` موجود في كل
+ * اشتراك (هو صاحب الحساب اللي دفع)، فحجز لابن أو بنت كان بيرجع **اسم
+ * ولي الأمر** بدل اسم المتدرب. المدرب يشوف اسم الأب في قايمة طلابه.
+ *
+ * دلوقتي: لو فيه `dependentId` يبقى المشارك هو الطفل — بنبص عليه
+ * الأول. وصاحب الحساب بديل، مش أولوية.
+ *
+ * ── ورسالة أوضح لما مفيش اسم ────────────────────────────────
+ *
+ * «مشارك غير معروف» كانت بتخفي السبب. لما الاسم ما يرجعش، السبب
+ * غالبًا إن صلاحيات القاعدة مانعة القارئ من الجدول — مش إن الاسم
+ * مش موجود. الرسالة بقت بتفرّق بين الحالتين.
+ */
+export const getParticipantName = async (
+  dependentId?: string,
+  independentId?: string,
+): Promise<string> => {
   const supabase = await createClient();
 
-  if (independentId) {
-    const { data } = await supabase.from('user_profiles')
-      .select('full_name')
-      .eq('id', independentId)
-      .single();
-    if (data?.full_name) return data.full_name;
-  }
-  
+  // 1) الطفل أولًا: وجوده معناه إن الحجز ليه هو، مش لصاحب الحساب.
   if (dependentId) {
-    const { data } = await supabase.from('child_profiles')
+    const { data } = await supabase
+      .from('child_profiles')
       .select('full_name')
       .eq('id', dependentId)
-      .single();
+      .maybeSingle();
     if (data?.full_name) return data.full_name;
+  }
+
+  // 2) صاحب الحساب — لما الحجز لنفسه.
+  if (independentId && independentId !== 'unknown') {
+    const { data } = await supabase
+      .from('user_profiles')
+      .select('full_name')
+      .eq('id', independentId)
+      .maybeSingle();
+    if (data?.full_name) return data.full_name;
+  }
+
+  // مفيش معرّف أصلًا = الاشتراك نفسه ما وصلش (صلاحيات القاعدة)، مش إن
+  // الاسم ناقص. التفرقة دي بتوفّر ساعة تشخيص.
+  if (!dependentId && (!independentId || independentId === 'unknown')) {
+    return 'بيانات المشارك غير متاحة';
   }
 
   return 'مشارك غير معروف';

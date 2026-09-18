@@ -1,5 +1,5 @@
 import { getCurrentUser } from '@/data/domains/auth';
-import { getSessions } from '@/data/domains/writing';
+import { getInstructorSessions } from '@/data/domains/writing';
 import { notFound, redirect } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { InstructorSessionClient } from './InstructorSessionClient';
@@ -15,14 +15,14 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   // رقم الجلسة في الرابط كان بيتقرا وما بيتستخدمش: الصفحة كانت بتعرض
   // **أول جلسة في القايمة** مهما كان الرابط، بتعليق «mock first booking».
-  const sessions = await getSessions();
+  const sessions = await getInstructorSessions();
   const session = sessions.find((s) => s.id === id);
   if (!session) notFound();
 
   return (
     <div className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">
       <DashboardPageHeader 
-        title={`جلسة مسار شغف الكتابة`} 
+        title={`جلسة ${session.sessionNumber} — ${session.packageName}`}
         backHref="/dashboard/instructor"
       />
       <InstructorSessionClient session={session} />
