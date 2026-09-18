@@ -534,6 +534,7 @@ export type AdminCourseBooking = {
   paymentReference: string | null;
   paymentMethod: string | null;
   paymentReceiptUrl: string | null;
+  preferredInstructorId: string | null;
   preferredInstructorName: string | null;
   createdAt: string;
   startedAt: string | null;
@@ -587,6 +588,7 @@ export async function getCourseBookingsForAdmin(): Promise<AdminCourseBooking[]>
       paymentReference: row.payment_reference ?? null,
       paymentMethod: row.payment_method ?? null,
       paymentReceiptUrl: row.payment_receipt_url ?? null,
+      preferredInstructorId: row.preferred_instructor_id ?? null,
       preferredInstructorName: row.preferred_instructor_id
         ? (instructorName.get(row.preferred_instructor_id) ?? null)
         : null,

@@ -3,11 +3,12 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getCurrentUser } from '@/data/domains/auth';
-import { getCourseBookingsForAdmin } from '@/data/domains/writing';
+import { getCourseBookingsForAdmin, getInstructors } from '@/data/domains/writing';
 import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { PaymentReviewPanel } from '@/components/admin/PaymentReviewPanel';
 import { confirmBookingPayment } from '@/actions/bookings';
+import { AssignInstructor } from './AssignInstructor';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +34,10 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   }
 
   const { id } = await params;
-  const bookings = await getCourseBookingsForAdmin();
+  const [bookings, instructors] = await Promise.all([
+    getCourseBookingsForAdmin(),
+    getInstructors(),
+  ]);
   const target = bookings.find((b) => b.id === id);
   if (!target) notFound();
 
@@ -89,6 +93,14 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             </div>
           </div>
         </div>
+
+        <AssignInstructor
+          subscriptionId={target.id}
+          currentId={target.preferredInstructorId}
+          instructors={instructors
+            .filter((i) => i.status === 'active')
+            .map((i) => ({ id: i.id, name: i.displayName }))}
+        />
 
         {target.status === 'awaiting_verification' && (
           <form action={confirmPaymentAction} className="mb-6">

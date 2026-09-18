@@ -16,7 +16,14 @@ export default async function InstructorDashboard() {
   }
 
   const allBookings = await getSessions();
-  const confirmedBookings = allBookings.filter((b) => b.status === 'confirmed');
+  // الجلسات اللي لسه قدّام: أي حالة ما عدا الملغاة والمنتهية.
+  //
+  // كان الفلتر على «مؤكدة» بس — والجلسات اللي بتتولّد بعد تأكيد الدفع
+  // بتبقى «بانتظار التأكيد» لأن ميعادها اتحسب مش اتفق عليه، فكانت
+  // هتختفي من اللوحة بالكامل.
+  const confirmedBookings = allBookings.filter(
+    (b) => b.status !== 'cancelled' && b.status !== 'completed'
+  );
 
   // Sort by date closest first
   const upcomingSessions = [...confirmedBookings].sort(

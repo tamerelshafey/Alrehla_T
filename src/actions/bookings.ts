@@ -4,7 +4,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { logAuditAction } from '@/lib/audit';
-import { notifyAdmins } from '@/lib/notifications';
+import { notifyAdmins, notifyUser } from '@/lib/notifications';
+import { buildSessionSchedule } from '@/lib/session-schedule';
+import type { WeeklySlot } from '@/types';
 import { hasAdminPermission } from '@/lib/utils';
 import { getCurrentUser } from '@/data/domains/auth';
 
@@ -117,9 +119,81 @@ export async function submitBookingPaymentProof(
 
   revalidatePath('/creative-writing/booking/confirm');
   revalidatePath('/account/orders/creative-writing');
+  revalidatePath('/account/subscriptions/course');
   revalidatePath('/dashboard/admin/bookings');
-  
+  revalidatePath('/dashboard/instructor/sessions');
+  revalidatePath('/dashboard/student/sessions');
+
   return { success: true };
+}
+
+/**
+ * جلسات الاشتراك.
+ *
+ * العدد من الباقة، والمواعيد من جدول المدرب الأسبوعي — جلسة كل أسبوع.
+ * الحالة `pending` عن قصد: الميعاد **اتحسب** مش اتفق عليه، والإدارة
+ * بتثبّته من شاشة الحجوزات.
+ *
+ * بترجع صفر لو الاشتراك عنده جلسات خلاص — تأكيد مرتين ما ينفعش يعمل
+ * الجلسات مرتين.
+ */
+async function createSessionsForSubscription(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  params: { subscriptionId: string; packageId: string; instructorId: string | null }
+): Promise<number> {
+  const { data: existing } = await supabase
+    .from('sessions')
+    .select('id')
+    .eq('course_subscription_id', params.subscriptionId)
+    .limit(1);
+
+  if (existing && existing.length > 0) return 0;
+
+  const { data: pkg } = await supabase
+    .from('creative_writing_packages')
+    .select('sessions_count')
+    .eq('id', params.packageId)
+    .maybeSingle();
+
+  const count = pkg?.sessions_count ?? 0;
+  if (count <= 0) {
+    console.error('Package has no sessions_count', params.packageId);
+    return 0;
+  }
+
+  let weeklySchedule: WeeklySlot[] | null = null;
+  if (params.instructorId) {
+    const { data: instructor } = await supabase
+      .from('instructors')
+      .select('weekly_schedule')
+      .eq('id', params.instructorId)
+      .maybeSingle();
+    weeklySchedule = (instructor?.weekly_schedule as WeeklySlot[] | null) ?? null;
+  }
+
+  const dates = buildSessionSchedule({ count, weeklySchedule });
+
+  const { data: inserted, error } = await supabase
+    .from('sessions')
+    .insert(
+      dates.map((scheduledAt, index) => ({
+        course_subscription_id: params.subscriptionId,
+        instructor_id: params.instructorId,
+        session_number: index + 1,
+        scheduled_at: scheduledAt,
+        status: 'pending',
+      }))
+    )
+    .select('id');
+
+  if (error) {
+    // الفشل هنا مش بيلغي تأكيد الدفع — الفلوس وصلت فعلًا. بيتسجّل عشان
+    // تعرف إن الاشتراك محتاج جدولة بالإيد.
+    console.error('Error creating sessions for subscription', error);
+    return 0;
+  }
+
+  return inserted?.length ?? 0;
 }
 
 export async function confirmBookingPayment(subscriptionId: string) {
@@ -131,15 +205,38 @@ export async function confirmBookingPayment(subscriptionId: string) {
   }
 
   const supabase = await createClient();
-  
-  const { error } = await supabase
+
+  const { data: updated, error } = await supabase
     .from('course_subscriptions')
     .update({ status: 'active', started_at: new Date().toISOString() })
-    .eq('id', subscriptionId);
+    .eq('id', subscriptionId)
+    .select('id, user_id, child_id, package_id, preferred_instructor_id')
+    .maybeSingle();
 
-  if (error) {
+  if (error || !updated) {
     console.error('Error confirming payment:', error);
-    return { success: false };
+    return { success: false, error: error?.message ?? 'الاشتراك مش موجود' };
+  }
+
+  // ---------- توليد الجلسات ----------
+  //
+  // ده الجزء اللي كان ناقص. التأكيد كان بيحوّل الاشتراك لـ«نشط» وخلاص،
+  // ومفيش ولا جلسة بتتعمل — ولوحة الطالب ولوحة المدرب الاتنين بيقروا من
+  // جدول الجلسات، فالاتنين كانوا بيفضلوا فاضيين بعد كل عملية شراء.
+  const sessionsCreated = await createSessionsForSubscription(supabase, {
+    subscriptionId: updated.id,
+    packageId: updated.package_id,
+    instructorId: updated.preferred_instructor_id ?? null,
+  });
+
+  if (sessionsCreated > 0) {
+    await notifyUser({
+      event: 'session_update',
+      recipientProfileId: updated.user_id,
+      title: 'اتأكد دفعك — جلساتك جاهزة',
+      message: `اتعمل ${sessionsCreated} جلسة بمواعيد مبدئية. هنتواصل معاك لتثبيتها.`,
+      link: '/account/subscriptions/course',
+    });
   }
 
   await logAuditAction({
@@ -148,12 +245,93 @@ export async function confirmBookingPayment(subscriptionId: string) {
     action: 'booking_payment_confirmed',
     entityType: 'CourseSubscription',
     entityId: subscriptionId,
-    metadata: { subscriptionId }
+    metadata: { subscriptionId, sessionsCreated }
   });
 
   revalidatePath('/creative-writing/booking/confirm');
   revalidatePath('/account/orders/creative-writing');
+  revalidatePath('/account/subscriptions/course');
   revalidatePath('/dashboard/admin/bookings');
-  
-  return { success: true };
+  revalidatePath('/dashboard/instructor/sessions');
+  revalidatePath('/dashboard/student/sessions');
+
+  return { success: true, sessionsCreated };
+}
+
+
+/**
+ * تعيين مدرب لاشتراك وجلساته.
+ *
+ * محتاجة ليه: لو العميل ما اختارش مدرب في المعالج، الجلسات بتتعمل بلا
+ * مدرب — ولوحة المدرب بتقرا الجلسات المربوطة بيه، فمحدش بيشوف الحجز.
+ * وما كانش فيه أي طريقة في اللوحة تربط مدرب بعد كده.
+ *
+ * بتعدّل الاشتراك وجلساته مع بعض: تعيين على الاشتراك لوحده مش بيوصّل
+ * الحجز للمدرب.
+ */
+export async function assignBookingInstructor(params: {
+  subscriptionId: string;
+  instructorId: string;
+}): Promise<{ ok: true; sessions: number } | { ok: false; error: string }> {
+  const user = await getCurrentUser();
+  if (!hasAdminPermission(user, 'canManageBookings')) {
+    return { ok: false, error: 'غير مصرح لك بتعديل الحجوزات' };
+  }
+
+  const supabase = await createClient();
+
+  const { data: instructor } = await supabase
+    .from('instructors')
+    .select('id, display_name, user_id, status')
+    .eq('id', params.instructorId)
+    .maybeSingle();
+
+  if (!instructor) return { ok: false, error: 'المدرب مش موجود' };
+  if (instructor.status !== 'active') {
+    return { ok: false, error: 'المدرب مش مفعّل' };
+  }
+
+  const { error: subError } = await supabase
+    .from('course_subscriptions')
+    .update({ preferred_instructor_id: params.instructorId })
+    .eq('id', params.subscriptionId);
+
+  if (subError) {
+    console.error('Error assigning instructor to subscription', subError);
+    return { ok: false, error: `تعذّر التعيين: ${subError.message}` };
+  }
+
+  // الجلسات اللي لسه ما تمّتش بس — الجلسة اللي خلصت بتفضل منسوبة لمدربها.
+  const { data: sessions, error: sessionsError } = await supabase
+    .from('sessions')
+    .update({ instructor_id: params.instructorId })
+    .eq('course_subscription_id', params.subscriptionId)
+    .neq('status', 'completed')
+    .select('id');
+
+  if (sessionsError) {
+    console.error('Error assigning instructor to sessions', sessionsError);
+    return { ok: false, error: `الاشتراك اتعدّل بس الجلسات لأ: ${sessionsError.message}` };
+  }
+
+  await notifyUser({
+    event: 'session_update',
+    recipientProfileId: instructor.user_id,
+    title: 'اتربطت بحجز جديد',
+    message: `اتعيّنت مدرب على ${sessions?.length ?? 0} جلسة.`,
+    link: '/dashboard/instructor/sessions',
+  });
+
+  await logAuditAction({
+    actorProfileId: user.id,
+    actorName: user.fullName || 'Admin',
+    action: 'booking_instructor_assigned',
+    entityType: 'CourseSubscription',
+    entityId: params.subscriptionId,
+    metadata: { instructorId: params.instructorId, sessions: sessions?.length ?? 0 },
+  });
+
+  revalidatePath(`/dashboard/admin/bookings/${params.subscriptionId}`);
+  revalidatePath('/dashboard/instructor/sessions');
+  return { ok: true, sessions: sessions?.length ?? 0 };
 }
