@@ -19,7 +19,18 @@ import path from 'node:path';
  */
 export default defineConfig({
   resolve: {
-    alias: { '@': path.resolve(__dirname, 'src') },
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+
+      // `server-only` حزمة علامة: ملفها الافتراضي **بيرمي** خطأ عند
+      // الاستيراد، عشان تمنع استيراد كود الخادم في الواجهة. Next بيقرا
+      // نسخة فاضية منها في بيئة الخادم عن طريق شرط `react-server` —
+      // و vitest مش بيعرف الشرط ده، فبيقرا الملف اللي بيرمي.
+      //
+      // من غير السطر ده، أي اختبار على `lib/auth-guard.ts` (وهي أول
+      // سطر فيها `import 'server-only'`) بيفشل قبل ما يبدأ.
+      'server-only': path.resolve(__dirname, 'node_modules/server-only/empty.js'),
+    },
   },
   test: {
     environment: 'node',
