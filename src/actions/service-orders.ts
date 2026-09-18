@@ -26,6 +26,16 @@ export async function createServiceOrder(params: {
   providerId?: string | null;
   /** الاسم القديم — بيفضل مقبول لحد ما كل الروابط تتحدّث. */
   instructorId?: string | null;
+  /**
+   * لمين الخدمة.
+   *
+   * حجز الباقة بيعرف ده من الأول، وطلب الخدمة **مكانش فيه خالص**:
+   * ولي أمر يطلب «مراجعة نص» لابنه، والطلب يتسجّل باسمه هو، ومقدّم
+   * الخدمة اللي هينفّذ مايعرفش النص لمين ولا سنه كام — وده فرق كبير
+   * في خدمة تربوية للأطفال.
+   */
+  participantType?: 'self' | 'child';
+  childId?: string | null;
 }) {
   const supabase = await createClient();
 
@@ -36,6 +46,23 @@ export async function createServiceOrder(params: {
 
   const { serviceId } = params;
   let providerId = params.providerId ?? null;
+
+  // المشارك: لو فرد من العائلة، لازم يبقى **فعلًا تابع للمشتري**.
+  // من غير الفحص ده أي حد يبعت رقم طفل مش بتاعه ويشوف اسمه في الطلب.
+  const participantType = params.participantType === 'child' ? 'child' : 'self';
+  let childId: string | null = null;
+
+  if (participantType === 'child') {
+    if (!params.childId) throw new Error('اختار المستفيد من الخدمة');
+    const { data: child } = await supabase
+      .from('child_profiles')
+      .select('id')
+      .eq('id', params.childId)
+      .eq('user_profile_id', user.id)
+      .maybeSingle();
+    if (!child) throw new Error('فرد العائلة ده مش على حسابك');
+    childId = child.id;
+  }
 
   // رابط قديم بيبعت معرّف مدرب: نلاقي صف المقدّم بتاعه.
   if (!providerId && params.instructorId) {
@@ -146,6 +173,8 @@ export async function createServiceOrder(params: {
     .insert({
       buyer_profile_id: user.id,
       standalone_service_id: serviceId,
+      participant_type: participantType,
+      child_id: childId,
       instructor_id: instructorId,
       provider_id: providerId,
       amount,

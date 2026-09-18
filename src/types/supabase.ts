@@ -294,6 +294,7 @@ export type Database = {
           gender: string | null
           avatar_url: string | null
           created_at: string
+          account_profile_id: string | null
         }
         Insert: {
           id?: string
@@ -303,6 +304,7 @@ export type Database = {
           gender?: string | null
           avatar_url?: string | null
           created_at?: string
+          account_profile_id?: string | null
         }
         Update: {
           id?: string
@@ -312,6 +314,7 @@ export type Database = {
           gender?: string | null
           avatar_url?: string | null
           created_at?: string
+          account_profile_id?: string | null
         }
         Relationships: []
       }
@@ -1276,6 +1279,8 @@ export type Database = {
           payment_reference: string | null
           payment_method: string | null
           payment_receipt_url: string | null
+          participant_type: string
+          child_id: string | null
         }
         Insert: {
           id?: string
@@ -1298,6 +1303,8 @@ export type Database = {
           payment_reference?: string | null
           payment_method?: string | null
           payment_receipt_url?: string | null
+          participant_type?: string
+          child_id?: string | null
         }
         Update: {
           id?: string
@@ -1320,6 +1327,8 @@ export type Database = {
           payment_reference?: string | null
           payment_method?: string | null
           payment_receipt_url?: string | null
+          participant_type?: string
+          child_id?: string | null
         }
         Relationships: []
       }
@@ -1804,6 +1813,18 @@ export type Database = {
           package_id: string
           user_ref: string
           child_ref: string | null
+        }[]
+      }
+      student_sessions: {
+        Args: Record<string, never>
+        Returns: {
+          session_id: string
+          session_number: number
+          scheduled_at: string
+          status: string
+          meeting_url: string | null
+          package_name: string
+          instructor_name: string | null
         }[]
       }
       instructor_students: {

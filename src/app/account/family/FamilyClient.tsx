@@ -7,8 +7,16 @@ import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { Trash2, Edit2, Plus, X } from 'lucide-react';
 import { calculateAge } from '@/lib/utils';
 import { BirthDatePicker } from '@/components/ui/BirthDatePicker';
+import { StudentAccountCell } from './StudentAccountCell';
 
-export function FamilyClient({ initialMembers }: { initialMembers: ChildProfile[] }) {
+export function FamilyClient({
+  initialMembers,
+  accountsEnabled,
+}: {
+  initialMembers: ChildProfile[];
+  /** مفتاح الخدمة متظبط على الخادم؟ */
+  accountsEnabled: boolean;
+}) {
   const [members, setMembers] = useState<ChildProfile[]>(initialMembers);
   const [isPending, startTransition] = useTransition();
   const [showForm, setShowForm] = useState(false);
@@ -110,6 +118,13 @@ export function FamilyClient({ initialMembers }: { initialMembers: ChildProfile[
         const age = calculateAge(child.birthDate);
         return age !== null ? age.toString() : '-';
       }
+    },
+    {
+      header: 'حساب الدخول',
+      accessorKey: 'account',
+      cell: (child: ChildProfile) => (
+        <StudentAccountCell child={child} enabled={accountsEnabled} />
+      ),
     },
     { 
       header: 'الإجراءات', 

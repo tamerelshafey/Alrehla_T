@@ -7,7 +7,7 @@ import {
   SupportTicketMessage, FamilyMember, NotificationItem, UserRole,
   PublisherOrder,
   InstructorPricingOption, PricingFormulaSettings, InstructorCompensationProfile, InstructorCertification,
-  BookedSlot, DayOfWeek, InstructorSession
+  BookedSlot, DayOfWeek, InstructorSession, StudentSession
 } from '@/types';
 import { cookies } from 'next/headers';
 import { createPublicClient } from '@/lib/supabase/public';
@@ -303,6 +303,38 @@ export async function getInstructorSessions(): Promise<InstructorSession[]> {
     packageId: row.package_id,
     studentRef: row.user_ref,
     childId: row.child_ref ?? undefined,
+  }));
+}
+
+/**
+ * جلسات المتعلّم — للطالب البالغ وللطفل صاحب الحساب التابع.
+ *
+ * `getSessions()` العامة بتعتمد على صلاحيات القاعدة، وهي بتدّي الجلسات
+ * لصاحب الاشتراك. لكن اشتراك الطفل **صاحبه ولي الأمر**
+ * (`course_subscriptions.user_id` = ولي الأمر، و`child_id` = الطفل) —
+ * فحساب الطفل ما كانش هيشوف ولا جلسة.
+ *
+ * والحل مش سياسة قراءة على `course_subscriptions`: الصلاحيات بتحمي
+ * الصفوف لا الأعمدة، والسياسة كانت هتخلي الطفل يشوف إيصال تحويل أبوه
+ * والمبلغ. الدالة بترجّع الجلسة والباقة والمدرب وبس.
+ */
+export async function getStudentSessions(): Promise<StudentSession[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc('student_sessions');
+
+  if (error || !data) {
+    if (error) console.error('Error loading student sessions', error);
+    return [];
+  }
+
+  return data.map((row) => ({
+    id: row.session_id,
+    sessionNumber: row.session_number,
+    scheduledAt: row.scheduled_at,
+    status: row.status as StudentSession['status'],
+    meetingUrl: row.meeting_url ?? undefined,
+    packageName: row.package_name,
+    instructorName: row.instructor_name ?? undefined,
   }));
 }
 

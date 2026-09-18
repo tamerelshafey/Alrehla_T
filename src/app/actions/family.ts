@@ -22,7 +22,8 @@ export async function fetchFamilyMembers(): Promise<ChildProfile[]> {
     birthDate: child.birth_date,
     gender: (child.gender as 'male' | 'female' | null) ?? null,
     avatarUrl: child.avatar_url,
-    createdAt: child.created_at
+    createdAt: child.created_at,
+    accountProfileId: child.account_profile_id ?? null
   }));
 }
 

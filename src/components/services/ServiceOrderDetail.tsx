@@ -57,6 +57,19 @@ const STEP_LABELS: Record<string, string> = {
 const btnBase =
   'inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors disabled:opacity-50';
 
+/** السن بالسنين من تاريخ الميلاد — «9 سنة» أوضح من تاريخ خام. */
+function childAge(birthDate: string): string {
+  const born = new Date(birthDate);
+  if (Number.isNaN(born.getTime())) return '';
+  const now = new Date();
+  let years = now.getFullYear() - born.getFullYear();
+  const beforeBirthday =
+    now.getMonth() < born.getMonth() ||
+    (now.getMonth() === born.getMonth() && now.getDate() < born.getDate());
+  if (beforeBirthday) years -= 1;
+  return years > 0 ? `${years} سنة` : '';
+}
+
 export function ServiceOrderDetail({ order, messages, viewer, currentProfileId }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -110,9 +123,22 @@ export function ServiceOrderDetail({ order, messages, viewer, currentProfileId }
               <h2 className="text-xl font-black text-slate-800">{order.serviceName}</h2>
             </div>
             <p className="mt-1 text-sm font-medium text-slate-500">
-              طلب #{order.id.slice(0, 8)} · {formatDate(order.createdAt)}
+              طلب {order.paymentReference ?? `#${order.id.slice(0, 8)}`} ·{' '}
+              {formatDate(order.createdAt)}
               {order.providerName && ` · مقدّم الخدمة: ${order.providerName}`}
             </p>
+
+            {/*
+              المستفيد. الطلب كان بيتسجّل باسم المشتري وبس، فمقدّم الخدمة
+              ينفّذ شغل مايعرفش هو لمين — والسن بيغيّر المحتوى نفسه في
+              خدمة تربوية للأطفال.
+            */}
+            {order.participantType === 'child' && order.participantName && (
+              <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-violet-50 px-2.5 py-1 text-xs font-bold text-violet-700">
+                المستفيد: {order.participantName}
+                {order.participantBirthDate && ` · ${childAge(order.participantBirthDate)}`}
+              </p>
+            )}
           </div>
           <div className="text-left">
             <span

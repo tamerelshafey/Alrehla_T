@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SessionsList, SessionRow } from '@/components/dashboard/SessionsList';
-import { getSessions, getWritingPackages } from '@/data/domains/writing';
+import { getStudentSessions } from '@/data/domains/writing';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,14 +9,17 @@ export const dynamic = 'force-dynamic';
  * جلسات الطالب — نفس الفجوة اللي كانت عند المدرب بالظبط.
  */
 export default async function Page() {
-  const [sessions, packages] = await Promise.all([getSessions(), getWritingPackages()]);
-  const packageById = new Map(packages.map((p) => [p.id, p.name]));
+  // بتشتغل للطالب البالغ وللطفل صاحب الحساب التابع. `getSessions()`
+  // العامة كانت بتدّي الطفل صفر جلسات، لأن الاشتراك صاحبه ولي الأمر.
+  const sessions = await getStudentSessions();
 
   const rows: SessionRow[] = sessions.map((session) => ({
     id: session.id,
     href: `/dashboard/student/sessions/${session.id}`,
     title: `الجلسة ${session.sessionNumber}`,
-    subtitle: packageById.get(session.packageId),
+    subtitle: session.instructorName
+      ? `${session.packageName} · ${session.instructorName}`
+      : session.packageName,
     scheduledAt: session.scheduledAt,
     status: session.status,
     meetingUrl: session.meetingUrl,

@@ -230,6 +230,12 @@ export type ServiceOrderRow = {
   deliveredAt: string | null;
   completedAt: string | null;
   instructorEarning: number | null;
+  /** لمين الخدمة: المشتري نفسه، أو فرد من عائلته. */
+  participantType: 'self' | 'child';
+  /** اسم المستفيد لما يكون فرد من العائلة. فاضي لما الطلب للمشتري. */
+  participantName: string | null;
+  /** تاريخ ميلاد المستفيد — مقدّم الخدمة بيظبط الشغل على السن. */
+  participantBirthDate: string | null;
 };
 
 async function mapServiceOrders(rows: any[]): Promise<ServiceOrderRow[]> {
@@ -238,6 +244,9 @@ async function mapServiceOrders(rows: any[]): Promise<ServiceOrderRow[]> {
     const instructor = row.instructors as { display_name: string } | null;
     const provider = row.service_providers as
       | { display_name: string; kind: 'platform' | 'instructor' | 'individual' }
+      | null;
+    const participant = row.child_profiles as
+      | { full_name: string; birth_date: string | null }
       | null;
     return {
       id: row.id,
@@ -262,12 +271,18 @@ async function mapServiceOrders(rows: any[]): Promise<ServiceOrderRow[]> {
       deliveredAt: row.delivered_at ?? null,
       completedAt: row.completed_at ?? null,
       instructorEarning: row.instructor_earning ?? null,
+      participantType: (row.participant_type === 'child' ? 'child' : 'self') as 'self' | 'child',
+      participantName: participant?.full_name ?? null,
+      participantBirthDate: participant?.birth_date ?? null,
     };
   });
 }
 
+// اسم المستفيد جاي مع الطلب. من غيره مقدّم الخدمة بينفّذ شغل مايعرفش
+// هو لمين — وفي خدمة تربوية للأطفال ده فرق في المحتوى نفسه مش في
+// العرض بس.
 const SERVICE_ORDER_SELECT =
-  'id, buyer_profile_id, standalone_service_id, instructor_id, provider_id, due_at, due_note, amount, status, transaction_reference, payment_reference, payment_method, payment_receipt_url, created_at, delivered_at, completed_at, instructor_earning, standalone_services(name), instructors(display_name), service_providers(display_name, kind)';
+  'id, buyer_profile_id, standalone_service_id, instructor_id, provider_id, due_at, due_note, amount, status, transaction_reference, payment_reference, payment_method, payment_receipt_url, created_at, delivered_at, completed_at, instructor_earning, participant_type, child_id, standalone_services(name), instructors(display_name), service_providers(display_name, kind), child_profiles(full_name, birth_date)';
 
 /** Every service order — row-level security limits this to admins. */
 export async function getAllServiceOrders(): Promise<ServiceOrderRow[]> {

@@ -439,6 +439,17 @@ export interface InstructorSession {
   childId?: string;
 }
 
+/** جلسة كما يراها المتعلّم — بلا أي بيانات دفع. */
+export interface StudentSession {
+  id: string;
+  sessionNumber: number;
+  scheduledAt: string;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  meetingUrl?: string;
+  packageName: string;
+  instructorName?: string;
+}
+
 export interface InstructorStudent {
   id: string;
   name: string;
@@ -627,6 +638,13 @@ export interface ChildProfile {
   gender?: 'male' | 'female' | null;
   avatarUrl?: string | null;
   createdAt: string;
+  /**
+   * حساب الدخول الخاص بالطفل نفسه، لو ولي الأمر فتحه.
+   *
+   * ⚠️ مش `userProfileId` — ده معرّف **ولي الأمر**، وهو اللي بيربط
+   * الطفل بعائلته. الحقل ده هو حساب الطفل هو.
+   */
+  accountProfileId?: string | null;
 }
 
 export interface Session {
