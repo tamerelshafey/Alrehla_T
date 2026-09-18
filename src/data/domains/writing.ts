@@ -6,7 +6,8 @@ import {
   JoinRequest, SupportSessionRequest, AuditLog, ServiceOrder, CourseSubscription, 
   SupportTicketMessage, FamilyMember, NotificationItem, UserRole,
   PublisherOrder,
-  InstructorPricingOption, PricingFormulaSettings, InstructorCompensationProfile, InstructorCertification
+  InstructorPricingOption, PricingFormulaSettings, InstructorCompensationProfile, InstructorCertification,
+  BookedSlot, DayOfWeek
 } from '@/types';
 import { cookies } from 'next/headers';
 import { createPublicClient } from '@/lib/supabase/public';
@@ -226,20 +227,51 @@ export const getInstructorStudents = async (): Promise<InstructorStudent[]> => {
     .maybeSingle();
   if (!instructor) return [];
 
-  const { data: sessions } = await supabase
-    .from('sessions')
-    .select('id, status, course_subscription_id')
-    .eq('instructor_id', instructor.id);
+  // ── ليه التعريف اتغيّر ──────────────────────────────────────
+  //
+  // القايمة كانت بتتبني من **جدول الجلسات وحده**: بنجيب جلسات المدرب،
+  // ومنها نوصل للاشتراكات. يعني أي متدرب:
+  //   • اشتراكه اتأكد قبل ما توليد الجلسات يتضاف للمشروع، أو
+  //   • جلساته اتعملت بلا مدرب (العميل ما اختارش واحد في المعالج)، أو
+  //   • اتعيّنله مدرب على الاشتراك من غير ما الجلسات تتولّد
+  // كان **مش بيظهر خالص** — والقايمة تفضل فاضية والمدرب عنده متدربين
+  // فعلًا.
+  //
+  // «متدرب المدرب» = اشتراك مربوط بيه. الجلسات مصدر «التقدم» بس، مش
+  // مصدر وجود المتدرب من أصله.
+  const [{ data: byPreference }, { data: mySessions }] = await Promise.all([
+    supabase
+      .from('course_subscriptions')
+      .select('id, user_id, child_id, package_id')
+      .eq('preferred_instructor_id', instructor.id),
+    supabase
+      .from('sessions')
+      .select('id, status, course_subscription_id')
+      .eq('instructor_id', instructor.id),
+  ]);
 
-  if (!sessions || sessions.length === 0) return [];
+  // اشتراك جلساته مسنَدة للمدرب من غير ما يكون هو «المدرب المفضّل»
+  // (الإدارة عيّنته على الجلسات) — ده متدربه برضه.
+  const known = new Set((byPreference ?? []).map((s) => s.id));
+  const extraIds = [
+    ...new Set(
+      (mySessions ?? [])
+        .map((s) => s.course_subscription_id)
+        .filter((id): id is string => Boolean(id) && !known.has(id)),
+    ),
+  ];
 
-  const subscriptionIds = [...new Set(sessions.map((s) => s.course_subscription_id))];
-  const { data: subscriptions } = await supabase
-    .from('course_subscriptions')
-    .select('id, user_id, child_id, package_id')
-    .in('id', subscriptionIds);
+  let extra: typeof byPreference = [];
+  if (extraIds.length > 0) {
+    const { data } = await supabase
+      .from('course_subscriptions')
+      .select('id, user_id, child_id, package_id')
+      .in('id', extraIds);
+    extra = data ?? [];
+  }
 
-  if (!subscriptions || subscriptions.length === 0) return [];
+  const subscriptions = [...(byPreference ?? []), ...(extra ?? [])];
+  if (subscriptions.length === 0) return [];
 
   const packageIds = [...new Set(subscriptions.map((sub) => sub.package_id).filter(Boolean))];
   const { data: packages } = await supabase
@@ -251,19 +283,95 @@ export const getInstructorStudents = async (): Promise<InstructorStudent[]> => {
 
   const rows: InstructorStudent[] = [];
   for (const sub of subscriptions) {
-    const mine = sessions.filter((s) => s.course_subscription_id === sub.id);
+    const mine = (mySessions ?? []).filter((s) => s.course_subscription_id === sub.id);
     const pkg = packageById.get(sub.package_id);
     rows.push({
       id: String(sub.user_id),
       name: await getParticipantName(sub.child_id ?? undefined, String(sub.user_id)),
       packageName: pkg?.name ?? 'باقة محذوفة',
       sessionsCompleted: mine.filter((s) => s.status === 'completed').length,
+      // عدد جلسات الباقة هو المرجع. لو الجلسات لسه ماتولّدتش، التقدم
+      // بيبقى «0 / 8» بدل ما المتدرب يختفي.
       totalSessions: pkg?.sessions_count ?? mine.length,
     });
   }
 
   return rows;
 };
+
+
+/**
+ * المواعيد المحجوزة فعلًا لكل مدرب.
+ *
+ * ليه موجودة: `WeeklySlot.isBooked` **مفيش حاجة في المشروع بتكتبه** —
+ * ولا سطر. فمعالج الحجز كان بيعرض كل مواعيد المدرب لكل عميل إلى الأبد،
+ * وعميلين يقدروا يحجزوا نفس المدرب في نفس الساعة من نفس اليوم.
+ *
+ * الحساب من الواقع لا من علامة يدوية: أي **جلسة قادمة** للمدرب بتشغّل
+ * ميعادها، والميعاد بيفضى بعد آخر جلسة فيه. يعني باقة ماشية شهرين
+ * بتقفل ميعادها شهرين — وده اللي كان مطلوب.
+ *
+ * ⚠️ اليوم والساعة بيتقروا بتوقيت UTC، لأن ده نفس الأساس اللي
+ * `buildSessionSchedule` بيكتب بيه (`setHours` على خادم Vercel = UTC).
+ * فالمقارنة متسقة. **لكن ده يكشف مصيدة أقدم**: المدرب اللي بيختار
+ * «18:00» بيتسجّل 18:00 UTC، والمستخدم في مصر بيشوفها 21:00. الإصلاح
+ * بيغيّر معنى كل ميعاد مسجّل، فمحتاج قرار — مكتوب في دفتر الحالة.
+ */
+export async function getBookedSlotsByInstructor(
+  instructorIds: string[],
+): Promise<Record<string, BookedSlot[]>> {
+  const result: Record<string, BookedSlot[]> = {};
+  if (instructorIds.length === 0) return result;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('sessions')
+    .select('instructor_id, scheduled_at, status')
+    .in('instructor_id', instructorIds)
+    .gte('scheduled_at', new Date().toISOString())
+    .neq('status', 'cancelled');
+
+  if (error || !data) return result;
+
+  const DAYS: DayOfWeek[] = [
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+  ];
+
+  // (المدرب، اليوم، الساعة) ← أبعد جلسة
+  const latest = new Map<string, { instructorId: string; slot: BookedSlot }>();
+
+  for (const row of data) {
+    if (!row.instructor_id) continue;
+    const at = new Date(row.scheduled_at);
+    if (Number.isNaN(at.getTime())) continue;
+
+    const day = DAYS[at.getUTCDay()];
+    const time = `${String(at.getUTCHours()).padStart(2, '0')}:${String(
+      at.getUTCMinutes(),
+    ).padStart(2, '0')}`;
+    const key = `${row.instructor_id}|${day}|${time}`;
+
+    const current = latest.get(key);
+    if (!current || new Date(current.slot.bookedUntil) < at) {
+      latest.set(key, {
+        instructorId: row.instructor_id,
+        slot: { day, time, bookedUntil: at.toISOString() },
+      });
+    }
+  }
+
+  for (const { instructorId, slot } of latest.values()) {
+    (result[instructorId] ??= []).push(slot);
+  }
+
+  return result;
+}
 
 export async function getCourseSubscriptions(): Promise<CourseSubscription[]> {
   const supabase = await createClient();

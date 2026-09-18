@@ -7,6 +7,7 @@ import { getPricingFormulaSettings } from '@/data/domains/writing';
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatDate, formatPrice } from '@/lib/utils';
 import { getCurrentUser } from '@/data/domains/auth';
+import { getSiteSettings } from '@/data/domains/content';
 import {
   getMyInstructorId,
   getStandaloneServices,
@@ -49,11 +50,12 @@ export default async function InstructorServicesPage() {
     );
   }
 
-  const [services, offers, orders, formula] = await Promise.all([
+  const [services, offers, orders, formula, settings] = await Promise.all([
     getStandaloneServices(),
     getInstructorServiceOffers(instructorId),
     getServiceOrdersForInstructor(instructorId),
     getPricingFormulaSettings(),
+    getSiteSettings(),
   ]);
 
   const orderRows = orders.map((order) => {
@@ -90,7 +92,12 @@ export default async function InstructorServicesPage() {
           النهائي قبل أن تظهر الخدمة للعملاء.
         </p>
         <div className="mt-4">
-          <MyServiceOffersClient services={services} offers={offers} formula={formula} />
+          <MyServiceOffersClient
+            services={services}
+            offers={offers}
+            formula={formula}
+            priceAlert={settings.instructorPriceAlert}
+          />
         </div>
       </div>
 

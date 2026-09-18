@@ -255,12 +255,17 @@ async function requireOwnInstructorId(): Promise<string> {
   return instructorId;
 }
 
+/**
+ * السعر لازم يكون رقم موجب — وبس.
+ *
+ * كان فيه سقف ثابت (مليون) بيرفض الطلب. مفيش رقم صح يصلح سقفًا لكل
+ * الخدمات، وكل عرض بيتراجع من الإدارة يدويًا قبل ما يتعتمد أصلًا.
+ * الحد اللي الإدارة بتحطه في الإعدادات **بينبّه** المدرب في الشاشة
+ * ومابيمنعوش.
+ */
 function validatePrice(price: number) {
   if (!Number.isFinite(price) || price <= 0) {
     throw new Error('السعر لازم يكون رقم أكبر من صفر');
-  }
-  if (price > 1_000_000) {
-    throw new Error('السعر غير منطقي');
   }
 }
 

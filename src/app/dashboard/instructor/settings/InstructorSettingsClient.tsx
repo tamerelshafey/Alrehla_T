@@ -29,16 +29,39 @@ export function InstructorSettingsClient({ instructor, pricingOptions, formulaSe
   const [schedule, setSchedule] = useState<WeeklySlot[]>(instructor.weeklySchedule || []);
   const [isSaved, setIsSaved] = useState(false);
 
-  const toggleSlot = (day: DayOfWeek, time: string) => {
-    const existingIndex = schedule.findIndex(s => s.day === day && s.time === time);
-    if (existingIndex >= 0) {
-      const newSchedule = [...schedule];
-      newSchedule.splice(existingIndex, 1);
-      setSchedule(newSchedule);
-    } else {
-      setSchedule([...schedule, { day, time, commitmentType: 'ongoing' }]);
+  // ── ليه بقى منتقي وقت بدل أزرار ثابتة ──────────────────────
+  //
+  // الشاشة كانت بتدّي ست ساعات بس (10، 12، 14، 16، 18، 20) — يعني
+  // مدرب بيشتغل 9 الصبح أو 9 بالليل مالوش أي طريقة يسجّل ميعاده.
+  // شبكة 24×7 كاملة معناها 168 زرار على الشاشة، فبدلها: اختار يوم
+  // ووقت واضغط «إضافة». أي وقت مسموح، وبأي دقيقة.
+  const [newDay, setNewDay] = useState<DayOfWeek>('saturday');
+  const [newTime, setNewTime] = useState('16:00');
+  const [slotError, setSlotError] = useState('');
+
+  const addSlot = () => {
+    setSlotError('');
+    if (!/^\d{2}:\d{2}$/.test(newTime)) {
+      setSlotError('اكتب الوقت بصيغة صحيحة');
+      return;
     }
+    if (schedule.some((s) => s.day === newDay && s.time === newTime)) {
+      setSlotError('الميعاد ده مضاف عندك بالفعل');
+      return;
+    }
+    setSchedule([...schedule, { day: newDay, time: newTime, commitmentType: 'ongoing' }]);
   };
+
+  const removeSlot = (day: DayOfWeek, time: string) => {
+    setSchedule(schedule.filter((s) => !(s.day === day && s.time === time)));
+  };
+
+  /** الجدول مرتّبًا: باليوم ثم بالساعة. */
+  const orderedSchedule = [...schedule].sort(
+    (a, b) =>
+      DAYS.findIndex((d) => d.key === a.day) - DAYS.findIndex((d) => d.key === b.day) ||
+      a.time.localeCompare(b.time),
+  );
 
   const updateSlotCommitment = (day: DayOfWeek, time: string, field: 'commitmentType' | 'commitmentMonths', value: string) => {
     const newSchedule = [...schedule];
@@ -149,62 +172,102 @@ export function InstructorSettingsClient({ instructor, pricingOptions, formulaSe
         <div className="mb-4">
           <h3 className="text-lg font-black text-slate-800">الجدول الأسبوعي المتاح</h3>
           <p className="text-sm text-slate-500">
-            حدد أوقات فراغك خلال الأسبوع. عند حجز الطالب لموعد، سيكون هذا الموعد ثابتاً بشكل أسبوعي طوال فترة التدريب.
+            أضف أي موعد في أي يوم وأي ساعة. لما طالب يحجز موعدًا، الموعد ده
+            بيبقى ثابت له أسبوعيًا طول مدة الباقة، وبيختفي من المتاح لغيره
+            لحد ما الباقة تخلص.
           </p>
         </div>
-        <div className="space-y-4">
-          {DAYS.map(day => (
-            <div key={day.key} className="flex flex-col gap-4 rounded-xl border border-slate-100 p-4">
-              <div className="w-32 font-bold text-slate-800">{day.label}</div>
-              <div className="flex flex-wrap gap-2">
-                {['10:00', '12:00', '14:00', '16:00', '18:00', '20:00'].map(time => {
-                  const slot = schedule.find(s => s.day === day.key && s.time === time);
-                  const isSelected = !!slot;
-                  return (
-                    <div key={time} className={`flex flex-col gap-2 rounded-lg p-2 ${isSelected ? 'bg-amber-50 border border-amber-200' : ''}`}>
-                      <button
-                        type="button"
-                        onClick={() => toggleSlot(day.key, time)}
-                        className={`rounded-lg px-4 py-2 text-sm font-bold transition-colors ${
-                          isSelected 
-                            ? 'bg-amber-500 text-white shadow-sm' 
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                        }`}
-                      >
-                        {time} {isSelected && '(مُختار)'}
-                      </button>
-                      {isSelected && (
-                        <div className="flex flex-col gap-1 mt-1">
-                          <select
-                            value={slot.commitmentType || 'ongoing'}
-                            onChange={(e) => updateSlotCommitment(day.key, time, 'commitmentType', e.target.value)}
-                            className="text-xs rounded border border-amber-200 bg-white py-1 px-2 text-amber-800 outline-none focus:border-amber-400"
-                          >
-                            <option value="ongoing">مستمر</option>
-                            <option value="fixed_term">فترة محددة</option>
-                          </select>
-                          {slot.commitmentType === 'fixed_term' && (
-                            <div className="flex items-center gap-1">
-                              <input
-                                type="number"
-                                min="1"
-                                placeholder="الشهور"
-                                value={slot.commitmentMonths || 1}
-                                onChange={(e) => updateSlotCommitment(day.key, time, 'commitmentMonths', e.target.value)}
-                                className="w-16 text-xs rounded border border-amber-200 bg-white py-1 px-2 text-amber-800 outline-none focus:border-amber-400"
-                              />
-                              <span className="text-xs text-amber-700">شهور</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+
+        <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-slate-600">اليوم</label>
+            <select
+              value={newDay}
+              onChange={(e) => setNewDay(e.target.value as DayOfWeek)}
+              className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm font-bold text-slate-700 outline-none focus:border-amber-500"
+            >
+              {DAYS.map((d) => (
+                <option key={d.key} value={d.key}>{d.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-slate-600">الساعة</label>
+            <input
+              type="time"
+              value={newTime}
+              onChange={(e) => setNewTime(e.target.value)}
+              className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm font-bold text-slate-700 outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={addSlot}
+            className="rounded-xl bg-amber-500 px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-amber-600"
+          >
+            إضافة الموعد
+          </button>
+
+          {slotError && (
+            <p className="w-full text-xs font-bold text-red-600">{slotError}</p>
+          )}
         </div>
+
+        {orderedSchedule.length === 0 ? (
+          <p className="mt-4 rounded-2xl border border-dashed border-slate-200 py-10 text-center text-sm font-bold text-slate-400">
+            لسه ما أضفتش أي موعد. الطلاب مش هيقدروا يحجزوا معاك من غير مواعيد.
+          </p>
+        ) : (
+          <div className="mt-4 space-y-2">
+            {orderedSchedule.map((slot) => (
+              <div
+                key={`${slot.day}-${slot.time}`}
+                className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3"
+              >
+                <span className="min-w-24 font-bold text-slate-800">
+                  {DAYS.find((d) => d.key === slot.day)?.label}
+                </span>
+                <span className="font-black text-amber-700">{slot.time}</span>
+
+                <select
+                  value={slot.commitmentType || 'ongoing'}
+                  onChange={(e) =>
+                    updateSlotCommitment(slot.day, slot.time, 'commitmentType', e.target.value)
+                  }
+                  className="rounded-lg border border-amber-200 bg-white py-1 px-2 text-xs font-bold text-amber-800 outline-none focus:border-amber-400"
+                >
+                  <option value="ongoing">مستمر</option>
+                  <option value="fixed_term">فترة محددة</option>
+                </select>
+
+                {slot.commitmentType === 'fixed_term' && (
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min="1"
+                      value={slot.commitmentMonths || 1}
+                      onChange={(e) =>
+                        updateSlotCommitment(slot.day, slot.time, 'commitmentMonths', e.target.value)
+                      }
+                      className="w-16 rounded-lg border border-amber-200 bg-white py-1 px-2 text-xs font-bold text-amber-800 outline-none focus:border-amber-400"
+                    />
+                    <span className="text-xs font-bold text-amber-700">شهور</span>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => removeSlot(slot.day, slot.time)}
+                  className="mr-auto rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-bold text-red-600 transition-colors hover:bg-red-50"
+                >
+                  حذف
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex justify-end gap-4">

@@ -39,6 +39,17 @@ export interface SiteSettings {
     /** تاريخ ووقت الاختفاء التلقائي (ISO). فاضي = يفضل لحد ما توقفه. */
     until: string;
   };
+  /**
+   * حد تنبيه سعر المدرب.
+   *
+   * **تنبيه لا منع.** كان في الكود سقف ثابت (مليون) بيرفض الطلب —
+   * ورقم السعر مالوش حد منطقي ثابت، وكل رقم بيتراجع يدويًا من الإدارة
+   * أصلًا. دلوقتي الإدارة بتحدد الرقم من هنا، والمدرب فوقه يشوف تنبيه
+   * ويقدر يكمل.
+   *
+   * صفر أو فاضي = مفيش تنبيه.
+   */
+  instructorPriceAlert: number;
   /** Site imagery, by slot. See src/lib/site-images.ts. */
   images: SiteImages;
 }
@@ -69,6 +80,7 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
       address: '',
       workingHours: '',
       announcement: { enabled: false, text: '', until: '' },
+      instructorPriceAlert: 0,
       images: {},
     };
   }
@@ -90,6 +102,7 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
       text: value.announcement?.text ?? '',
       until: value.announcement?.until ?? '',
     },
+    instructorPriceAlert: Number(value.instructorPriceAlert) || 0,
     images: value.images ?? {},
   };
 });

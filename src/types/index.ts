@@ -52,6 +52,23 @@ export type WeeklySlot = {
   commitmentEndsAt?: string;
 };
 
+/**
+ * ميعاد محجوز فعلًا، محسوب من جلسات المدرب القادمة.
+ *
+ * `isBooked` اللي على `WeeklySlot` **مفيش حاجة في المشروع بتكتبه** — ولا
+ * سطر واحد. فالميعاد اللي اتحجز كان بيفضل معروض لعميل تاني إلى الأبد،
+ * وعميلين يقدروا يحجزوا نفس المدرب في نفس الساعة من نفس اليوم.
+ *
+ * دلوقتي الإتاحة بتتحسب من الواقع: أي جلسة قادمة للمدرب بتشغّل ميعادها
+ * لحد آخر جلسة في نفس الاشتراك. فباقة شهرين بتقفل ميعادها شهرين.
+ */
+export type BookedSlot = {
+  day: DayOfWeek;
+  time: string;
+  /** آخر جلسة في الميعاد ده (ISO). بعده الميعاد بيفضى. */
+  bookedUntil: string;
+};
+
 export type WorkModel = 'per_session' | 'monthly';
 
 export type InstructorStatus = 'pending_training' | 'pending_approval' | 'active' | 'suspended';

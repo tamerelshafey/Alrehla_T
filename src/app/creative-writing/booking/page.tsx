@@ -13,7 +13,11 @@ export async function generateMetadata(): Promise<Metadata> {
 import { Suspense } from 'react';
 import { PageContainer } from '@/components/PageContainer';
 import { BookingWizardClient } from '@/components/creative-writing/BookingWizardClient';
-import { getInstructors, getWritingPackages } from '@/data/domains/writing';
+import {
+  getInstructors,
+  getWritingPackages,
+  getBookedSlotsByInstructor,
+} from '@/data/domains/writing';
 import { Section } from '@/components/ui/Section';
 
 export default async function BookingPage() {
@@ -21,6 +25,13 @@ export default async function BookingPage() {
     getInstructors(),
     getWritingPackages(),
   ]);
+
+  // الإتاحة بتتحسب من جلسات المدربين القادمة، مش من علامة `isBooked`
+  // اللي مفيش حاجة بتكتبها. من غير ده عميلين يقدروا يحجزوا نفس المدرب
+  // في نفس الساعة من نفس اليوم.
+  const bookedSlots = await getBookedSlotsByInstructor(
+    instructors.filter((i) => i.status === 'active').map((i) => i.id),
+  );
   return (
     <PageContainer className="!py-0 !space-y-0">
       <Section containerClassName="mx-auto w-full max-w-4xl pt-12 pb-24">
@@ -31,6 +42,7 @@ export default async function BookingPage() {
         <Suspense fallback={<div className="p-8 text-center font-medium text-slate-500">جاري التحميل…</div>}>
         <BookingWizardClient
           instructors={instructors}
+          bookedSlots={bookedSlots}
           packages={packages
             .filter((pkg) => pkg.isActive)
             .map((pkg) => ({

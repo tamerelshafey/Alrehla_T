@@ -1,11 +1,26 @@
 'use client';
 import React, { useState } from 'react';
-import { Instructor, WeeklySlot } from '@/types';
+import { Instructor, WeeklySlot, BookedSlot, DayOfWeek } from '@/types';
 import { formatPrice } from '@/lib/utils';
 import { Calendar, Clock, User, ArrowRight, Video } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+
+const DAY_ORDER: DayOfWeek[] = [
+  'saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
+];
+
+/** كان اليوم بيتكتب بالإنجليزي حرفيًا («saturday») في صفحة عربية. */
+const DAY_LABELS: Record<DayOfWeek, string> = {
+  saturday: 'السبت',
+  sunday: 'الأحد',
+  monday: 'الإثنين',
+  tuesday: 'الثلاثاء',
+  wednesday: 'الأربعاء',
+  thursday: 'الخميس',
+  friday: 'الجمعة',
+};
 
 type PackageOption = {
   id: string;
@@ -24,9 +39,15 @@ interface BookingWizardProps {
    * مربوطة بنص مش بباقة.
    */
   packages: PackageOption[];
+  /** المواعيد المحجوزة فعلًا لكل مدرب، محسوبة من جلساته القادمة. */
+  bookedSlots: Record<string, BookedSlot[]>;
 }
 
-export function BookingWizardClient({ instructors, packages }: BookingWizardProps) {
+export function BookingWizardClient({
+  instructors,
+  packages,
+  bookedSlots,
+}: BookingWizardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   // الباقة اللي جاية من صفحة الباقات، لو كانت لسه متاحة.
@@ -41,6 +62,21 @@ export function BookingWizardClient({ instructors, packages }: BookingWizardProp
   const [selectedSlot, setSelectedSlot] = useState<WeeklySlot | null>(null);
 
   const activeInstructors = instructors.filter(i => i.status === 'active');
+
+  /** الميعاد محجوز لحد امتى؟ فاضي = متاح. */
+  const bookedUntilFor = (instructorId: string, slot: WeeklySlot): string | null => {
+    const taken = (bookedSlots[instructorId] ?? []).find(
+      (b) => b.day === slot.day && b.time === slot.time,
+    );
+    return taken?.bookedUntil ?? null;
+  };
+
+  const formatUntil = (iso: string) =>
+    new Date(iso).toLocaleDateString('ar-EG', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
   const chosenPackage = packages.find((pkg) => pkg.id === selectedPackage);
   const selectedInstructor = activeInstructors.find(i => i.id === selectedInstructorId);
 
@@ -189,23 +225,44 @@ export function BookingWizardClient({ instructors, packages }: BookingWizardProp
                 <p className="text-slate-500 text-center py-4">لا توجد مواعيد متاحة حالياً لهذا المدرب.</p>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'].map(dayKey => {
-                    const daySlots = selectedInstructor.weeklySchedule.filter(s => s.day === dayKey && !s.isBooked);
+                  {DAY_ORDER.map(dayKey => {
+                    // بنعرض المواعيد المحجوزة كمان — معطّلة ومكتوب عليها
+                    // «محجوز حتى». اختفاؤها كان بيخلي العميل يفتكر إن
+                    // المدرب مش شغّال في الوقت ده أصلًا.
+                    const daySlots = selectedInstructor.weeklySchedule
+                      .filter(s => s.day === dayKey)
+                      .sort((a, b) => a.time.localeCompare(b.time));
                     if (daySlots.length === 0) return null;
                     return (
                       <div key={dayKey} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                        <h4 className="font-bold text-slate-700 mb-3 capitalize">{dayKey}</h4>
+                        <h4 className="font-bold text-slate-700 mb-3">{DAY_LABELS[dayKey]}</h4>
                         <div className="grid grid-cols-2 gap-2">
                           {daySlots.map(s => {
                             const isSelected = selectedSlot?.day === s.day && selectedSlot?.time === s.time;
+                            const bookedUntil = bookedUntilFor(selectedInstructor.id, s);
+                            if (bookedUntil) {
+                              return (
+                                <div
+                                  key={s.time}
+                                  className="rounded-xl border border-slate-200 bg-slate-100 px-3 py-2 text-center"
+                                >
+                                  <span className="block text-sm font-bold text-slate-400 line-through">
+                                    {s.time}
+                                  </span>
+                                  <span className="block text-[10px] font-bold leading-tight text-slate-500">
+                                    محجوز حتى {formatUntil(bookedUntil)}
+                                  </span>
+                                </div>
+                              );
+                            }
                             return (
                               <button
                                 key={s.time}
                                 type="button"
                                 onClick={() => setSelectedSlot(s)}
                                 className={`rounded-xl px-3 py-2 text-sm font-bold transition-colors ${
-                                  isSelected 
-                                    ? 'bg-emerald-600 text-white shadow-md' 
+                                  isSelected
+                                    ? 'bg-emerald-600 text-white shadow-md'
                                     : 'bg-white border border-slate-200 text-slate-700 hover:border-emerald-400'
                                 }`}
                               >
@@ -281,7 +338,9 @@ export function BookingWizardClient({ instructors, packages }: BookingWizardProp
                   </li>
                   <li className="flex justify-between border-b border-slate-200 pb-2">
                     <span>الموعد الأسبوعي (يومي وثابت):</span>
-                    <span className="font-bold text-emerald-600">{selectedSlot?.day} - الساعة {selectedSlot?.time}</span>
+                    <span className="font-bold text-emerald-600">
+                      {selectedSlot ? `${DAY_LABELS[selectedSlot.day]} - الساعة ${selectedSlot.time}` : '—'}
+                    </span>
                   </li>
                 </ul>
               </div>

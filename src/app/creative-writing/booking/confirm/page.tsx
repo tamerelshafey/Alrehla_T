@@ -11,7 +11,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 import { getSiteSettings } from '@/data/domains/content';
-import { getWritingPackages, getInstructors } from '@/data/domains/writing';
+import {
+  getWritingPackages,
+  getInstructors,
+  getBookedSlotsByInstructor,
+} from '@/data/domains/writing';
 import Link from 'next/link';
 
 import { PageContainer } from '@/components/PageContainer';
@@ -50,6 +54,13 @@ export default async function BookingConfirmPage({
   const chosenPackage = packages.find((pkg) => pkg.id === packageId);
   const chosenInstructor = instructors.find((i) => i.id === instructorId);
 
+  // الميعاد اللي جاي في الرابط بيتفحص هنا مرتين: إنه في جدول المدرب،
+  // وإنه مش محجوز باشتراك شغّال. رابط متلاعب فيه — أو تبويبة قديمة
+  // فُتحت قبل ما حد يحجز نفس الميعاد — ما يقدرش يعدّي.
+  const booked = chosenInstructor
+    ? (await getBookedSlotsByInstructor([chosenInstructor.id]))[chosenInstructor.id] ?? []
+    : [];
+
   // من غير باقة صحيحة مفيش حجز. كان الكود بيحط 'dummy-package' ويكمّل.
   if (!chosenPackage) {
     return (
@@ -87,13 +98,11 @@ export default async function BookingConfirmPage({
               instructorId={chosenInstructor?.id}
               instructorName={chosenInstructor?.displayName}
               preferredSlot={
-                // بنتأكد إن الميعاد ده موجود فعلًا في جدول المدرب قبل ما
-                // نمرّره. رابط متلاعب فيه ما يقدرش يحجز ميعاد المدرب مش
-                // فاتحه.
                 slotDay && slotTime &&
                 (chosenInstructor?.weeklySchedule ?? []).some(
-                  (s) => s.day === slotDay && s.time === slotTime && !s.isBooked,
-                )
+                  (s) => s.day === slotDay && s.time === slotTime,
+                ) &&
+                !booked.some((b) => b.day === slotDay && b.time === slotTime)
                   ? { day: slotDay, time: slotTime }
                   : undefined
               }

@@ -14,13 +14,22 @@ import {
 interface Props {
   services: CreativeService[];
   offers: InstructorServiceOffer[];
+  /**
+   * بتُستخدم عشان نعرض للمدرب **سعر العميل** جنب حصيلته.
+   *
+   * المعادلة نفسها مبقتش معروضة: كانت مكتوبة في الشاشة بأرقامها
+   * (×المضاعف + الرسم الثابت)، وده تسعير داخلي مالوش لزوم إن المدرب
+   * يعرفه. المهم عنده حاجتين: حصيلته، والرقم اللي العميل هيشوفه.
+   */
   formula: PricingFormulaSettings;
+  /** فوق الرقم ده بيظهر تنبيه — والمدرب يقدر يكمل. صفر = مفيش تنبيه. */
+  priceAlert?: number;
 }
 
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-3 text-sm font-medium outline-none transition-colors focus:border-amber-500 focus:bg-white';
 
-export function MyServiceOffersClient({ services, offers, formula }: Props) {
+export function MyServiceOffersClient({ services, offers, formula, priceAlert = 0 }: Props) {
   const router = useRouter();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftPrice, setDraftPrice] = useState('');
@@ -62,8 +71,8 @@ export function MyServiceOffersClient({ services, offers, formula }: Props) {
       <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
         <p className="font-bold">المبلغ الذي تقترحه هو حصيلتك أنت.</p>
         <p className="mt-1">
-          سعر العميل يُحسب فوقه بمعادلة المنصة (×{formula.platformMultiplier} +{' '}
-          {formatPrice(formula.fixedAdminFee)})، تمامًا كما في تسعير الجلسات.
+          وسيظهر لك سعر العميل النهائي فور كتابته، والإدارة تعتمده قبل أن تظهر
+          الخدمة.
         </p>
       </div>
 
@@ -230,6 +239,20 @@ export function MyServiceOffersClient({ services, offers, formula }: Props) {
                   {Number(draftPrice) > 0 && (
                     <p className="text-xs font-bold text-slate-500">
                       العميل سيدفع: {formatPrice(customerPrice(Number(draftPrice)))}
+                    </p>
+                  )}
+                  {/*
+                    تنبيه لا منع. كان في الكود سقف ثابت بيرفض الطلب، والرقم
+                    المنطقي بيختلف من خدمة لخدمة — والإدارة بتراجع كل رقم
+                    قبل الاعتماد أصلًا.
+                  */}
+                  {priceAlert > 0 && Number(draftPrice) > priceAlert && (
+                    <p className="flex items-start gap-1.5 rounded-lg bg-amber-100 p-2 text-xs font-bold text-amber-800">
+                      <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      <span>
+                        الرقم ده أعلى من المعتاد ({formatPrice(priceAlert)}). تقدر تكمل،
+                        وهتراجعه الإدارة قبل الاعتماد.
+                      </span>
                     </p>
                   )}
                 </div>

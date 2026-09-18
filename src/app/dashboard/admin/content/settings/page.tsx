@@ -170,6 +170,27 @@ export default async function Page() {
           </div>
         </Section>
 
+        {/* ---------- تسعير المدربين ---------- */}
+        <Section
+          title="تنبيه سعر المدربين"
+          hint="تنبيه مش منع: المدرب يقدر يكمل فوق الرقم ده، وأنت بتراجع كل سعر قبل الاعتماد زي المعتاد."
+        >
+          <div className="md:col-span-2">
+            <label className={labelClass}>
+              نبّه لو الحصيلة المقترحة أعلى من (ج.م)
+            </label>
+            <input
+              type="number"
+              min={0}
+              name="instructorPriceAlert"
+              dir="ltr"
+              placeholder="سيبه فاضي عشان توقف التنبيه"
+              defaultValue={settings.instructorPriceAlert || ''}
+              className={`${field} text-left`}
+            />
+          </div>
+        </Section>
+
       </SettingsForm>
     </div>
   );

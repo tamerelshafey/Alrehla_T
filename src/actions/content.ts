@@ -65,6 +65,19 @@ export async function updateSiteSettings(
     }
   }
 
+  // حد تنبيه سعر المدرب. **تنبيه لا منع** — فوقه المدرب يشوف رسالة
+  // ويقدر يكمل، والإدارة بتراجع الرقم زي أي رقم تاني. صفر أو فاضي =
+  // مفيش تنبيه.
+  if (formData.has('instructorPriceAlert')) {
+    const raw = String(formData.get('instructorPriceAlert') ?? '').trim();
+    const parsed = Number(raw);
+    if (raw === '' || !Number.isFinite(parsed) || parsed <= 0) {
+      delete next.instructorPriceAlert;
+    } else {
+      next.instructorPriceAlert = parsed;
+    }
+  }
+
   // شريط التنبيه العلوي — كائن واحد عشان التلات حاجات يتحفظوا مع بعض.
   if (formData.has('announcementText')) {
     const text = String(formData.get('announcementText') ?? '').trim();
