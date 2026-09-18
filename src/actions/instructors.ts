@@ -111,15 +111,9 @@ export async function approveProfileUpdateRequest(requestId: string) {
     update.approved_price = changes.requestedPrice;
   }
 
-  if (changes.selectedPricingOptionId) {
-    update.selected_pricing_option_id = changes.selectedPricingOptionId;
-    const { data: option } = await supabase
-      .from('instructor_pricing_options')
-      .select('base_price_per_session')
-      .eq('id', changes.selectedPricingOptionId)
-      .maybeSingle();
-    if (option) update.approved_price = option.base_price_per_session;
-  }
+  // كان هنا فرع تالت بياخد الحصيلة من «فئة سعر» ثابتة
+  // (`instructor_pricing_options`). الفئات اتشالت من شاشة المدرب —
+  // بيكتب رقمه بنفسه دلوقتي — فالفرع بقى بلا مصدر.
 
   if (Object.keys(update).length > 0) {
     update.updated_at = new Date().toISOString();

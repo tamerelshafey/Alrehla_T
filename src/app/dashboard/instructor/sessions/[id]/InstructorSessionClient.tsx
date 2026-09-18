@@ -5,6 +5,7 @@ import { Video, Clock, User, CheckCircle2, AlertCircle, FileText, Send } from 'l
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { saveSessionReport } from '@/actions/sessions';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 interface Props {
   session: SessionWithDetails;
@@ -52,7 +53,7 @@ export function InstructorSessionClient({ session }: Props) {
             <div className="flex items-center gap-3 text-indigo-700 font-medium">
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                {new Date(session.scheduledAt).toLocaleString('ar-EG', {
+                {new Date(session.scheduledAt).toLocaleString('ar-EG', { timeZone: PLATFORM_TIMEZONE,
                   dateStyle: 'medium',
                   timeStyle: 'short',
                 })}

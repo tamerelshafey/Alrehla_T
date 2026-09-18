@@ -5,6 +5,7 @@ import { getReviewsForInstructor, getInstructorRatingSummary } from '@/data/doma
 import { getMyInstructorId } from '@/data/domains/services';
 import { Star } from 'lucide-react';
 import { redirect } from 'next/navigation';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,7 +55,7 @@ export default async function RatingsPage() {
               <div className="flex justify-between items-start mb-4">
                 <div className="font-bold text-slate-800">{review.reviewerName}</div>
                 <div className="text-xs font-bold text-slate-500">
-                  {new Date(review.createdAt).toLocaleDateString('ar-EG')}
+                  {new Date(review.createdAt).toLocaleDateString('ar-EG', { timeZone: PLATFORM_TIMEZONE })}
                 </div>
               </div>
               <div className="flex gap-1 mb-4">

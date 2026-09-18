@@ -6,6 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 import { UserProfile, AdminPermission } from '@/types';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 export function hasAdminPermission(user: UserProfile, permission: AdminPermission): boolean {
   if (user.role !== 'super_admin' && user.role !== 'general_supervisor') {
@@ -18,7 +19,7 @@ export function hasAdminPermission(user: UserProfile, permission: AdminPermissio
 export function formatDate(dateInput: string | Date): string {
   if (!dateInput) return '';
   const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-  return date.toLocaleDateString('ar-EG', {
+  return date.toLocaleDateString('ar-EG', { timeZone: PLATFORM_TIMEZONE,
     year: 'numeric',
     month: 'long',
     day: 'numeric'

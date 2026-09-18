@@ -1,14 +1,19 @@
 'use client';
 import React, { useState } from 'react';
-import { Instructor, DayOfWeek, WeeklySlot, InstructorPricingOption, PricingFormulaSettings } from '@/types';
+import { Instructor, DayOfWeek, WeeklySlot, PricingFormulaSettings } from '@/types';
 import { Calendar, Clock, Info, CheckCircle2, Save } from 'lucide-react';
 import { calculateFinalSessionPrice } from '@/lib/utils';
 import { submitInstructorProfileUpdate } from '@/actions/instructors';
 
 interface InstructorSettingsClientProps {
   instructor: Instructor;
-  pricingOptions: InstructorPricingOption[];
+  /**
+   * بتُستخدم عشان نوري المدرب **سعر العميل** جنب حصيلته.
+   * المعادلة نفسها مش معروضة — تسعير داخلي.
+   */
   formulaSettings: PricingFormulaSettings;
+  /** فوق الرقم ده بيظهر تنبيه — والمدرب يقدر يكمل. صفر = مفيش تنبيه. */
+  priceAlert?: number;
 }
 
 const DAYS: { key: DayOfWeek; label: string }[] = [
@@ -21,11 +26,14 @@ const DAYS: { key: DayOfWeek; label: string }[] = [
   { key: 'friday', label: 'الجمعة' },
 ];
 
-export function InstructorSettingsClient({ instructor, pricingOptions, formulaSettings }: InstructorSettingsClientProps) {
+export function InstructorSettingsClient({
+  instructor,
+  formulaSettings,
+  priceAlert = 0,
+}: InstructorSettingsClientProps) {
   const [workModel, setWorkModel] = useState(instructor.workModel || 'per_session');
   const [monthlyHours, setMonthlyHours] = useState(instructor.monthlyHoursCommitted || 60);
   const [requestedPrice, setRequestedPrice] = useState(instructor.requestedPrice || 100);
-  const [selectedPricingOptionId, setSelectedPricingOptionId] = useState(instructor.selectedPricingOptionId || pricingOptions[0]?.id || '');
   const [schedule, setSchedule] = useState<WeeklySlot[]>(instructor.weeklySchedule || []);
   const [isSaved, setIsSaved] = useState(false);
 
@@ -87,16 +95,22 @@ export function InstructorSettingsClient({ instructor, pricingOptions, formulaSe
     await submitInstructorProfileUpdate(instructor.id, {
       workModel: workModel as any,
       monthlyHoursCommitted: workModel === 'monthly' ? monthlyHours : undefined,
-      requestedPrice: workModel === 'monthly' ? Number(requestedPrice) : undefined,
-      selectedPricingOptionId: workModel === 'per_session' ? selectedPricingOptionId : undefined,
+      // الحصيلة بتتبعت في الحالتين: راتب شهري مقترح، أو حصيلة الجلسة.
+      // كانت بتتبعت في حالة الشهري بس، والجلسة بتتاخد من «فئة سعر»
+      // ثابتة (مبتدئ / متوسط / خبير) — واللي اتشالت.
+      requestedPrice: Number(requestedPrice),
       weeklySchedule: schedule
     });
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };
 
-  const selectedPricingOption = pricingOptions.find(o => o.id === selectedPricingOptionId);
-  const finalPrice = selectedPricingOption ? calculateFinalSessionPrice(selectedPricingOption.basePricePerSession, formulaSettings) : 0;
+  // سعر العميل من حصيلة المدرب مباشرة. كان بيتحسب من «فئة السعر»
+  // المختارة، والفئات اتشالت.
+  const finalPrice =
+    Number(requestedPrice) > 0
+      ? calculateFinalSessionPrice(Number(requestedPrice), formulaSettings)
+      : 0;
 
   return (
     <form onSubmit={handleSave} className="space-y-8">
@@ -146,22 +160,38 @@ export function InstructorSettingsClient({ instructor, pricingOptions, formulaSe
 
           {workModel === 'per_session' && (
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">فئة السعر</label>
-              <select
-                value={selectedPricingOptionId}
-                onChange={(e) => setSelectedPricingOptionId(e.target.value)}
+              {/*
+                كانت هنا قائمة «فئات سعر» ثابتة (مبتدئ / متوسط / خبير)
+                من جدول `instructor_pricing_options` — المدرب يختار
+                واحدة منها وبس. مفيش تلات أرقام تناسب كل المدربين وكل
+                الباقات، فبقى يكتب حصيلته بنفسه، والإدارة بتراجعها زي
+                أي رقم تاني قبل الاعتماد.
+              */}
+              <label className="text-sm font-bold text-slate-700">
+                حصيلتك من الجلسة الواحدة (ج.م)
+              </label>
+              <input
+                type="number"
+                min={1}
+                value={requestedPrice}
+                onChange={(e) => setRequestedPrice(Number(e.target.value))}
+                placeholder="اكتب الرقم المناسب لك"
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-amber-500 focus:outline-none"
-              >
-                {pricingOptions.map(option => (
-                  <option key={option.id} value={option.id}>
-                    {option.label} ({option.basePricePerSession} ج.م كحصيلة للمدرب)
-                  </option>
-                ))}
-              </select>
-              {selectedPricingOption && (
-                <div className="mt-2 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                  <span className="font-bold">سعرك:</span> {selectedPricingOption.basePricePerSession} ج.م — <span className="font-bold">السعر الذي يظهر للعميل:</span> {finalPrice} ج.م
+              />
+
+              {finalPrice > 0 && (
+                <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+                  <span className="font-bold">حصيلتك:</span> {requestedPrice} ج.م —{' '}
+                  <span className="font-bold">السعر الذي يظهر للعميل:</span> {finalPrice} ج.م
                 </div>
+              )}
+
+              {/* تنبيه لا منع — والإدارة بتراجع كل رقم قبل الاعتماد. */}
+              {priceAlert > 0 && Number(requestedPrice) > priceAlert && (
+                <p className="mt-2 rounded-lg bg-amber-100 p-2 text-xs font-bold text-amber-800">
+                  الرقم ده أعلى من المعتاد ({priceAlert} ج.م). تقدر تكمل، وهتراجعه
+                  الإدارة قبل الاعتماد.
+                </p>
               )}
             </div>
           )}

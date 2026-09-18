@@ -7,6 +7,7 @@ import { logAuditAction } from '@/lib/audit';
 import { hasAdminPermission, calculateFinalSessionPrice } from '@/lib/utils';
 import { notifyUser, notifyAdmins, getInstructorUserId, getProviderUserId } from '@/lib/notifications';
 import { SERVICE_DUE_DAYS } from '@/lib/service-delivery';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 /**
  * Ordering a standalone creative service.
@@ -678,7 +679,7 @@ export async function setServiceOrderDueDate(
 
   if (order) {
     const message = dueAt
-      ? `المهلة الجديدة: ${new Date(dueAt).toLocaleDateString('ar-EG')} — ${reason}`
+      ? `المهلة الجديدة: ${new Date(dueAt).toLocaleDateString('ar-EG', { timeZone: PLATFORM_TIMEZONE })} — ${reason}`
       : 'تم رفع المهلة عن هذا الطلب.';
 
     await notifyUser({

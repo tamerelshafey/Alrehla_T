@@ -4,6 +4,7 @@ import { PortfolioDocument } from '@/types';
 import { FileEdit, FileText, CheckCircle2, Clock, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { StatusBadge } from '@/components/StatusBadge';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 interface Props {
   documents: PortfolioDocument[];
@@ -51,7 +52,7 @@ export function PortfolioListClient({ documents }: Props) {
               <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-400">
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
-                  {new Date(doc.updatedAt).toLocaleDateString('ar-EG')}
+                  {new Date(doc.updatedAt).toLocaleDateString('ar-EG', { timeZone: PLATFORM_TIMEZONE })}
                 </div>
                 {doc.status === 'reviewed' && (
                   <div className="flex items-center gap-1 text-emerald-600">

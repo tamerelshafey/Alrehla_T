@@ -17,6 +17,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CheckCircle, Package, ArrowLeft, Clock } from 'lucide-react';
 import { getOrders } from '@/data/domains/orders';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 
 export default async function PaymentStatusPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
@@ -62,7 +63,7 @@ export default async function PaymentStatusPage({ searchParams }: { searchParams
             </div>
             <div className="flex justify-between font-medium text-slate-600">
               <span>التاريخ</span>
-              <span className="font-bold text-slate-900">{new Date(order.createdAt).toLocaleDateString('ar-EG')}</span>
+              <span className="font-bold text-slate-900">{new Date(order.createdAt).toLocaleDateString('ar-EG', { timeZone: PLATFORM_TIMEZONE })}</span>
             </div>
             <div className="flex justify-between font-medium text-slate-600">
               <span>الحالة</span>

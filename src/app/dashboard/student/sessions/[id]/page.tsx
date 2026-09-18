@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { Video, Clock, User, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,7 +52,7 @@ export default async function StudentSessionPage({
               <div className="flex items-center gap-3 text-indigo-700 font-medium">
                 <span className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
-                  {new Date(session.scheduledAt).toLocaleString('ar-EG', {
+                  {new Date(session.scheduledAt).toLocaleString('ar-EG', { timeZone: PLATFORM_TIMEZONE,
                     dateStyle: 'medium',
                     timeStyle: 'short',
                   })}

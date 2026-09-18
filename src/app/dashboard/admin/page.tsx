@@ -15,6 +15,7 @@ import { getAuditLogs } from '@/data/domains/admin';
 import { createClient } from '@/lib/supabase/server';
 import { SITE_IMAGE_SLOTS } from '@/lib/site-images';
 import { hasAdminPermission, formatPrice, formatDate } from '@/lib/utils';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 export const dynamic = 'force-dynamic';
 
@@ -163,7 +164,7 @@ export default async function AdminDashboard() {
                       جلسة رقم {session.sessionNumber}
                     </Link>
                     <span className="shrink-0 font-mono text-sm font-bold text-slate-500">
-                      {new Date(session.scheduledAt).toLocaleTimeString('ar-EG', {
+                      {new Date(session.scheduledAt).toLocaleTimeString('ar-EG', { timeZone: PLATFORM_TIMEZONE,
                         hour: '2-digit',
                         minute: '2-digit',
                       })}

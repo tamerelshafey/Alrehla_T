@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Clock, Video } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 /**
  * قائمة جلسات — بتتعرض للمدرب وللطالب بنفس الشكل.
@@ -64,7 +65,7 @@ export function SessionsList({ sessions }: { sessions: SessionRow[] }) {
                 }`}
               >
                 <span className="text-xs">
-                  {date.toLocaleDateString('ar-EG', { month: 'short' })}
+                  {date.toLocaleDateString('ar-EG', { timeZone: PLATFORM_TIMEZONE, month: 'short' })}
                 </span>
                 <span className="text-lg leading-none">{date.getDate()}</span>
               </div>
@@ -79,7 +80,7 @@ export function SessionsList({ sessions }: { sessions: SessionRow[] }) {
                 <div className="mt-1 flex flex-wrap items-center gap-3 text-sm font-medium text-slate-500">
                   <span className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    {date.toLocaleTimeString('ar-EG', {
+                    {date.toLocaleTimeString('ar-EG', { timeZone: PLATFORM_TIMEZONE,
                       hour: '2-digit',
                       minute: '2-digit',
                     })}

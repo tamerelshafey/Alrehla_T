@@ -7,6 +7,7 @@ import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import Link from 'next/link';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +27,7 @@ export default async function Page() {
     studentName: await getParticipantName(b.childId || b.userId, b.userId),
     idDisplay: <Link href={`/dashboard/admin/bookings/${b.id}`} className="font-bold text-blue-600 hover:underline">#{b.id.split('-')[1]}</Link>,
     dateDisplay: formatDate(b.scheduledAt),
-    timeDisplay: new Date(b.scheduledAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
+    timeDisplay: new Date(b.scheduledAt).toLocaleTimeString('ar-EG', { timeZone: PLATFORM_TIMEZONE, hour: '2-digit', minute: '2-digit' })
   })));
 
   const columns = [

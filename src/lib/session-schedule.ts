@@ -1,4 +1,5 @@
 import type { WeeklySlot, DayOfWeek } from '@/types';
+import { cairoParts, cairoWallClockToUtc, addCairoDays } from '@/lib/timezone';
 
 /**
  * توليد مواعيد الجلسات.
@@ -13,6 +14,10 @@ import type { WeeklySlot, DayOfWeek } from '@/types';
  *
  * عشان كده حالة الجلسة بتبقى `pending` مش `confirmed`: الميعاد اتحسب
  * مش اتفق عليه.
+ *
+ * ⚠️ كل الحساب هنا بساعة الحيطة في القاهرة. كان بـ`setHours()` اللي
+ * بتستخدم توقيت الخادم — وخادم Vercel بيشتغل UTC، فالمدرب اللي بيختار
+ * «18:00» كانت جلساته بتتسجّل 18:00 UTC والمستخدم في مصر يشوفها 21:00.
  */
 const DAY_INDEX: Record<DayOfWeek, number> = {
   sunday: 0,
@@ -51,12 +56,25 @@ export function buildSessionSchedule(params: {
 
   // مفيش جدول للمدرب (أو مفيش مدرب أصلًا): بنحجز نفس يوم وساعة التأكيد
   // أسبوعيًا. تخمين صريح، والإدارة بتصلّحه.
-  const first = slot ? nextSlotDate(earliest, slot) : earliest;
+  if (!slot) {
+    const dates: string[] = [];
+    let w = cairoParts(earliest);
+    for (let i = 0; i < count; i += 1) {
+      dates.push(cairoWallClockToUtc(w).toISOString());
+      w = addCairoDays(w, 7);
+    }
+    return dates;
+  }
+
+  let wall = firstSlotWallClock(earliest, slot);
 
   const dates: string[] = [];
   for (let i = 0; i < count; i += 1) {
-    const date = new Date(first.getTime() + i * 7 * 24 * 60 * 60 * 1000);
-    dates.push(date.toISOString());
+    // أسبوع = **سبع أيام تقويمية** مش 7×24 ساعة. الفرق بيبان لما
+    // التوقيت الصيفي يبدأ أو يخلص: الجمع بالساعات كان بيزحلق ميعاد
+    // الطالب ساعة كاملة في نص الباقة.
+    dates.push(cairoWallClockToUtc(wall).toISOString());
+    wall = addCairoDays(wall, 7);
   }
   return dates;
 }
@@ -86,25 +104,23 @@ function pickSlot(schedule?: WeeklySlot[] | null): WeeklySlot | null {
   )[0];
 }
 
-/** أقرب تاريخ في أو بعد `earliest` يقع في يوم وساعة الميعاد. */
-function nextSlotDate(earliest: Date, slot: WeeklySlot): Date {
+/** أقرب ساعة حيطة في أو بعد `earliest` توافق يوم وساعة الميعاد. */
+function firstSlotWallClock(earliest: Date, slot: WeeklySlot) {
   const [hours, minutes] = slot.time.split(':').map((n) => parseInt(n, 10));
   const target = DAY_INDEX[slot.day];
 
-  const date = new Date(earliest);
-  date.setHours(
-    Number.isFinite(hours) ? hours : 16,
-    Number.isFinite(minutes) ? minutes : 0,
-    0,
-    0
-  );
+  let wall = {
+    ...cairoParts(earliest),
+    hour: Number.isFinite(hours) ? hours : 16,
+    minute: Number.isFinite(minutes) ? minutes : 0,
+    second: 0,
+  };
 
   // لو الساعة عدّت النهارده، ابدأ من بكرة قبل ما تدوّر على اليوم.
-  if (date.getTime() < earliest.getTime()) {
-    date.setDate(date.getDate() + 1);
+  if (cairoWallClockToUtc(wall).getTime() < earliest.getTime()) {
+    wall = addCairoDays(wall, 1);
   }
 
-  const diff = (target - date.getDay() + 7) % 7;
-  date.setDate(date.getDate() + diff);
-  return date;
+  const diff = (target - wall.weekday + 7) % 7;
+  return diff === 0 ? wall : addCairoDays(wall, diff);
 }

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Instructor, ProfileUpdateRequest, InstructorCertification } from '@/types';
 import { CheckCircle2, AlertCircle, XCircle, Calendar, MessageSquare, Save } from 'lucide-react';
 import { approveProfileUpdateRequest, rejectProfileUpdateRequest, updateInstructorCertification } from '@/actions/instructors';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 interface AdminInstructorClientProps {
   instructor: Instructor;
@@ -82,7 +83,7 @@ export function AdminInstructorClient({ instructor, updateRequests, certificatio
                   <div><span className="font-bold">رابط اللقاء:</span> <a href={certification.trainingMeetingLink} target="_blank" rel="noreferrer" className="text-blue-600 underline">اضغط هنا</a></div>
                 )}
                 {certification.certifiedAt && (
-                  <div><span className="font-bold">تاريخ الاعتماد:</span> {new Date(certification.certifiedAt).toLocaleDateString('ar-EG')}</div>
+                  <div><span className="font-bold">تاريخ الاعتماد:</span> {new Date(certification.certifiedAt).toLocaleDateString('ar-EG', { timeZone: PLATFORM_TIMEZONE })}</div>
                 )}
               </div>
             )}
@@ -104,7 +105,7 @@ export function AdminInstructorClient({ instructor, updateRequests, certificatio
             {pendingRequests.map(req => (
               <div key={req.id} className="mb-6 last:mb-0 bg-white rounded-3xl p-6 border border-amber-100">
                 <div className="mb-4">
-                  <span className="text-xs font-bold text-slate-500 block mb-2">تاريخ الطلب: {new Date(req.createdAt).toLocaleString('ar-EG')}</span>
+                  <span className="text-xs font-bold text-slate-500 block mb-2">تاريخ الطلب: {new Date(req.createdAt).toLocaleString('ar-EG', { timeZone: PLATFORM_TIMEZONE })}</span>
                   {/* Only the fields the instructor actually asked to change are
                       shown — a request about the bio used to be rendered as if it
                       were a work-model request. */}
@@ -231,7 +232,7 @@ export function AdminInstructorClient({ instructor, updateRequests, certificatio
               {pastRequests.map(req => (
                 <div key={req.id} className="rounded-3xl bg-slate-50 p-4 border border-slate-100">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-bold text-slate-500">{new Date(req.createdAt).toLocaleString('ar-EG')}</span>
+                    <span className="text-xs font-bold text-slate-500">{new Date(req.createdAt).toLocaleString('ar-EG', { timeZone: PLATFORM_TIMEZONE })}</span>
                     <span className={`text-xs font-bold px-2 py-1 rounded-lg ${req.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                       {req.status === 'approved' ? 'مُعتمد' : 'مرفوض'}
                     </span>

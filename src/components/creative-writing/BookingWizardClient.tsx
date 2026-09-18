@@ -6,6 +6,7 @@ import { Calendar, Clock, User, ArrowRight, Video } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 const DAY_ORDER: DayOfWeek[] = [
   'saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
@@ -72,7 +73,7 @@ export function BookingWizardClient({
   };
 
   const formatUntil = (iso: string) =>
-    new Date(iso).toLocaleDateString('ar-EG', {
+    new Date(iso).toLocaleDateString('ar-EG', { timeZone: PLATFORM_TIMEZONE,
       day: 'numeric',
       month: 'long',
       year: 'numeric',

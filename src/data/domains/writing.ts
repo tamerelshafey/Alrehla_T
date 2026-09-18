@@ -13,6 +13,7 @@ import { cookies } from 'next/headers';
 import { createPublicClient } from '@/lib/supabase/public';
 import { getParticipantName } from '@/data/domains/account';
 import { createClient } from '@/lib/supabase/server';
+import { cairoParts } from '@/lib/timezone';
 
 // Import from auth if needed
 
@@ -311,11 +312,10 @@ export const getInstructorStudents = async (): Promise<InstructorStudent[]> => {
  * ميعادها، والميعاد بيفضى بعد آخر جلسة فيه. يعني باقة ماشية شهرين
  * بتقفل ميعادها شهرين — وده اللي كان مطلوب.
  *
- * ⚠️ اليوم والساعة بيتقروا بتوقيت UTC، لأن ده نفس الأساس اللي
- * `buildSessionSchedule` بيكتب بيه (`setHours` على خادم Vercel = UTC).
- * فالمقارنة متسقة. **لكن ده يكشف مصيدة أقدم**: المدرب اللي بيختار
- * «18:00» بيتسجّل 18:00 UTC، والمستخدم في مصر بيشوفها 21:00. الإصلاح
- * بيغيّر معنى كل ميعاد مسجّل، فمحتاج قرار — مكتوب في دفتر الحالة.
+ * اليوم والساعة بيتقروا بتوقيت القاهرة — نفس الأساس اللي جدول المدرب
+ * مكتوب بيه واللي `buildSessionSchedule` بيولّد بيه. قراءتها بتوقيت
+ * الخادم (UTC على Vercel) كانت هتخلي ميعاد «18:00» في الجدول ما
+ * يقابلش الجلسة المسجّلة له.
  */
 export async function getBookedSlotsByInstructor(
   instructorIds: string[],
@@ -351,10 +351,9 @@ export async function getBookedSlotsByInstructor(
     const at = new Date(row.scheduled_at);
     if (Number.isNaN(at.getTime())) continue;
 
-    const day = DAYS[at.getUTCDay()];
-    const time = `${String(at.getUTCHours()).padStart(2, '0')}:${String(
-      at.getUTCMinutes(),
-    ).padStart(2, '0')}`;
+    const p = cairoParts(at);
+    const day = DAYS[p.weekday];
+    const time = `${String(p.hour).padStart(2, '0')}:${String(p.minute).padStart(2, '0')}`;
     const key = `${row.instructor_id}|${day}|${time}`;
 
     const current = latest.get(key);

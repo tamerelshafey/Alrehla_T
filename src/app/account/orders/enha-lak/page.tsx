@@ -3,6 +3,7 @@ import { getOrders } from '@/data/domains/orders';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { StatusBadge } from '@/components/StatusBadge';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +27,7 @@ export default async function EnhaLakOrdersPage() {
   const allOrders = await getOrders();
   const orders = allOrders.map(order => ({
     idDisplay: `طلب #${order.id.replace('ord-', '').toUpperCase()}`,
-    date: new Date(order.createdAt).toLocaleDateString('ar-EG'),
+    date: new Date(order.createdAt).toLocaleDateString('ar-EG', { timeZone: PLATFORM_TIMEZONE }),
     statusDisplay: (
       <StatusBadge
         type={ORDER_STATUS[order.status]?.type ?? 'warning'}

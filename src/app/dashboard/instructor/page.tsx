@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Users, Calendar, Video, Clock, Wallet, User, CalendarDays, Settings, Sparkles } from 'lucide-react';
 import { InstructorRatingsWidget } from '@/components/dashboard/InstructorRatingsWidget';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 export const dynamic = 'force-dynamic';
 
@@ -115,7 +116,7 @@ export default async function InstructorDashboard() {
                       className={`flex h-14 w-14 flex-col items-center justify-center rounded-xl font-bold ${isToday ? 'bg-indigo-600 text-white shadow-md' : 'border border-slate-200 bg-white text-slate-700'}`}
                     >
                       <span className="text-xs">
-                        {date.toLocaleDateString('ar-EG', { month: 'short' })}
+                        {date.toLocaleDateString('ar-EG', { timeZone: PLATFORM_TIMEZONE, month: 'short' })}
                       </span>
                       <span className="text-lg leading-none">
                         {date.getDate()}
@@ -127,7 +128,7 @@ export default async function InstructorDashboard() {
                       </h3>
                       <div className="mt-1 flex items-center gap-2 text-sm font-medium text-slate-500">
                         <Clock className="h-4 w-4" />
-                        {date.toLocaleTimeString('ar-EG', {
+                        {date.toLocaleTimeString('ar-EG', { timeZone: PLATFORM_TIMEZONE,
                           hour: '2-digit',
                           minute: '2-digit',
                         })}

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { logAuditAction } from '@/lib/audit';
 import { notifyUser, getInstructorUserId } from '@/lib/notifications';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 /**
  * The session's meeting room and its time.
@@ -76,7 +77,7 @@ export async function updateSessionDetails(params: {
       event: 'session_update',
       recipientProfileId: await getInstructorUserId(before.instructor_id),
       title: rescheduled ? 'تم تعديل موعد جلسة' : 'تم تحديث رابط الجلسة',
-      message: when.toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'short' }),
+      message: when.toLocaleString('ar-EG', { timeZone: PLATFORM_TIMEZONE, dateStyle: 'full', timeStyle: 'short' }),
       link: `/dashboard/instructor/sessions/${sessionId}`,
     });
   }
@@ -92,7 +93,7 @@ export async function updateSessionDetails(params: {
       event: 'session_update',
       recipientProfileId: sub?.user_id,
       title: rescheduled ? 'تم تعديل موعد جلستك' : 'تم تحديث رابط جلستك',
-      message: when.toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'short' }),
+      message: when.toLocaleString('ar-EG', { timeZone: PLATFORM_TIMEZONE, dateStyle: 'full', timeStyle: 'short' }),
       link: `/dashboard/student/sessions/${sessionId}`,
     });
   }

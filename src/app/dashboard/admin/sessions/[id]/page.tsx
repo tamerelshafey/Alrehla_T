@@ -11,6 +11,7 @@ import { getParticipantName } from '@/data/domains/account';
 import { notFound } from 'next/navigation';
 import { SessionSettings } from './SessionSettings';
 import { FileText, Download, Upload } from 'lucide-react';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,7 +56,7 @@ export default async function InstructorSessionDetailsPage({ params }: { params:
               <div className="flex justify-between border-b border-slate-50 pb-3">
                 <span className="text-slate-500">التاريخ والوقت</span>
                 <span className="font-bold text-slate-800">
-                  {new Date(session.scheduledAt).toLocaleString('ar-EG', {
+                  {new Date(session.scheduledAt).toLocaleString('ar-EG', { timeZone: PLATFORM_TIMEZONE,
                     dateStyle: 'full',
                     timeStyle: 'short',
                   })}

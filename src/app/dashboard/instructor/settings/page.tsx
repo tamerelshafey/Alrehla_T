@@ -2,9 +2,9 @@ import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader'
 import { InstructorSettingsClient } from './InstructorSettingsClient';
 import {
   getInstructorById,
-  getInstructorPricingOptions,
   getPricingFormulaSettings,
 } from '@/data/domains/writing';
+import { getSiteSettings } from '@/data/domains/content';
 import { getMyInstructorId } from '@/data/domains/services';
 
 export const dynamic = 'force-dynamic';
@@ -15,10 +15,10 @@ export default async function InstructorSettingsPage() {
   const instructorId = await getMyInstructorId();
   if (!instructorId) return null;
 
-  const [instructor, pricingOptions, formulaSettings] = await Promise.all([
+  const [instructor, formulaSettings, settings] = await Promise.all([
     getInstructorById(instructorId),
-    getInstructorPricingOptions(),
     getPricingFormulaSettings(),
+    getSiteSettings(),
   ]);
 
   if (!instructor) return null;
@@ -32,8 +32,8 @@ export default async function InstructorSettingsPage() {
 
       <InstructorSettingsClient
         instructor={instructor}
-        pricingOptions={pricingOptions}
         formulaSettings={formulaSettings}
+        priceAlert={settings.instructorPriceAlert}
       />
     </div>
   );

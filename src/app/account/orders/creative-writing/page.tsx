@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { formatDate, formatPrice } from '@/lib/utils';
 import { getSessions } from '@/data/domains/writing';
 import { getMyServiceOrders } from '@/data/domains/services';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,7 +66,7 @@ export default async function CreativeWritingOrdersPage() {
       id: session.id,
       sessionNumber: session.sessionNumber,
       date: formatDate(session.scheduledAt),
-      time: new Date(session.scheduledAt).toLocaleTimeString('ar-EG', {
+      time: new Date(session.scheduledAt).toLocaleTimeString('ar-EG', { timeZone: PLATFORM_TIMEZONE,
         hour: '2-digit',
         minute: '2-digit',
       }),

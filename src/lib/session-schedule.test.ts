@@ -1,9 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { buildSessionSchedule } from './session-schedule';
+import { cairoParts } from './timezone';
 import type { WeeklySlot } from '@/types';
 
-/** الثلاثاء ١٦ سبتمبر ٢٠٢٥، الساعة ١٢ ظهرًا. */
-const FROM = new Date(2025, 8, 16, 12, 0, 0, 0);
+/**
+ * ⚠️ كل التحقق هنا بـ`cairoParts` مش بـ`getHours()`.
+ *
+ * `getHours()` بتقرا بتوقيت الجهاز: على جهاز في مصر بتدي 17، وعلى خادم
+ * Vercel بتدي 14 لنفس اللحظة. الاختبار اللي بيستخدمها بيعدّي على جهاز
+ * التطوير ويفشل في الإنتاج — وده اللي خلّى عطل الثلاث ساعات يعدّي.
+ * (والاختبارات كلها بتشتغل `TZ=UTC` دلوقتي — انظر `vitest.config.ts`.)
+ */
+
+/** الثلاثاء ١٦ سبتمبر ٢٠٢٥، الساعة ١٢ ظهرًا بتوقيت القاهرة. */
+const FROM = new Date('2025-09-16T09:00:00.000Z');
 
 describe('buildSessionSchedule', () => {
   it('بيعمل عدد الجلسات المطلوب', () => {
@@ -30,15 +40,46 @@ describe('buildSessionSchedule', () => {
     );
   });
 
-  it('بيمشي على يوم وساعة جدول المدرب', () => {
+  it('بيمشي على يوم وساعة جدول المدرب بتوقيت القاهرة', () => {
     const schedule: WeeklySlot[] = [{ day: 'monday', time: '17:30' }];
     const dates = buildSessionSchedule({ count: 4, from: FROM, weeklySchedule: schedule });
 
     for (const iso of dates) {
-      const date = new Date(iso);
-      expect(date.getDay()).toBe(1); // الإتنين
-      expect(date.getHours()).toBe(17);
-      expect(date.getMinutes()).toBe(30);
+      const p = cairoParts(new Date(iso));
+      expect(p.weekday).toBe(1); // الإتنين
+      expect(p.hour).toBe(17);
+      expect(p.minute).toBe(30);
+    }
+  });
+
+  it('١٧:٣٠ في الجدول = ١٧:٣٠ في القاهرة مش في UTC', () => {
+    // الاختبار ده هو اللي بيمسك العطل الأصلي: الجلسة كانت بتتسجّل
+    // 17:30 UTC، يعني ٢٠:٣٠ بتوقيت القاهرة.
+    const schedule: WeeklySlot[] = [{ day: 'monday', time: '17:30' }];
+    const first = new Date(
+      buildSessionSchedule({ count: 1, from: FROM, weeklySchedule: schedule })[0]
+    );
+    expect(cairoParts(first).hour).toBe(17);
+    // سبتمبر = توقيت صيفي في مصر (UTC+3)، فالمخزَّن لازم يبقى ١٤:٣٠.
+    expect(first.getUTCHours()).toBe(14);
+  });
+
+  it('الميعاد بيفضل ثابت على ساعة الحيطة بعد انتهاء التوقيت الصيفي', () => {
+    // التوقيت الصيفي في مصر بيخلص آخر أكتوبر. باقة بتعدّي عليه كانت
+    // بتزحلق ميعاد الطالب ساعة كاملة، لأن «أسبوع» كانت ٧×٢٤ ساعة بدل
+    // سبع أيام تقويمية.
+    const schedule: WeeklySlot[] = [{ day: 'monday', time: '18:00' }];
+    const dates = buildSessionSchedule({
+      count: 10,
+      from: new Date('2025-10-06T09:00:00.000Z'),
+      weeklySchedule: schedule,
+    });
+
+    for (const iso of dates) {
+      const p = cairoParts(new Date(iso));
+      expect(p.weekday).toBe(1);
+      expect(p.hour).toBe(18);
+      expect(p.minute).toBe(0);
     }
   });
 
@@ -52,8 +93,9 @@ describe('buildSessionSchedule', () => {
       buildSessionSchedule({ count: 1, from: FROM, weeklySchedule: schedule })[0]
     );
     // الأحد محجوز، فأول ميعاد متاح هو الإتنين.
-    expect(first.getDay()).toBe(1);
-    expect(first.getHours()).toBe(18);
+    const p = cairoParts(first);
+    expect(p.weekday).toBe(1);
+    expect(p.hour).toBe(18);
   });
 
   it('اختيار العميل بيغلب أول ميعاد في جدول المدرب', () => {
@@ -71,9 +113,9 @@ describe('buildSessionSchedule', () => {
     });
     expect(dates).toHaveLength(3);
     for (const iso of dates) {
-      const d = new Date(iso);
-      expect(d.getDay()).toBe(3);
-      expect(d.getHours()).toBe(19);
+      const p = cairoParts(new Date(iso));
+      expect(p.weekday).toBe(3);
+      expect(p.hour).toBe(19);
     }
   });
 
@@ -88,8 +130,9 @@ describe('buildSessionSchedule', () => {
         preferredSlot: { day: 'funday' as never, time: '19:00' },
       })[0]
     );
-    expect(first.getDay()).toBe(1);
-    expect(first.getHours()).toBe(17);
+    const p = cairoParts(first);
+    expect(p.weekday).toBe(1);
+    expect(p.hour).toBe(17);
   });
 
   it('جدول فاضي = أسبوعي من أول ميعاد متاح بعد يومين', () => {
@@ -97,6 +140,8 @@ describe('buildSessionSchedule', () => {
     expect(dates).toHaveLength(2);
     // مفيش جدول للمدرب، فالبداية بعد يومين بالظبط والباقي كل أسبوع.
     expect(new Date(dates[0]).getTime()).toBe(FROM.getTime() + 2 * 24 * 60 * 60 * 1000);
-    expect(new Date(dates[1]).getDay()).toBe(new Date(dates[0]).getDay());
+    expect(cairoParts(new Date(dates[1])).weekday).toBe(
+      cairoParts(new Date(dates[0])).weekday
+    );
   });
 });

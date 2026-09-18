@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Calendar, MessageSquare } from 'lucide-react';
 import { WritingPackage, SessionWithDetails } from '@/types';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 interface Props {
   currentPackage: WritingPackage | null;
@@ -65,7 +66,7 @@ export function StudentJourneyClient({ currentPackage, sessions, latestReport }:
           {next ? (
             <span>
               الجلسة القادمة:{' '}
-              {new Date(next.scheduledAt).toLocaleString('ar-EG', {
+              {new Date(next.scheduledAt).toLocaleString('ar-EG', { timeZone: PLATFORM_TIMEZONE,
                 dateStyle: 'full',
                 timeStyle: 'short',
               })}

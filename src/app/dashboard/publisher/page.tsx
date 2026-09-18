@@ -6,6 +6,7 @@ import { getCurrentUser } from '@/data/domains/auth';
 import { getPublisherOrders } from '@/data/domains/products';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,7 +68,7 @@ export default async function PublisherDashboard() {
                 {orders.map(order => (
                   <tr key={order.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-4 font-medium text-slate-800">{order.productName}</td>
-                    <td className="py-4 text-slate-500">{new Date(order.createdAt).toLocaleDateString('ar-EG')}</td>
+                    <td className="py-4 text-slate-500">{new Date(order.createdAt).toLocaleDateString('ar-EG', { timeZone: PLATFORM_TIMEZONE })}</td>
                     <td className="py-4 text-slate-600">{order.quantity}</td>
                     <td className="py-4 text-slate-600">{formatPrice(order.totalAmount)}</td>
                     <td className="py-4 font-bold text-emerald-600">{formatPrice(order.publisherShare)}</td>
