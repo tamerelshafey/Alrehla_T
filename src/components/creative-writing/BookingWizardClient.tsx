@@ -242,16 +242,13 @@ export function BookingWizardClient({ instructors, packages }: BookingWizardProp
                 تأكيد البيانات والحجز
               </h2>
               
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">اسم المتدرب</label>
-                  <input required type="text" className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 outline-none focus:border-emerald-500" placeholder="الاسم" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">مجال الاهتمام</label>
-                  <input required type="text" className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 outline-none focus:border-emerald-500" placeholder="مثال: كتابة القصة القصيرة" />
-                </div>
-              </div>
+              {/*
+                كان هنا حقلين: «اسم المتدرب» و«مجال الاهتمام». الاتنين
+                `required` — يعني بيوقّفوا العميل لحد ما يملاهم — وبلا
+                `name` وبلا state، فمحدش كان بيقراهم ومحدش بيبعتهم. اتشالوا.
+                المتدرب نفسه بيتحدد في الصفحة الجاية (أنا / أحد أفراد
+                العائلة) من بيانات الحساب الحقيقية.
+              */}
 
               <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6">
                 <h3 className="font-bold text-slate-800 mb-4">ملخص الحجز:</h3>

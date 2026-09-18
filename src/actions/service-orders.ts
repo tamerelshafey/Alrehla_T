@@ -310,12 +310,16 @@ export async function startServiceOrder(orderId: string) {
     throw new Error('لا يمكن بدء التنفيذ قبل تأكيد الدفع');
   }
 
-  const { error } = await supabase
+  const { data: started, error } = await supabase
     .from('service_orders')
     .update({ status: 'in_progress' })
-    .eq('id', orderId);
+    .eq('id', orderId)
+    .select('id');
 
   if (error) throw new Error('تعذّر تحديث حالة الطلب');
+  if (!started || started.length === 0) {
+    throw new Error('الطلب مش موجود — التغيير مروّحش للقاعدة.');
+  }
 
   await notifyUser({
     event: 'order_status',
@@ -352,12 +356,16 @@ export async function deliverServiceOrder(orderId: string, deliveryMessage: stri
 
   await sendServiceOrderMessage(orderId, text, true);
 
-  const { error } = await supabase
+  const { data: delivered, error } = await supabase
     .from('service_orders')
     .update({ status: 'delivered', delivered_at: new Date().toISOString() })
-    .eq('id', orderId);
+    .eq('id', orderId)
+    .select('id');
 
   if (error) throw new Error('تعذّر تسجيل التسليم');
+  if (!delivered || delivered.length === 0) {
+    throw new Error('الطلب مش موجود — التسليم مااتسجّلش.');
+  }
 
   await notifyUser({
     event: 'order_status',
@@ -428,12 +436,16 @@ async function completeOrder(
         .maybeSingle()
     : { data: null };
 
-  const { error } = await supabase
+  const { data: completed, error } = await supabase
     .from('service_orders')
     .update({ status: 'completed', completed_at: new Date().toISOString() })
-    .eq('id', order.id);
+    .eq('id', order.id)
+    .select('id');
 
   if (error) throw new Error('تعذّر إقفال الطلب');
+  if (!completed || completed.length === 0) {
+    throw new Error('الطلب مش موجود — الإقفال مروّحش للقاعدة.');
+  }
 
   await recordInstructorEarning(supabase, order, service?.name ?? 'خدمة إبداعية');
 
@@ -481,12 +493,16 @@ export async function confirmServiceOrderPayment(orderId: string) {
   // التزام على مقدّم الخدمة أصلًا.
   const dueAt = new Date(Date.now() + SERVICE_DUE_DAYS * 24 * 60 * 60 * 1000);
 
-  const { error } = await supabase
+  const { data: paid, error } = await supabase
     .from('service_orders')
     .update({ status: 'paid', due_at: dueAt.toISOString() })
-    .eq('id', orderId);
+    .eq('id', orderId)
+    .select('id');
 
   if (error) throw new Error('تعذّر تأكيد الدفع');
+  if (!paid || paid.length === 0) {
+    throw new Error('الطلب مش موجود — تأكيد الدفع مروّحش للقاعدة.');
+  }
 
   const { data: order } = await supabase
     .from('service_orders')
@@ -572,12 +588,16 @@ export async function setServiceOrderStatusByAdmin(
   if (!reason.trim()) throw new Error('اكتب السبب');
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data: statusRows, error } = await supabase
     .from('service_orders')
     .update({ status })
-    .eq('id', orderId);
+    .eq('id', orderId)
+    .select('id');
 
   if (error) throw new Error('تعذّر تحديث حالة الطلب');
+  if (!statusRows || statusRows.length === 0) {
+    throw new Error('الطلب مش موجود — التغيير مروّحش للقاعدة.');
+  }
 
   const { data: target } = await supabase
     .from('service_orders')
@@ -632,17 +652,21 @@ export async function setServiceOrderDueDate(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data: dueRows, error } = await supabase
     .from('service_orders')
     .update({
       due_at: dueAt ? new Date(dueAt).toISOString() : null,
       due_note: dueAt ? reason : null,
     })
-    .eq('id', orderId);
+    .eq('id', orderId)
+    .select('id');
 
   if (error) {
     console.error('Error setting due date', error);
     return { ok: false, error: `تعذّر تعديل المهلة: ${error.message}` };
+  }
+  if (!dueRows || dueRows.length === 0) {
+    return { ok: false, error: 'الطلب مش موجود — المهلة مااتغيّرتش.' };
   }
 
   // الطرفين يعرفوا. تمديد من غير إخطار بيخلي العميل مستني من غير ما يفهم.
@@ -715,18 +739,24 @@ export async function submitServiceOrderPayment(
     return { ok: false, error: 'تم إرسال إثبات الدفع لهذا الطلب بالفعل' };
   }
 
-  const { error } = await supabase
+  const { data: paymentRows, error } = await supabase
     .from('service_orders')
     .update({
       status: 'awaiting_verification',
       payment_method: payment.method,
       payment_receipt_url: payment.receiptUrl,
     })
-    .eq('id', orderId);
+    .eq('id', orderId)
+    .select('id');
 
   if (error) {
     console.error('Error submitting service order payment', error);
-    return { ok: false, error: 'تعذّر إرسال الإيصال' };
+    return { ok: false, error: `تعذّر إرسال الإيصال: ${error.message}` };
+  }
+  // نفس مصيدة حجز الباقة: رفض صامت من القاعدة كان بيعدّي كأنه نجاح،
+  // فالعميل يشوف «اتبعت» ومفيش إيصال وصل للإدارة أصلًا.
+  if (!paymentRows || paymentRows.length === 0) {
+    return { ok: false, error: 'الإيصال مروّحش للقاعدة — جرّب تاني أو كلّم الدعم.' };
   }
 
   await notifyAdmins({

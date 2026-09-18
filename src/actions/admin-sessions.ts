@@ -41,21 +41,33 @@ export async function updateSessionDetails(params: {
     .eq('id', sessionId)
     .maybeSingle();
 
-  const { error } = await supabase
+  const { data: saved, error } = await supabase
     .from('sessions')
     .update({
       meeting_url: url || null,
       scheduled_at: when.toISOString(),
       updated_at: new Date().toISOString(),
     })
-    .eq('id', sessionId);
+    .eq('id', sessionId)
+    .select('id');
 
   if (error) {
     console.error('Error updating session', error);
     throw new Error('تعذّر حفظ بيانات الجلسة');
   }
+  // من غير الفحص ده الإدارة بتشوف «اتحفظ» وبيتبعت إشعار تعديل موعد
+  // للمدرب وللطالب، والجلسة في القاعدة ما اتغيّرش فيها حاجة.
+  if (!saved || saved.length === 0) {
+    throw new Error('الجلسة مش موجودة — التعديل مروّحش للقاعدة.');
+  }
 
-  const rescheduled = before && before.scheduled_at !== when.toISOString();
+  // المقارنة بتتم بالوقت الفعلي مش بالنص. القاعدة بترجّع
+  // `2026-09-20T13:00:00+00:00` و`toISOString()` بيدّي
+  // `2026-09-20T13:00:00.000Z` — نفس اللحظة بالظبط، ونصّين مختلفين.
+  // يعني مقارنة النص كانت **دايمًا** بتقول «الموعد اتغيّر»، فأي تعديل
+  // لرابط الجلسة كان بيبعت للمدرب وللطالب إشعار كاذب إن الميعاد اتأجّل.
+  const previousTime = before?.scheduled_at ? new Date(before.scheduled_at).getTime() : null;
+  const rescheduled = previousTime !== null && previousTime !== when.getTime();
 
   // Both sides need to know — a moved session that nobody is told about is
   // a missed session.

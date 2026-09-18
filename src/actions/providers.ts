@@ -44,7 +44,7 @@ export async function saveProviderDetails(params: {
   if (!name) return { ok: false, error: 'اكتب اسم مقدّم الخدمة' };
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data: saved, error } = await supabase
     .from('service_providers')
     .update({
       display_name: name,
@@ -52,11 +52,15 @@ export async function saveProviderDetails(params: {
       status: params.status,
       updated_at: new Date().toISOString(),
     })
-    .eq('id', params.providerId);
+    .eq('id', params.providerId)
+    .select('id');
 
   if (error) {
     console.error('Error saving provider', error);
     return { ok: false, error: `تعذّر حفظ بيانات مقدّم الخدمة: ${error.message}` };
+  }
+  if (!saved || saved.length === 0) {
+    return { ok: false, error: 'الحفظ مروّحش للقاعدة — مقدّم الخدمة مش موجود أو الصلاحيات مش سامحة.' };
   }
 
   await logAuditAction({
@@ -219,13 +223,16 @@ export async function saveProviderOffering(params: {
     .eq('service_id', params.serviceId)
     .maybeSingle();
 
-  const { error } = existing
-    ? await supabase.from('provider_services').update(row).eq('id', existing.id)
-    : await supabase.from('provider_services').insert(row);
+  const { data: savedOffering, error } = existing
+    ? await supabase.from('provider_services').update(row).eq('id', existing.id).select('id')
+    : await supabase.from('provider_services').insert(row).select('id');
 
   if (error) {
     console.error('Error saving offering', error);
     return { ok: false, error: `تعذّر حفظ العرض: ${error.message}` };
+  }
+  if (!savedOffering || savedOffering.length === 0) {
+    return { ok: false, error: 'العرض مروّحش للقاعدة — الصلاحيات مش سامحة بالتعديل.' };
   }
 
   await logAuditAction({

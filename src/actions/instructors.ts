@@ -123,21 +123,31 @@ export async function approveProfileUpdateRequest(requestId: string) {
 
   if (Object.keys(update).length > 0) {
     update.updated_at = new Date().toISOString();
-    const { error: updateError } = await supabase
+    const { data: updatedRows, error: updateError } = await supabase
       .from('instructors')
       .update(update)
-      .eq('id', request.instructor_id);
+      .eq('id', request.instructor_id)
+      .select('id');
     if (updateError) {
       console.error('Error applying approved changes', updateError);
       throw new Error('تعذّر تطبيق التعديلات');
     }
+    // صفر صفوف = المدرب مش موجود أو الصلاحيات رفضت بصمت. من غير الفحص
+    // ده الطلب كان بيتقفل «تمت الموافقة» والمدرب ما اتغيّرش فيه حاجة.
+    if (!updatedRows || updatedRows.length === 0) {
+      throw new Error('التعديلات مروّحتش للقاعدة — ملف المدرب مش موجود أو الصلاحيات مش سامحة.');
+    }
   }
 
-  const { error: statusError } = await supabase
+  const { data: statusRows, error: statusError } = await supabase
     .from('profile_update_requests')
     .update({ status: 'approved' })
-    .eq('id', requestId);
+    .eq('id', requestId)
+    .select('id');
   if (statusError) throw new Error('تعذّر تحديث حالة الطلب');
+  if (!statusRows || statusRows.length === 0) {
+    throw new Error('الطلب مش موجود أو اتقفل قبل كده.');
+  }
 
   await logAuditAction({
     actorProfileId: currentUser.id,
@@ -173,12 +183,16 @@ export async function rejectProfileUpdateRequest(requestId: string, adminFeedbac
 
   if (readError || !request) throw new Error('الطلب غير موجود');
 
-  const { error } = await supabase
+  const { data: rejectedRows, error } = await supabase
     .from('profile_update_requests')
     .update({ status: 'rejected', admin_feedback: adminFeedback })
-    .eq('id', requestId);
+    .eq('id', requestId)
+    .select('id');
 
   if (error) throw new Error('تعذّر تحديث حالة الطلب');
+  if (!rejectedRows || rejectedRows.length === 0) {
+    throw new Error('الطلب مش موجود أو اتقفل قبل كده.');
+  }
 
   await logAuditAction({
     actorProfileId: currentUser.id,
@@ -225,10 +239,20 @@ export async function updateInstructorCertification(instructorId: string, passed
   }
 
   // The instructor record carries the same flag, so keep the two in step.
-  await supabase
+  //
+  // ده كان `await` من غير أي فحص — لا خطأ ولا عدد صفوف. يعني شهادة
+  // بتتسجّل على المدرب وعمود `training_passed` عليه يفضل زي ما هو،
+  // والشاشتين يقولوا حاجتين مختلفتين.
+  const { data: flagRows, error: flagError } = await supabase
     .from('instructors')
     .update({ training_passed: passed, updated_at: new Date().toISOString() })
-    .eq('id', instructorId);
+    .eq('id', instructorId)
+    .select('id');
+
+  if (flagError || !flagRows || flagRows.length === 0) {
+    console.error('Error syncing instructor training flag', flagError);
+    throw new Error('الشهادة اتسجّلت بس حالة التدريب على ملف المدرب مااتحدّثتش.');
+  }
 
   await logAuditAction({
     actorProfileId: currentUser.id,
@@ -253,18 +277,29 @@ export async function updatePricingFormulaSettings(
   );
 
   const supabase = await createClient();
-  const { error } = await supabase
+  // `upsert` مش `update`: صف `default` ممكن ما يكونش موجود أصلًا في
+  // قاعدة جديدة، و`UPDATE` على صف مش موجود بينجح ويغيّر **صفر** صفوف —
+  // فالشاشة تقول «اتحفظ» والمعادلة تفضل على القيم الافتراضية، وكل سعر
+  // خدمة بيتحسب غلط بعد كده.
+  const { data: formulaRows, error } = await supabase
     .from('pricing_formula_settings')
-    .update({
-      platform_multiplier: platformMultiplier,
-      fixed_admin_fee: fixedAdminFee,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', 'default');
+    .upsert(
+      {
+        id: 'default',
+        platform_multiplier: platformMultiplier,
+        fixed_admin_fee: fixedAdminFee,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'id' },
+    )
+    .select('id');
 
   if (error) {
     console.error('Error updating pricing formula', error);
     throw new Error('تعذّر حفظ إعدادات التسعير');
+  }
+  if (!formulaRows || formulaRows.length === 0) {
+    throw new Error('إعدادات التسعير مروّحتش للقاعدة — الصلاحيات مش سامحة بالتعديل.');
   }
 
   await logAuditAction({
@@ -305,7 +340,7 @@ export async function updateInstructorProfileByAdmin(
     throw new Error('سنوات الخبرة غير صحيحة');
   }
 
-  const { error } = await supabase
+  const { data: savedRows, error } = await supabase
     .from('instructors')
     .update({
       display_name: displayName,
@@ -314,11 +349,15 @@ export async function updateInstructorProfileByAdmin(
       years_experience: details.yearsExperience,
       updated_at: new Date().toISOString(),
     })
-    .eq('id', instructorId);
+    .eq('id', instructorId)
+    .select('id');
 
   if (error) {
     console.error('Error updating instructor profile', error);
     throw new Error('تعذّر حفظ بيانات المدرب');
+  }
+  if (!savedRows || savedRows.length === 0) {
+    throw new Error('الحفظ مروّحش للقاعدة — المدرب مش موجود أو الصلاحيات مش سامحة.');
   }
 
   await logAuditAction({

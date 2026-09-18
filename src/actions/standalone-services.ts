@@ -76,14 +76,18 @@ export async function updateStandaloneService(id: string, input: ServiceInput) {
   const user = await requireCatalogAdmin();
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { data: saved, error } = await supabase
     .from('standalone_services')
     .update(validate(input))
-    .eq('id', id);
+    .eq('id', id)
+    .select('id');
 
   if (error) {
     console.error('Error updating standalone service', error);
     throw new Error('تعذّر حفظ التعديل');
+  }
+  if (!saved || saved.length === 0) {
+    throw new Error('الخدمة مش موجودة — التعديل مروّحش للقاعدة.');
   }
 
   await logAuditAction({

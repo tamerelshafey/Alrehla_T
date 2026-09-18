@@ -80,7 +80,7 @@ export async function submitBookingPaymentProof(
   const user = await getCurrentUser();
 
   if (user.role === 'visitor') {
-    return { success: false, error: 'Unauthorized' };
+    return { success: false, error: 'لازم تسجّل الدخول الأول' };
   }
 
   const { data: sub } = await supabase
@@ -90,24 +90,30 @@ export async function submitBookingPaymentProof(
     .single();
 
   if (!sub || sub.user_id !== user.id) {
-    return { success: false, error: 'Unauthorized' };
+    return { success: false, error: 'الحجز ده مش على حسابك' };
   }
   
   // إثبات الدفع كان بيترمي هنا بالكامل: الحالة بتتغيّر ومفيش مرجع ولا
   // إيصال. دلوقتي وسيلة الدفع وصورة الإيصال بيتخزنوا، والرقم المرجعي
   // بتاعنا اتولّد مع الحجز.
-  const { error } = await supabase
+  const { data: saved, error } = await supabase
     .from('course_subscriptions')
     .update({
       status: 'awaiting_verification',
       payment_method: payment.method,
       payment_receipt_url: payment.receiptUrl,
     })
-    .eq('id', subscriptionId);
+    .eq('id', subscriptionId)
+    .select('id');
 
   if (error) {
     console.error('Error submitting payment proof:', error);
-    return { success: false, error: 'Failed' };
+    return { success: false, error: `تعذّر إرسال الإيصال: ${error.message}` };
+  }
+  // صفر صفوف = رفض صامت من صلاحيات القاعدة. من غير الفحص ده العميل
+  // بيشوف «اتبعت» ويستنى مراجعة مش هتيجي، والإدارة مش شايفة أي إيصال.
+  if (!saved || saved.length === 0) {
+    return { success: false, error: 'الإيصال مروّحش للقاعدة — جرّب تاني أو كلّم الدعم.' };
   }
 
   await notifyAdmins({
@@ -291,14 +297,18 @@ export async function assignBookingInstructor(params: {
     return { ok: false, error: 'المدرب مش مفعّل' };
   }
 
-  const { error: subError } = await supabase
+  const { data: subRows, error: subError } = await supabase
     .from('course_subscriptions')
     .update({ preferred_instructor_id: params.instructorId })
-    .eq('id', params.subscriptionId);
+    .eq('id', params.subscriptionId)
+    .select('id');
 
   if (subError) {
     console.error('Error assigning instructor to subscription', subError);
     return { ok: false, error: `تعذّر التعيين: ${subError.message}` };
+  }
+  if (!subRows || subRows.length === 0) {
+    return { ok: false, error: 'الاشتراك مش موجود — التعيين مروّحش للقاعدة.' };
   }
 
   // الجلسات اللي لسه ما تمّتش بس — الجلسة اللي خلصت بتفضل منسوبة لمدربها.

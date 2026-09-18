@@ -110,7 +110,7 @@ export async function rejectInstructorServiceOffer(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data: rejected, error } = await supabase
     .from('instructor_services')
     .update({
       status: 'rejected',
@@ -120,11 +120,17 @@ export async function rejectInstructorServiceOffer(
       updated_at: new Date().toISOString(),
     })
     .eq('instructor_id', instructorId)
-    .eq('service_id', serviceId);
+    .eq('service_id', serviceId)
+    .select('id');
 
   if (error) {
     console.error('Error rejecting instructor service offer', error);
     throw new Error('تعذّر رفض الطلب');
+  }
+  // صفر صفوف = مفيش عرض بالمفتاحين دول. من غير الفحص ده الإدارة بتشوف
+  // «اترفض» وبيوصل للمدرب إشعار رفض، والعرض لسه معتمد في القاعدة.
+  if (!rejected || rejected.length === 0) {
+    throw new Error('العرض ده مش موجود — الرفض مروّحش للقاعدة.');
   }
 
   await notifyUser({
@@ -192,22 +198,29 @@ export async function proposeServiceOffer(serviceId: string, requestedPrice: num
 
   // تعديل السعر المقترح لا يُنزل الحالة من "معتمدة" — الخدمة تظل معروضة
   // للعملاء بالسعر المعتمد القديم حتى تعتمد الإدارة السعر الجديد.
-  const { error } = existing
+  const { data: saved, error } = existing
     ? await supabase
         .from('instructor_services')
         .update({ requested_price: requestedPrice, updated_at: new Date().toISOString() })
         .eq('id', existing.id)
-    : await supabase.from('instructor_services').insert({
-        instructor_id: instructorId,
-        service_id: serviceId,
-        requested_price: requestedPrice,
-        status: 'pending',
-        is_active: true,
-      });
+        .select('id')
+    : await supabase
+        .from('instructor_services')
+        .insert({
+          instructor_id: instructorId,
+          service_id: serviceId,
+          requested_price: requestedPrice,
+          status: 'pending',
+          is_active: true,
+        })
+        .select('id');
 
   if (error) {
     console.error('Error proposing service offer', error);
     throw new Error('تعذّر إرسال الطلب');
+  }
+  if (!saved || saved.length === 0) {
+    throw new Error('الطلب مروّحش للقاعدة — صلاحيات الحساب مش سامحة.');
   }
 
   revalidatePath('/dashboard/instructor/services');
@@ -221,15 +234,19 @@ export async function setMyOfferActive(serviceId: string, isActive: boolean) {
   const instructorId = await requireOwnInstructorId();
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { data: toggled, error } = await supabase
     .from('instructor_services')
     .update({ is_active: isActive, updated_at: new Date().toISOString() })
     .eq('instructor_id', instructorId)
-    .eq('service_id', serviceId);
+    .eq('service_id', serviceId)
+    .select('id');
 
   if (error) {
     console.error('Error toggling offer', error);
     throw new Error('تعذّر تغيير حالة الخدمة');
+  }
+  if (!toggled || toggled.length === 0) {
+    throw new Error('مفيش عرض بالخدمة دي على حسابك — التغيير مروّحش للقاعدة.');
   }
 
   revalidatePath('/dashboard/instructor/services');
