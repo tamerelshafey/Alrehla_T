@@ -61,18 +61,40 @@ export async function requireSuperAdmin(
  * `child_profiles.account_profile_id`.
  */
 export async function getDependentGuardian(
-  profileId: string,
+  _profileId?: string,
 ): Promise<{ childId: string; guardianId: string; fullName: string } | null> {
   const { createClient } = await import('@/lib/supabase/server');
   const supabase = await createClient();
-  const { data } = await supabase
-    .from('child_profiles')
-    .select('id, user_profile_id, full_name')
-    .eq('account_profile_id', profileId)
-    .maybeSingle();
 
-  if (!data) return null;
-  return { childId: data.id, guardianId: data.user_profile_id, fullName: data.full_name };
+  // ⚠️ دالة في القاعدة، مش استعلام على `child_profiles`.
+  //
+  // كان الكود بيستعلم الجدول مباشرةً — وصلاحياته بتسمح لولي الأمر
+  // والإدارة وبس. الطفل بياخد **صفر صفوف**، فالدالة كانت بترجّع
+  // `null`، والحارس يفهم «ده مش حساب تابع» **ويعدّيه**.
+  //
+  // يعني الحارس كان بيفشل **مفتوحًا**: شكله شغّال وهو ما اشتغلش ولا
+  // مرة، والطفل كمّل طلبًا متكاملًا. ودي أسوأ من غياب الحارس، لأنها
+  // بتدّي إحساسًا كاذبًا بالأمان.
+  //
+  // `my_dependent_link` دالة SECURITY DEFINER بتتخطى الصلاحيات وبترجّع
+  // تلات حقول بس: صف العائلة، وولي الأمر، والاسم.
+  const { data, error } = await supabase.rpc('my_dependent_link');
+
+  if (error) {
+    // ⚠️ الفشل هنا **مش** معناه «مش تابع». لو رجّعنا `null` عند الخطأ
+    // بنرجع لنفس العطل بالظبط. بنرمي عشان العملية تقف بدل ما تعدّي.
+    console.error('Error resolving dependent link', error);
+    throw new Error('تعذّر التحقق من نوع الحساب. جرّب تاني.');
+  }
+
+  const row = data?.[0];
+  if (!row) return null;
+
+  return {
+    childId: row.child_profile_id,
+    guardianId: row.guardian_profile_id,
+    fullName: row.full_name,
+  };
 }
 
 /**

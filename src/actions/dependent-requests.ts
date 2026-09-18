@@ -44,7 +44,7 @@ export async function createDependentRequest(params: {
   note?: string;
 }): Promise<RequestResult> {
   const user = await requireUser();
-  const dependent = await getDependentGuardian(user.id);
+  const dependent = await getDependentGuardian();
 
   if (!dependent) {
     return { ok: false, error: 'الصفحة دي لحسابات الأبناء. اطلب من حسابك مباشرةً.' };
@@ -115,7 +115,7 @@ export async function createDependentRequest(params: {
 /** الطفل يسحب طلبه قبل ما ولي الأمر يبتّ. */
 export async function cancelDependentRequest(requestId: string): Promise<RequestResult> {
   const user = await requireUser();
-  const dependent = await getDependentGuardian(user.id);
+  const dependent = await getDependentGuardian();
   if (!dependent) return { ok: false, error: 'غير مصرح' };
 
   const supabase = await createClient();

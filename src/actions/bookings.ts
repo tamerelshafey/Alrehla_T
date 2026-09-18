@@ -51,7 +51,7 @@ export async function createCourseBooking(params: {
   if (!user) return { ok: false, error: 'لازم تسجّل الدخول قبل الحجز' };
 
   // حساب الطفل التابع ممنوع من الحجز المباشر — يمر على ولي أمره.
-  const dependent = await getDependentGuardian(user.id);
+  const dependent = await getDependentGuardian();
   if (dependent) {
     return { ok: false, error: 'الحجز محتاج موافقة ولي أمرك. كلّمه يعمله من حسابه.' };
   }
@@ -107,7 +107,7 @@ export async function submitBookingPaymentProof(
     return { success: false, error: 'لازم تسجّل الدخول الأول' };
   }
 
-  if (await getDependentGuardian(user.id)) {
+  if (await getDependentGuardian()) {
     return { success: false, error: 'تأكيد الدفع بيتم من حساب ولي أمرك.' };
   }
 

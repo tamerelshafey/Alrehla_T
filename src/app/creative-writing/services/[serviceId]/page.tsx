@@ -46,9 +46,19 @@ export default async function ServiceProvidersPage({
   const providers = await getProvidersForService(serviceId);
 
   // حساب الطفل التابع بيشوف زرار «اطلب من ولي أمرك» بدل زرار الشراء.
+  //
+  // الفحص بيرمي لو تعذّر التحقق (عشان الحارس يفشل **مقفولًا** مش
+  // مفتوحًا). هنا صفحة عرض عامة، فالفشل بيتعامل معاه كـ«مش تابع»
+  // والحارس الحقيقي في `createServiceOrder` هو اللي بيمنع فعليًا.
   const user = await getCurrentUser();
-  const isDependent =
-    user.role !== 'visitor' && Boolean(await getDependentGuardian(user.id));
+  let isDependent = false;
+  if (user.role !== 'visitor') {
+    try {
+      isDependent = Boolean(await getDependentGuardian());
+    } catch {
+      isDependent = false;
+    }
+  }
 
   return (
     <PageContainer>

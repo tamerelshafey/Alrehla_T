@@ -1877,6 +1877,14 @@ export type Database = {
           child_ref: string | null
         }[]
       }
+      my_dependent_link: {
+        Args: Record<string, never>
+        Returns: {
+          child_profile_id: string
+          guardian_profile_id: string
+          full_name: string
+        }[]
+      }
       student_sessions: {
         Args: Record<string, never>
         Returns: {

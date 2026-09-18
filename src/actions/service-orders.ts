@@ -45,7 +45,7 @@ export async function createServiceOrder(params: {
   if (!user) throw new Error('يجب تسجيل الدخول أولاً');
 
   // حساب الطفل التابع ممنوع من الطلب المباشر — يمر على ولي أمره.
-  const dependent = await getDependentGuardian(user.id);
+  const dependent = await getDependentGuardian();
   if (dependent) {
     throw new Error('طلب الخدمة محتاج موافقة ولي أمرك. كلّمه يعمله من حسابه.');
   }
