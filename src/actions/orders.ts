@@ -1,5 +1,5 @@
 'use server';
-import { requireUser, requireAdmin } from '@/lib/auth-guard';
+import { requireUser, requireAdmin, requireNotDependent } from '@/lib/auth-guard';
 
 import { revalidatePath } from 'next/cache';
 
@@ -55,7 +55,12 @@ export async function createOrder(
   items: NewOrderItem[],
   shipping?: ShippingDetails,
 ): Promise<CreateOrderResult> {
-  await requireUser();
+  // حساب الطفل التابع ممنوع من الشراء المباشر — الطلب بيمر على ولي أمره.
+  try {
+    await requireNotDependent('الشراء');
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'غير مصرح' };
+  }
 
   if (!items.length) return { ok: false, error: 'العربة فاضية' };
 
@@ -119,7 +124,13 @@ export async function submitPaymentProof(
   orderId: string,
   payment: { method: PaymentMethod; receiptUrl: string },
 ) {
-  const user = await requireUser();
+  // الدفع كله — إنشاء الطلب ورفع الإيصال — بعيد عن حساب الطفل.
+  let user;
+  try {
+    user = await requireNotDependent('تأكيد الدفع');
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'غير مصرح' };
+  }
 
   if (!payment.receiptUrl) {
     return { success: false, error: 'ارفع صورة إيصال التحويل' };

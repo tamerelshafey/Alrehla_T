@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { requireUser, requireAdmin } from '@/lib/auth-guard';
+import { requireUser, requireAdmin, requireNotDependent } from '@/lib/auth-guard';
 import { logAuditAction } from '@/lib/audit';
 import { notifyAdmins } from '@/lib/notifications';
 
@@ -21,7 +21,14 @@ import { notifyAdmins } from '@/lib/notifications';
 export type DeletionResult = { ok: true } | { ok: false; error: string };
 
 export async function requestAccountDeletion(reason: string): Promise<DeletionResult> {
-  const user = await requireUser();
+  // حساب الطفل مش بيطلب حذف نفسه — ولي الأمر هو اللي بيقفله من المركز
+  // العائلي. ده كان مفتوح للطفل بالكامل.
+  let user;
+  try {
+    user = await requireNotDependent('طلب حذف الحساب');
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'غير مصرح' };
+  }
   const supabase = await createClient();
 
   const { data: existing } = await supabase

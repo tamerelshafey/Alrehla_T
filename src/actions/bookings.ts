@@ -9,6 +9,7 @@ import { buildSessionSchedule } from '@/lib/session-schedule';
 import type { WeeklySlot } from '@/types';
 import { hasAdminPermission } from '@/lib/utils';
 import { getCurrentUser } from '@/data/domains/auth';
+import { getDependentGuardian } from '@/lib/auth-guard';
 
 export type BookingResult =
   | { ok: true; subscriptionId: string; paymentReference: string }
@@ -48,6 +49,12 @@ export async function createCourseBooking(params: {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: 'لازم تسجّل الدخول قبل الحجز' };
+
+  // حساب الطفل التابع ممنوع من الحجز المباشر — يمر على ولي أمره.
+  const dependent = await getDependentGuardian(user.id);
+  if (dependent) {
+    return { ok: false, error: 'الحجز محتاج موافقة ولي أمرك. كلّمه يعمله من حسابه.' };
+  }
 
   const { data, error } = await supabase.rpc('create_course_booking', {
     p_package_id: params.packageId,
@@ -98,6 +105,10 @@ export async function submitBookingPaymentProof(
 
   if (user.role === 'visitor') {
     return { success: false, error: 'لازم تسجّل الدخول الأول' };
+  }
+
+  if (await getDependentGuardian(user.id)) {
+    return { success: false, error: 'تأكيد الدفع بيتم من حساب ولي أمرك.' };
   }
 
   const { data: sub } = await supabase

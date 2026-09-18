@@ -1,5 +1,5 @@
 import { getCurrentUser } from '@/data/domains/auth';
-import { getDocumentById } from '@/data/domains/writing';
+import { getDocumentById, getStudentSessions } from '@/data/domains/writing';
 import { redirect } from 'next/navigation';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { DocumentEditorClient } from './DocumentEditorClient';
@@ -17,6 +17,11 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
   // If id is 'new', we pass a null document
   const document = id === 'new' ? null : (await getDocumentById(id) || null);
 
+  // «معاه مدرب» = عنده جلسة مسنَدة لمدرب. من غير ده زرار «إرسال للمدرب»
+  // بيحوّل النص لـ«مُرسل» ومحدش يشوفه — طريق مسدود بلا رسالة.
+  const sessions = await getStudentSessions();
+  const hasInstructor = sessions.some((s) => Boolean(s.instructorName));
+
   if (id !== 'new' && !document) {
     redirect('/dashboard/student/portfolio');
   }
@@ -27,7 +32,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         title={document ? 'تعديل النص' : 'نص جديد'} 
         backHref="/dashboard/student/portfolio"
       />
-      <DocumentEditorClient initialDocument={document} />
+      <DocumentEditorClient initialDocument={document} hasInstructor={hasInstructor} />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 'use server';
-import { requireAdmin } from '@/lib/auth-guard';
+import { requireAdmin, getDependentGuardian } from '@/lib/auth-guard';
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
@@ -43,6 +43,12 @@ export async function createServiceOrder(params: {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error('يجب تسجيل الدخول أولاً');
+
+  // حساب الطفل التابع ممنوع من الطلب المباشر — يمر على ولي أمره.
+  const dependent = await getDependentGuardian(user.id);
+  if (dependent) {
+    throw new Error('طلب الخدمة محتاج موافقة ولي أمرك. كلّمه يعمله من حسابه.');
+  }
 
   const { serviceId } = params;
   let providerId = params.providerId ?? null;

@@ -54,6 +54,56 @@ export async function requireSuperAdmin(
   return user;
 }
 
+/**
+ * الحساب ده حساب طفل تابع؟
+ *
+ * حساب الطفل بيتعمل من المركز العائلي، ومربوط بصف العائلة في
+ * `child_profiles.account_profile_id`.
+ */
+export async function getDependentGuardian(
+  profileId: string,
+): Promise<{ childId: string; guardianId: string; fullName: string } | null> {
+  const { createClient } = await import('@/lib/supabase/server');
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('child_profiles')
+    .select('id, user_profile_id, full_name')
+    .eq('account_profile_id', profileId)
+    .maybeSingle();
+
+  if (!data) return null;
+  return { childId: data.id, guardianId: data.user_profile_id, fullName: data.full_name };
+}
+
+/**
+ * الإجراء ده ممنوع على حساب الطفل التابع.
+ *
+ * ── ليه الحارس ده موجود ─────────────────────────────────────
+ *
+ * فتحنا حسابات دخول للأطفال وافترضنا إن الدور `student` بيمنعهم من
+ * الشراء. **الافتراض ده كان غلط**: جرد كل دوال الخادم طلّع إن **ولا
+ * دالة واحدة** بتفرّق بين `student` و`customer`. فحساب الطفل كان يقدر
+ * يطلب خدمة ويحجز باقة ويشتري منتجات ويرفع إيصالات — وحتى يطلب حذف
+ * حسابه.
+ *
+ * والحماية مش إخفاء الأزرار: الطفل (أو أي حد) يقدر يستدعي دالة الخادم
+ * مباشرةً. المنع لازم يبقى هنا.
+ *
+ * ⚠️ ده منع مؤقت للطريق المباشر. المسار المقصود إن طلب الطفل يروح
+ *    لولي الأمر في المركز العائلي، يوافق أو يعدّل، وبعدين يروح للدفع.
+ *    لحد ما المسار ده يتبني، الرسالة بتوجّه الطفل لولي أمره.
+ */
+export async function requireNotDependent(
+  action = 'العملية دي',
+): Promise<UserProfile> {
+  const user = await requireUser();
+  const dependent = await getDependentGuardian(user.id);
+  if (dependent) {
+    throw new Error(`${action} محتاجة موافقة ولي أمرك. كلّمه يعملها من حسابه.`);
+  }
+  return user;
+}
+
 /** المستخدم مدرب، ومعاه ملف مدرب؟ يرجّع معرّف المدرب. */
 export async function requireInstructor(): Promise<{
   user: UserProfile;

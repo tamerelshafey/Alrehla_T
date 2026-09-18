@@ -11,9 +11,18 @@ import { Save, Send, MessageSquare, Clock, CheckCircle2, AlertCircle } from 'luc
 
 interface Props {
   initialDocument: PortfolioDocument | null;
+  /**
+   * الطالب مرتبط بمدرب دلوقتي؟
+   *
+   * معرض الأعمال **مساحة الطالب الخاصة**: يكتب فيها في أي وقت، حتى قبل
+   * ما يشترك في أي باقة. لكن زرار «إرسال للمدرب» كان ظاهر دايمًا —
+   * والطالب اللي لسه مالوش مدرب كان بيدوس عليه، النص يتحوّل لـ«مُرسل»،
+   * **ومحدش يشوفه**. طريق مسدود بلا أي رسالة.
+   */
+  hasInstructor: boolean;
 }
 
-export function DocumentEditorClient({ initialDocument }: Props) {
+export function DocumentEditorClient({ initialDocument, hasInstructor }: Props) {
   const router = useRouter();
   const [documentId, setDocumentId] = useState(initialDocument?.id ?? null);
   const [title, setTitle] = useState(initialDocument?.title || '');
@@ -112,13 +121,22 @@ export function DocumentEditorClient({ initialDocument }: Props) {
               >
                 <Save className="h-5 w-5" /> حفظ كمسودة
               </button>
-              <button 
-                onClick={() => handleSave('submitted')}
-                disabled={isSaving || !title.trim() || !content.trim()}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 font-bold text-white hover:bg-blue-700 transition-colors shadow-md disabled:opacity-50"
-              >
-                <Send className="h-5 w-5" /> إرسال للمدرب
-              </button>
+              {hasInstructor ? (
+                <button
+                  onClick={() => handleSave('submitted')}
+                  disabled={isSaving || !title.trim() || !content.trim()}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 font-bold text-white hover:bg-blue-700 transition-colors shadow-md disabled:opacity-50"
+                >
+                  <Send className="h-5 w-5" /> إرسال للمدرب
+                </button>
+              ) : (
+                <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-center text-xs font-bold leading-relaxed text-slate-500">
+                  اكتب براحتك هنا — دي مساحتك أنت.
+                  <br />
+                  لما تشترك في باقة ويبقى معاك مدرب، هيظهرلك زرار «إرسال
+                  للمدرب» عشان يقرا نصوصك ويكتبلك ملاحظاته.
+                </p>
+              )}
             </div>
           )}
 
