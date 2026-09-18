@@ -503,18 +503,24 @@ export const getInstructorsForAdmin = async (): Promise<InstructorAdminRow[]> =>
       .select('instructor_id')
       .eq('status', 'pending')
       .in('instructor_id', ids),
+    // العدّ من `provider_services` عبر صف مقدّم الخدمة بتاع المدرب —
+    // ده الجدول اللي العميل بيشوف منه. العدّ من `instructor_services`
+    // كان بيدّي الإدارة رقمًا مالوش علاقة باللي معروض فعلًا.
     supabase
-      .from('instructor_services')
-      .select('instructor_id')
+      .from('provider_services')
+      .select('service_providers!inner(instructor_id)')
       .eq('status', 'approved')
       .eq('is_active', true)
-      .in('instructor_id', ids),
+      .in('service_providers.instructor_id', ids),
   ]);
 
   const pendingSet = new Set((pending ?? []).map((r) => r.instructor_id));
   const serviceCount = new Map<string, number>();
   for (const row of services ?? []) {
-    serviceCount.set(row.instructor_id, (serviceCount.get(row.instructor_id) ?? 0) + 1);
+    const linked = row.service_providers as unknown as { instructor_id: string | null } | null;
+    const id = linked?.instructor_id;
+    if (!id) continue;
+    serviceCount.set(id, (serviceCount.get(id) ?? 0) + 1);
   }
 
   return instructors.map((inst) => ({

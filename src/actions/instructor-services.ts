@@ -8,18 +8,88 @@ import { getMyInstructorId } from '@/data/domains/services';
 import { notifyUser, getInstructorUserId } from '@/lib/notifications';
 
 /**
- * Admin-only management of which instructor provides which creative service,
- * and for how much.
+ * عروض المدربين للخدمات الإبداعية — مين بيقدّم إيه وبكام.
  *
- * Authorisation is checked twice on purpose: here, so the caller gets a clear
- * error, and again by row-level security on `instructor_services`, which only
- * admins may write. The app-level check alone has been the weak point in this
- * codebase before — it is never the only guard.
+ * ── ليه الملف ده اتغيّر بالكامل ──────────────────────────────
+ *
+ * كان بيكتب في `instructor_services`، والبيع بيقرا من
+ * `provider_services`. جدولين بأعمدة متطابقة حرفيًا ما عدا العمود
+ * الأول، ومفيش ولا سطر في المشروع بينقل بينهم.
+ *
+ * السبب اتكشف في ملف SQL رقم 30: هو عمل **نسخة لمرة واحدة** من
+ * `instructor_services` لـ`provider_services`، مش محفّز مستمر. فكل عرض
+ * اتعمل بعد الملف ده فضل في الجدول القديم وحده — يعني معتمد ومفعّل في
+ * لوحة المدرب وفي لوحة الإدارة، و**العميل لا يشوفه ولا يقدر يطلبه
+ * أبدًا**. تشخيص ملف 62 لقى الحالة دي فعلًا على القاعدة الحقيقية.
+ *
+ * دلوقتي كل حاجة هنا بتكتب في `provider_services` — نفس الجدول اللي
+ * `createServiceOrder` وصفحة الخدمة العامة بيقروا منه. مفيش نسخة تانية
+ * تسيب.
+ *
+ * `service_providers.kind` بيسمح بمقدّم مش مدرب (المنصة نفسها، أو
+ * مستقل)، وعشان كده هو المعتمد — الاتجاه التاني كان هيلغي ده.
+ *
+ * ── التحقق ───────────────────────────────────────────────────
+ *
+ * بيتم مرتين بقصد: هنا عشان المستخدم يشوف رسالة مفهومة، وتاني في
+ * صلاحيات القاعدة على `provider_services`. الكود هنا **مش** الحارس.
  */
 
 /** يفوّض للقاعدة الموحّدة في `@/lib/auth-guard` — التنفيذ واحد، والرسالة خاصة بهذا المجال. */
 async function requireInstructorAdmin() {
   return requireAdmin('canManageCatalog', 'غير مصرح لك بإدارة عروض المدربين');
+}
+
+/**
+ * صف مقدّم الخدمة بتاع المدرب — وبيعمله لو مش موجود.
+ *
+ * ملف 30 عمل صف لكل مدرب كان موجود وقتها، ومفيش أي حاجة بتعمل صف لمدرب
+ * جديد بعد كده. فمن غير الدالة دي، أول مدرب يتضاف بعد ملف 30 يبقى
+ * عنده نفس المشكلة من أول وجديد: عروضه مالهاش مكان في مسار البيع.
+ *
+ * حالة المقدّم بتتبع حالة المدرب — نفس القاعدة اللي في ملف 30 بالظبط.
+ */
+async function resolveProviderId(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  instructorId: string,
+): Promise<{ ok: true; providerId: string } | { ok: false; error: string }> {
+  const { data: existing } = await supabase
+    .from('service_providers')
+    .select('id')
+    .eq('instructor_id', instructorId)
+    .maybeSingle();
+
+  if (existing) return { ok: true, providerId: existing.id };
+
+  const { data: instructor } = await supabase
+    .from('instructors')
+    .select('display_name, bio, status')
+    .eq('id', instructorId)
+    .maybeSingle();
+
+  if (!instructor) return { ok: false, error: 'المدرب مش موجود' };
+
+  const { data: created, error } = await supabase
+    .from('service_providers')
+    .insert({
+      kind: 'instructor' as const,
+      instructor_id: instructorId,
+      display_name: instructor.display_name,
+      bio: instructor.bio ?? '',
+      status: instructor.status === 'active' ? ('active' as const) : ('pending' as const),
+    })
+    .select('id')
+    .single();
+
+  if (error || !created) {
+    console.error('Error creating provider row for instructor', error);
+    return {
+      ok: false,
+      error: `حسابك مش مربوط بملف مقدّم خدمة، والربط التلقائي فشل: ${error?.message ?? ''}`,
+    };
+  }
+
+  return { ok: true, providerId: created.id };
 }
 
 export async function saveInstructorServiceOffer(params: {
@@ -34,15 +104,18 @@ export async function saveInstructorServiceOffer(params: {
 
   const { instructorId, serviceId, approvedPrice, isActive, adminNotes } = params;
 
+  const provider = await resolveProviderId(supabase, instructorId);
+  if (!provider.ok) throw new Error(provider.error);
+
   // A price is what makes the offer real; without one it stays pending so it
   // never reaches a visitor half-configured.
   const status = approvedPrice != null && approvedPrice > 0 ? 'approved' : 'pending';
 
-  const { error } = await supabase
-    .from('instructor_services')
+  const { data: saved, error } = await supabase
+    .from('provider_services')
     .upsert(
       {
-        instructor_id: instructorId,
+        provider_id: provider.providerId,
         service_id: serviceId,
         approved_price: approvedPrice,
         status,
@@ -50,12 +123,16 @@ export async function saveInstructorServiceOffer(params: {
         admin_notes: adminNotes ?? null,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: 'instructor_id,service_id' }
-    );
+      { onConflict: 'provider_id,service_id' }
+    )
+    .select('id');
 
   if (error) {
     console.error('Error saving instructor service offer', error);
-    throw new Error('تعذّر حفظ الخدمة');
+    throw new Error(`تعذّر حفظ الخدمة: ${error.message}`);
+  }
+  if (!saved || saved.length === 0) {
+    throw new Error('الحفظ مروّحش للقاعدة — الصلاحيات مش سامحة بالتعديل.');
   }
 
   await notifyUser({
@@ -70,6 +147,7 @@ export async function saveInstructorServiceOffer(params: {
   });
 
   revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
+  revalidatePath('/dashboard/admin/providers');
   revalidatePath('/creative-writing/services');
   revalidatePath('/dashboard/instructor/services');
   return { ok: true };
@@ -82,18 +160,22 @@ export async function removeInstructorServiceOffer(
   await requireInstructorAdmin();
   const supabase = await createClient();
 
+  const provider = await resolveProviderId(supabase, instructorId);
+  if (!provider.ok) throw new Error(provider.error);
+
   const { error } = await supabase
-    .from('instructor_services')
+    .from('provider_services')
     .delete()
-    .eq('instructor_id', instructorId)
+    .eq('provider_id', provider.providerId)
     .eq('service_id', serviceId);
 
   if (error) {
     console.error('Error removing instructor service offer', error);
-    throw new Error('تعذّر حذف الخدمة');
+    throw new Error(`تعذّر حذف الخدمة: ${error.message}`);
   }
 
   revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
+  revalidatePath('/dashboard/admin/providers');
   revalidatePath('/creative-writing/services');
   return { ok: true };
 }
@@ -110,8 +192,12 @@ export async function rejectInstructorServiceOffer(
   }
 
   const supabase = await createClient();
+
+  const provider = await resolveProviderId(supabase, instructorId);
+  if (!provider.ok) throw new Error(provider.error);
+
   const { data: rejected, error } = await supabase
-    .from('instructor_services')
+    .from('provider_services')
     .update({
       status: 'rejected',
       approved_price: null,
@@ -119,13 +205,13 @@ export async function rejectInstructorServiceOffer(
       admin_notes: adminNotes.trim(),
       updated_at: new Date().toISOString(),
     })
-    .eq('instructor_id', instructorId)
+    .eq('provider_id', provider.providerId)
     .eq('service_id', serviceId)
     .select('id');
 
   if (error) {
     console.error('Error rejecting instructor service offer', error);
-    throw new Error('تعذّر رفض الطلب');
+    throw new Error(`تعذّر رفض الطلب: ${error.message}`);
   }
   // صفر صفوف = مفيش عرض بالمفتاحين دول. من غير الفحص ده الإدارة بتشوف
   // «اترفض» وبيوصل للمدرب إشعار رفض، والعرض لسه معتمد في القاعدة.
@@ -142,6 +228,7 @@ export async function rejectInstructorServiceOffer(
   });
 
   revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
+  revalidatePath('/dashboard/admin/providers');
   revalidatePath('/dashboard/instructor/services');
   revalidatePath('/dashboard/admin');
   return { ok: true };
@@ -189,10 +276,13 @@ export async function proposeServiceOffer(serviceId: string, requestedPrice: num
 
   const supabase = await createClient();
 
+  const provider = await resolveProviderId(supabase, instructorId);
+  if (!provider.ok) throw new Error(provider.error);
+
   const { data: existing } = await supabase
-    .from('instructor_services')
+    .from('provider_services')
     .select('id')
-    .eq('instructor_id', instructorId)
+    .eq('provider_id', provider.providerId)
     .eq('service_id', serviceId)
     .maybeSingle();
 
@@ -200,14 +290,14 @@ export async function proposeServiceOffer(serviceId: string, requestedPrice: num
   // للعملاء بالسعر المعتمد القديم حتى تعتمد الإدارة السعر الجديد.
   const { data: saved, error } = existing
     ? await supabase
-        .from('instructor_services')
+        .from('provider_services')
         .update({ requested_price: requestedPrice, updated_at: new Date().toISOString() })
         .eq('id', existing.id)
         .select('id')
     : await supabase
-        .from('instructor_services')
+        .from('provider_services')
         .insert({
-          instructor_id: instructorId,
+          provider_id: provider.providerId,
           service_id: serviceId,
           requested_price: requestedPrice,
           status: 'pending',
@@ -217,7 +307,7 @@ export async function proposeServiceOffer(serviceId: string, requestedPrice: num
 
   if (error) {
     console.error('Error proposing service offer', error);
-    throw new Error('تعذّر إرسال الطلب');
+    throw new Error(`تعذّر إرسال الطلب: ${error.message}`);
   }
   if (!saved || saved.length === 0) {
     throw new Error('الطلب مروّحش للقاعدة — صلاحيات الحساب مش سامحة.');
@@ -225,6 +315,7 @@ export async function proposeServiceOffer(serviceId: string, requestedPrice: num
 
   revalidatePath('/dashboard/instructor/services');
   revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
+  revalidatePath('/dashboard/admin/providers');
   revalidatePath('/dashboard/admin');
   return { ok: true };
 }
@@ -234,16 +325,19 @@ export async function setMyOfferActive(serviceId: string, isActive: boolean) {
   const instructorId = await requireOwnInstructorId();
   const supabase = await createClient();
 
+  const provider = await resolveProviderId(supabase, instructorId);
+  if (!provider.ok) throw new Error(provider.error);
+
   const { data: toggled, error } = await supabase
-    .from('instructor_services')
+    .from('provider_services')
     .update({ is_active: isActive, updated_at: new Date().toISOString() })
-    .eq('instructor_id', instructorId)
+    .eq('provider_id', provider.providerId)
     .eq('service_id', serviceId)
     .select('id');
 
   if (error) {
     console.error('Error toggling offer', error);
-    throw new Error('تعذّر تغيير حالة الخدمة');
+    throw new Error(`تعذّر تغيير حالة الخدمة: ${error.message}`);
   }
   if (!toggled || toggled.length === 0) {
     throw new Error('مفيش عرض بالخدمة دي على حسابك — التغيير مروّحش للقاعدة.');
@@ -259,10 +353,13 @@ export async function withdrawMyOffer(serviceId: string) {
   const instructorId = await requireOwnInstructorId();
   const supabase = await createClient();
 
+  const provider = await resolveProviderId(supabase, instructorId);
+  if (!provider.ok) throw new Error(provider.error);
+
   const { data: offer } = await supabase
-    .from('instructor_services')
+    .from('provider_services')
     .select('id, status')
-    .eq('instructor_id', instructorId)
+    .eq('provider_id', provider.providerId)
     .eq('service_id', serviceId)
     .maybeSingle();
 
@@ -272,16 +369,17 @@ export async function withdrawMyOffer(serviceId: string) {
   }
 
   const { error } = await supabase
-    .from('instructor_services')
+    .from('provider_services')
     .delete()
     .eq('id', offer.id);
 
   if (error) {
     console.error('Error withdrawing offer', error);
-    throw new Error('تعذّر سحب الطلب');
+    throw new Error(`تعذّر سحب الطلب: ${error.message}`);
   }
 
   revalidatePath('/dashboard/instructor/services');
+  revalidatePath('/dashboard/admin/providers');
   revalidatePath('/dashboard/admin');
   return { ok: true };
 }

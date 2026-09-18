@@ -24,9 +24,10 @@ export async function generateMetadata({ params }: { params: Promise<{ serviceId
 }
 
 /**
- * The instructors who provide one creative service, cheapest first.
- * Only approved, active offers appear — enforced here and again by row-level
- * security on instructor_services.
+ * مقدّمو خدمة إبداعية واحدة، بالأرخص أولًا — والمقدّم ممكن يكون المنصة
+ * نفسها أو مدربًا أو مستقلًا.
+ * المعتمد والمفعّل بس هو اللي بيظهر — مفروض هنا، وتاني بصلاحيات
+ * القاعدة على `provider_services`.
  */
 export default async function ServiceProvidersPage({
   params,

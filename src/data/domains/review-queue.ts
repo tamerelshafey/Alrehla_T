@@ -43,8 +43,11 @@ export async function getReviewQueue(): Promise<ReviewQueueItem[]> {
     supabase.from('profile_update_requests').select('id', head).eq('status', 'pending'),
     // "قيد المراجعة" plus an approved offer whose instructor has asked for a
     // different price — the second kind is invisible in the status alone.
+    // من `provider_services` — الجدول اللي البيع بيمر منه. كان بيعدّ من
+    // `instructor_services`، فالعدّاد كان بيقول للإدارة إن فيه طلبات
+    // مستنية مراجعة، والمراجعة نفسها بتحصل على جدول تاني.
     supabase
-      .from('instructor_services')
+      .from('provider_services')
       .select('id, status, requested_price, approved_price')
       .or('status.eq.pending,and(status.eq.approved,requested_price.not.is.null)'),
     supabase.from('support_tickets').select('id', head).eq('status', 'open'),

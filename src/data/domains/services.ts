@@ -51,21 +51,39 @@ export async function getStandaloneServices(options?: {
 /**
  * Every offer belonging to one instructor, whatever its status.
  * Used by the admin screen and by the instructor's own dashboard.
+ *
+ * بتقرا من `provider_services` مش من `instructor_services`.
+ *
+ * ليه: الجدولين كانوا شغالين مع بعض، والبيع بيمر من `provider_services`
+ * وحده. فالشاشة كانت بتعرض للمدرب عروضًا «معتمدة ومفعّلة» من الجدول
+ * القديم، والعميل لا يشوفها ولا يقدر يطلبها. دلوقتي الشاشة بتعرض اللي
+ * العميل شايفه فعلًا.
  */
 export async function getInstructorServiceOffers(
   instructorId: string
 ): Promise<InstructorServiceOffer[]> {
   const supabase = await createClient();
+
+  const { data: provider } = await supabase
+    .from('service_providers')
+    .select('id')
+    .eq('instructor_id', instructorId)
+    .maybeSingle();
+
+  // مدرب لسه ملوش صف مقدّم خدمة = مفيش عروض. الصف بيتعمل أول ما يقدّم
+  // عرض (في `actions/instructor-services.ts`).
+  if (!provider) return [];
+
   const { data, error } = await supabase
-    .from('instructor_services')
+    .from('provider_services')
     .select('*')
-    .eq('instructor_id', instructorId);
+    .eq('provider_id', provider.id);
 
   if (error || !data) return [];
 
   return data.map((row) => ({
     id: row.id,
-    instructorId: row.instructor_id,
+    instructorId,
     serviceId: row.service_id,
     requestedPrice: row.requested_price ?? undefined,
     approvedPrice: row.approved_price ?? undefined,
