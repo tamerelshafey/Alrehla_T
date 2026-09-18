@@ -2,7 +2,34 @@
 -- 74 — طلبات الأبناء وموافقة ولي الأمر
 -- ============================================================
 --
--- المشكلة:
+-- ⚠️ النسخة الأولى من الملف ده وقعت بـ:
+--       ERROR: operator does not exist: uuid = text
+--
+--    السبب: كتبت `c.user_profile_id = (auth.uid())::text` وأنا مفترض
+--    إن العمود `text`. هو `uuid`. والافتراض جه من
+--    `src/types/supabase.ts` اللي بيكتب `uuid` و`text` الاتنين
+--    `string` — وهي بالظبط المصيدة المكتوبة في `قواعد-العمل.md`
+--    قاعدة (ج): **نوع العمود لا يُستنتج من ملف الأنواع.**
+--
+--    الأنواع اتقريت من القاعدة دلوقتي:
+--
+--      child_profiles.id                 text
+--      child_profiles.user_profile_id    uuid   ← ولي الأمر
+--      child_profiles.account_profile_id text   ← حساب الطفل
+--      user_profiles.id                  uuid
+--      standalone_services.id            text
+--      service_providers.id              text
+--      creative_writing_packages.id      text
+--      instructors.id                    text
+--
+--    فالمفاتيح الأجنبية كلها `text`، وأعمدة الحسابات `uuid`.
+--
+--    الملف كله جوّه BEGIN/COMMIT، فالمحاولة الأولى رجّعت كل حاجة زي
+--    ما كانت — مفيش جدول ولا دالة اتعملوا نصّ حاجة.
+--
+-- ============================================================
+--
+-- المشكلة اللي الملف بيحلها:
 --
 --   فتحنا حسابات دخول للأطفال، وحساب الطفل كان يقدر يشتري ويحجز ويرفع
 --   إيصالات زي أي عميل — لأن **ولا دالة واحدة في المشروع (من 89) بتفرّق
@@ -12,28 +39,17 @@
 --   والطلب يروح لولي أمره في المركز العائلي، يوافق أو يعدّل، وبعدين
 --   يروح لمرحلة الدفع.
 --
--- ── الجدول ──────────────────────────────────────────────────
+-- ── ليه جدول مستقل ──────────────────────────────────────────
 --
---   `dependent_requests` — «الطفل عايز إيه»، ومش طلبًا ولا حجزًا.
---
---   ليه جدول مستقل مش عمود «بانتظار الموافقة» على `service_orders`:
+--   مش عمود «بانتظار الموافقة» على `service_orders`، لأن:
 --     • الطلب ممكن يترفض ومايتحوّلش لأي حاجة
 --     • ولي الأمر ممكن يعدّل (مقدّم خدمة تاني، أو باقة تانية) قبل ما
 --       يوافق — فاللي بيتعمل في الآخر مش بالضرورة اللي الطفل طلبه
 --     • خلط «رغبة» بـ«طلب مدفوع» في جدول واحد بيلخبط كل تقرير مالي
 --
---   الموافقة **مابتعملش الطلب تلقائيًا**: بتوصّل ولي الأمر لنفس شاشة
+--   والموافقة **مابتعملش الطلب تلقائيًا**: بتوصّل ولي الأمر لنفس شاشة
 --   الطلب العادية بالبيانات جاهزة، ويكمّل الدفع زي أي عملية. كده مسار
---   الشراء واحد، مش اتنين بيتفرّعوا.
---
--- ── الصلاحيات ───────────────────────────────────────────────
---
---   الطفل: يقرا ويعمل طلباته هو.
---   ولي الأمر: يقرا ويعدّل طلبات أبنائه.
---   الإدارة: تقرا كل حاجة.
---
---   الربط بيتم عبر `child_profiles`، فالسياسات بتعدّي عليه. دالة
---   `SECURITY DEFINER` بتتجنّب أي تكرار بين السياسات.
+--   الشراء واحد، مش اتنين بيتفرّعوا ويختلفوا مع الوقت.
 --
 -- **جدول جديد بالكامل. مفيش صف قايم بيتغيّر.**
 -- ============================================================
@@ -43,12 +59,12 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS public.dependent_requests (
   id                    text PRIMARY KEY DEFAULT gen_random_uuid()::text,
 
-  -- فرد العائلة صاحب الطلب، وولي أمره. الاتنين محفوظين عشان الطلب
-  -- يفضل مفهوم حتى لو الحساب اتقفل بعدين.
+  -- فرد العائلة صاحب الطلب. `child_profiles.id` نوعه text.
   child_profile_id      text        NOT NULL REFERENCES public.child_profiles(id) ON DELETE CASCADE,
-  guardian_profile_id   text        NOT NULL,
+  -- ولي الأمر. مصدره `child_profiles.user_profile_id` ونوعه uuid.
+  guardian_profile_id   uuid        NOT NULL,
   -- حساب الطفل اللي بعت الطلب — للسجل. فاضي لو ولي الأمر سجّله بنفسه.
-  requester_profile_id  text,
+  requester_profile_id  uuid,
 
   kind                  text        NOT NULL,
   -- خدمة إبداعية
@@ -62,7 +78,7 @@ CREATE TABLE IF NOT EXISTS public.dependent_requests (
   -- رسالة الطفل: «عايز الخدمة دي عشان…»
   note                  text,
   status                text        NOT NULL DEFAULT 'pending',
-  -- رد ولي الأمر عند الرفض أو التعديل
+  -- رد ولي الأمر عند الرفض
   guardian_note         text,
   decided_at            timestamptz,
   created_at            timestamptz NOT NULL DEFAULT now(),
@@ -92,6 +108,10 @@ CREATE INDEX IF NOT EXISTS dependent_requests_child_idx
 -- SECURITY DEFINER عشان السياسة تقرا `child_profiles` من غير ما تعتمد
 -- على سياسات الجدول ده — نفس أسلوب `instructor_teaches`، وبيمنع أي
 -- تكرار متبادل بين السياسات.
+--
+-- ⚠️ لاحظ اختلاف النوعين في نفس الشرط، وده مقصود ومش سهو:
+--      user_profile_id    uuid → بيتقارن بـ auth.uid() مباشرةً
+--      account_profile_id text → بيتقارن بـ (auth.uid())::text
 -- ------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.can_see_dependent_request(p_child_profile_id text)
 RETURNS boolean
@@ -105,9 +125,9 @@ AS $function$
     FROM child_profiles c
     WHERE c.id = p_child_profile_id
       AND (
-        -- ولي الأمر
-        c.user_profile_id = (auth.uid())::text
-        -- أو الطفل نفسه بحسابه
+        -- ولي الأمر (uuid)
+        c.user_profile_id = auth.uid()
+        -- أو الطفل نفسه بحسابه (text)
         OR c.account_profile_id = (auth.uid())::text
       )
   ) OR public.is_admin();
@@ -133,17 +153,14 @@ CREATE POLICY "Family can create dependent requests"
   FOR INSERT
   WITH CHECK (public.can_see_dependent_request(child_profile_id));
 
--- **ولي الأمر وحده** هو اللي بيبتّ. الطفل مايقدرش يوافق لنفسه.
+-- **ولي الأمر وحده** هو اللي بيبتّ. الطفل مايقدرش يوافق لنفسه حتى لو
+-- استدعى الدالة مباشرةً.
 DROP POLICY IF EXISTS "Guardians decide dependent requests" ON public.dependent_requests;
 CREATE POLICY "Guardians decide dependent requests"
   ON public.dependent_requests
   FOR UPDATE
-  USING (
-    guardian_profile_id = (auth.uid())::text OR public.is_admin()
-  )
-  WITH CHECK (
-    guardian_profile_id = (auth.uid())::text OR public.is_admin()
-  );
+  USING (guardian_profile_id = auth.uid() OR public.is_admin())
+  WITH CHECK (guardian_profile_id = auth.uid() OR public.is_admin());
 
 COMMIT;
 
@@ -164,13 +181,17 @@ SELECT القسم, البند, النتيجة FROM (
   UNION ALL
   SELECT '3. السياسات', 'عددها',
          (SELECT count(*)::text FROM pg_policy p JOIN pg_class c ON c.oid=p.polrelid
-          WHERE c.relname='dependent_requests') || ' (المتوقع 3)'
+          WHERE c.relname='dependent_requests') || ' من 3'
   UNION ALL
-  SELECT '4. القيود', 'عددها',
+  SELECT '4. القيود', 'قيود التحقق',
          (SELECT count(*)::text FROM pg_constraint pc JOIN pg_class c ON c.oid=pc.conrelid
-          WHERE c.relname='dependent_requests' AND pc.contype='c') || ' قيد تحقق (المتوقع 3)'
+          WHERE c.relname='dependent_requests' AND pc.contype='c') || ' من 3'
   UNION ALL
-  SELECT '5. الدالة', 'can_see_dependent_request',
+  SELECT '5. المفاتيح', 'مفاتيح أجنبية',
+         (SELECT count(*)::text FROM pg_constraint pc JOIN pg_class c ON c.oid=pc.conrelid
+          WHERE c.relname='dependent_requests' AND pc.contype='f') || ' من 5'
+  UNION ALL
+  SELECT '6. الدالة', 'can_see_dependent_request',
          CASE WHEN EXISTS (SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
                            WHERE n.nspname='public' AND p.proname='can_see_dependent_request'
                              AND NOT has_function_privilege('anon', p.oid, 'EXECUTE'))
