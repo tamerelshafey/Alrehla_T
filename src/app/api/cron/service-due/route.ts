@@ -34,12 +34,27 @@ export const runtime = 'nodejs';
 export async function GET(request: Request) {
   // Vercel بتبعت المفتاح ده مع كل تشغيل. من غير الفحص ده أي حد يعرف
   // الرابط يقدر يشغّل المهمة ويبعت إشعارات للناس.
+  //
+  // ⚠️ الفحص ده كان مكتوب `if (secret) { ... }` — يعني لو المتغير مش
+  //    متظبط على الخادم، الشرط كله بيتخطى والمسار بيفضل **مفتوح**.
+  //    والمتغير فعلًا لسه مش متظبط (دفتر الحالة §7، «مؤجَّل بقرار»)،
+  //    فالمسار ده كان مكشوف على الإنتاج.
+  //
+  //    ودي بالظبط المصيدة اللي في قاعدة (ك): حارس بيفشل **مفتوحًا**.
+  //    شكله حارس، وبيدّي إحساس إن الموضوع متأمّن، وهو مش شغّال أصلًا.
+  //    الغياب لازم يوقف العملية، مش يعدّيها.
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = request.headers.get('authorization');
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-    }
+  if (!secret) {
+    console.error('service-due cron: CRON_SECRET غير موجود على الخادم');
+    return NextResponse.json(
+      { error: 'CRON_SECRET غير مضبوط على الخادم — المهمة متوقفة' },
+      { status: 503 },
+    );
+  }
+
+  const auth = request.headers.get('authorization');
+  if (auth !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
   if (!isAdminApiConfigured()) {
