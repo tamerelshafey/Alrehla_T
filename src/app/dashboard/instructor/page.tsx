@@ -1,5 +1,6 @@
 import { getCurrentUser } from '@/data/domains/auth';
 import { getSessions } from '@/data/domains/writing';
+import { getParticipantName } from '@/data/domains/account';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Users, Calendar, Video, Clock, Wallet, User, CalendarDays, Settings, Sparkles } from 'lucide-react';
@@ -25,6 +26,19 @@ export default async function InstructorDashboard() {
 
   // Count unique students
   const uniqueStudents = new Set(allBookings.map((b) => b?.userId)).size;
+
+  // الأسماء الحقيقية بدل جزء من رقم الحساب.
+  const names = new Map<string, string>(
+    await Promise.all(
+      upcomingSessions.map(
+        async (s) =>
+          [
+            s.id,
+            `جلسة ${s.sessionNumber} مع ${await getParticipantName(s.childId, s.userId)}`,
+          ] as [string, string]
+      )
+    )
+  );
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
@@ -81,7 +95,7 @@ export default async function InstructorDashboard() {
             جلساتي القادمة
           </h2>
           <div className="space-y-4">
-            {upcomingSessions.map((session, index) => {
+            {upcomingSessions.map((session) => {
               const date = new Date(session.scheduledAt);
               const isToday = new Date().toDateString() === date.toDateString();
               return (
@@ -102,7 +116,7 @@ export default async function InstructorDashboard() {
                     </div>
                     <div>
                       <h3 className="font-bold text-slate-800">
-                        جلسة مع الطالب (رقم {(session?.childId || session?.userId || '')?.split('-')[1]})
+                        {names.get(session.id) ?? 'جلسة'}
                       </h3>
                       <div className="mt-1 flex items-center gap-2 text-sm font-medium text-slate-500">
                         <Clock className="h-4 w-4" />
@@ -114,11 +128,13 @@ export default async function InstructorDashboard() {
                     </div>
                   </div>
                   <div className="flex w-full items-center gap-3 md:w-auto">
+                    {/* كان الرابط بيستخدم ترتيب الجلسة في المصفوفة
+                        مش رقمها. الرابط ده كان بيدّي 404 لكل جلسة. */}
                     <Link 
-                      href={`/dashboard/instructor/sessions/s-${index}`}
+                      href={`/dashboard/instructor/sessions/${session.id}`}
                       className="flex-1 rounded-xl bg-slate-900 px-6 py-2 text-center text-sm font-bold whitespace-nowrap text-white shadow-md transition-colors hover:bg-slate-800 md:flex-none"
                     >
-                      دخول الجلسة
+                      تفاصيل الجلسة
                     </Link>
                     <Link 
                       href={`/dashboard/instructor/students/${(session?.childId || session?.userId || '')}`}

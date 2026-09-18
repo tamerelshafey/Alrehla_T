@@ -1,7 +1,12 @@
 'use client';
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { PortfolioDocument } from '@/types';
-import { saveDocumentDraft, submitDocumentForReview } from '@/actions/portfolio';
+import {
+  createPortfolioDocument,
+  saveDocumentDraft,
+  submitDocumentForReview,
+} from '@/actions/portfolio';
 import { Save, Send, MessageSquare, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface Props {
@@ -9,30 +14,53 @@ interface Props {
 }
 
 export function DocumentEditorClient({ initialDocument }: Props) {
+  const router = useRouter();
+  const [documentId, setDocumentId] = useState(initialDocument?.id ?? null);
   const [title, setTitle] = useState(initialDocument?.title || '');
   const [content, setContent] = useState(initialDocument?.content || '');
   const [status, setStatus] = useState(initialDocument?.status || 'draft');
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
+  /**
+   * النص الجديد.
+   *
+   * قبل كده كان فيه سطر `if (!initialDocument) return;` جوّه دالة الحفظ:
+   * يعني في النص الجديد الزرار كان بيخرج من غير ما يعمل أي حاجة — لا حفظ
+   * ولا رسالة. الطالب يكتب صفحة كاملة ويدوس حفظ ومفيش حاجة بتحصل.
+   *
+   * والعنوان كمان مكانش بيتبعت للسيرفر أصلًا، فتعديله كان بيضيع.
+   */
   const handleSave = async (newStatus: 'draft' | 'submitted') => {
     setIsSaving(true);
     setSaveMessage('');
-    if (!initialDocument) return;
-    try {
-      if (newStatus === 'draft') {
-        await saveDocumentDraft(initialDocument.id, content);
-      } else {
-        await submitDocumentForReview(initialDocument.id, content);
-      }
-      setStatus(newStatus);
-      setSaveMessage(newStatus === 'draft' ? 'تم حفظ المسودة بنجاح' : 'تم الإرسال للمدرب للمراجعة');
-      setTimeout(() => setSaveMessage(''), 3000);
-    } catch (err) {
-      console.error(err);
-      alert('حدث خطأ أثناء الحفظ');
-    } finally {
-      setIsSaving(false);
+    setErrorMessage('');
+
+    const result = documentId
+      ? newStatus === 'draft'
+        ? await saveDocumentDraft(documentId, title, content)
+        : await submitDocumentForReview(documentId, title, content)
+      : await createPortfolioDocument({ title, content, status: newStatus });
+
+    setIsSaving(false);
+
+    if (!result.ok) {
+      setErrorMessage(result.error);
+      return;
+    }
+
+    setStatus(newStatus);
+    setSaveMessage(
+      newStatus === 'draft' ? 'تم حفظ المسودة بنجاح' : 'تم الإرسال للمدرب للمراجعة'
+    );
+    setTimeout(() => setSaveMessage(''), 3000);
+
+    // أول حفظ لنص جديد بيولّد رقمه — بننتقل لعنوانه عشان الحفظ اللي
+    // بعده يعدّل نفس النص بدل ما يعمل نسخة جديدة.
+    if (!documentId) {
+      setDocumentId(result.id);
+      router.replace(`/dashboard/student/portfolio/${result.id}`);
     }
   };
 
@@ -97,6 +125,14 @@ export function DocumentEditorClient({ initialDocument }: Props) {
           {saveMessage && (
             <div className="mt-4 text-sm font-bold text-emerald-600 flex items-center justify-center gap-1 animate-in fade-in">
               <CheckCircle2 className="h-4 w-4" /> {saveMessage}
+            </div>
+          )}
+
+          {/* الخطأ كان بيطلع في `alert` برسالة عامة «حدث خطأ أثناء الحفظ»
+              مش بيقول السبب. دلوقتي السبب الحقيقي بيبان في الشاشة. */}
+          {errorMessage && (
+            <div className="mt-4 flex items-center justify-center gap-1 text-sm font-bold text-red-600">
+              <AlertCircle className="h-4 w-4" /> {errorMessage}
             </div>
           )}
         </div>

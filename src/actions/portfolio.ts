@@ -32,41 +32,112 @@ async function requireOwnDocument(documentId: string) {
   return { user, document: data };
 }
 
+export type PortfolioResult =
+  | { ok: true; id: string }
+  | { ok: false; error: string };
+
 async function writeDocument(
   documentId: string,
+  title: string,
   content: string,
   status: 'draft' | 'submitted'
-) {
+): Promise<PortfolioResult> {
   const supabase = await createClient();
-  const { error } = await supabase
+  // العنوان كان بيتكتب في الشاشة ومبيتبعتش هنا خالص — فأي تعديل عليه
+  // كان بيضيع عند الحفظ.
+  const { data, error } = await supabase
     .from('portfolio_documents')
-    .update({ content, status, updated_at: new Date().toISOString() })
-    .eq('id', documentId);
+    .update({ title, content, status, updated_at: new Date().toISOString() })
+    .eq('id', documentId)
+    .select('id');
 
   if (error) {
     console.error('Error saving portfolio document', error);
-    throw new Error('تعذّر حفظ النص');
+    return { ok: false, error: `تعذّر حفظ النص: ${error.message}` };
+  }
+  if (!data || data.length === 0) {
+    return { ok: false, error: 'الحفظ مروّحش للقاعدة — صلاحيات الحساب مش سامحة بالتعديل.' };
   }
 
   revalidatePath('/dashboard/student/portfolio');
   revalidatePath(`/dashboard/student/portfolio/${documentId}`);
-  return { success: true };
+  return { ok: true, id: documentId };
 }
 
-export async function saveDocumentDraft(documentId: string, content: string) {
-  const { document } = await requireOwnDocument(documentId);
-  if (document.status === 'reviewed') {
-    throw new Error('تمت مراجعة هذا النص ولا يمكن تعديله');
+/**
+ * نص جديد.
+ *
+ * الشاشة كانت بتفتح عادي على `portfolio/new`، بس زرار الحفظ كان بيخرج
+ * من غير ما يعمل حاجة لما ما يكونش فيه نص محفوظ قبل كده — الطالب يكتب
+ * صفحة كاملة ويدوس حفظ ومفيش أي حاجة بتحصل، ولا رسالة خطأ.
+ */
+export async function createPortfolioDocument(params: {
+  title: string;
+  content: string;
+  status: 'draft' | 'submitted';
+}): Promise<PortfolioResult> {
+  const user = await getCurrentUser();
+  if (user.role === 'visitor') {
+    return { ok: false, error: 'يجب تسجيل الدخول أولاً' };
   }
-  return writeDocument(documentId, content, 'draft');
+
+  const title = params.title.trim();
+  if (!title) return { ok: false, error: 'اكتب عنوان للنص' };
+  if (!params.content.trim()) return { ok: false, error: 'النص فاضي' };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('portfolio_documents')
+    .insert({
+      student_id: user.id,
+      title,
+      content: params.content,
+      status: params.status,
+    })
+    .select('id')
+    .single();
+
+  if (error || !data) {
+    console.error('Error creating portfolio document', error);
+    return { ok: false, error: `تعذّر إنشاء النص: ${error?.message ?? ''}` };
+  }
+
+  revalidatePath('/dashboard/student/portfolio');
+  return { ok: true, id: data.id };
 }
 
-export async function submitDocumentForReview(documentId: string, content: string) {
-  const { document } = await requireOwnDocument(documentId);
-  if (document.status === 'reviewed') {
-    throw new Error('تمت مراجعة هذا النص بالفعل');
+export async function saveDocumentDraft(
+  documentId: string,
+  title: string,
+  content: string
+): Promise<PortfolioResult> {
+  let document;
+  try {
+    ({ document } = await requireOwnDocument(documentId));
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'غير مصرح' };
   }
-  return writeDocument(documentId, content, 'submitted');
+  if (document.status === 'reviewed') {
+    return { ok: false, error: 'تمت مراجعة هذا النص ولا يمكن تعديله' };
+  }
+  return writeDocument(documentId, title, content, 'draft');
+}
+
+export async function submitDocumentForReview(
+  documentId: string,
+  title: string,
+  content: string
+): Promise<PortfolioResult> {
+  let document;
+  try {
+    ({ document } = await requireOwnDocument(documentId));
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'غير مصرح' };
+  }
+  if (document.status === 'reviewed') {
+    return { ok: false, error: 'تمت مراجعة هذا النص بالفعل' };
+  }
+  return writeDocument(documentId, title, content, 'submitted');
 }
 
 export async function submitInstructorFeedback(documentId: string, feedback: string) {
