@@ -23,6 +23,10 @@ const GROUPS: RawGroup[] = [
     links: [
       { label: 'المستخدمون والعائلات', href: '/dashboard/admin/users', icon: 'Users', permission: 'canManageUsers' },
       { label: 'طلبات حذف الحسابات', href: '/dashboard/admin/users/deletion-requests', icon: 'Users', permission: 'canManageUsers' },
+      // شاشة الصلاحيات نفسها بتتحقق إن اللي داخل مدير نظام — الصلاحية دي
+      // بتخلي الرابط يبان للمشرف العام كمان، وهو هيشوف رسالة «غير مصرح».
+      // مقصود: أحسن من رابط مختفي محدش يعرف إنه موجود.
+      { label: 'الصلاحيات', href: '/dashboard/admin/users/permissions', icon: 'ShieldAlert', permission: 'canManageUsers' },
       { label: 'المدربون', href: '/dashboard/admin/instructors', icon: 'UserCheck', permission: 'canManageInstructors' },
       // مقدّمو الخدمة: المنصة والمدربون والمستقلون. مكان واحد لتحديد
       // مين بيقدّم أي خدمة إبداعية وبكام.
@@ -37,6 +41,7 @@ const GROUPS: RawGroup[] = [
       { label: 'باقات الكتابة', href: '/dashboard/admin/writing/packages', icon: 'LayoutDashboard', permission: 'canManageCatalog' },
       { label: 'الخدمات الإبداعية', href: '/dashboard/admin/writing/services', icon: 'LayoutDashboard', permission: 'canManageCatalog' },
       { label: 'المنتجات والمكتبة', href: '/dashboard/admin/products', icon: 'Box', permission: 'canManagePublishers' },
+      { label: 'منتجات المنصة', href: '/dashboard/admin/products/platform', icon: 'Box', permission: 'canManagePublishers' },
       { label: 'إضافات المنتجات', href: '/dashboard/admin/addons', icon: 'Package', permission: 'canManageCatalog' },
       { label: 'خطط صندوق الرحلة', href: '/dashboard/admin/subscriptions/box/plans', icon: 'Package', permission: 'canManageSubscriptions' },
       { label: 'تسعير الكتابة', href: '/dashboard/admin/settings/creative-writing-pricing', icon: 'Settings', permission: 'canManageCatalog' },
@@ -69,6 +74,7 @@ const GROUPS: RawGroup[] = [
       { label: 'آراء العملاء', href: '/dashboard/admin/content/testimonials', icon: 'Quote', permission: 'canManageContent' },
       { label: 'التقييمات', href: '/dashboard/admin/reviews', icon: 'Star', permission: 'canManageContent' },
       // رقم الدفع والـ QR بيتظبطوا من هنا.
+      { label: 'الإشعارات', href: '/dashboard/admin/notifications', icon: 'LifeBuoy', permission: 'canManageContent' },
       { label: 'الإعدادات العامة', href: '/dashboard/admin/content/settings', icon: 'Settings', permission: 'canManageContent' },
     ],
   },

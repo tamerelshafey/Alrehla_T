@@ -167,6 +167,7 @@ export async function createServiceOrder(params: {
     const recipient = await getProviderUserId(providerId);
     if (recipient) {
       await notifyUser({
+        event: 'service_order_new',
         recipientProfileId: recipient,
         title: 'طلب خدمة جديد',
         message: 'وصلك طلب خدمة إبداعية جديد. سيظهر للتنفيذ بعد تأكيد الدفع.',
@@ -286,6 +287,7 @@ export async function sendServiceOrderMessage(
         : `/account/orders/creative-writing/${orderId}`;
 
     await notifyUser({
+      event: 'service_message',
       recipientProfileId: recipient,
       title: 'رسالة جديدة على طلب خدمة',
       message: text.slice(0, 120),
@@ -316,6 +318,7 @@ export async function startServiceOrder(orderId: string) {
   if (error) throw new Error('تعذّر تحديث حالة الطلب');
 
   await notifyUser({
+    event: 'order_status',
     recipientProfileId: order.buyer_profile_id,
     title: 'بدأ تنفيذ طلبك',
     message: 'المدرب بدأ العمل على طلبك.',
@@ -357,6 +360,7 @@ export async function deliverServiceOrder(orderId: string, deliveryMessage: stri
   if (error) throw new Error('تعذّر تسجيل التسليم');
 
   await notifyUser({
+    event: 'order_status',
     recipientProfileId: order.buyer_profile_id,
     title: 'تم تسليم طلبك',
     message: 'راجع ما سلّمه المدرب وأكّد الاستلام.',
@@ -435,6 +439,7 @@ async function completeOrder(
 
   if (order.instructor_id) {
     await notifyUser({
+      event: 'order_status',
       recipientProfileId: await getInstructorUserId(order.instructor_id),
       title: 'اكتمل الطلب',
       message: 'تم تأكيد الاستلام، وأُضيفت حصيلتك إلى مستحقاتك.',
@@ -491,6 +496,7 @@ export async function confirmServiceOrderPayment(orderId: string) {
 
   if (order) {
     await notifyUser({
+      event: 'order_status',
       recipientProfileId: order.buyer_profile_id,
       title: 'تم تأكيد دفعك',
       message: 'استلمنا المبلغ، والمدرب سيبدأ التنفيذ.',
@@ -503,6 +509,7 @@ export async function confirmServiceOrderPayment(orderId: string) {
         : null;
     if (providerUserId) {
       await notifyUser({
+        event: 'service_order_new',
         recipientProfileId: providerUserId,
         title: 'طلب جاهز للتنفيذ',
         message: `تم تأكيد الدفع — يمكنك بدء التنفيذ الآن. المهلة ${SERVICE_DUE_DAYS} يومًا.`,
@@ -579,6 +586,7 @@ export async function setServiceOrderStatusByAdmin(
     .maybeSingle();
 
   await notifyUser({
+    event: 'order_status',
     recipientProfileId: target?.buyer_profile_id,
     title: status === 'refunded' ? 'تم استرجاع طلبك' : 'تم إلغاء طلبك',
     message: reason.trim(),
@@ -650,6 +658,7 @@ export async function setServiceOrderDueDate(
       : 'تم رفع المهلة عن هذا الطلب.';
 
     await notifyUser({
+      event: 'due_date',
       recipientProfileId: order.buyer_profile_id,
       title: 'تعديل مهلة التسليم',
       message,
@@ -663,6 +672,7 @@ export async function setServiceOrderDueDate(
         : null;
     if (providerUserId) {
       await notifyUser({
+        event: 'due_date',
         recipientProfileId: providerUserId,
         title: 'تعديل مهلة التسليم',
         message,
@@ -720,6 +730,7 @@ export async function submitServiceOrderPayment(
   }
 
   await notifyAdmins({
+    event: 'payment_review',
     title: 'إثبات دفع طلب خدمة بانتظار المراجعة',
     message: 'عميل رفع إيصال تحويل لطلب خدمة إبداعية.',
     link: `/dashboard/admin/orders/services/${orderId}`,

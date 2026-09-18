@@ -59,6 +59,7 @@ export async function saveInstructorServiceOffer(params: {
   }
 
   await notifyUser({
+    event: 'instructor_profile',
     recipientProfileId: await getInstructorUserId(instructorId),
     title: status === 'approved' ? 'تم اعتماد خدمتك' : 'تحديث على خدمتك',
     message:
@@ -127,6 +128,7 @@ export async function rejectInstructorServiceOffer(
   }
 
   await notifyUser({
+    event: 'instructor_profile',
     recipientProfileId: await getInstructorUserId(instructorId),
     title: 'لم تُعتمد الخدمة',
     message: adminNotes.trim(),

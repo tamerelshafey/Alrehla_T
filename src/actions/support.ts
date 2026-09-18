@@ -36,6 +36,7 @@ export async function submitSupportSessionRequest(
   }
 
   await notifyAdmins({
+    event: 'support',
     title: 'طلب جلسة دعم جديد',
     message: `${contactName} طلب جلسة دعم.`,
     link: '/dashboard/admin/support/session-requests',
@@ -101,6 +102,7 @@ export async function createSupportTicket(params: {
   if (messageError) console.error('Error adding first ticket message', messageError);
 
   await notifyAdmins({
+    event: 'support',
     title: 'تذكرة دعم جديدة',
     message: subject,
     link: `/dashboard/admin/support/tickets/${ticket.id}`,

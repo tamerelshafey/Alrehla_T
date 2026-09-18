@@ -16,6 +16,8 @@ export default async function Page() {
     return <Unauthorized />;
   }
 
+  // منتجات المنصة = اللي مالهاش ناشر. بقت شاشة مستقلة في القايمة بدل
+  // تبويب مدفون جوّه شاشة المنتجات.
   const allProducts = await getPersonalizedProducts();
   const platformProducts = allProducts.filter(p => !p.publisherId);
   

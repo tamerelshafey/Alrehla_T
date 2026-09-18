@@ -61,6 +61,7 @@ export async function updateSessionDetails(params: {
   // a missed session.
   if (before?.instructor_id) {
     await notifyUser({
+      event: 'session_update',
       recipientProfileId: await getInstructorUserId(before.instructor_id),
       title: rescheduled ? 'تم تعديل موعد جلسة' : 'تم تحديث رابط الجلسة',
       message: when.toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'short' }),
@@ -76,6 +77,7 @@ export async function updateSessionDetails(params: {
       .maybeSingle();
 
     await notifyUser({
+      event: 'session_update',
       recipientProfileId: sub?.user_id,
       title: rescheduled ? 'تم تعديل موعد جلستك' : 'تم تحديث رابط جلستك',
       message: when.toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'short' }),

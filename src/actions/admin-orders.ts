@@ -63,6 +63,7 @@ export async function setOrderFulfilmentStatus(params: {
   }
 
   await notifyUser({
+    event: 'order_status',
     recipientProfileId: data.user_id,
     title: `طلبك: ${FLOW[status]}`,
     message:

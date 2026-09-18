@@ -62,6 +62,7 @@ export async function submitInstructorProfileUpdate(
   // من غير الإشعار ده، طلب المراجعة بيستنى لحد ما حد يفتح شاشة المدرب
   // بالصدفة — وده اللي كان بيحصل.
   await notifyAdmins({
+    event: 'instructor_profile',
     title: 'طلب تعديل ملف مدرب',
     message: 'مدرب طلب تعديل بياناته وبيستنى المراجعة.',
     link: `/dashboard/admin/instructors/${instructorId}`,
@@ -148,6 +149,7 @@ export async function approveProfileUpdateRequest(requestId: string) {
   });
 
   await notifyUser({
+    event: 'instructor_profile',
     recipientProfileId: await getInstructorUserId(request.instructor_id),
     title: 'تم اعتماد تعديلات ملفك',
     message: 'التعديلات التي أرسلتها ظاهرة الآن للطلاب.',
@@ -188,6 +190,7 @@ export async function rejectProfileUpdateRequest(requestId: string, adminFeedbac
   });
 
   await notifyUser({
+    event: 'instructor_profile',
     recipientProfileId: await getInstructorUserId(request.instructor_id),
     title: 'لم تُعتمد تعديلات ملفك',
     message: adminFeedback,

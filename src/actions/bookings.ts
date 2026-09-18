@@ -109,6 +109,7 @@ export async function submitBookingPaymentProof(
   }
 
   await notifyAdmins({
+    event: 'payment_review',
     title: 'إثبات دفع حجز بانتظار المراجعة',
     message: 'عميل رفع إيصال تحويل لحجز باقة كتابة.',
     link: `/dashboard/admin/bookings/${subscriptionId}`,

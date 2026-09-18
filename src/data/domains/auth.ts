@@ -41,6 +41,30 @@ export async function syncUserProfile(user: User) {
   return newProfile;
 }
 
+/**
+ * الصلاحيات الافتراضية لكل دور.
+ *
+ * دي بتشتغل لما عمود `permissions` في القاعدة يكون فاضي — وده وضع كل
+ * الحسابات لحد ما الإدارة تخصّص صلاحيات لحساب بعينه من شاشة الصلاحيات.
+ */
+export const ALL_ADMIN_PERMISSIONS: AdminPermission[] = [
+  'canManageUsers', 'canManageInstructors', 'canManagePublishers',
+  'canManageCatalog', 'canManageSubscriptions', 'canManageOrders',
+  'canManageBookings', 'canManageSupport', 'canManageContent',
+  'canManageFinance', 'canViewAuditLogs',
+];
+
+export function defaultPermissionsForRole(role: UserRole): AdminPermission[] {
+  if (role === 'super_admin') return [...ALL_ADMIN_PERMISSIONS];
+  if (role === 'general_supervisor') {
+    // المشرف العام: كل حاجة ما عدا الفلوس والسجل.
+    return ALL_ADMIN_PERMISSIONS.filter(
+      (p) => p !== 'canManageFinance' && p !== 'canViewAuditLogs'
+    );
+  }
+  return [];
+}
+
 // Database Access Functions
 export const getCurrentUser = async (): Promise<UserProfile> => {
   const supabase = await createClient();
@@ -64,23 +88,16 @@ export const getCurrentUser = async (): Promise<UserProfile> => {
   // Fetch or synchronize actual profile from Supabase
   const profile = await syncUserProfile(user);
 
-  let role: UserRole = (profile.role as UserRole) || 'customer';
-  let permissions: AdminPermission[] = [];
-  
-  if (role === 'super_admin') {
-    permissions = [
-      'canManageUsers', 'canManageInstructors', 'canManagePublishers', 
-      'canManageCatalog', 'canManageSubscriptions', 'canManageOrders', 
-      'canManageBookings', 'canManageSupport', 'canManageContent', 
-      'canManageFinance', 'canViewAuditLogs'
-    ];
-  } else if (role === 'general_supervisor') {
-    permissions = [
-      'canManageUsers', 'canManageInstructors', 'canManagePublishers', 
-      'canManageCatalog', 'canManageSubscriptions', 'canManageOrders', 
-      'canManageBookings', 'canManageSupport', 'canManageContent'
-    ];
-  }
+  const role: UserRole = (profile.role as UserRole) || 'customer';
+
+  // الصلاحيات: العمود في القاعدة لو متملّي، وإلا الافتراضي بتاع الدور.
+  // العمود الفاضي مقصود — معناه «زي أي واحد في دوره»، فالحسابات القديمة
+  // ما بتتأثرش، ومفيش حاجة محتاجة تتملّى بالإيد.
+  const stored = (profile as { permissions?: string[] | null }).permissions;
+  const permissions: AdminPermission[] =
+    Array.isArray(stored) && stored.length > 0
+      ? (stored as AdminPermission[])
+      : defaultPermissionsForRole(role);
 
   return {
     id: user.id,

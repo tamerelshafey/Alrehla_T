@@ -49,6 +49,7 @@ export async function setWithdrawalStatus(params: {
   };
 
   await notifyUser({
+    event: 'withdrawal',
     recipientProfileId: await getInstructorUserId(data.instructor_id),
     title: titles[status],
     message: adminNotes?.trim(),

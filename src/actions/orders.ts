@@ -167,6 +167,7 @@ export async function submitPaymentProof(
   // الإدارة لازم تعرف إن فيه تحويل مستني مراجعة — من غير كده الطلب
   // بيستنى لحد ما حد يفتح الشاشة بالصدفة.
   await notifyAdmins({
+    event: 'payment_review',
     title: 'إثبات دفع جديد بانتظار المراجعة',
     message: 'عميل رفع إيصال تحويل لطلب من المتجر.',
     link: `/dashboard/admin/orders/${orderId}`,

@@ -55,6 +55,7 @@ export async function requestAccountDeletion(reason: string): Promise<DeletionRe
   });
 
   await notifyAdmins({
+    event: 'account_deletion',
     title: 'طلب حذف حساب',
     message: `${user.fullName} طلب حذف حسابه.`,
     link: '/dashboard/admin/users/deletion-requests',

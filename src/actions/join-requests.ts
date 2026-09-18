@@ -86,12 +86,14 @@ export async function submitJoinRequest(params: {
   }
 
   await notifyAdmins({
+    event: 'join_request',
     title: 'طلب انضمام جديد',
     message: `${applicantName} قدّم طلب انضمام.`,
     link: '/dashboard/admin/join-requests',
   });
 
   await notifyAdmins({
+    event: 'join_request',
     title: 'طلب انضمام جديد',
     message: `${applicantName} قدّم طلب انضمام.`,
     link: '/dashboard/admin/join-requests',

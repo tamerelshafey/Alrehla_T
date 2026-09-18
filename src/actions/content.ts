@@ -26,8 +26,12 @@ export async function updateSiteSettings(formData: FormData) {
 
   const current = (existing?.value ?? {}) as Record<string, unknown>;
 
-  // Only overwrite a field the form actually supplied, so a partial save
-  // cannot blank out settings it did not include.
+  // الحقل اللي الفورم ما بعتوش أصلًا بيفضل زي ما هو — عشان حفظ جزئي
+  // ما يمسحش إعدادات مش موجودة في الشاشة.
+  //
+  // بس الحقل اللي اتبعت **فاضي** بيتمسح فعلًا. قبل كده الفاضي كان
+  // بيتجاهَل، يعني رقم تليفون اتكتب بالغلط ما كانش فيه طريقة تشيله من
+  // الموقع خالص.
   const next: Record<string, unknown> = { ...current };
   for (const field of [
     'siteName',
@@ -35,11 +39,32 @@ export async function updateSiteSettings(formData: FormData) {
     'facebookUrl',
     'instagramUrl',
     'paymentWalletNumber',
+    'contactPhone',
+    'whatsappNumber',
+    'address',
+    'workingHours',
   ]) {
     const value = formData.get(field);
-    if (typeof value === 'string' && value.trim() !== '') {
-      next[field] = value.trim();
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      // رقم المحفظة استثناء: فاضي بيرجّع الافتراضي، وده أخطر من إنه
+      // يفضل زي ما هو. فبنرفض الفاضي فيه.
+      if (trimmed === '' && field === 'paymentWalletNumber') continue;
+      if (trimmed === '') delete next[field];
+      else next[field] = trimmed;
     }
+  }
+
+  // شريط التنبيه العلوي — كائن واحد عشان التلات حاجات يتحفظوا مع بعض.
+  if (formData.has('announcementText')) {
+    const text = String(formData.get('announcementText') ?? '').trim();
+    const until = String(formData.get('announcementUntil') ?? '').trim();
+    next.announcement = {
+      // الشريط ما بيتفعّلش من غير نص، مهما كان الزرار متظبط.
+      enabled: formData.get('announcementEnabled') === 'on' && text !== '',
+      text,
+      until,
+    };
   }
 
   const { error } = await supabase

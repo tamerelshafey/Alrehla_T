@@ -1666,6 +1666,7 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role_enum"]
           is_guardian: boolean | null
           avatar_url: string | null
+          permissions: string[] | null
           created_at: string
           updated_at: string
         }
@@ -1675,6 +1676,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role_enum"]
           is_guardian?: boolean | null
           avatar_url?: string | null
+          permissions?: string[] | null
           created_at?: string
           updated_at?: string
         }
@@ -1684,6 +1686,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role_enum"]
           is_guardian?: boolean | null
           avatar_url?: string | null
+          permissions?: string[] | null
           created_at?: string
           updated_at?: string
         }
@@ -1747,6 +1750,15 @@ export type Database = {
           p_link?: string | null
         }
         Returns: undefined
+      }
+      notify_broadcast: {
+        Args: {
+          p_title: string
+          p_message?: string | null
+          p_link?: string | null
+          p_role?: string | null
+        }
+        Returns: number
       }
       notify_admins: {
         Args: {

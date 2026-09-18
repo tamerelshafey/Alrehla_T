@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getSiteSettings } from '@/data/domains/content';
 import { optimizedImageUrl } from '@/lib/cloudinary';
+import { Mail, Phone, MapPin, Clock, MessageCircle } from 'lucide-react';
 
 /**
  * الفوتر.
@@ -38,6 +39,52 @@ export default async function Footer() {
           <p className="max-w-xs text-sm text-slate-500">
             منصة تعليمية متطورة لتعلّم الكتابة الإبداعية وتقديم قصص مخصصة.
           </p>
+
+          {/* بيانات التواصل بتتظبط من «الإعدادات العامة». اللي فاضي بيختفي
+              بدل ما يسيب سطر بلا قيمة. */}
+          <div className="flex flex-col items-center gap-2 text-sm font-medium text-slate-500 md:items-start">
+            {settings.contactPhone && (
+              <a
+                href={`tel:${settings.contactPhone.replace(/\s/g, '')}`}
+                className="flex items-center gap-2 transition-colors hover:text-amber-500"
+              >
+                <Phone className="h-4 w-4 shrink-0" />
+                <span dir="ltr">{settings.contactPhone}</span>
+              </a>
+            )}
+            {settings.whatsappNumber && (
+              <a
+                href={`https://wa.me/${settings.whatsappNumber.replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 transition-colors hover:text-amber-500"
+              >
+                <MessageCircle className="h-4 w-4 shrink-0" />
+                واتساب
+              </a>
+            )}
+            {settings.contactEmail && (
+              <a
+                href={`mailto:${settings.contactEmail}`}
+                className="flex items-center gap-2 transition-colors hover:text-amber-500"
+              >
+                <Mail className="h-4 w-4 shrink-0" />
+                <span dir="ltr">{settings.contactEmail}</span>
+              </a>
+            )}
+            {settings.address && (
+              <p className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 shrink-0" />
+                {settings.address}
+              </p>
+            )}
+            {settings.workingHours && (
+              <p className="flex items-center gap-2">
+                <Clock className="h-4 w-4 shrink-0" />
+                {settings.workingHours}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-wrap justify-center gap-x-12 gap-y-8 md:justify-end">

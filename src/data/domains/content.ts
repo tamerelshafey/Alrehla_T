@@ -26,6 +26,19 @@ export interface SiteSettings {
   paymentWalletNumber: string;
   /** An InstaPay QR the customer can scan instead of typing the number. */
   paymentQrUrl: string;
+  /** بيانات التواصل — بتظهر في الفوتر وصفحة التواصل. */
+  contactPhone: string;
+  /** رقم الواتساب بصيغة دولية بلا علامات: 201xxxxxxxxx */
+  whatsappNumber: string;
+  address: string;
+  workingHours: string;
+  /** شريط التنبيه العلوي. */
+  announcement: {
+    enabled: boolean;
+    text: string;
+    /** تاريخ ووقت الاختفاء التلقائي (ISO). فاضي = يفضل لحد ما توقفه. */
+    until: string;
+  };
   /** Site imagery, by slot. See src/lib/site-images.ts. */
   images: SiteImages;
 }
@@ -51,6 +64,11 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
       instagramUrl: '',
       paymentWalletNumber: DEFAULT_PAYMENT_WALLET,
       paymentQrUrl: '',
+      contactPhone: '',
+      whatsappNumber: '',
+      address: '',
+      workingHours: '',
+      announcement: { enabled: false, text: '', until: '' },
       images: {},
     };
   }
@@ -63,6 +81,15 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
     instagramUrl: value.instagramUrl ?? '',
     paymentWalletNumber: value.paymentWalletNumber || DEFAULT_PAYMENT_WALLET,
     paymentQrUrl: value.paymentQrUrl ?? '',
+    contactPhone: value.contactPhone ?? '',
+    whatsappNumber: value.whatsappNumber ?? '',
+    address: value.address ?? '',
+    workingHours: value.workingHours ?? '',
+    announcement: {
+      enabled: value.announcement?.enabled ?? false,
+      text: value.announcement?.text ?? '',
+      until: value.announcement?.until ?? '',
+    },
     images: value.images ?? {},
   };
 });

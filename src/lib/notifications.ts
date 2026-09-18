@@ -1,4 +1,29 @@
 import { createClient } from '@/lib/supabase/server';
+import { createPublicClient } from '@/lib/supabase/public';
+import type { NotificationEvent } from '@/lib/notification-events';
+
+/**
+ * الأنواع الموقوفة من شاشة «أنواع الإشعارات».
+ *
+ * القراءة بعميل بلا كوكيز عشان ما تكسرش التخزين المؤقت، وأي فشل معناه
+ * «مفيش حاجة موقوفة» — الإشعار بيتبعت. الإعداد ما ينفعش يبقى سبب في
+ * إن إشعار مهم يسقط بسبب غلطة في القراءة.
+ */
+async function isEventDisabled(event?: NotificationEvent): Promise<boolean> {
+  if (!event) return false;
+  try {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'notifications')
+      .maybeSingle();
+    const disabled = (data?.value as { disabled?: string[] } | null)?.disabled;
+    return Array.isArray(disabled) && disabled.includes(event);
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Sending an in-app notification.
@@ -19,9 +44,12 @@ export async function notifyUser(params: {
   title: string;
   message?: string;
   link?: string;
+  /** نوع الإشعار — عشان شاشة الأنواع تقدر توقفه. */
+  event?: NotificationEvent;
 }) {
   const { recipientProfileId, title, message, link } = params;
   if (!recipientProfileId || !title.trim()) return;
+  if (await isEventDisabled(params.event)) return;
 
   try {
     const supabase = await createClient();
@@ -51,8 +79,10 @@ export async function notifyAdmins(params: {
   title: string;
   message?: string;
   link?: string;
+  event?: NotificationEvent;
 }) {
   if (!params.title.trim()) return;
+  if (await isEventDisabled(params.event)) return;
 
   try {
     const supabase = await createClient();
