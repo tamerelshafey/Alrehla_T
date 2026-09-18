@@ -91,23 +91,22 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
             <div className="h-full w-full bg-gradient-to-br from-slate-700 to-slate-900" />
           )}
           {/*
-            تدرّج واحد على جهة النص بس.
-            كان فيه **اتنين فوق بعض** (80% من الجنب + 60% من تحت)، فالصورة
-            كلها بتبان مغمّقة كأن عليها فلتر. الغرض الحقيقي هو إن النص
-            الأبيض يبان — والنص على جهة واحدة، فالتدرّج يفضل عليها.
+            مفيش أي تظليل على الصورة.
+            كان فيه تدرّجين أسود فوق بعض عشان النص الأبيض يبان — والنتيجة
+            إن الصورة كلها تتغمّق. بدل ما نغمّق الصورة كلها عشان كام سطر،
+            النص بقى له لوحته الخاصة تحت، والصورة بتفضل بألوانها.
           */}
-          <div className="absolute inset-0 bg-gradient-to-l from-black/60 via-black/15 to-transparent"></div>
         </div>
       ))}
 
       {/* Content */}
-      <div className="absolute inset-0 flex flex-col justify-center px-8 md:px-16 z-10 text-white pointer-events-none">
-        <div className="max-w-2xl transform transition-all duration-700 pointer-events-auto">
-          <h1 key={`title-${currentSlide.id}`} className="text-4xl md:text-5xl lg:text-7xl font-black mb-6 leading-tight drop-shadow-lg animate-in slide-in-from-bottom-8 fade-in duration-700">
+      <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-12 z-10 pointer-events-none">
+        <div className="max-w-xl rounded-3xl bg-white/85 p-6 shadow-lg backdrop-blur-sm transition-all duration-700 pointer-events-auto md:p-8">
+          <h1 key={`title-${currentSlide.id}`} className="text-3xl md:text-4xl lg:text-5xl font-black mb-4 leading-tight text-slate-900 animate-in slide-in-from-bottom-8 fade-in duration-700">
             {currentSlide.title}
           </h1>
           {currentSlide.description && (
-            <p key={`desc-${currentSlide.id}`} className="text-lg md:text-2xl font-medium mb-8 text-slate-100 drop-shadow-md leading-relaxed animate-in slide-in-from-bottom-8 fade-in duration-700 delay-150">
+            <p key={`desc-${currentSlide.id}`} className="text-base md:text-lg font-medium mb-6 text-slate-600 leading-relaxed animate-in slide-in-from-bottom-8 fade-in duration-700 delay-150">
               {currentSlide.description}
             </p>
           )}

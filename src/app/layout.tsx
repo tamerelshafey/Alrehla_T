@@ -3,7 +3,6 @@ import { Cairo } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import ScrollToTop from '@/components/layout/ScrollToTop';
 import { Providers } from '@/components/providers/Providers';
 import { getSiteSettings } from '@/data/domains/content';
 import { slotImageUrl } from '@/lib/cloudinary';
@@ -85,7 +84,6 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <Providers>
-          <ScrollToTop />
           <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-rose-500 to-emerald-500 z-50" />
           <Header />
           <main className="relative flex w-full flex-1 flex-col">{children}</main>

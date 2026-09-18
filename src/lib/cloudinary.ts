@@ -114,7 +114,13 @@ export function slotImageUrl(
   // ناعمة، فبتبان مبقّعة. :good بيحط حد أدنى للجودة والفرق في الحجم بسيط.
   const parts = ['f_auto', 'q_auto:good', 'dpr_auto', `w_${slot.w}`];
   if (slot.fit === 'pad') {
-    parts.push('c_pad', 'b_auto');
+    // قص ذكي: Cloudinary بيحلّل الصورة ويقص حواليها، فالصورة بتملا
+    // المكان بالكامل من غير أشرطة لونية على الجنب.
+    //
+    // اللي كان قبله: c_pad + b_auto — الصورة كاملة والفراغ بيتملّي بلون
+    // مسحوب من أطرافها. ما كانش بيقص حاجة، لكن الشريط اللوني بيبان
+    // كأنه فلتر على الصورة.
+    parts.push('c_fill', 'g_auto');
     if (slot.ar) parts.push(`ar_${slot.ar}`);
   } else {
     parts.push('c_fit');

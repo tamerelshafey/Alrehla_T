@@ -31,13 +31,18 @@ describe('روابط صور Cloudinary', () => {
     expect(slotImageUrl(already, 'homeHero')).toBe(already);
   });
 
-  it('خانات الصور تستخدم c_pad لا c_fill — الملء يقص، والحشو لا يقص', () => {
+  it('خانات الصور تستخدم قصًّا ذكيًا يملا المكان من غير أشرطة لونية', () => {
+    // كان c_pad + b_auto: الصورة كاملة والفراغ يتملّي بلون من أطرافها.
+    // الشريط اللوني ده كان بيبان كأنه فلتر، فاتغيّر لقص ذكي (g_auto).
     const url = slotImageUrl(CLOUD, 'homeReading');
-    expect(url).toContain('c_pad');
-    expect(url).toContain('b_auto');
-    expect(url).not.toContain('c_fill');
-    expect(url).not.toContain('c_crop');
-    expect(url).not.toContain('c_thumb');
+    expect(url).toContain('c_fill');
+    expect(url).toContain('g_auto');
+    expect(url).not.toContain('b_auto');
+  });
+
+  it('لا ينزل بجودة الصور: q_auto:good مش q_auto المطلقة', () => {
+    expect(slotImageUrl(CLOUD, 'homeReading')).toContain('q_auto:good');
+    expect(optimizedImageUrl(CLOUD)).toContain('q_auto:good');
   });
 
   it('يضبط نسبة الأبعاد المعلنة للخانة', () => {
