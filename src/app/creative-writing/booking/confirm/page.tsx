@@ -34,6 +34,7 @@ export default async function BookingConfirmPage({
     instructor?: string;
     day?: string;
     time?: string;
+    child?: string;
   }>;
 }) {
   // الباقة والمدرب بيتقروا من القاعدة هنا، مش في المتصفح. الصفحة كانت
@@ -44,6 +45,7 @@ export default async function BookingConfirmPage({
     instructor: instructorId,
     day: slotDay,
     time: slotTime,
+    child: childParam,
   } = await searchParams;
   const [settings, packages, instructors] = await Promise.all([
     getSiteSettings(),
@@ -97,6 +99,7 @@ export default async function BookingConfirmPage({
               packagePrice={chosenPackage.price}
               instructorId={chosenInstructor?.id}
               instructorName={chosenInstructor?.displayName}
+              presetChildId={childParam}
               preferredSlot={
                 slotDay && slotTime &&
                 (chosenInstructor?.weeklySchedule ?? []).some(

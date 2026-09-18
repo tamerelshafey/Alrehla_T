@@ -218,18 +218,26 @@ export async function approveDependentRequest(
 
   revalidatePath('/account/family/requests');
 
-  // الرابط بيروح لنفس شاشة الطلب العادية. المستفيد بيتحدد هناك،
-  // والدفع بيمشي زي أي عملية.
+  // الرابط بيروح لنفس شاشة الطلب العادية، **ومعاه الابن**.
+  //
+  // من غير `child` كان ولي الأمر بيوصل للشاشة ولازم يختار «لأحد أفراد
+  // العائلة» بإيده ويدوّر على الاسم — يعني ممكن يكمّل الطلب باسمه هو
+  // بالغلط، والخدمة تتنفّذ على إنها له. الموافقة لازم تربط، مش تسلّم
+  // يدويًا.
   if (request.kind === 'service') {
     const providerId = overrides?.providerId ?? request.provider_id;
-    const query = providerId ? `?provider=${encodeURIComponent(providerId)}` : '';
+    const params = new URLSearchParams({ child: request.child_profile_id });
+    if (providerId) params.set('provider', providerId);
     return {
       ok: true,
-      href: `/creative-writing/services/${request.service_id}/order${query}`,
+      href: `/creative-writing/services/${request.service_id}/order?${params.toString()}`,
     };
   }
 
-  const params = new URLSearchParams({ package: String(request.package_id) });
+  const params = new URLSearchParams({
+    package: String(request.package_id),
+    child: request.child_profile_id,
+  });
   const instructorId = overrides?.instructorId ?? request.instructor_id;
   if (instructorId) params.set('instructor', instructorId);
   return { ok: true, href: `/creative-writing/booking/confirm?${params.toString()}` };

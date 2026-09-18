@@ -17,6 +17,14 @@ interface Props {
   providerId: string | null;
   providerName: string | null;
   amount: number;
+  /**
+   * المستفيد محدَّد مسبقًا — بييجي من موافقة ولي الأمر على طلب ابنه.
+   *
+   * من غيره كان ولي الأمر يوصل للشاشة ولازم يختار «لأحد أفراد العائلة»
+   * بإيده ويدوّر على الاسم، فيكمّل الطلب باسمه هو بالغلط والخدمة تتنفّذ
+   * على إنها له.
+   */
+  presetChildId?: string;
 }
 
 export function OrderServiceClient({
@@ -27,6 +35,7 @@ export function OrderServiceClient({
   amount,
   paymentWalletNumber,
   paymentQrUrl,
+  presetChildId,
 }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -38,8 +47,10 @@ export function OrderServiceClient({
   // حجز الباقة بيسأل السؤال ده، وطلب الخدمة **مكانش بيسأله خالص**:
   // ولي أمر يطلب «مراجعة نص» لابنه، والطلب يتسجّل باسمه هو، ومقدّم
   // الخدمة مايعرفش النص لمين ولا سنه كام.
-  const [participantType, setParticipantType] = useState<'self' | 'child'>('self');
-  const [childId, setChildId] = useState('');
+  const [participantType, setParticipantType] = useState<'self' | 'child'>(
+    presetChildId ? 'child' : 'self',
+  );
+  const [childId, setChildId] = useState(presetChildId ?? '');
   const [family, setFamily] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
@@ -127,6 +138,13 @@ export function OrderServiceClient({
         <form onSubmit={handleRegister} className="flex flex-col gap-6">
           <div className="rounded-3xl border border-slate-200 bg-white p-8">
             <h2 className="mb-1 text-lg font-black text-slate-800">الخدمة دي لمين؟</h2>
+            {presetChildId && (
+              <p className="mb-3 rounded-xl bg-violet-50 px-3 py-2 text-xs font-bold text-violet-700">
+                الطلب ده جاي من موافقتك على طلب{' '}
+                {family.find((m) => m.id === presetChildId)?.name ?? 'ابنك'} — المستفيد
+                متحدد تلقائيًا.
+              </p>
+            )}
             <p className="mb-5 text-sm font-medium text-slate-500">
               مقدّم الخدمة بيحتاج يعرف المستفيد عشان يظبط الشغل على سنّه
               ومستواه.

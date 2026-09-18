@@ -17,6 +17,7 @@ export function BookingConfirmClient({
   instructorId,
   instructorName,
   preferredSlot,
+  presetChildId,
 }: {
   paymentWalletNumber: string;
   paymentQrUrl?: string;
@@ -27,9 +28,16 @@ export function BookingConfirmClient({
   instructorName?: string;
   /** الموعد الأسبوعي اللي العميل اختاره في المعالج، بعد التأكد إنه في جدول المدرب. */
   preferredSlot?: { day: string; time: string };
+  /**
+   * المشارك محدَّد مسبقًا — بييجي من موافقة ولي الأمر على طلب ابنه.
+   * من غيره كان لازم يختاره بإيده، فيحجز باسمه هو بالغلط.
+   */
+  presetChildId?: string;
 }) {
-  const [participantType, setParticipantType] = useState<'self' | 'child'>('self');
-  const [childId, setChildId] = useState<string>('');
+  const [participantType, setParticipantType] = useState<'self' | 'child'>(
+    presetChildId ? 'child' : 'self',
+  );
+  const [childId, setChildId] = useState<string>(presetChildId ?? '');
   const [children, setChildren] = useState<{id:string, name:string}[]>([]);
 
   React.useEffect(() => {

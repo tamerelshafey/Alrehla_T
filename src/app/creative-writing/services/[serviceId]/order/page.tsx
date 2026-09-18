@@ -29,11 +29,17 @@ export default async function OrderServicePage({
   searchParams,
 }: {
   params: Promise<{ serviceId: string }>;
-  searchParams: Promise<{ provider?: string; instructor?: string }>;
+  searchParams: Promise<{ provider?: string; instructor?: string; child?: string }>;
 }) {
   const { serviceId } = await params;
   // `instructor` هو الاسم القديم في الروابط — بيفضل مقبول.
-  const { provider: providerParam, instructor: instructorParam } = await searchParams;
+  const {
+    provider: providerParam,
+    instructor: instructorParam,
+    // بييجي من موافقة ولي الأمر على طلب ابنه — المستفيد بيتحدد مسبقًا
+    // بدل ما ولي الأمر يدوّر عليه بإيده.
+    child: childParam,
+  } = await searchParams;
 
   const settings = await getSiteSettings();
   const services = await getStandaloneServices();
@@ -96,6 +102,7 @@ export default async function OrderServicePage({
           providerId={providerId}
           providerName={providerName}
           amount={amount}
+          presetChildId={childParam}
         />
       </Section>
     </PageContainer>

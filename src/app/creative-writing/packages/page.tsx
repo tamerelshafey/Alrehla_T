@@ -15,6 +15,9 @@ import { getWritingPackages } from '@/data/domains/writing';
 import { Target, Clock, Calendar, CheckCircle2 } from 'lucide-react';
 import { WritingPackage } from '@/types';
 
+import { DependentRequestButton } from '@/components/services/DependentRequestButton';
+import { getCurrentUser } from '@/data/domains/auth';
+import { getDependentGuardian } from '@/lib/auth-guard';
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
 import { Section } from '@/components/ui/Section';
@@ -23,6 +26,19 @@ import { Button } from '@/components/ui/Button';
 
 export default async function PackagesPage() {
   const packages = await getWritingPackages();
+
+  // حساب الطفل التابع بيشوف «اطلب من ولي أمرك» بدل زرار الحجز.
+  // الفشل هنا بيتعامل معاه كـ«مش تابع» — صفحة عرض، والحارس الحقيقي
+  // في `createCourseBooking`.
+  const user = await getCurrentUser();
+  let isDependent = false;
+  if (user.role !== 'visitor') {
+    try {
+      isDependent = Boolean(await getDependentGuardian());
+    } catch {
+      isDependent = false;
+    }
+  }
 
   const activePackages = packages.filter((p) => p.isActive);
 
@@ -76,7 +92,7 @@ export default async function PackagesPage() {
               </div>
               <div className="grid gap-8 lg:grid-cols-2">
                 {track.items.map((pkg) => (
-                  <PackageCard key={pkg.id} pkg={pkg} />
+                  <PackageCard key={pkg.id} pkg={pkg} isDependent={isDependent} />
                 ))}
               </div>
             </Section>
@@ -93,7 +109,7 @@ export default async function PackagesPage() {
             </div>
             <div className="grid gap-8 lg:grid-cols-2">
               {untracked.map((pkg) => (
-                <PackageCard key={pkg.id} pkg={pkg} />
+                <PackageCard key={pkg.id} pkg={pkg} isDependent={isDependent} />
               ))}
             </div>
           </Section>
@@ -118,7 +134,7 @@ export default async function PackagesPage() {
   );
 }
 
-function PackageCard({ pkg }: { pkg: WritingPackage }) {
+function PackageCard({ pkg, isDependent }: { pkg: WritingPackage; isDependent: boolean }) {
   return (
     <Card accentColor="emerald" className="flex flex-col p-8">
       <div className="mb-6 flex items-start justify-between">
@@ -186,15 +202,30 @@ function PackageCard({ pkg }: { pkg: WritingPackage }) {
         )}
       </div>
 
-      <Button
-        // الباقة بتتبعت في الرابط: قبل كده كان اللي بيختار باقة معيّنة
-        // يوصل للمعالج وهو مختار أول باقة في القايمة.
-        href={`/creative-writing/booking?package=${encodeURIComponent(pkg.id)}`}
-        accentColor="emerald"
-        className="mt-auto w-full py-4 text-center"
-      >
-        اكتشف المدربين والأسعار
-      </Button>
+      {/*
+        حساب الطفل التابع ممنوع من الحجز المباشر. من غير الزرار ده كان
+        بيوصل للمعالج ويكمّل لحد آخر خطوة وبعدين ياخد رسالة منع — طريق
+        مسدود بعد شغل. دلوقتي بيطلب من ولي أمره من هنا.
+      */}
+      {isDependent ? (
+        <div className="mt-auto w-full">
+          <DependentRequestButton
+            kind="package"
+            packageId={pkg.id}
+            label="اطلب الباقة من ولي أمرك"
+          />
+        </div>
+      ) : (
+        <Button
+          // الباقة بتتبعت في الرابط: قبل كده كان اللي بيختار باقة معيّنة
+          // يوصل للمعالج وهو مختار أول باقة في القايمة.
+          href={`/creative-writing/booking?package=${encodeURIComponent(pkg.id)}`}
+          accentColor="emerald"
+          className="mt-auto w-full py-4 text-center"
+        >
+          اكتشف المدربين والأسعار
+        </Button>
+      )}
     </Card>
   );
 }
