@@ -62,8 +62,10 @@ export const getWritingPackages = async (): Promise<WritingPackage[]> => {
  *
  * `weekly_schedule` موجود عن قصد: العميل محتاج يشوف المواعيد عشان يحجز.
  */
-const PUBLIC_INSTRUCTOR_COLUMNS =
-  'id, user_id, display_name, bio, specialties, years_experience, is_sample, status, weekly_schedule';
+/* قايمة الأعمدة الصريحة اتشالت: المسار العام بقى بيعدّي على
+   `public_instructors()` (ملف 83)، والأعمدة الآمنة اتحدّدت في **الدالة
+   نفسها** مش في الكود. الفرق إن قايمة في الكود بتحدّد اللي الصفحة
+   بتعرضه، والدالة بتحدّد اللي الزائر **يقدر يوصله** أصلًا. */
 
 /**
  * صور المدربين — **مش في جدول `instructors` أصلًا**.
@@ -104,47 +106,49 @@ async function avatarsByUserId(
   return map;
 }
 
-function toPublicInstructor(
-  row: {
-    id: string;
-    user_id: string;
-    display_name: string;
-    bio: string;
-    specialties: string[] | null;
-    years_experience: number | null;
-    is_sample: boolean | null;
-    status: string;
-    weekly_schedule: unknown;
-  },
-  avatarUrl?: string,
-): PublicInstructor {
+/** الصف كما ترجعه `public_instructors()` في القاعدة (ملف 83). */
+type PublicInstructorRow = {
+  id: string;
+  user_id: string;
+  display_name: string;
+  bio: string | null;
+  specialties: string[] | null;
+  years_experience: number | null;
+  is_sample: boolean | null;
+  status: string;
+  weekly_schedule: unknown;
+  avatar_url: string | null;
+};
+
+function toPublicInstructor(row: PublicInstructorRow): PublicInstructor {
   return {
     id: row.id,
     userId: row.user_id,
     displayName: row.display_name,
-    bio: row.bio,
+    bio: row.bio ?? '',
     specialties: row.specialties ?? [],
     yearsExperience: row.years_experience ?? 0,
     isSample: row.is_sample ?? undefined,
     status: row.status as InstructorStatus,
     weeklySchedule: (row.weekly_schedule as WeeklySlot[]) ?? [],
-    avatarUrl,
+    avatarUrl: row.avatar_url ?? undefined,
   };
 }
 
 /** قائمة المدربين للصفحات العامة — بالأعمدة الآمنة وحدها. */
 export const getPublicInstructors = async (): Promise<PublicInstructor[]> => {
   const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from('instructors')
-    .select(PUBLIC_INSTRUCTOR_COLUMNS)
-    .order('created_at', { ascending: false });
+  const { data, error } = await supabase.rpc('public_instructors');
 
-  if (error || !data) return [];
+  if (error || !data) {
+    // ⚠️ فاضي هنا معناه «مفيش مدربين» **أو** «الدالة مش موجودة» —
+    //    قاعدة (ك). لو الصفحة طلعت فاضية بعد نشر، أول حاجة تتأكد منها
+    //    إن ملف 83 اتشغّل على القاعدة.
+    if (error) console.error('Error loading public instructors', error);
+    return [];
+  }
 
-  const rows = data as unknown as Parameters<typeof toPublicInstructor>[0][];
-  const avatars = await avatarsByUserId(supabase, rows.map((r) => r.user_id));
-  return rows.map((r) => toPublicInstructor(r, avatars.get(r.user_id)));
+  return (data as unknown as PublicInstructorRow[]).map(toPublicInstructor);
 };
 
 /** مدرب واحد للصفحات العامة — بالأعمدة الآمنة وحدها. */
@@ -152,17 +156,15 @@ export const getPublicInstructorById = async (
   id: string,
 ): Promise<PublicInstructor | null> => {
   const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from('instructors')
-    .select(PUBLIC_INSTRUCTOR_COLUMNS)
-    .eq('id', id)
-    .maybeSingle();
+  const { data, error } = await supabase.rpc('public_instructor', { p_id: id });
 
-  if (error || !data) return null;
+  if (error) {
+    console.error('Error loading public instructor', error);
+    return null;
+  }
 
-  const row = data as unknown as Parameters<typeof toPublicInstructor>[0];
-  const avatars = await avatarsByUserId(supabase, [row.user_id]);
-  return toPublicInstructor(row, avatars.get(row.user_id));
+  const row = (data as unknown as PublicInstructorRow[] | null)?.[0];
+  return row ? toPublicInstructor(row) : null;
 };
 
 /**

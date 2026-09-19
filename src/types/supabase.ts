@@ -1861,6 +1861,43 @@ export type Database = {
         }
         Returns: string
       }
+      /**
+       * بيانات المدربين العامة — الأعمدة الآمنة وحدها (ملف SQL 83).
+       *
+       * ⚠️ الملف ده بيتولّد بـ`supabase gen types`، والمدخلتين دول
+       *    اتكتبوا بالإيد لأن التوليد مبيتعملش من هنا. لو اتعمل توليد
+       *    يومًا، اتأكد إنهم لسه موجودين.
+       */
+      public_instructors: {
+        Args: Record<string, never>
+        Returns: {
+          id: string
+          user_id: string
+          display_name: string
+          bio: string | null
+          specialties: string[] | null
+          years_experience: number | null
+          is_sample: boolean | null
+          status: string
+          weekly_schedule: Json | null
+          avatar_url: string | null
+        }[]
+      }
+      public_instructor: {
+        Args: { p_id: string }
+        Returns: {
+          id: string
+          user_id: string
+          display_name: string
+          bio: string | null
+          specialties: string[] | null
+          years_experience: number | null
+          is_sample: boolean | null
+          status: string
+          weekly_schedule: Json | null
+          avatar_url: string | null
+        }[]
+      }
       instructor_sessions: {
         Args: Record<string, never>
         Returns: {
