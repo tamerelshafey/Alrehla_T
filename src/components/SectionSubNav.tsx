@@ -31,7 +31,7 @@ export function SectionSubNav({
                   key={tab.href}
                   href={tab.href}
                   className={cn(
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 rounded-full px-6 py-2.5 text-sm font-bold transition-all duration-300',
+                    'inline-flex min-h-[44px] items-center rounded-full px-6 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 transition-[background-color,box-shadow,transform] duration-200 ease-[var(--ease-ui)]',
                     isActive
                       ? activeColorClass + ' shadow-md scale-105'
                       : 'bg-white/70 text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm'

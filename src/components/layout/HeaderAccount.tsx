@@ -78,7 +78,7 @@ export function HeaderAccount() {
     return (
       <Link
         href="/sign-in"
-        className="flex h-10 items-center gap-2 rounded-full bg-slate-900 px-5 text-sm font-bold text-white shadow-md transition-all hover:bg-amber-500 hover:shadow-lg hover:shadow-amber-500/20 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus-visible:outline-none"
+        className="flex h-11 items-center gap-2 rounded-full bg-slate-900 px-5 text-sm font-bold text-white shadow-md transition-all hover:bg-amber-500 hover:shadow-lg hover:shadow-amber-500/20 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         <User className="h-4 w-4" />
         <span className="hidden sm:inline">دخول</span>
@@ -95,7 +95,7 @@ export function HeaderAccount() {
             ? `الإشعارات، ${session.unreadCount} غير مقروء`
             : 'الإشعارات'
         }
-        className="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-white hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
+        className="relative flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-white hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
       >
         <Bell className="h-5 w-5" />
         {session.unreadCount > 0 && (

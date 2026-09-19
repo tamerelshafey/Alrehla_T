@@ -1,3 +1,14 @@
+/*
+ * ⚠️ `min-h-[44px]` (و`w-11 h-11` = 44px) — أصغر هدف لمس مقبول.
+ *
+ * القياس على الموقع المنشور بعرض 375px: **17 عنصر قابل للضغط من 35
+ * تحت الـ44px**. أسوأهم روابط الفوتر: **20px** ارتفاعًا — أقل من نص
+ * حجم الإصبع.
+ *
+ * `max-md:` على قوائم الروابط عن قصد: الموبايل بياخد الهدف الكامل،
+ * والديسكتوب (ماوس، ودقة تصويب أعلى) بيحتفظ بكثافته. أزرار الأيقونات
+ * بتاخد 44px على كل المقاسات — هي صغيرة في الحالتين.
+ */
 import Link from 'next/link';
 import Image from 'next/image';
 import { getSiteSettings } from '@/data/domains/content';
@@ -46,7 +57,7 @@ export default async function Footer() {
             {settings.contactPhone && (
               <a
                 href={`tel:${settings.contactPhone.replace(/\s/g, '')}`}
-                className="flex items-center gap-2 transition-colors hover:text-amber-500"
+                className="flex max-md:min-h-[44px] items-center gap-2 transition-colors hover:text-amber-500"
               >
                 <Phone className="h-4 w-4 shrink-0" />
                 <span dir="ltr">{settings.contactPhone}</span>
@@ -57,7 +68,7 @@ export default async function Footer() {
                 href={`https://wa.me/${settings.whatsappNumber.replace(/\D/g, '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 transition-colors hover:text-amber-500"
+                className="flex max-md:min-h-[44px] items-center gap-2 transition-colors hover:text-amber-500"
               >
                 <MessageCircle className="h-4 w-4 shrink-0" />
                 واتساب
@@ -66,7 +77,7 @@ export default async function Footer() {
             {settings.contactEmail && (
               <a
                 href={`mailto:${settings.contactEmail}`}
-                className="flex items-center gap-2 transition-colors hover:text-amber-500"
+                className="flex max-md:min-h-[44px] items-center gap-2 transition-colors hover:text-amber-500"
               >
                 <Mail className="h-4 w-4 shrink-0" />
                 <span dir="ltr">{settings.contactEmail}</span>
@@ -95,37 +106,37 @@ export default async function Footer() {
             <div className="flex flex-col gap-2 text-sm font-medium text-slate-500">
               <Link
                 href="/about"
-                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
+                className="inline-flex max-md:min-h-[44px] items-center transition-colors focus-visible:text-amber-500 focus-visible:underline focus-visible:outline-none hover:text-amber-500"
               >
                 رحلتنا
               </Link>
               <Link
                 href="/enha-lak"
-                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
+                className="inline-flex max-md:min-h-[44px] items-center transition-colors focus-visible:text-amber-500 focus-visible:underline focus-visible:outline-none hover:text-amber-500"
               >
                 إنها لك
               </Link>
               <Link
                 href="/creative-writing"
-                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
+                className="inline-flex max-md:min-h-[44px] items-center transition-colors focus-visible:text-amber-500 focus-visible:underline focus-visible:outline-none hover:text-amber-500"
               >
                 بداية الرحلة
               </Link>
               <Link
                 href="/blog"
-                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
+                className="inline-flex max-md:min-h-[44px] items-center transition-colors focus-visible:text-amber-500 focus-visible:underline focus-visible:outline-none hover:text-amber-500"
               >
                 المدونة
               </Link>
               <Link
                 href="/join-us"
-                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
+                className="inline-flex max-md:min-h-[44px] items-center transition-colors focus-visible:text-amber-500 focus-visible:underline focus-visible:outline-none hover:text-amber-500"
               >
                 انضم إلينا
               </Link>
               <Link
                 href="/support"
-                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
+                className="inline-flex max-md:min-h-[44px] items-center transition-colors focus-visible:text-amber-500 focus-visible:underline focus-visible:outline-none hover:text-amber-500"
               >
                 الدعم والمساعدة
               </Link>
@@ -139,13 +150,13 @@ export default async function Footer() {
             <div className="flex flex-col gap-2 text-sm font-medium text-slate-500">
               <Link
                 href="/privacy"
-                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
+                className="inline-flex max-md:min-h-[44px] items-center transition-colors focus-visible:text-amber-500 focus-visible:underline focus-visible:outline-none hover:text-amber-500"
               >
                 سياسة الخصوصية
               </Link>
               <Link
                 href="/terms"
-                className="focus-visible:outline-none focus-visible:text-amber-500 focus-visible:underline transition-colors hover:text-amber-500"
+                className="inline-flex max-md:min-h-[44px] items-center transition-colors focus-visible:text-amber-500 focus-visible:underline focus-visible:outline-none hover:text-amber-500"
               >
                 الشروط والأحكام
               </Link>
