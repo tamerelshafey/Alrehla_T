@@ -97,6 +97,34 @@ export type Instructor = {
   monthlyHoursCommitted?: number; // Only if workModel === 'monthly'. Minimum 60.
 };
 
+/**
+ * المدرب كما تراه الصفحات العامة.
+ *
+ * ── ليه نوع منفصل ───────────────────────────────────────────
+ *
+ * صفحات المدربين العامة كانت بتقرا `select('*')` بمفتاح الزائر، فكل
+ * أعمدة الجدول كانت بتوصل للمتصفح: `approved_price` و`requested_price`
+ * و`monthly_hours_committed` و`work_model`. يعني **السعر المتفاوَض عليه
+ * مع كل مدرب وشروط تعاقده** كانت مكتوبة في صفحة عامة، يقراها أي زائر —
+ * ومنهم مدرب تاني أو منافس.
+ *
+ * النوع ده بيشيل الأعمدة دي من المسار العام أصلًا، فالتسريب بيتقفل عند
+ * الاستعلام مش عند العرض: البيانات **ما بتخرجش من القاعدة** من الأساس.
+ *
+ * ⚠️ `weeklySchedule` باقٍ عن قصد — العميل لازم يشوف المواعيد المتاحة
+ *    عشان يحجز. مواعيد مش أسعارًا.
+ */
+export type PublicInstructor = Omit<
+  Instructor,
+  | 'trainingPassed'
+  | 'workModel'
+  | 'requestedPrice'
+  | 'selectedPricingOptionId'
+  | 'approvedPrice'
+  | 'pendingSchedule'
+  | 'monthlyHoursCommitted'
+>;
+
 export interface ProfileUpdateRequest {
   id: string;
   instructorId: string;

@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-import { getInstructors } from '@/data/domains/writing';
+import { getPublicInstructors } from '@/data/domains/writing';
 import { getInstructorRatingSummaries } from '@/data/domains/reviews';
 import { RatingStars } from '@/components/services/RatingStars';
 import { User, Award, CheckCircle } from 'lucide-react';
@@ -22,7 +22,7 @@ import { Card } from '@/components/ui/Card';
 
 
 export default async function InstructorsPage() {
-  const instructors = await getInstructors();
+  const instructors = await getPublicInstructors();
   const ratings = await getInstructorRatingSummaries(instructors.map((i) => i.id));
 
   return (

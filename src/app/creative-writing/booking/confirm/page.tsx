@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 import { getSiteSettings } from '@/data/domains/content';
 import {
   getWritingPackages,
-  getInstructors,
+  getPublicInstructors,
   getBookedSlotsByInstructor,
 } from '@/data/domains/writing';
 import Link from 'next/link';
@@ -50,7 +50,7 @@ export default async function BookingConfirmPage({
   const [settings, packages, instructors] = await Promise.all([
     getSiteSettings(),
     getWritingPackages(),
-    getInstructors(),
+    getPublicInstructors(),
   ]);
 
   const chosenPackage = packages.find((pkg) => pkg.id === packageId);

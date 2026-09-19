@@ -7,7 +7,8 @@ import {
   SupportTicketMessage, FamilyMember, NotificationItem, UserRole,
   PublisherOrder,
   InstructorPricingOption, PricingFormulaSettings, InstructorCompensationProfile, InstructorCertification,
-  BookedSlot, DayOfWeek, InstructorSession, StudentSession
+  BookedSlot, DayOfWeek, InstructorSession, StudentSession,
+  PublicInstructor, InstructorStatus, WeeklySlot
 } from '@/types';
 import { cookies } from 'next/headers';
 import { createPublicClient } from '@/lib/supabase/public';
@@ -49,8 +50,85 @@ export const getWritingPackages = async (): Promise<WritingPackage[]> => {
   }));
 };
 
-export const getInstructors = async (): Promise<Instructor[]> => {
+/**
+ * الأعمدة اللي تظهر للزائر — ومفيش غيرها.
+ *
+ * ⚠️ **متحطّش هنا عمود جديد من غير ما تسأل: هل ينفع أي زائر يقراه؟**
+ *    كان الاستعلام `select('*')` بمفتاح الزائر، فـ`approved_price` و
+ *    `requested_price` و`monthly_hours_committed` و`work_model` كانوا
+ *    بيوصلوا للمتصفح في صفحة عامة. القايمة الصريحة هي اللي بتمنع ده.
+ *
+ * `weekly_schedule` موجود عن قصد: العميل محتاج يشوف المواعيد عشان يحجز.
+ */
+const PUBLIC_INSTRUCTOR_COLUMNS =
+  'id, user_id, display_name, bio, specialties, years_experience, is_sample, status, weekly_schedule';
+
+function toPublicInstructor(row: {
+  id: string;
+  user_id: string;
+  display_name: string;
+  bio: string;
+  specialties: string[] | null;
+  years_experience: number | null;
+  is_sample: boolean | null;
+  status: string;
+  weekly_schedule: unknown;
+}): PublicInstructor {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    displayName: row.display_name,
+    bio: row.bio,
+    specialties: row.specialties ?? [],
+    yearsExperience: row.years_experience ?? 0,
+    isSample: row.is_sample ?? undefined,
+    status: row.status as InstructorStatus,
+    weeklySchedule: (row.weekly_schedule as WeeklySlot[]) ?? [],
+  };
+}
+
+/** قائمة المدربين للصفحات العامة — بالأعمدة الآمنة وحدها. */
+export const getPublicInstructors = async (): Promise<PublicInstructor[]> => {
   const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from('instructors')
+    .select(PUBLIC_INSTRUCTOR_COLUMNS)
+    .order('created_at', { ascending: false });
+
+  if (error || !data) return [];
+  return (data as unknown as Parameters<typeof toPublicInstructor>[0][])
+    .map(toPublicInstructor);
+};
+
+/** مدرب واحد للصفحات العامة — بالأعمدة الآمنة وحدها. */
+export const getPublicInstructorById = async (
+  id: string,
+): Promise<PublicInstructor | null> => {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from('instructors')
+    .select(PUBLIC_INSTRUCTOR_COLUMNS)
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return toPublicInstructor(
+    data as unknown as Parameters<typeof toPublicInstructor>[0],
+  );
+};
+
+/**
+ * كل بيانات المدرب — **للوحات فقط**.
+ *
+ * ⚠️ بتستخدم عميل المستخدم المسجَّل (`createClient`) مش مفتاح الزائر.
+ *    كانت بتستخدم مفتاح الزائر، يعني شاشة «مستحقات المدربين» في لوحة
+ *    الإدارة كانت بتقرا الأسعار بصلاحية **زائر غير مسجَّل** — وده اللي
+ *    كان بيخلّي سياسة القراءة العامة على الجدول ضرورية للوحة تشتغل.
+ *    بعد التغيير ده، الصفحات العامة بقت بتاخد الأعمدة الآمنة بس،
+ *    واللوحات بتقرا بهوية صاحبها.
+ */
+export const getInstructors = async (): Promise<Instructor[]> => {
+  const supabase = await createClient();
   const { data, error } = await supabase.from('instructors')
     .select('*')
     .order('created_at', { ascending: false });
@@ -79,10 +157,11 @@ export const getInstructors = async (): Promise<Instructor[]> => {
   }));
 };
 
+/** كل بيانات المدرب الواحد — **للوحات فقط**. نفس سبب `getInstructors`. */
 export const getInstructorById = async (
   id: string
 ): Promise<Instructor | null> => {
-  const supabase = createPublicClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.from('instructors')
     .select('*')
     .eq('id', id)

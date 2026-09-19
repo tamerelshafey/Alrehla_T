@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Instructor, WeeklySlot, BookedSlot, DayOfWeek } from '@/types';
+import { PublicInstructor, WeeklySlot, BookedSlot, DayOfWeek } from '@/types';
 import { formatPrice } from '@/lib/utils';
 import { Calendar, Clock, User, ArrowRight, Video } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -31,7 +31,15 @@ type PackageOption = {
 };
 
 interface BookingWizardProps {
-  instructors: Instructor[];
+  /**
+   * ⚠️ `PublicInstructor` مش `Instructor` عن قصد.
+   *
+   * ده **مكوّن عميل** — كل حاجة بتتبعتله بتتكتب في حمولة الصفحة اللي
+   * بتوصل المتصفح. لما كان بياخد `Instructor` كامل، كان `approvedPrice`
+   * و`requestedPrice` و`monthlyHoursCommitted` بيتكتبوا حرفيًا في صفحة
+   * الحجز العامة. المكوّن مش محتاج غير الاسم والحالة والمواعيد.
+   */
+  instructors: PublicInstructor[];
   /**
    * الباقات الحقيقية من قاعدة البيانات.
    *

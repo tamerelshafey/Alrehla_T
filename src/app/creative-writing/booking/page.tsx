@@ -14,7 +14,7 @@ import { Suspense } from 'react';
 import { PageContainer } from '@/components/PageContainer';
 import { BookingWizardClient } from '@/components/creative-writing/BookingWizardClient';
 import {
-  getInstructors,
+  getPublicInstructors,
   getWritingPackages,
   getBookedSlotsByInstructor,
 } from '@/data/domains/writing';
@@ -22,7 +22,7 @@ import { Section } from '@/components/ui/Section';
 
 export default async function BookingPage() {
   const [instructors, packages] = await Promise.all([
-    getInstructors(),
+    getPublicInstructors(),
     getWritingPackages(),
   ]);
 

@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/seo';
 import { getBlogPosts } from '@/data/domains/content';
 import { getPersonalizedProducts, getPublishers } from '@/data/domains/products';
-import { getInstructors } from '@/data/domains/writing';
+import { getPublicInstructors } from '@/data/domains/writing';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_URL;
@@ -58,7 +58,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  const instructors = await getInstructors();
+  const instructors = await getPublicInstructors();
   const instructorRoutes = instructors.map((inst: any) => ({
     url: `${baseUrl}/creative-writing/instructors/${inst.id}`,
     lastModified: new Date(),

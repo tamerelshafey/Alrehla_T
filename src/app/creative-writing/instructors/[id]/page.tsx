@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { PageContainer } from '@/components/PageContainer';
 import { ArrowLeft, User, Star, Award, BookOpen, MessageCircle } from 'lucide-react';
-import { getInstructors } from '@/data/domains/writing';
+import { getPublicInstructors } from '@/data/domains/writing';
 import { getInstructorRatingSummary, getReviewsForInstructor } from '@/data/domains/reviews';
 import { formatDate } from '@/lib/utils';
 import { notFound } from 'next/navigation';
@@ -16,7 +16,7 @@ import { instructorSchema, breadcrumbSchema } from '@/lib/structured-data';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const instructors = await getInstructors();
+  const instructors = await getPublicInstructors();
   const instructor = instructors.find((i) => i.id === id);
   if (!instructor) return { title: 'مدرب غير موجود' };
   return pageMetadata({
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function InstructorProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
-  const instructors = await getInstructors();
+  const instructors = await getPublicInstructors();
   const instructor = instructors.find(i => i.id === resolvedParams.id);
 
   if (!instructor) {
