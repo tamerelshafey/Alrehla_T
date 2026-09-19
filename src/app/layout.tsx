@@ -4,6 +4,7 @@ import './globals.css';
 import Header from '@/components/layout/Header';
 import { AnnouncementBar } from '@/components/layout/AnnouncementBar';
 import Footer from '@/components/layout/Footer';
+import { FloatingActions } from '@/components/layout/FloatingActions';
 import { Providers } from '@/components/providers/Providers';
 import { getSiteSettings } from '@/data/domains/content';
 import { slotImageUrl } from '@/lib/cloudinary';
@@ -90,6 +91,7 @@ export default function RootLayout({
           <Header />
           <main className="relative flex w-full flex-1 flex-col">{children}</main>
           <Footer />
+          <FloatingActions />
         </Providers>
       </body>
     </html>

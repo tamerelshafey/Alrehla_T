@@ -243,7 +243,19 @@ export default async function Home() {
       {/* Our Story */}
       <Section containerClassName="overflow-hidden rounded-[3rem] border border-slate-100 bg-white shadow-xl shadow-slate-200/50 p-0">
         <div className="grid lg:grid-cols-2">
-          <div className="relative h-64 lg:h-auto">
+          {/* ── الصورة كبطاقة مائلة ──────────────────────────────
+
+              الميل **على الشاشة الكبيرة بس** (`lg:`): على الموبايل
+              العرض ضيّق والميل بياكل منه ويقرّب الصورة من حواف الشاشة.
+
+              درجتان بس — كفاية إن العين تحسّها «مقصودة» من غير ما
+              تبقى لعب. وبتتعدل لصفر عند المرور، فالحركة بتحصل ناحية
+              الصورة زي ما هي ناحية الأزرار والكروت.
+
+              والميل محتاج مساحة حواليه، عشان كده العمود بقى فيه
+              `p-6 md:p-10` بدل ما الصورة تلزق في الحافة زي الأول. */}
+          <div className="relative flex items-center justify-center p-6 md:p-10">
+            <div className="rounded-card relative aspect-[4/3] w-full overflow-hidden shadow-xl transition-transform duration-300 ease-[var(--ease-ui)] lg:-rotate-2 motion-safe:lg:hover:rotate-0">
             {settings.images.homeFamily ? (
               <Image 
               src={slotImageUrl(settings.images.homeFamily, 'homeFamily')}
@@ -257,7 +269,11 @@ export default async function Home() {
             ) : (
               <ImagePlaceholder label="العائلة تقرأ معاً" />
             )}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/90 lg:to-white"></div>
+            </div>
+            {/* كان هنا تدرّج أبيض فوق الصورة (`to-white/90 lg:to-white`)
+                بيغسلها لدرجة إنها تبان مربعًا فاضيًا على الشاشة الكبيرة.
+                مكانش له داعي أصلًا: النص في العمود التاني مش فوق
+                الصورة. اتشال — نفس قرار الهيرو: مفيش طبقة فوق أي صورة. */}
           </div>
           <div className="flex flex-col justify-center p-8 text-right md:p-12 lg:p-16">
             <h2 className="mb-8 text-3xl font-black text-slate-800">
@@ -377,7 +393,7 @@ export default async function Home() {
         <p className="mx-auto mb-8 max-w-2xl font-medium text-slate-500">
           {content['home.blog.text']}
         </p>
-        <Button href="/blog" variant="primary" accentColor="amber" className="!bg-slate-900 hover:!bg-slate-800">
+        <Button href="/blog" variant="neutral">
           تصفح المدونة
         </Button>
       </Section>
@@ -387,7 +403,7 @@ export default async function Home() {
           {content['home.cta.title']}
         </h2>
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
-          <Button href="/enha-lak" variant="primary" accentColor="amber" size="lg" className="!bg-blue-600 hover:!bg-blue-700 !shadow-blue-200">
+          <Button href="/enha-lak" variant="primary" size="lg" className="!bg-blue-600 !text-white hover:!bg-blue-700 !shadow-blue-200">
             {content['home.cta.button1']}
           </Button>
           <Button href="/creative-writing/booking" variant="primary" accentColor="amber" size="lg">

@@ -38,7 +38,23 @@ const ACCENT_ALIAS: Record<LegacyAccent, Accent> = {
 };
 
 type ButtonProps = {
-  variant?: 'primary' | 'secondary';
+  /**
+   * `neutral` = الزر الداكن (أسود/رمادي غامق بنص أبيض).
+   *
+   * ⚠️ **اتضافت عشان عطل حقيقي.** مواضع كتير كانت بتكتب
+   *    `className="!bg-slate-900"` عشان تعمل زرًا داكنًا — بتتجاوز
+   *    الخلفية **وتسيب لون النص للمكوّن**. ولما المرحلة ١ خلّت النص
+   *    داكنًا (`text-brand-ink` = slate-900)، النتيجة بقت:
+   *
+   *      خلفية slate-900 + نص slate-900 = **نص مختفي تمامًا** (1:1)
+   *
+   *    وده اللي حصل فعلًا لزر «تصفح المدونة» على الموقع المنشور.
+   *
+   *    الدرس: أي تجاوز للخلفية لازم يتجاوز النص معاه — وأحسن منه إن
+   *    الشكل يبقى **نسخة معرَّفة في المكوّن** بدل `!important` في
+   *    موضع النداء.
+   */
+  variant?: 'primary' | 'secondary' | 'neutral';
   accentColor?: Accent | LegacyAccent;
   size?: 'md' | 'lg';
   href?: string;
@@ -121,6 +137,12 @@ export function Button({
       brand: 'bg-brand text-brand-ink hover:bg-brand-hover',
       enhaLak: 'bg-enha-lak text-enha-lak-ink hover:bg-enha-lak-hover',
       journey: 'bg-journey text-journey-ink hover:bg-journey-hover',
+    },
+    // الزر الداكن: نفس الشكل مهما كانت النغمة — ده لون محايد مش نغمة.
+    neutral: {
+      brand: 'bg-slate-900 text-white hover:bg-slate-800',
+      enhaLak: 'bg-slate-900 text-white hover:bg-slate-800',
+      journey: 'bg-slate-900 text-white hover:bg-slate-800',
     },
     secondary: {
       brand:

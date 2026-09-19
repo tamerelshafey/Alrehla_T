@@ -34,7 +34,7 @@ export default function CartClient() {
                   </div>
                   <h3 className="text-lg font-bold text-slate-800">سلتك فارغة</h3>
                   <p className="mt-2 text-slate-500">تصفح المكتبة وأضف بعض القصص الممتعة!</p>
-                  <Button href="/enha-lak" accentColor="amber" className="mt-6 !bg-slate-900 !hover:bg-slate-800">
+                  <Button href="/enha-lak" variant="neutral" className="mt-6">
                     تصفح المنتجات
                   </Button>
                 </div>

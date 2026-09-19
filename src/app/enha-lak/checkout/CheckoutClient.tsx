@@ -178,7 +178,7 @@ export function CheckoutClient({ user, paymentWalletNumber, paymentQrUrl, shippi
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button href="/dashboard" accentColor="rose" className="px-8 py-3 !bg-slate-900 !text-white hover:!bg-slate-800">
+          <Button href="/dashboard" variant="neutral" className="px-8 py-3">
             الذهاب للوحة التحكم
           </Button>
           <Button href="/enha-lak" variant="secondary" className="px-8 py-3 border-none !bg-rose-50 !text-rose-700 hover:!bg-rose-100">

@@ -70,7 +70,8 @@ export default async function AboutPage() {
           ) : (
             <ImagePlaceholder label="صورة صفحة رحلتنا" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent"></div>
+          {/* تدرّج تغميق اتشال: مفيش أي نص فوق الصورة دي، فكان بيغمّقها
+              بلا سبب. مفيش طبقة فوق أي صورة في الموقع. */}
         </div>
       </Section>
 

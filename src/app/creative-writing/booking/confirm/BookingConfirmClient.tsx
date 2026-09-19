@@ -104,7 +104,7 @@ export function BookingConfirmClient({
           لقد استلمنا طلب الحجز الخاص بك وجاري مراجعة التحويل. سنؤكد حجزك قريبًا.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button href="/account/orders/creative-writing" accentColor="emerald" className="!bg-slate-900 !text-white hover:!bg-slate-800 px-8 py-3">
+          <Button href="/account/orders/creative-writing" variant="neutral" className="px-8 py-3">
             تتبع الحجز
           </Button>
           <Button href="/creative-writing" variant="secondary" accentColor="emerald" className="px-8 py-3">
