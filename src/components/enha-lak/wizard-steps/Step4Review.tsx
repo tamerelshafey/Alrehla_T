@@ -2,8 +2,18 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useRouter, usePathname } from 'next/navigation';
 import { PersonalizedProduct } from '@/types';
+import { Button } from '@/components/ui/Button';
 
-export function Step4Review({ onPrev, product }: { onPrev: () => void, product: PersonalizedProduct }) {
+export function Step4Review({
+  onPrev,
+  product,
+  pending = false,
+}: {
+  onPrev: () => void;
+  product: PersonalizedProduct;
+  /** الطلب بيتبعت دلوقتي — الزر بيقفل ويقول. */
+  pending?: boolean;
+}) {
   const { watch } = useFormContext();
   const router = useRouter();
   const pathname = usePathname();
@@ -61,6 +71,21 @@ export function Step4Review({ onPrev, product }: { onPrev: () => void, product: 
           </div>
         </div>
 
+        {/* الصورة مش بتتحفظ مع تحديث الصفحة — بنقول قبل الضغط مش بعده. */}
+        {!values.facePhotoFile && (
+          <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm font-bold text-amber-900">
+            الصورة الشخصية مش مرفوعة — غالبًا الصفحة اتحدّثت والصور مبتتحفظش
+            مع التحديث.{' '}
+            <button
+              type="button"
+              onClick={() => goToStep(2)}
+              className="underline underline-offset-4"
+            >
+              ارجع للخطوة ٢ وارفعها
+            </button>
+          </div>
+        )}
+
         {/* Shipping Info Note */}
         <div className="rounded-2xl border border-blue-200 p-4 bg-blue-50 text-blue-800 text-sm font-bold text-center">
           سيتم إدخال بيانات الشحن في خطوة الدفع التالية
@@ -74,12 +99,17 @@ export function Step4Review({ onPrev, product }: { onPrev: () => void, product: 
         >
           السابق
         </button>
-        <button
+        {/* ⚠️ الزر ده كان `<button type="submit">` عادي: لو التحقق رفض،
+            مكانش بيحصل **ولا حاجة** ولا بتظهر رسالة. دلوقتي المعالج
+            بيعرض السبب ويرجّع للخطوة الناقصة، والزر بيقول إنه شغّال. */}
+        <Button
           type="submit"
-          className="rounded-xl bg-emerald-500 px-8 py-3 font-bold text-white transition-colors hover:bg-emerald-600"
+          accentColor="journey"
+          pending={pending}
+          pendingText="جارٍ الإضافة…"
         >
           إضافة للسلة
-        </button>
+        </Button>
       </div>
     </div>
   );

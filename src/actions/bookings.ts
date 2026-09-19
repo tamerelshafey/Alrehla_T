@@ -43,6 +43,13 @@ export async function createCourseBooking(params: {
    * اتسجّل فعلًا، والإدارة تقدر تظبّط الميعاد من شاشة الحجوزات.
    */
   preferredSlot?: { day: string; time: string };
+  /**
+   * إهداء خاص يكتبه صاحب الحجز — بيظهر مع الحجز للإدارة والمدرب.
+   *
+   * ⚠️ بيتقصّ ويتقفل في القاعدة، مش هنا: الـRPC ممكن تتنادى من غير
+   *    الشاشة دي، فالحد الأقصى لازم يبقى في `create_course_booking`.
+   */
+  giftMessage?: string;
 }): Promise<BookingResult> {
   const supabase = await createClient();
   const {
@@ -61,6 +68,7 @@ export async function createCourseBooking(params: {
     p_instructor_id: params.instructorId || null,
     p_participant_type: params.participantType,
     p_child_id: params.childId || null,
+    p_gift_message: params.giftMessage?.trim() || null,
   });
 
   if (error || !data) {

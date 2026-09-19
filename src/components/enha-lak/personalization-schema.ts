@@ -57,7 +57,7 @@ export const wizardSchema = z.object({
    * تخصيص. `Step3Addons` بتشيلها من هنا أول ما تتلغي، والقاعدة بترفض
    * أي رقم هنا لإضافة مش بتقبل تخصيص.
    */
-  customizedAddonIds: z.array(z.string()),
+  customizedAddonIds: z.array(z.string()).optional(),
 
 }).superRefine((data, ctx) => {
   if (data.storyGoal === 'other' && !data.customStoryGoal?.trim()) {

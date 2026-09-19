@@ -341,6 +341,8 @@ export type Database = {
           payment_method: string | null
           payment_receipt_url: string | null
           preferred_slot: Json | null
+          /** إهداء خاص — ملف SQL 86. */
+          gift_message: string | null
         }
         Insert: {
           id?: string
@@ -358,6 +360,7 @@ export type Database = {
           payment_method?: string | null
           payment_receipt_url?: string | null
           preferred_slot?: Json | null
+          gift_message?: string | null
         }
         Update: {
           id?: string
@@ -375,6 +378,7 @@ export type Database = {
           payment_method?: string | null
           payment_receipt_url?: string | null
           preferred_slot?: Json | null
+          gift_message?: string | null
         }
         Relationships: []
       }
@@ -1857,6 +1861,8 @@ export type Database = {
           p_instructor_id?: string | null
           p_participant_type?: string | null
           p_child_id?: string | null
+          /** إهداء خاص — اتضاف في ملف SQL 86، والقاعدة بتقصّه على 500 حرف. */
+          p_gift_message?: string | null
         }
         Returns: string
       }

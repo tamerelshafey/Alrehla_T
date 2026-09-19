@@ -94,6 +94,17 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
         </div>
 
+        {/* الإهداء الخاص — اللي العميل كتبه وقت الحجز. بيتقفل بعد
+            الإنشاء، فاللي ظاهر هنا هو نص العميل الأصلي. */}
+        {target.giftMessage && (
+          <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+            <div className="mb-2 text-sm font-bold text-emerald-900">إهداء خاص</div>
+            <p className="whitespace-pre-wrap text-lg font-medium text-slate-800">
+              {target.giftMessage}
+            </p>
+          </div>
+        )}
+
         <AssignInstructor
           subscriptionId={target.id}
           currentId={target.preferredInstructorId}

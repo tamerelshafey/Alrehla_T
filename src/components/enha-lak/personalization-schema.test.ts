@@ -174,7 +174,13 @@ describe('باقي المعالج', () => {
     expect(result.success).toBe(true);
   });
 
-  it('غياب قايمة التخصيص بيتمنع — المعالج لازم يبعتها ولو فاضية', () => {
+  it('غياب قايمة التخصيص مش بيقفل الطلب', () => {
+    // ⚠️ الحقل ده `.optional()` عن قصد، والمعالج بيحوّله `[]` عند الإرسال.
+    //
+    //    لو بقى مطلوبًا، أي حالة محفوظة في `sessionStorage` من نسخة
+    //    قديمة من الموقع هتخلّي `handleSubmit` يرفض **بلا سبب ظاهر**
+    //    وزرار «إضافة للسلة» يبان متعطّل. نفس عطل `newChildGender`
+    //    بالظبط، ومفيش داعي نكرره تالت مرة.
     const { customizedAddonIds: _omitted, ...withoutField } = atStepOne({
       familyMemberId: 'c-1',
       heroDescription: 'طفل شجاع يحب البحر',
@@ -182,6 +188,6 @@ describe('باقي المعالج', () => {
       facePhotoFile: {},
     });
     const result = wizardSchema.safeParse(withoutField);
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 });

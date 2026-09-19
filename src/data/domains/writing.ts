@@ -824,6 +824,8 @@ export type AdminCourseBooking = {
   createdAt: string;
   startedAt: string | null;
   sessionsCount: number;
+  /** إهداء خاص كتبه صاحب الحجز — بيتقفل بعد الإنشاء. */
+  giftMessage: string | null;
 };
 
 /**
@@ -880,6 +882,7 @@ export async function getCourseBookingsForAdmin(): Promise<AdminCourseBooking[]>
       createdAt: row.created_at,
       startedAt: row.started_at ?? null,
       sessionsCount: (sessions ?? []).filter((x) => x.course_subscription_id === row.id).length,
+      giftMessage: row.gift_message ?? null,
     });
   }
 

@@ -33,6 +33,16 @@ const librarySchema = z.object({
 
 type LibraryFormValues = z.infer<typeof librarySchema>;
 
+/** اسم كل حقل بالعربي وخطوته — عشان الرفض يطلع برسالة مفهومة. */
+const FIELD_STEP: Record<string, { step: number; label: string }> = {
+  familyMemberId: { step: 1, label: 'اختيار الطفل' },
+  newChildName: { step: 1, label: 'اسم الطفل' },
+  newChildBirthDate: { step: 1, label: 'تاريخ ميلاد الطفل' },
+  newChildGender: { step: 1, label: 'نوع الطفل' },
+  dedicationText: { step: 2, label: 'الإهداء' },
+  coverPhotoFile: { step: 2, label: 'صورة الغلاف' },
+};
+
 export function LibraryCustomizationWizard({ product }: { product: PersonalizedProduct }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -84,11 +94,42 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
     router.push(`${pathname}?step=${step}`);
   };
 
+  /** رسالة عربية من أخطاء التحقق — بدل السكوت. */
+  const describeErrors = (names: string[]) => {
+    const errors = methods.formState.errors as Record<string, { message?: string }>;
+    const list = names.length ? names : Object.keys(errors);
+    if (list.length === 0) return 'في بيانات ناقصة — راجع الخطوات السابقة.';
+    return (
+      'محتاجين نظبّط ده الأول — ' +
+      list
+        .map((n) => {
+          const label = FIELD_STEP[n]?.label ?? n;
+          const message = errors[n]?.message;
+          return message ? `${label}: ${message}` : label;
+        })
+        .join(' · ')
+    );
+  };
+
   const onNext = async () => {
+    setUploadError('');
     const isValid = await methods.trigger();
-    if (isValid) {
-      goToStep(currentStep + 1);
+    if (!isValid) {
+      // ⚠️ كان `if (isValid) goToStep(...)` وبس: الرفض مكانش بيقول حاجة،
+      //    فالزر شكله متعطّل.
+      setUploadError(describeErrors([]));
+      return;
     }
+    goToStep(currentStep + 1);
+  };
+
+  /** الضغطة اتستلمت والتحقق رفض — بنقول ونرجّع للخطوة الناقصة. */
+  const onInvalid = (errors: Record<string, unknown>) => {
+    const names = Object.keys(errors);
+    setUploadError(describeErrors(names));
+    const steps = names.map((n) => FIELD_STEP[n]?.step).filter(Boolean) as number[];
+    const target = steps.length ? Math.min(...steps) : null;
+    if (target && target !== currentStep) goToStep(target);
   };
 
   const onPrev = () => {
@@ -206,10 +247,16 @@ export function LibraryCustomizationWizard({ product }: { product: PersonalizedP
                   {uploadError}
                 </div>
               )}
-              <form onSubmit={methods.handleSubmit(onSubmit)}>
+              <form onSubmit={methods.handleSubmit(onSubmit, onInvalid)}>
                 {currentStep === 1 && <Step1ChildInfo onNext={onNext} />}
                 {currentStep === 2 && <Step2CoverDetails onNext={onNext} onPrev={onPrev} />}
-                {currentStep === 3 && <Step3LibraryReview onPrev={onPrev} product={product} />}
+                {currentStep === 3 && (
+                  <Step3LibraryReview
+                    onPrev={onPrev}
+                    product={product}
+                    pending={methods.formState.isSubmitting}
+                  />
+                )}
               </form>
             </FormProvider>
           </div>

@@ -44,6 +44,7 @@ export function BookingConfirmClient({
     import('@/app/actions/family').then(mod => mod.fetchFamilyMembers()).then(data => setChildren(data ? data.map((d: any) => ({id: d.id, name: d.fullName})) : []));
   }, []);
 
+  const [giftMessage, setGiftMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
   const [booking, setBooking] = useState<{ id: string; reference: string } | null>(null);
@@ -66,6 +67,7 @@ export function BookingConfirmClient({
         participantType,
         childId: childId || undefined,
         preferredSlot,
+        giftMessage: giftMessage.trim() || undefined,
       });
 
       if (!result.ok) {
@@ -174,6 +176,99 @@ export function BookingConfirmClient({
         />
       ) : (
         <form onSubmit={handleRegisterBooking} className="space-y-6">
+          {/* ── المشارك ────────────────────────────────────────────
+              ⚠️ الشاشة دي كانت بتجيب قايمة الأبناء من `fetchFamilyMembers`
+                 **ومبتعرضهاش**: `setParticipantType` و`setChildId` مكانوش
+                 بيتنادوا من أي مكان. يعني ولي الأمر ما كانش يقدر يحجز
+                 لابنه خالص إلا لما يوافق على طلب مرسَل منه — والحجز كان
+                 بيتسجّل باسمه هو. */}
+          <div className="space-y-3">
+            <h2 className="text-xl font-black text-slate-800">الحجز لمين؟</h2>
+
+            {presetChildId ? (
+              <p className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-900">
+                الحجز ده لطلب ابنك اللي وافقت عليه — المشارك محدَّد تلقائيًا.
+              </p>
+            ) : (
+              <>
+                <div role="radiogroup" aria-label="المشارك" className="grid gap-3 sm:grid-cols-2">
+                  {[
+                    { value: 'self' as const, title: 'ليا أنا', note: 'الحجز باسمك' },
+                    {
+                      value: 'child' as const,
+                      title: 'لواحد من أبنائي',
+                      note: children.length
+                        ? 'من المركز العائلي'
+                        : 'مفيش أبناء في المركز العائلي لسه',
+                    },
+                  ].map((choice) => {
+                    const active = participantType === choice.value;
+                    const blocked = choice.value === 'child' && children.length === 0;
+                    return (
+                      <button
+                        key={choice.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        disabled={blocked}
+                        onClick={() => {
+                          setParticipantType(choice.value);
+                          if (choice.value === 'self') setChildId('');
+                        }}
+                        className={`rounded-2xl border-2 p-4 text-start transition-colors disabled:opacity-50 ${active ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                      >
+                        <span className="block font-bold text-slate-800">{choice.title}</span>
+                        <span className="mt-1 block text-xs font-medium text-slate-600">
+                          {choice.note}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {participantType === 'child' && (
+                  <select
+                    value={childId}
+                    onChange={(e) => setChildId(e.target.value)}
+                    aria-label="اختيار المشارك"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
+                  >
+                    <option value="">اختار المشارك…</option>
+                    {children.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* ── الإهداء الخاص ─────────────────────────────────────
+              بيتخزّن في `course_subscriptions.gift_message` (ملف SQL 86)،
+              وبيتقفل بعد الحجز زي المبلغ. */}
+          <div className="space-y-2">
+            <label htmlFor="gift-message" className="block text-xl font-black text-slate-800">
+              إهداء خاص <span className="text-sm font-bold text-slate-500">(اختياري)</span>
+            </label>
+            <p className="text-sm font-medium text-slate-600">
+              كلمة تتكتب مع الحجز وتوصل للمدرب — زي «رحلتك تبدأ يا بطل».
+            </p>
+            <textarea
+              id="gift-message"
+              value={giftMessage}
+              onChange={(e) => setGiftMessage(e.target.value.slice(0, 500))}
+              maxLength={500}
+              rows={3}
+              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-800 outline-none focus:border-emerald-600"
+              placeholder="اكتب كلمتك هنا…"
+            />
+            <p className="text-xs font-medium text-slate-500">
+              {giftMessage.length}/500 · الإهداء بيتقفل بعد تسجيل الحجز.
+            </p>
+          </div>
+
           <h2 className="text-xl font-black text-slate-800">طريقة الدفع</h2>
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm font-medium text-slate-600">

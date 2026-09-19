@@ -63,6 +63,25 @@ type ButtonProps = {
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
   disabled?: boolean;
+  /**
+   * الزر بينفّذ دلوقتي.
+   *
+   * ── ليه الخاصية دي موجودة ───────────────────────────────
+   *
+   * أكتر شكوى متكررة على الموقع: «الزر مبيعملش حاجة». والسبب مش إن
+   * الضغطة ضاعت — السبب إن الشاشة **مبتقولش** إنها استلمتها. الزر
+   * بيفضل شكله هو هو سواء الطلب شغّال، أو خلص، أو وقع في تحقق.
+   *
+   * `pending` بتقفل الزر، بتدوّر مؤشرًا، وبتكتب `aria-busy` للقارئ
+   * الصوتي. و`pendingText` بتقول إيه اللي بيحصل بالظبط.
+   *
+   * ⚠️ الحالة دي **مش بديل عن رسالة الخطأ**. الضغطة اللي بتفشل في
+   *    التحقق لازم تطلّع سببًا مكتوبًا — الدوران لوحده بيسيب المستخدم
+   *    مستني حاجة مش جاية.
+   */
+  pending?: boolean;
+  /** النص اللي يتعرض وقت التنفيذ — الافتراضي «جارٍ التنفيذ…». */
+  pendingText?: string;
 };
 
 export function Button({
@@ -73,6 +92,8 @@ export function Button({
   className = '',
   children,
   disabled,
+  pending = false,
+  pendingText = 'جارٍ التنفيذ…',
   ...props
 }: ButtonProps) {
   const accent: Accent =
@@ -154,7 +175,9 @@ export function Button({
     },
   } as const;
 
-  const classes = `${baseStyles} ${sizeStyles[size]} ${colorStyles[variant][accent]} ${className}`;
+  const classes =
+    `${baseStyles} ${sizeStyles[size]} ${colorStyles[variant][accent]} ${className}` +
+    (pending ? ' cursor-wait opacity-80' : '');
 
   if (href) {
     if (disabled) {
@@ -172,8 +195,39 @@ export function Button({
   }
 
   return (
-    <button className={classes} disabled={disabled} {...props}>
-      {children}
+    <button
+      className={classes}
+      disabled={disabled || pending}
+      aria-busy={pending || undefined}
+      {...props}
+    >
+      {pending ? (
+        <>
+          <Spinner />
+          {pendingText}
+        </>
+      ) : (
+        children
+      )}
     </button>
+  );
+}
+
+/** مؤشر دوران صغير — SVG جوّه المكوّن، بلا أي مكتبة. */
+function Spinner() {
+  return (
+    <svg
+      className="me-2 h-4 w-4 animate-spin"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path
+        className="opacity-90"
+        fill="currentColor"
+        d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+      />
+    </svg>
   );
 }

@@ -2,8 +2,18 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useRouter, usePathname } from 'next/navigation';
 import { PersonalizedProduct } from '@/types';
+import { Button } from '@/components/ui/Button';
 
-export function Step3LibraryReview({ onPrev, product }: { onPrev: () => void, product: PersonalizedProduct }) {
+export function Step3LibraryReview({
+  onPrev,
+  product,
+  pending = false,
+}: {
+  onPrev: () => void;
+  product: PersonalizedProduct;
+  /** الطلب بيتبعت دلوقتي. */
+  pending?: boolean;
+}) {
   const { watch } = useFormContext();
   const router = useRouter();
   const pathname = usePathname();
@@ -65,12 +75,9 @@ export function Step3LibraryReview({ onPrev, product }: { onPrev: () => void, pr
         >
           السابق
         </button>
-        <button
-          type="submit"
-          className="rounded-xl bg-emerald-500 px-8 py-3 font-bold text-white transition-colors hover:bg-emerald-600"
-        >
+        <Button type="submit" accentColor="journey" pending={pending} pendingText="جارٍ الإضافة…">
           إضافة للسلة
-        </button>
+        </Button>
       </div>
     </div>
   );
