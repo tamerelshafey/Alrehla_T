@@ -22,10 +22,7 @@ export type SiteImageKey =
   | 'homeFamily'
   | 'aboutTeam'
   | 'creativeSlide1'
-  | 'creativeSlide2'
-  | 'creativeSlide3'
   | 'enhaLakSlide1'
-  | 'enhaLakSlide2'
   | 'enhaLakSlide3';
 
 /**
@@ -151,28 +148,8 @@ export const SITE_IMAGE_SLOTS: SiteImageSlot[] = [
   },
   {
     key: 'creativeSlide1',
-    label: 'شريحة 1 — بداية الرحلة',
-    location: 'أعلى صفحات «بداية الرحلة»',
-    ratio: 'عريضة (16:9) — 1600×900',
-    ar: '16:9',
-    w: 1600,
-    fit: 'pad',
-    group: 'pages',
-  },
-  {
-    key: 'creativeSlide2',
-    label: 'شريحة 2 — بداية الرحلة',
-    location: 'أعلى صفحات «بداية الرحلة»',
-    ratio: 'عريضة (16:9) — 1600×900',
-    ar: '16:9',
-    w: 1600,
-    fit: 'pad',
-    group: 'pages',
-  },
-  {
-    key: 'creativeSlide3',
-    label: 'شريحة 3 — بداية الرحلة',
-    location: 'أعلى صفحات «بداية الرحلة»',
+    label: 'بانر «بداية الرحلة»',
+    location: 'أعلى صفحة «بداية الرحلة» — صورة واحدة',
     ratio: 'عريضة (16:9) — 1600×900',
     ar: '16:9',
     w: 1600,
@@ -181,28 +158,8 @@ export const SITE_IMAGE_SLOTS: SiteImageSlot[] = [
   },
   {
     key: 'enhaLakSlide1',
-    label: 'شريحة 1 — إنها لك',
-    location: 'أعلى صفحات «إنها لك»',
-    ratio: 'عريضة (16:9) — 1600×900',
-    ar: '16:9',
-    w: 1600,
-    fit: 'pad',
-    group: 'pages',
-  },
-  {
-    key: 'enhaLakSlide2',
-    label: 'شريحة 2 — إنها لك',
-    location: 'أعلى صفحات «إنها لك»',
-    ratio: 'عريضة (16:9) — 1600×900',
-    ar: '16:9',
-    w: 1600,
-    fit: 'pad',
-    group: 'pages',
-  },
-  {
-    key: 'enhaLakSlide3',
-    label: 'شريحة 3 — إنها لك',
-    location: 'أعلى صفحات «إنها لك»',
+    label: 'بانر «إنها لك»',
+    location: 'أعلى صفحة «إنها لك» — صورة واحدة',
     ratio: 'عريضة (16:9) — 1600×900',
     ar: '16:9',
     w: 1600,

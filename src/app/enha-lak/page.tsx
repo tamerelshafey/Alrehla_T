@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Image from 'next/image';
 import { pageMetadata } from '@/lib/seo';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
@@ -15,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 import Link from 'next/link';
 
 import { getTestimonials, getSiteContent, getSiteSettings } from '@/data/domains/content';
-import { HeroCarousel } from '@/components/HeroCarousel';
+import { slotImageUrl } from '@/lib/cloudinary';
 
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
@@ -48,38 +49,6 @@ export default async function EnhaLakPage() {
   // الشرائح كانت في layout القسم، يعني بتظهر فوق كل صفحة جواه. مكانها
   // الصفحة الرئيسية للقسم وبس.
 
-  const enhaLakSlides = [
-    {
-      id: '1',
-      title: 'قصتك أنت البطل فيها',
-      description: 'نصنع قصصاً مخصصة تجعل طفلك محور الأحداث وتغرس فيه أجمل القيم.',
-      image: settings.images.enhaLakSlide1 ?? '',
-      slotKey: 'enhaLakSlide1' as const,
-      ctaText: 'اصنع قصتك',
-      ctaLink: '/enha-lak/custom',
-      theme: 'violet' as const,
-    },
-    {
-      id: '2',
-      title: 'صندوق الرحلة السحري',
-      description: 'اشتراكات شهرية مليئة بالمفاجآت والكتب الممتعة لتنمية حب القراءة.',
-      image: settings.images.enhaLakSlide2 ?? '',
-      slotKey: 'enhaLakSlide2' as const,
-      ctaText: 'اكتشف الصندوق',
-      ctaLink: '/enha-lak/subscription',
-      theme: 'rose' as const,
-    },
-    {
-      id: '3',
-      title: 'مكتبة الخيال الواسعة',
-      description: 'تصفح قصصنا وإصداراتنا المتنوعة التي تناسب مختلف الأعمار.',
-      image: settings.images.enhaLakSlide3 ?? '',
-      slotKey: 'enhaLakSlide3' as const,
-      ctaText: 'تصفح المكتبة',
-      ctaLink: '/enha-lak/library',
-      theme: 'violet' as const,
-    }
-  ];
 
   // الأيقونات والألوان ثابتة؛ النصوص من لوحة الإدارة ← محتوى الصفحات.
   const benefits = [
@@ -105,9 +74,46 @@ export default async function EnhaLakPage() {
 
   return (
     <PageContainer className="!py-0 !space-y-0">
-      <section className="mx-auto w-full max-w-7xl px-4 pb-12 md:px-8">
-        <HeroCarousel slides={enhaLakSlides} />
-      </section>
+      {/*
+        بانر القسم — صورة واحدة ساكنة بدل السلايدر.
+
+        ── ليه السلايدر اتشال ───────────────────────────────────
+
+        السلايدر كان بيعرض **تلات شرايح بنفس التلات وجهات بالظبط** اللي
+        القسم اللي تحته بيعرضها كلها مرة واحدة: التخصيص والمكتبة والاشتراك.
+        يعني تكرار كامل، بس بيوريك واحدة في المرة بدل التلاتة.
+
+        وكان معاه كمان:
+          • **عنوان h1 تاني في نفس الصفحة** — كل شريحة فيها h1، وتحتها
+            h1 الصفحة الحقيقي. ده يضر الفهرسة وقارئ الشاشة
+          • `<img>` خام مش `next/image` — أتقل صورة في الصفحة بتتحمّل
+            بحجمها الكامل على كل موبايل
+          • ارتفاع ثابت 450px موبايل / 650px ديسكتوب = ~55٪ من شاشة
+            الهاتف قبل ما المستخدم يقرا كلمة
+          • تقدّم تلقائي مبيقفش لو المستخدم بيتفرج
+          • خمس ألوان سمة زيادة (violet · teal) بتوسّع اللوحة بلا داعي
+
+        ── والبديل ──────────────────────────────────────────────
+
+        صورة واحدة **بنسبة أبعاد** مش بارتفاع ثابت، فبتتناسب مع الشاشة
+        بدل ما تُقص عشوائيًا: 4:3 على الموبايل ← 16:9 ← 21:9 على الشاشة
+        الكبيرة. و`alt=""` عن قصد: دي صورة زينة، والمعنى في الـh1 اللي
+        تحتها؛ قارئ الشاشة يعدّيها بدل ما يقرا وصفًا مكرّرًا.
+      */}
+      {settings.images.enhaLakSlide1 && (
+        <section className="mx-auto w-full max-w-7xl px-4 pb-12 md:px-8">
+          <div className="rounded-card relative aspect-[4/3] w-full overflow-hidden shadow-sm sm:aspect-[16/9] lg:aspect-[21/9]">
+            <Image
+              src={slotImageUrl(settings.images.enhaLakSlide1, 'enhaLakSlide1')}
+              alt=""
+              fill
+              sizes="(max-width: 1280px) 100vw, 1280px"
+              className="object-cover"
+              priority
+            />
+          </div>
+        </section>
+      )}
 
             {/* Hero Section */}
       <Section containerClassName="max-w-4xl text-center py-12 md:py-20">
