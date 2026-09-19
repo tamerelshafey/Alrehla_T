@@ -165,11 +165,14 @@ export default async function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto mt-12 flex max-w-7xl flex-col items-center justify-between gap-4 border-t border-slate-100 pt-6 text-xs font-medium text-slate-400 md:flex-row">
+      {/* ⚠️ كان هنا صندوق مكتوب فيه «AR - RTL Default» بخط mono —
+          نص تطوير سايب في الفوتر، يعني كان **ظاهرًا لكل زائر في كل
+          صفحة** في الموقع المنشور. اتشال.
+
+          واللون اتغيّر من `slate-400` لـ`slate-500`: القياس على الموقع
+          الحيّ أداه 2.63:1 والمطلوب 4.5:1. `slate-500` بيدّي 4.69:1. */}
+      <div className="mx-auto mt-12 flex max-w-7xl flex-col items-center justify-between gap-4 border-t border-slate-100 pt-6 text-xs font-medium text-slate-500 md:flex-row">
         <p>© {new Date().getFullYear()} منصة الرحلة. جميع الحقوق محفوظة.</p>
-        <div className="rounded bg-slate-50 px-2 py-1 font-mono">
-          AR - RTL Default
-        </div>
       </div>
     </footer>
   );

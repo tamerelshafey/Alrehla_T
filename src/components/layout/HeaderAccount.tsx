@@ -99,7 +99,7 @@ export function HeaderAccount() {
       >
         <Bell className="h-5 w-5" />
         {session.unreadCount > 0 && (
-          <span className="absolute top-1 left-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-black text-white">
+          <span className="bg-brand text-brand-ink absolute top-1 left-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-black">
             {session.unreadCount > 9 ? '9+' : session.unreadCount}
           </span>
         )}

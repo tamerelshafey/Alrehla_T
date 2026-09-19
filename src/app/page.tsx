@@ -306,7 +306,7 @@ export default async function Home() {
               <span className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
                 <step.icon className="h-8 w-8" />
               </span>
-              <div className="mb-2 text-sm font-black text-amber-500">
+              <div className="text-brand-strong mb-2 text-sm font-black">
                 {index + 1}
               </div>
               <h3 className="mb-3 text-xl font-bold text-slate-800">

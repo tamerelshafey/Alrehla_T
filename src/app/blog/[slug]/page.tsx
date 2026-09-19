@@ -63,7 +63,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       />
       <Section containerClassName="max-w-4xl pt-12 pb-24">
         {/* Back link */}
-        <Link href="/blog" className="mb-8 inline-flex items-center gap-2 font-bold text-slate-500 hover:text-amber-600 transition-colors">
+        <Link href="/blog" className="mb-8 inline-flex items-center gap-2 font-bold text-slate-500 hover:text-brand-strong transition-colors">
           <ArrowLeft className="h-4 w-4" />
           العودة للمدونة
         </Link>
@@ -101,7 +101,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </div>
 
         {/* Content */}
-        <article className="prose prose-slate prose-lg mx-auto prose-headings:font-black prose-a:text-amber-600 prose-img:rounded-2xl max-w-3xl">
+        <article className="prose prose-slate prose-lg mx-auto prose-headings:font-black prose-a:text-brand-strong prose-img:rounded-2xl max-w-3xl">
           <p className="lead text-xl text-slate-600 font-medium leading-relaxed mb-8">
             {post.excerpt}
           </p>

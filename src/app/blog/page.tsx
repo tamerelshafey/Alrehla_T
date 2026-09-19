@@ -53,7 +53,7 @@ export default async function BlogPage() {
                 </div>
 
                 <div className="flex flex-1 flex-col">
-                  <h3 className="mb-3 line-clamp-2 text-xl font-bold text-slate-900 transition-colors group-hover:text-amber-600">
+                  <h3 className="mb-3 line-clamp-2 text-xl font-bold text-slate-900 transition-colors group-hover:text-brand-strong">
                     {post.title}
                   </h3>
                   <p className="mb-6 line-clamp-3 text-sm leading-relaxed font-medium text-slate-600">
@@ -64,7 +64,7 @@ export default async function BlogPage() {
                       <Calendar className="h-4 w-4" />
                       {formatDate(post.publishedAt)}
                     </div>
-                    <span className="flex items-center gap-1 text-amber-600 transition-all group-hover:gap-2">
+                    <span className="text-brand-strong flex items-center gap-1 transition-all group-hover:gap-2">
                       اقرأ المزيد <ArrowLeft className="h-3 w-3" />
                     </span>
                   </div>
