@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { PublicInstructor, WeeklySlot, BookedSlot, DayOfWeek } from '@/types';
 import { formatPrice } from '@/lib/utils';
 import { Calendar, Clock, User, ArrowRight, Video } from 'lucide-react';
@@ -7,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PLATFORM_TIMEZONE } from '@/lib/timezone';
+import { optimizedImageUrl } from '@/lib/cloudinary';
 
 const DAY_ORDER: DayOfWeek[] = [
   'saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
@@ -152,20 +154,65 @@ export function BookingWizardClient({
                     «مفعّل» في لوحة الإدارة عشان يظهر هنا بمواعيده.
                   </p>
                 )}
-                <div className="grid gap-4 md:grid-cols-2">
+                {/*
+                  ⚠️ `role="radiogroup"` و`role="radio"`: الكروت دي كانت
+                     `<div onClick>` وبس — **مفيش أي وصول بالكيبورد**.
+                     يعني اللي بيتنقّل بـTab (أو بقارئ شاشة) **مش قادر
+                     يختار مدربًا من أصله**، ومسار الشراء بيقف عنده.
+                     دلوقتي: `tabIndex` و`aria-checked` وEnter/Space.
+                */}
+                <div
+                  role="radiogroup"
+                  aria-label="اختيار المدرب"
+                  className="grid gap-4 md:grid-cols-2"
+                >
                   {activeInstructors.map(inst => (
                     <div 
                       key={inst.id}
+                      role="radio"
+                      aria-checked={selectedInstructorId === inst.id}
+                      tabIndex={0}
                       onClick={() => { setSelectedInstructorId(inst.id); setSelectedSlot(null); }}
-                      className={`cursor-pointer rounded-2xl border-2 p-4 transition-all ${
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedInstructorId(inst.id);
+                          setSelectedSlot(null);
+                        }
+                      }}
+                      className={`cursor-pointer rounded-2xl border-2 p-4 transition-[border-color,box-shadow] duration-200 ease-[var(--ease-ui)] ${
                         selectedInstructorId === inst.id 
-                          ? 'border-emerald-500 bg-emerald-50 shadow-md' 
+                          ? 'border-journey-border bg-journey-soft shadow-md' 
                           : 'border-slate-100 bg-white hover:border-slate-300'
                       }`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500">
-                          {inst.displayName.charAt(0)}
+                        {/*
+                          صورة المدرب — **كانت مش موجودة هنا خالص.**
+
+                          الكارت كان بيرسم دايرة رمادية فيها أول حرف من
+                          الاسم وبس، مهما كانت الصورة مرفوعة. ودي تالت
+                          مرة نفس النمط يتكرر: البيانات موجودة والطبقة
+                          اللي بتعرض مش بتسأل عنها (صفحة المدرب، وكارت
+                          قائمة المدربين، ودلوقتي المعالج).
+
+                          الحرف الأول باقٍ كبديل لما مفيش صورة.
+                        */}
+                        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-slate-200">
+                          {inst.avatarUrl ? (
+                            <Image
+                              src={optimizedImageUrl(inst.avatarUrl, 96)}
+                              alt=""
+                              fill
+                              sizes="48px"
+                              className="object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <span className="flex h-full w-full items-center justify-center font-bold text-slate-500">
+                              {inst.displayName.charAt(0)}
+                            </span>
+                          )}
                         </div>
                         <div>
                           <h4 className="font-bold text-slate-800">{inst.displayName}</h4>
