@@ -33,20 +33,46 @@
 
   /* ── الهوية ───────────────────────────────────────────────
      اللون الأساسي للمنصة. دلوقتي `amber` — وده اللي هيتغيّر
-     لكورال الدليل في المرحلة ٢، **من السطرين دول وبس**. */
+     لكورال الدليل في المرحلة ٢، **من السطر ده وبس**.
+
+     ── نظام الألوان الأربعة لكل نغمة (المرحلة ١) ─────────────
+
+     كل نغمة ليها أربع أدوار، وكل واحد ليه استخدام واحد بس:
+
+       <اسم>          اللون الحيّ — خلفية الزر الأساسي
+       <اسم>-hover    أفتح — الـhover
+       <اسم>-ink      لون **النص فوق** اللون الحيّ
+       <اسم>-border   حدّ ملوّن (عنصر غير نصي — محتاج 3:1)
+       <اسم>-strong   نص ملوّن فوق خلفية فاتحة (محتاج 4.5:1)
+       <اسم>-soft     خلفية فاتحة جدًا
+
+     ⚠️ **ليه الـhover بيفتح مش بيغمق؟**
+        النظام بقى «لون حيّ + حبر داكن». لو الـhover غمّق، التباين مع
+        الحبر الداكن بينزل — ورمادي 600 مع الحبر الداكن بيسقط تحت 4.5:1
+        في نغمة الوردي تحديدًا (3.96:1). الفتح بيرفع التباين بدل ما
+        ينزّله، فالنظام بيفضل ناجح في التلات نغمات.
+  */
   --color-brand: var(--color-amber-500);
-  --color-brand-hover: var(--color-amber-600);
+  --color-brand-hover: var(--color-amber-400);
+  --color-brand-ink: var(--color-slate-900);
+  --color-brand-border: var(--color-amber-600);
+  --color-brand-strong: var(--color-amber-700);
   --color-brand-soft: var(--color-amber-50);
 
   /* ── ألوان الأقسام ────────────────────────────────────────
-     تمييز بصري بين القسمين، **مش هوية تانية**. الكورال/البراند
-     بيفضل هو لون الفعل الأساسي في الاتنين. */
+     تمييز بصري بين القسمين، **مش هوية تانية**. */
   --color-enha-lak: var(--color-rose-500);
-  --color-enha-lak-hover: var(--color-rose-600);
+  --color-enha-lak-hover: var(--color-rose-400);
+  --color-enha-lak-ink: var(--color-slate-900);
+  --color-enha-lak-border: var(--color-rose-600);
+  --color-enha-lak-strong: var(--color-rose-700);
   --color-enha-lak-soft: var(--color-rose-50);
 
   --color-journey: var(--color-emerald-500);
-  --color-journey-hover: var(--color-emerald-600);
+  --color-journey-hover: var(--color-emerald-400);
+  --color-journey-ink: var(--color-slate-900);
+  --color-journey-border: var(--color-emerald-600);
+  --color-journey-strong: var(--color-emerald-700);
   --color-journey-soft: var(--color-emerald-50);
 
   /* ── ألوان دلالية ─────────────────────────────────────────
@@ -55,9 +81,11 @@
      والحجز. غيابها هو السبب إن كل شاشة اخترعت لونها.
 
      من هنا ورايح: أي حالة بتتكتب بالرمز الدلالي، مش بلون مباشر. */
-  --color-success: var(--color-emerald-600);
+  /* ⚠️ 700 مش 600: `emerald-600` كنص على خلفية الموقع = 3.60:1 وبيسقط،
+     و`amber-600` = 3.14:1 وبيسقط. الاتنين اترفعوا لـ700. */
+  --color-success: var(--color-emerald-700);
   --color-success-soft: var(--color-emerald-50);
-  --color-warning: var(--color-amber-600);
+  --color-warning: var(--color-amber-700);
   --color-warning-soft: var(--color-amber-50);
   --color-danger: var(--color-red-600);
   --color-danger-soft: var(--color-red-50);
@@ -108,9 +136,18 @@ body {
   background-color: var(--color-surface);
 }
 
-/* ⚠️ حلقة التركيز (`:focus-visible`) **مش هنا عن قصد.**
+/* حلقة التركيز — كانت **غير معرَّفة إطلاقًا** في المشروع.
+   اللي بيتنقّل بلوحة المفاتيح (أو بقارئ شاشة) ما كانش يعرف هو فين.
 
-   هي غايبة من المشروع تمامًا، ولازم تتضاف — بس هي **تغيير بصري**،
-   ومكانها المرحلة ١ مع إصلاح التباين. المرحلة دي متعهّدة بحاجة واحدة:
-   **لو اتغيّر أي شيء في شكل الموقع بعد الدفعة دي، يبقى فيه غلط.**
-   خلط تحسين بصري هنا بيضيّع الخاصية دي. */
+   • `:focus-visible` مش `:focus` عن قصد: المتصفح بيظهّرها للتنقّل
+     بالكيبورد وبيخفيها عن الضغط بالماوس، فمفيش حلقة بتطلع مع كل ضغطة.
+   • اللون `--color-brand-border` مش `--color-brand`: مؤشر التركيز عنصر
+     غير نصي ومحتاج 3:1 على الأقل. `amber-500` على خلفية الموقع =
+     **2.11:1** وبيسقط، و`amber-600` = 3.14:1 وبينجح.
+*/
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-brand-border);
+    outline-offset: 2px;
+  }
+}
