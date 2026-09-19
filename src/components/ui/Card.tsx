@@ -23,11 +23,24 @@ const ACCENT_ALIAS: Record<LegacyAccent, Accent> = {
 
 type CardProps = {
   accentColor?: Accent | LegacyAccent;
+  /**
+   * البطاقة قابلة للضغط (منتج · مدرب · مقال)؟
+   *
+   * ⚠️ **اختيارية عن قصد.** `Card` مستخدمة في بطاقات ساكنة كتير
+   *    (ملخصات · تنبيهات · صناديق معلومات)، ورفعها عند المرور عليها
+   *    بيوعد المستخدم بضغطة مفيش. الحركة تبقى على اللي بيتضغط بس.
+   */
+  interactive?: boolean;
   children: React.ReactNode;
   className?: string;
 };
 
-export function Card({ accentColor, children, className = '' }: CardProps) {
+export function Card({
+  accentColor,
+  interactive = false,
+  children,
+  className = '',
+}: CardProps) {
   const borderTopColors: Record<Accent, string> = {
     brand: 'border-t-brand',
     enhaLak: 'border-t-enha-lak',
@@ -42,9 +55,16 @@ export function Card({ accentColor, children, className = '' }: CardProps) {
 
   const accentClass = accent ? `border-t-4 ${borderTopColors[accent]}` : '';
 
+  // نفس نظام حركة الزر: خصائص محددة، و`transform` فقط، وداخل
+  // `motion-safe:` عشان تفضيل «تقليل الحركة» يتحترم.
+  const motionClass = interactive
+    ? 'transition-[box-shadow,transform] duration-200 ease-[var(--ease-ui)] ' +
+      'motion-safe:hover:-translate-y-1 hover:shadow-md'
+    : '';
+
   return (
     <div
-      className={`bg-surface-raised rounded-card shadow-sm border border-slate-100 ${accentClass} ${className}`}
+      className={`bg-surface-raised rounded-card shadow-sm border border-slate-100 ${accentClass} ${motionClass} ${className}`}
     >
       {children}
     </div>

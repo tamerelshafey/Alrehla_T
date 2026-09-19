@@ -72,8 +72,23 @@ export function Button({
   //    الـ44px بلا أي تحذير. فبقيت على القيمة الحرفية.
   //    الرمز `--tap-min` معرَّف في `globals.css` وبيتطبّق في المرحلة ٥
   //    على كل الأهداف، وساعتها بيتجرّب في بناء حقيقي قبل ما يتعمّم.
+  // ── المرحلة ٤: الحركة ───────────────────────────────────
+  //
+  // الموقع كان فيه 238 `transition-colors` مقابل **13** بس
+  // `transition-transform` — يعني بيغيّر ألوانه ومبيتحركش. وده اللي
+  // بيدّي إحساس إنه «ساكن».
+  //
+  // • الانتقال على خصائص **محددة** مش `transition-all`: `all` بتحرّك
+  //   خصائص بتعيد حساب التخطيط وبتتلعثم على الأجهزة الضعيفة
+  // • الحركة على `transform` و`box-shadow` بس — الاتنين بيتعملوا على
+  //   كارت الشاشة من غير إعادة تخطيط
+  // • `motion-safe:` عن قصد: اللي مفعّل «تقليل الحركة» في جهازه
+  //   بياخد الألوان من غير أي إزاحة. المشروع كان فيه **صفر**
+  //   `motion-safe`/`motion-reduce`
   const baseStyles =
-    'inline-flex items-center justify-center font-bold transition-colors rounded-control min-h-[44px]';
+    'inline-flex items-center justify-center font-bold rounded-control min-h-[44px] ' +
+    'transition-[background-color,box-shadow,transform] duration-200 ease-[var(--ease-ui)] ' +
+    'motion-safe:hover:-translate-y-px motion-safe:active:scale-[0.98] hover:shadow-sm';
 
   const sizeStyles = {
     md: 'px-6 py-3 text-base',

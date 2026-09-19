@@ -30,7 +30,7 @@ export function ProfileFormShell({ defaultValues, children }: ProfileFormShellPr
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
           <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-slate-100 bg-slate-50 shadow-sm">
             {defaultValues?.avatarUrl ? (
-              <Image src={optimizedImageUrl(defaultValues.avatarUrl, 200)} alt={`صورة الملف الشخصي للمستخدم ${defaultValues.name || ""}`} fill className="object-cover" referrerPolicy="no-referrer" />
+              <Image src={optimizedImageUrl(defaultValues.avatarUrl, 200)} alt={`صورة الملف الشخصي للمستخدم ${defaultValues.name || ""}`} fill sizes="96px" className="object-cover" referrerPolicy="no-referrer" />
             ) : (
               <User className="h-10 w-10 text-slate-300" />
             )}
