@@ -22,8 +22,7 @@ export type SiteImageKey =
   | 'homeFamily'
   | 'aboutTeam'
   | 'creativeSlide1'
-  | 'enhaLakSlide1'
-  | 'enhaLakSlide3';
+  | 'enhaLakSlide1';
 
 /**
  * إزاي الصورة تتظبط على المقاس:
@@ -99,10 +98,10 @@ export const SITE_IMAGE_SLOTS: SiteImageSlot[] = [
   {
     key: 'homeHero',
     label: 'الصورة الرئيسية',
-    location: 'الصفحة الرئيسية — أعلى الصفحة بجوار العنوان',
-    ratio: 'مربعة (1:1) — 800×800 أو أكبر',
-    ar: '1:1',
-    w: 1000,
+    location: 'الصفحة الرئيسية — بانر بعرض الصفحة',
+    ratio: 'عريضة جدًا (21:9) — 2100×900 أو أكبر',
+    ar: '21:9',
+    w: 2100,
     fit: 'pad',
     group: 'pages',
   },
