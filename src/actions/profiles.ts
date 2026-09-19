@@ -25,23 +25,39 @@ export async function updateMyProfile(params: { fullName: string; avatarUrl?: st
   } = await supabase.auth.getUser();
   if (!user) throw new Error('يجب تسجيل الدخول أولاً');
 
-  const { error } = await supabase
+  const { data: saved, error } = await supabase
     .from('user_profiles')
     .update({
       full_name: fullName,
       avatar_url: params.avatarUrl?.trim() || null,
       updated_at: new Date().toISOString(),
     })
-    .eq('id', user.id);
+    .eq('id', user.id)
+    .select('id');
 
   if (error) {
     console.error('Error updating profile', error);
     throw new Error('تعذّر حفظ البيانات');
   }
 
+  // ⚠️ قاعدة (و): `UPDATE` على صف مش موجود — أو صف بترفضه الصلاحيات —
+  // بينجح بصفر صفوف وبلا أي خطأ. من غير الفحص ده الشاشة بتقول «اتحفظ»
+  // ومفيش حاجة وصلت للقاعدة، والمستخدم بيدوّر على صورته وما بيلاقيهاش.
+  if (!saved || saved.length === 0) {
+    throw new Error('لم يصل الحفظ إلى قاعدة البيانات. جرّب تاني.');
+  }
+
   revalidatePath('/dashboard/student/profile');
+  revalidatePath('/dashboard/instructor/profile');
   revalidatePath('/account');
   revalidatePath('/', 'layout');
+
+  // صفحات المدربين العامة مخزَّنة مؤقتًا (تتجدد كل ساعة). الصورة بقت
+  // بتظهر فيها، فلازم تتجدد دلوقتي — وإلا المدرب يغيّر صورته ويشوفها في
+  // لوحته بس، ويفضل الموقع العام على القديمة لحد ساعة.
+  revalidatePath('/creative-writing/instructors');
+  revalidatePath('/creative-writing/instructors/[id]', 'page');
+
   return { ok: true };
 }
 
