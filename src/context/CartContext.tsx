@@ -19,6 +19,8 @@ export type CartItem = {
   type: 'book' | 'custom' | 'subscription' | 'package';
   /** أرقام الإضافات المختارة — السعر بيتحسب في القاعدة، مش هنا. */
   addonIds?: string[];
+  /** الإضافات اللي اتطلبت بتخصيص — مجموعة فرعية من `addonIds`. */
+  customizedAddonIds?: string[];
   customizationData?: any;
 };
 

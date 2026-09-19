@@ -3,16 +3,21 @@ import { formatPrice } from '@/lib/utils';
 
 import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { PersonalizedProduct } from '@/types';
+import { AddonProduct, PersonalizedProduct } from '@/types';
 import Image from 'next/image';
 import { optimizedImageUrl } from '@/lib/cloudinary';
 
-// مفيش إضافات دلوقتي: مفيش جدول ليها ومفيش أسعار حقيقية، فالإجمالي
-// بيتحسب من سعر المنتج وحده.
-
-export function OrderSummarySidebar({ product }: { product: PersonalizedProduct }) {
+export function OrderSummarySidebar({
+  product,
+  addons = [],
+}: {
+  product: PersonalizedProduct;
+  /** نفس قايمة الإضافات اللي الخطوة ٣ بتعرضها — عشان الإجمالي يبقى حقيقي. */
+  addons?: AddonProduct[];
+}) {
   const { watch } = useFormContext();
   const selectedAddonIds: string[] = watch('selectedAddonIds') || [];
+  const customizedAddonIds: string[] = watch('customizedAddonIds') || [];
   const facePhotoFile = watch('facePhotoFile');
   const familyMemberId = watch('familyMemberId');
   const newChildName = watch('newChildName');
@@ -31,9 +36,17 @@ export function OrderSummarySidebar({ product }: { product: PersonalizedProduct 
   
   const childName = newChildName || (familyMemberId ? 'مشارك من العائلة' : null);
 
-  // The add-on prices used to be repeated here as a second hard-coded list and
-  // charged to the customer. No add-on products exist.
-  const addonsTotal = 0;
+  // ⚠️ العرض هنا **تقدير**: الحساب الحقيقي بيتم في
+  //    `create_customer_order` من أسعار الجدول. المتصفح مبيبعتش سعرًا.
+  //
+  //    وقبل كده كان `addonsTotal = 0` ثابتًا — يعني العميل كان بيشوف
+  //    إجماليًا من غير الإضافات ويدفع إجماليًا بيها.
+  const chosenAddons = addons.filter((a) => selectedAddonIds.includes(a.id));
+  const addonsTotal = chosenAddons.reduce(
+    (sum, a) =>
+      sum + a.price + (customizedAddonIds.includes(a.id) ? a.customizationPrice : 0),
+    0,
+  );
   const total = product.price + addonsTotal;
 
   return (
@@ -68,13 +81,29 @@ export function OrderSummarySidebar({ product }: { product: PersonalizedProduct 
         </div>
       )}
 
-      {selectedAddonIds.length > 0 && (
+      {chosenAddons.length > 0 && (
         <div className="mb-6 pb-6 border-b border-slate-100">
-          <h4 className="font-bold text-slate-700 text-sm mb-2">الإضافات ({selectedAddonIds.length}):</h4>
-          <div className="flex justify-between text-sm text-slate-600">
-            <span>إضافات مخصصة</span>
-            <span>+{formatPrice(addonsTotal)}</span>
-          </div>
+          <h4 className="font-bold text-slate-700 text-sm mb-2">
+            الإضافات ({chosenAddons.length}):
+          </h4>
+          <ul className="space-y-1.5">
+            {chosenAddons.map((addon) => {
+              const customized = customizedAddonIds.includes(addon.id);
+              return (
+                <li key={addon.id} className="flex justify-between gap-3 text-sm text-slate-600">
+                  <span>
+                    {addon.name}
+                    {customized && (
+                      <span className="text-emerald-700 font-bold"> · بتخصيص</span>
+                    )}
+                  </span>
+                  <span className="shrink-0">
+                    +{formatPrice(addon.price + (customized ? addon.customizationPrice : 0))}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
 

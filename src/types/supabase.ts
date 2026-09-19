@@ -69,6 +69,8 @@ export type Database = {
           price: number
           is_active: boolean
           sort_order: number
+          supports_customization: boolean
+          customization_price: number
           created_at: string
           updated_at: string
         }
@@ -80,6 +82,8 @@ export type Database = {
           price?: number
           is_active?: boolean
           sort_order?: number
+          supports_customization?: boolean
+          customization_price?: number
           created_at?: string
           updated_at?: string
         }
@@ -91,6 +95,8 @@ export type Database = {
           price?: number
           is_active?: boolean
           sort_order?: number
+          supports_customization?: boolean
+          customization_price?: number
           created_at?: string
           updated_at?: string
         }

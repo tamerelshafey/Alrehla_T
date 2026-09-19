@@ -101,11 +101,13 @@ export function CheckoutClient({ user, paymentWalletNumber, paymentQrUrl, shippi
             quantity: number;
             customizationData?: unknown;
             addonIds?: string[];
+            customizedAddonIds?: string[];
           }) => ({
             productId: i.productId,
             quantity: i.quantity,
             customizationData: i.customizationData,
             addonIds: i.addonIds,
+            customizedAddonIds: i.customizedAddonIds,
           }),
         ),
         {

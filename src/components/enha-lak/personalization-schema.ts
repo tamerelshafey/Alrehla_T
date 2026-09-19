@@ -50,6 +50,14 @@ export const wizardSchema = z.object({
   secondPhotoFile: z.any().optional(),
 
   selectedAddonIds: z.array(z.string()),
+  /**
+   * الإضافات اللي العميل طلبها **بتخصيص**.
+   *
+   * مجموعة فرعية من `selectedAddonIds` — إضافة مش مختارة أصلًا مالهاش
+   * تخصيص. `Step3Addons` بتشيلها من هنا أول ما تتلغي، والقاعدة بترفض
+   * أي رقم هنا لإضافة مش بتقبل تخصيص.
+   */
+  customizedAddonIds: z.array(z.string()),
 
 }).superRefine((data, ctx) => {
   if (data.storyGoal === 'other' && !data.customStoryGoal?.trim()) {

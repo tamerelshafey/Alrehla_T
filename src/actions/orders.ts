@@ -42,6 +42,13 @@ export type NewOrderItem = {
   customizationData?: unknown;
   /** أرقام الإضافات — أسعارها بتتقرا في القاعدة. */
   addonIds?: string[];
+  /**
+   * الإضافات اللي اتطلبت بتخصيص.
+   *
+   * القاعدة بتضيف `customization_price` بتاع كل واحدة فيهم، وبترفض
+   * الطلب كله لو إضافة هنا مش `supports_customization`.
+   */
+  customizedAddonIds?: string[];
 };
 
 export type CreateOrderResult =
@@ -72,6 +79,9 @@ export async function createOrder(
       quantity: Math.max(1, Math.trunc(item.quantity) || 1),
       customization_data: (item.customizationData ?? null) as Json,
       addon_ids: item.addonIds ?? [],
+      // القاعدة بتقاطعها مع `addon_ids` — فالتخصيص لإضافة مش مختارة
+      // بيتجاهل بدل ما يتحسب.
+      customized_addon_ids: item.customizedAddonIds ?? [],
     })),
     p_shipping: shipping
       ? {

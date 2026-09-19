@@ -35,6 +35,8 @@ export async function saveAddon(params: {
   price: number;
   isActive: boolean;
   sortOrder: number;
+  supportsCustomization: boolean;
+  customizationPrice: number;
 }): Promise<AddonResult> {
   const admin = await requireAdmin('canManageCatalog', 'غير مصرح لك بإدارة الإضافات');
 
@@ -42,6 +44,11 @@ export async function saveAddon(params: {
   if (!name) return { ok: false, error: 'اكتب اسم الإضافة' };
   if (!Number.isFinite(params.price) || params.price < 0) {
     return { ok: false, error: 'السعر غير صحيح' };
+  }
+  // القاعدة عليها قيد `>= 0` — بنمسكها هنا برسالة عربية بدل ما القيد
+  // يرجّع نص إنجليزي.
+  if (!Number.isFinite(params.customizationPrice) || params.customizationPrice < 0) {
+    return { ok: false, error: 'سعر التخصيص غير صحيح' };
   }
 
   const supabase = await createClient();
@@ -51,6 +58,10 @@ export async function saveAddon(params: {
     price: params.price,
     is_active: params.isActive,
     sort_order: Number.isFinite(params.sortOrder) ? params.sortOrder : 0,
+    supports_customization: params.supportsCustomization,
+    // إضافة مش بتقبل تخصيص سعر تخصيصها صفر — عشان ميفضلش رقم قديم
+    // مخبّى في الجدول لو الإدارة رجّعت تفعّل التخصيص بعدين.
+    customization_price: params.supportsCustomization ? params.customizationPrice : 0,
     updated_at: new Date().toISOString(),
   };
 
@@ -69,7 +80,11 @@ export async function saveAddon(params: {
     action: params.id ? 'addon_updated' : 'addon_created',
     entityType: 'AddonProduct',
     entityId: params.id ?? name,
-    metadata: { price: params.price },
+    metadata: {
+      price: params.price,
+      supportsCustomization: params.supportsCustomization,
+      customizationPrice: params.customizationPrice,
+    },
   });
 
   revalidatePath('/dashboard/admin/addons');

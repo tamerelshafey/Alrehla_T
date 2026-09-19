@@ -64,7 +64,7 @@ export const getAddonProducts = async (
 
   const query = supabase
     .from('addon_products')
-    .select('id, slug, name, description, price, is_active, sort_order')
+    .select('id, slug, name, description, price, is_active, sort_order, supports_customization, customization_price')
     .order('sort_order', { ascending: true })
     .order('name', { ascending: true });
 
@@ -82,6 +82,8 @@ export const getAddonProducts = async (
     price: a.price,
     isActive: a.is_active,
     sortOrder: a.sort_order,
+    supportsCustomization: a.supports_customization ?? false,
+    customizationPrice: a.customization_price ?? 0,
   }));
 };
 

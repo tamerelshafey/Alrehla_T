@@ -38,6 +38,7 @@ export function PersonalizationWizard({
     resolver: zodResolver(wizardSchema),
     defaultValues: {
       selectedAddonIds: [],
+      customizedAddonIds: [],
     },
     mode: 'onChange',
   });
@@ -138,8 +139,11 @@ export function PersonalizationWizard({
         dedicationText: data.dedicationText?.trim() || undefined,
         familyMemberNames: data.familyMemberNames,
         selectedAddonIds: data.selectedAddonIds,
+        customizedAddonIds: data.customizedAddonIds,
       },
-      addonIds: data.selectedAddonIds
+      addonIds: data.selectedAddonIds,
+      // القاعدة بتضيف سعر التخصيص للإضافات دي وحدها.
+      customizedAddonIds: data.customizedAddonIds,
     });
 
     // Clear session storage
@@ -167,14 +171,14 @@ export function PersonalizationWizard({
             <div className="mt-8">
               {currentStep === 1 && <Step1ChildInfo onNext={() => handleNext(['familyMemberId', 'newChildName', 'newChildBirthDate', 'newChildGender'])} />}
               {currentStep === 2 && <Step2Details onNext={() => handleNext(['heroDescription', 'familyMemberNames', 'storyGoal', 'customStoryGoal', 'facePhotoFile'])} onPrev={handlePrev} />}
-              {currentStep === 3 && <Step3Addons addons={addons} onNext={() => handleNext(['selectedAddonIds'])} onPrev={handlePrev} />}
+              {currentStep === 3 && <Step3Addons addons={addons} onNext={() => handleNext(['selectedAddonIds', 'customizedAddonIds'])} onPrev={handlePrev} />}
               {currentStep === 4 && <Step4Review onPrev={handlePrev} product={product} />}
             </div>
           </div>
         </div>
         
         <div className="w-96 shrink-0 sticky top-24">
-          <OrderSummarySidebar product={product} />
+          <OrderSummarySidebar product={product} addons={addons} />
         </div>
       </form>
     </FormProvider>

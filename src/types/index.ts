@@ -332,6 +332,16 @@ export type AddonProduct = {
   description?: string;
   isActive: boolean;
   sortOrder: number;
+  /**
+   * هل الإضافة دي بتقبل تخصيص باسم الطفل وبياناته؟
+   *
+   * الإدارة هي اللي بتقرر. «كوباية باسم البطل» بتقبل، و«تغليف هدية» لأ.
+   * لو `false` والمتصفح بعت طلب تخصيص ليها، دالة `create_customer_order`
+   * **بترفض الطلب كله** — فالشاشة لازم تخفي الاختيار أصلًا.
+   */
+  supportsCustomization: boolean;
+  /** الفرق اللي بيتضاف على السعر لو العميل اختار «بتخصيص». */
+  customizationPrice: number;
 };
 
 // خطة اشتراك

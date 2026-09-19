@@ -10,7 +10,16 @@ import type { AddonProduct } from '@/types';
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
 
-const EMPTY = { id: '', name: '', description: '', price: 0, isActive: true, sortOrder: 0 };
+const EMPTY = {
+  id: '',
+  name: '',
+  description: '',
+  price: 0,
+  isActive: true,
+  sortOrder: 0,
+  supportsCustomization: false,
+  customizationPrice: 0,
+};
 
 export function AddonsClient({ addons }: { addons: AddonProduct[] }) {
   const router = useRouter();
@@ -27,6 +36,8 @@ export function AddonsClient({ addons }: { addons: AddonProduct[] }) {
       price: addon.price,
       isActive: addon.isActive,
       sortOrder: addon.sortOrder,
+      supportsCustomization: addon.supportsCustomization,
+      customizationPrice: addon.customizationPrice,
     });
     setOpen(true);
     setError('');
@@ -42,6 +53,8 @@ export function AddonsClient({ addons }: { addons: AddonProduct[] }) {
       price: Number(form.price),
       isActive: form.isActive,
       sortOrder: Number(form.sortOrder),
+      supportsCustomization: form.supportsCustomization,
+      customizationPrice: Number(form.customizationPrice),
     });
     setBusy(false);
 
@@ -137,6 +150,43 @@ export function AddonsClient({ addons }: { addons: AddonProduct[] }) {
               />
               <span className="text-sm font-bold text-slate-700">معروضة للعملاء</span>
             </label>
+
+            {/* التخصيص — العميل بيختار «بتخصيص / بدون» في خطوة الإضافات،
+                والتخصيص بياخد بيانات الطفل المدخلة في المعالج. */}
+            <label className="flex items-center gap-3 md:col-span-2">
+              <input
+                type="checkbox"
+                checked={form.supportsCustomization}
+                onChange={(e) =>
+                  setForm({ ...form, supportsCustomization: e.target.checked })
+                }
+                className="h-5 w-5 rounded border-slate-300"
+              />
+              <span className="text-sm font-bold text-slate-700">
+                تقبل التخصيص باسم الطفل وبياناته
+              </span>
+            </label>
+
+            {form.supportsCustomization && (
+              <div className="space-y-1.5">
+                <label className="text-sm font-bold text-slate-700">
+                  فرق سعر التخصيص (جنيه)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  className={inputClass}
+                  value={form.customizationPrice}
+                  onChange={(e) =>
+                    setForm({ ...form, customizationPrice: Number(e.target.value) })
+                  }
+                />
+                <p className="text-xs font-medium text-slate-500">
+                  بيتضاف على السعر الأساسي لو العميل اختار «بتخصيص». صفر يعني
+                  التخصيص مجاني.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="mt-6 flex justify-end">
@@ -179,7 +229,14 @@ export function AddonsClient({ addons }: { addons: AddonProduct[] }) {
               )}
             </div>
 
-            <div className="font-black text-slate-800">{formatPrice(addon.price)}</div>
+            <div className="text-end">
+              <div className="font-black text-slate-800">{formatPrice(addon.price)}</div>
+              {addon.supportsCustomization && (
+                <div className="mt-0.5 text-xs font-bold text-emerald-700">
+                  بتخصيص: {formatPrice(addon.price + addon.customizationPrice)}
+                </div>
+              )}
+            </div>
 
             <div className="flex gap-2">
               <button

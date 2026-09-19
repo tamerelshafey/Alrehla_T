@@ -38,6 +38,7 @@ const atStepOne = (over: Record<string, unknown> = {}) => ({
   facePhotoFile: null,
   secondPhotoFile: null,
   selectedAddonIds: [] as string[],
+  customizedAddonIds: [] as string[],
   ...over,
 });
 
@@ -154,5 +155,33 @@ describe('باقي المعالج', () => {
       }),
     );
     expect(result.success).toBe(true);
+  });
+
+  it('إضافة بتخصيص بتعدّي', () => {
+    // `customizedAddonIds` مجموعة فرعية من `selectedAddonIds`.
+    // ⚠️ لو الحقل ده اتشال أو بقى مطلوبًا بشكل تاني، الشرط في
+    //    `create_customer_order` مش هيوصله تخصيص أصلًا.
+    const result = wizardSchema.safeParse(
+      atStepOne({
+        familyMemberId: 'c-1',
+        heroDescription: 'طفل شجاع يحب البحر',
+        storyGoal: 'courage',
+        facePhotoFile: {},
+        selectedAddonIds: ['addon-1', 'addon-2'],
+        customizedAddonIds: ['addon-1'],
+      }),
+    );
+    expect(result.success).toBe(true);
+  });
+
+  it('غياب قايمة التخصيص بيتمنع — المعالج لازم يبعتها ولو فاضية', () => {
+    const { customizedAddonIds: _omitted, ...withoutField } = atStepOne({
+      familyMemberId: 'c-1',
+      heroDescription: 'طفل شجاع يحب البحر',
+      storyGoal: 'courage',
+      facePhotoFile: {},
+    });
+    const result = wizardSchema.safeParse(withoutField);
+    expect(result.success).toBe(false);
   });
 });
