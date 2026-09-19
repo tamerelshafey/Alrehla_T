@@ -15,6 +15,8 @@ import { createPublicClient } from '@/lib/supabase/public';
 import { getParticipantName } from '@/data/domains/account';
 import { createClient } from '@/lib/supabase/server';
 import { cairoParts } from '@/lib/timezone';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/supabase';
 
 // Import from auth if needed
 
@@ -63,17 +65,59 @@ export const getWritingPackages = async (): Promise<WritingPackage[]> => {
 const PUBLIC_INSTRUCTOR_COLUMNS =
   'id, user_id, display_name, bio, specialties, years_experience, is_sample, status, weekly_schedule';
 
-function toPublicInstructor(row: {
-  id: string;
-  user_id: string;
-  display_name: string;
-  bio: string;
-  specialties: string[] | null;
-  years_experience: number | null;
-  is_sample: boolean | null;
-  status: string;
-  weekly_schedule: unknown;
-}): PublicInstructor {
+/**
+ * صور المدربين — **مش في جدول `instructors` أصلًا**.
+ *
+ * ── العطل اللي ده بيقفله ────────────────────────────────────
+ *
+ * `Instructor.avatarUrl` موجود في النوع من زمان، وصفحة المدرب العامة
+ * بتعرضه (`instructor.avatarUrl ? <Image .../> : <User />`). بس **مفيش
+ * ولا استعلام واحد كان بيملاه**: جدول `instructors` مالوش عمود
+ * `avatar_url` خالص. الصورة بتتحفظ في `user_profiles.avatar_url` —
+ * حساب المستخدم، مش ملف المدرب.
+ *
+ * فالمدرب كان بيرفع صورته، وبتتحفظ صح، **وصفحته العامة ما بتعرضهاش
+ * ولا مرة** — لأن الكود بيسأل عنها في الجدول الغلط. والصفحة كانت
+ * بتقع على أيقونة الشخص الرمادية من غير أي رسالة خطأ.
+ *
+ * ⚠️ والزائر **يقدر** يقرا الصف ده: `can_see_profile(id)` فيها بند
+ *    صريح «مدرب أو مقدّم خدمة: اسمه معروض على الموقع أصلًا»، والبند ده
+ *    مش متوقف على `auth.uid()`. (وعشان كده ملف 82 ساب `can_see_profile`
+ *    ممنوحة لـ`anon` عن قصد — سحبها كان هيكسر ده.)
+ */
+async function avatarsByUserId(
+  supabase: SupabaseClient<Database>,
+  userIds: string[],
+): Promise<Map<string, string>> {
+  const ids = [...new Set(userIds.filter(Boolean))];
+  if (ids.length === 0) return new Map();
+
+  const { data } = await supabase
+    .from('user_profiles')
+    .select('id, avatar_url')
+    .in('id', ids);
+
+  const map = new Map<string, string>();
+  for (const row of data ?? []) {
+    if (row.avatar_url) map.set(row.id, row.avatar_url);
+  }
+  return map;
+}
+
+function toPublicInstructor(
+  row: {
+    id: string;
+    user_id: string;
+    display_name: string;
+    bio: string;
+    specialties: string[] | null;
+    years_experience: number | null;
+    is_sample: boolean | null;
+    status: string;
+    weekly_schedule: unknown;
+  },
+  avatarUrl?: string,
+): PublicInstructor {
   return {
     id: row.id,
     userId: row.user_id,
@@ -84,6 +128,7 @@ function toPublicInstructor(row: {
     isSample: row.is_sample ?? undefined,
     status: row.status as InstructorStatus,
     weeklySchedule: (row.weekly_schedule as WeeklySlot[]) ?? [],
+    avatarUrl,
   };
 }
 
@@ -96,8 +141,10 @@ export const getPublicInstructors = async (): Promise<PublicInstructor[]> => {
     .order('created_at', { ascending: false });
 
   if (error || !data) return [];
-  return (data as unknown as Parameters<typeof toPublicInstructor>[0][])
-    .map(toPublicInstructor);
+
+  const rows = data as unknown as Parameters<typeof toPublicInstructor>[0][];
+  const avatars = await avatarsByUserId(supabase, rows.map((r) => r.user_id));
+  return rows.map((r) => toPublicInstructor(r, avatars.get(r.user_id)));
 };
 
 /** مدرب واحد للصفحات العامة — بالأعمدة الآمنة وحدها. */
@@ -112,9 +159,10 @@ export const getPublicInstructorById = async (
     .maybeSingle();
 
   if (error || !data) return null;
-  return toPublicInstructor(
-    data as unknown as Parameters<typeof toPublicInstructor>[0],
-  );
+
+  const row = data as unknown as Parameters<typeof toPublicInstructor>[0];
+  const avatars = await avatarsByUserId(supabase, [row.user_id]);
+  return toPublicInstructor(row, avatars.get(row.user_id));
 };
 
 /**
@@ -137,6 +185,11 @@ export const getInstructors = async (): Promise<Instructor[]> => {
     return [];
   }
 
+  const avatars = await avatarsByUserId(
+    supabase,
+    data.map((inst: { user_id: string }) => inst.user_id),
+  );
+
   return data.map((inst: any) => ({
     id: inst.id,
     userId: inst.user_id,
@@ -146,6 +199,8 @@ export const getInstructors = async (): Promise<Instructor[]> => {
     yearsExperience: inst.years_experience,
     isSample: inst.is_sample,
     status: inst.status,
+    // الصورة من `user_profiles` مش من `instructors` — شوف `avatarsByUserId`.
+    avatarUrl: avatars.get(inst.user_id),
     trainingPassed: inst.training_passed,
     workModel: inst.work_model,
     requestedPrice: inst.requested_price || undefined,
@@ -169,6 +224,8 @@ export const getInstructorById = async (
 
   if (error || !data) return null;
 
+  const avatars = await avatarsByUserId(supabase, [data.user_id]);
+
   return {
     id: data.id,
     userId: data.user_id,
@@ -178,6 +235,8 @@ export const getInstructorById = async (
     yearsExperience: data.years_experience,
     isSample: data.is_sample ?? undefined,
     status: data.status,
+    // الصورة من `user_profiles` مش من `instructors` — شوف `avatarsByUserId`.
+    avatarUrl: avatars.get(data.user_id),
     trainingPassed: data.training_passed ?? false,
     workModel: data.work_model,
     requestedPrice: data.requested_price || undefined,

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
 
@@ -14,6 +15,7 @@ import { getPublicInstructors } from '@/data/domains/writing';
 import { getInstructorRatingSummaries } from '@/data/domains/reviews';
 import { RatingStars } from '@/components/services/RatingStars';
 import { User, Award, CheckCircle } from 'lucide-react';
+import { optimizedImageUrl } from '@/lib/cloudinary';
 
 import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
@@ -54,8 +56,26 @@ export default async function InstructorsPage() {
               )}
 
               <div className="mt-4 mb-6 flex items-center gap-6">
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-slate-100">
-                  <User className="h-10 w-10 text-slate-400" />
+                {/*
+                  الكارت كان بيرسم أيقونة الشخص الرمادية **دايمًا**، من غير
+                  أي شرط — يعني حتى لو الصورة موجودة ما كانتش هتظهر هنا.
+                  دي غير عطل البيانات اللي في `getPublicInstructors`: ده
+                  عطل عرض مستقل، وكان لازم الاتنين يتصلحوا عشان الصورة
+                  تبان في القايمة.
+                */}
+                <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                  {instructor.avatarUrl ? (
+                    <Image
+                      src={optimizedImageUrl(instructor.avatarUrl, 160)}
+                      alt={`صورة المدرب ${instructor.displayName}`}
+                      fill
+                      sizes="80px"
+                      className="object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <User className="h-10 w-10 text-slate-400" />
+                  )}
                 </div>
                 <div>
                   <h2 className="mb-2 text-2xl font-black text-slate-800">
