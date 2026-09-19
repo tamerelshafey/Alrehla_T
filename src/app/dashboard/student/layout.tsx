@@ -19,6 +19,8 @@ export default async function StudentLayout({
           { href: '/dashboard/student/sessions', label: 'جلساتي' },
           { href: '/dashboard/student/materials', label: 'موادي' },
           { href: '/dashboard/student/portfolio', label: 'معرض أعمالي' },
+          // الطالب كان بيطلب من ولي أمره ومفيش مكان يتابع فيه الطلب.
+          { href: '/dashboard/student/requests', label: 'طلباتي' },
           { href: '/dashboard/student/profile', label: 'ملفي' },
         ]}
       />

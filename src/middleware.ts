@@ -89,6 +89,23 @@ export async function middleware(request: NextRequest) {
     if (role === 'visitor') {
       return NextResponse.redirect(new URL('/sign-in', request.url));
     }
+
+    // ⚠️ حساب الطالب التابع **مالوش مكان هنا.**
+    //
+    // `/account` هي منطقة العميل/ولي الأمر: المركز العائلي، وطلبات
+    // الأبناء، والاشتراكات، والدفع. والحماية كانت `requireAuth()` بس —
+    // يعني أي مسجَّل بما فيهم الطالب.
+    //
+    // والهيدر بيوجّه الطالب لـ`/dashboard/student` صح، بس ده مش حاجز:
+    // أي رابط `/account/...` (من إشعار مثلًا) كان بيدخّله.
+    //
+    // وأوضح نتيجة كانت شاشة «طلبات الأبناء»: الاستعلام مبيفلترش بالدور
+    // (القاعدة بتفلتر)، و`can_see_dependent_request` بتسمح للطفل يشوف
+    // طلبه هو — فالطالب كان بيشوف **طلباته هو** تحت عنوان «طلبات
+    // الأبناء» ونص بيخاطبه كأنه الأب: «لما ابنك يطلب…».
+    if (role === 'student') {
+      return NextResponse.redirect(new URL('/dashboard/student', request.url));
+    }
   }
 
   return supabaseResponse;

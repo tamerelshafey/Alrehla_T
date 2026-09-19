@@ -45,12 +45,24 @@ type NavGroup = {
   items: NavItem[];
 };
 
-const GROUPS: NavGroup[] = [
+/**
+ * ⚠️ «طلبات الأبناء» بتظهر لولي الأمر وحده.
+ *
+ * القايمة كانت **ثابتة**، فالرابط كان بيظهر لكل مستخدم — بما فيهم عميل
+ * مالوش أطفال أصلًا (يعني مش ولي أمر). والشاشة نفسها نصّها بيخاطب
+ * الأب، فالعميل العادي كان بيفتحها ويلاقي كلامًا مالوش علاقة بيه.
+ *
+ * و«أفراد العائلة» بتفضل ظاهرة للكل عن قصد: هي **مدخل** إنشاء الملف
+ * العائلي، ومنها بيتحوّل العميل لولي أمر.
+ */
+const groupsFor = (isGuardian: boolean): NavGroup[] => [
   {
     items: [
       { href: '/account', label: 'نظرة عامة', Icon: User },
       { href: '/account/family', label: 'أفراد العائلة', Icon: Users },
-      { href: '/account/family/requests', label: 'طلبات الأبناء', Icon: Inbox },
+      ...(isGuardian
+        ? [{ href: '/account/family/requests', label: 'طلبات الأبناء', Icon: Inbox }]
+        : []),
       { href: '/account/settings', label: 'إعدادات الحساب', Icon: Settings },
     ],
   },
@@ -83,8 +95,9 @@ const GROUPS: NavGroup[] = [
   },
 ];
 
-export function AccountNav() {
+export function AccountNav({ isGuardian = false }: { isGuardian?: boolean }) {
   const pathname = usePathname() ?? '';
+  const GROUPS = groupsFor(isGuardian);
 
   const isActive = (href: string) => {
     if (href === '/account') return pathname === '/account';
