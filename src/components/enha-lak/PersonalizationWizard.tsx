@@ -4,7 +4,7 @@ import { uploadImage } from '@/lib/cloudinary';
 import React, { useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { wizardSchema, type WizardFormValues } from './personalization-schema';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { AddonProduct, PersonalizedProduct } from '@/types';
 
@@ -17,42 +17,6 @@ import { Step4Review } from './wizard-steps/Step4Review';
 import { useCart } from '@/context/CartContext';
 import { resolveWizardChild } from '@/app/actions/family';
 
-const wizardSchema = z.object({
-  familyMemberId: z.string().optional(),
-  newChildName: z.string().optional(),
-  newChildBirthDate: z.string().optional(),
-  newChildGender: z.enum(['male', 'female']).optional(),
-  
-  heroDescription: z.string().min(5, 'يجب إدخال وصف للبطل'),
-  familyMemberNames: z.string().optional(),
-  storyGoal: z.string().min(2, 'الرجاء اختيار الهدف التربوي'),
-  /** لما العميل يختار «هدف آخر» بيكتب هدفه بكلامه هنا. */
-  customStoryGoal: z.string().optional(),
-  /** إهداء يتكتب في أول الكتاب — نفس فكرة معالج المكتبة. */
-  dedicationText: z.string().optional(),
-  facePhotoFile: z.any().refine((file) => file !== null && file !== undefined, 'الصورة الشخصية مطلوبة'),
-  secondPhotoFile: z.any().optional(),
-
-  selectedAddonIds: z.array(z.string()),
-
-}).superRefine((data, ctx) => {
-  if (data.storyGoal === 'other' && !data.customStoryGoal?.trim()) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'اكتب الهدف اللي في بالك',
-      path: ['customStoryGoal'],
-    });
-  }
-  if (!data.familyMemberId && !data.newChildName) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'الرجاء اختيار طفل أو إضافة طفل جديد',
-      path: ['newChildName']
-    });
-  }
-});
-
-type WizardFormValues = z.infer<typeof wizardSchema>;
 
 export function PersonalizationWizard({
   product,

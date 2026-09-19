@@ -32,11 +32,24 @@ export function Step1ChildInfo({ onNext }: { onNext: () => void }) {
     <div className="space-y-6">
       <h2 className="text-2xl font-black text-slate-800">بيانات الطفل</h2>
       
-      {errors.newChildName?.message && (
-        <div className="p-4 bg-red-50 text-red-600 rounded-xl font-bold">
-          {errors.newChildName.message as string}
-        </div>
-      )}
+      {/*
+        ⚠️ **كل أخطاء الخطوة، مش `newChildName` وحده.**
+
+        الخطوة بتفحص أربع حقول (`familyMemberId` · `newChildName` ·
+        `newChildBirthDate` · `newChildGender`)، وكانت بتعرض خطأ واحد
+        منهم بس. فأي خطأ في التلاتة التانيين كان **بيقفل الزرار في صمت**:
+        المستخدم بيضغط «الخطوة التالية» وما بيحصلش حاجة وما بيعرفش ليه.
+
+        ودي نفس فكرة قاعدة (و): عملية بتفشل من غير ما تقول.
+      */}
+      {(['newChildName', 'newChildGender', 'newChildBirthDate', 'familyMemberId'] as const)
+        .map((f) => errors[f]?.message)
+        .filter(Boolean)
+        .map((msg, i) => (
+          <div key={i} className="rounded-xl bg-red-50 p-4 font-bold text-red-700">
+            {msg as string}
+          </div>
+        ))}
 
       {members.length > 0 && (
         <div className="space-y-4">
