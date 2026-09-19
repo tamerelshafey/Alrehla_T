@@ -1,9 +1,45 @@
 import React from 'react';
 import Link from 'next/link';
 
+/**
+ * الزر — أول مكوّن بيستهلك طبقة الرموز.
+ *
+ * ── إيه اللي اتغيّر ─────────────────────────────────────────
+ *
+ * **ولا حاجة في الشكل.** كل صنف لوني اتبدّل برمز بيشاور على **نفس**
+ * لون Tailwind اللي كان مكتوب:
+ *   bg-amber-500 → bg-brand          (var(--color-amber-500))
+ *   bg-rose-500  → bg-enha-lak       (var(--color-rose-500))
+ *   bg-emerald-500 → bg-journey      (var(--color-emerald-500))
+ *   rounded-xl   → rounded-control   (0.75rem — نفس القيمة)
+ *
+ * المكسب إن تغيير لون الهوية بقى سطر في `globals.css` بدل ما يكون
+ * تعديل في كل ملف بيستخدم لونًا.
+ *
+ * ── الأسماء القديمة لسه شغّالة ──────────────────────────────
+ *
+ * `accentColor` بتقبل الاسم الدلالي الجديد (`brand`/`enhaLak`/`journey`)
+ * **والاسم اللوني القديم** (`amber`/`rose`/`emerald`). عشان كده مفيش
+ * ولا موضع نداء محتاج يتغيّر دلوقتي — الترحيل بيحصل عند لمس كل ملف.
+ *
+ * ⚠️ **الجديد يستخدم الاسم الدلالي.** الاسم اللوني بيربط الكود بلون
+ *    بعينه، وده بالظبط اللي بنخرج منه.
+ */
+
+/** الاسم الدلالي — ده اللي يتكتب في أي كود جديد. */
+type Accent = 'brand' | 'enhaLak' | 'journey';
+/** الاسم اللوني القديم — باقٍ للتوافق مع مواضع النداء الحالية. */
+type LegacyAccent = 'amber' | 'rose' | 'emerald';
+
+const ACCENT_ALIAS: Record<LegacyAccent, Accent> = {
+  amber: 'brand',
+  rose: 'enhaLak',
+  emerald: 'journey',
+};
+
 type ButtonProps = {
   variant?: 'primary' | 'secondary';
-  accentColor?: 'amber' | 'rose' | 'emerald';
+  accentColor?: Accent | LegacyAccent;
   size?: 'md' | 'lg';
   href?: string;
   children: React.ReactNode;
@@ -15,7 +51,7 @@ type ButtonProps = {
 
 export function Button({
   variant = 'primary',
-  accentColor = 'amber',
+  accentColor = 'brand',
   size = 'md',
   href,
   className = '',
@@ -23,27 +59,44 @@ export function Button({
   disabled,
   ...props
 }: ButtonProps) {
-  const baseStyles = "inline-flex items-center justify-center font-bold transition-colors rounded-xl min-h-[44px]";
-  
+  const accent: Accent =
+    accentColor in ACCENT_ALIAS
+      ? ACCENT_ALIAS[accentColor as LegacyAccent]
+      : (accentColor as Accent);
+
+  // `min-h-[44px]` = أصغر هدف لمس مقبول على الموبايل، وهي **الموضع
+  // الوحيد** في المشروع كله اللي بيضمن ده.
+  //
+  // ⚠️ جرّبت أكتبها `min-h-[var(--tap-min)]` بالرمز، وبنيت وفحصت الـCSS
+  //    المولَّد: **الصنف ده ما اتولّدش خالص**، يعني الزرار كان هيفقد
+  //    الـ44px بلا أي تحذير. فبقيت على القيمة الحرفية.
+  //    الرمز `--tap-min` معرَّف في `globals.css` وبيتطبّق في المرحلة ٥
+  //    على كل الأهداف، وساعتها بيتجرّب في بناء حقيقي قبل ما يتعمّم.
+  const baseStyles =
+    'inline-flex items-center justify-center font-bold transition-colors rounded-control min-h-[44px]';
+
   const sizeStyles = {
-    md: "px-6 py-3 text-base",
-    lg: "px-8 py-4 text-lg",
+    md: 'px-6 py-3 text-base',
+    lg: 'px-8 py-4 text-lg',
   };
 
   const colorStyles = {
     primary: {
-      amber: "bg-amber-500 text-white hover:bg-amber-600",
-      rose: "bg-rose-500 text-white hover:bg-rose-600",
-      emerald: "bg-emerald-500 text-white hover:bg-emerald-600",
+      brand: 'bg-brand text-white hover:bg-brand-hover',
+      enhaLak: 'bg-enha-lak text-white hover:bg-enha-lak-hover',
+      journey: 'bg-journey text-white hover:bg-journey-hover',
     },
     secondary: {
-      amber: "bg-transparent border-2 border-amber-500 text-amber-600 hover:bg-amber-50",
-      rose: "bg-transparent border-2 border-rose-500 text-rose-600 hover:bg-rose-50",
-      emerald: "bg-transparent border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50",
-    }
-  };
+      brand:
+        'bg-transparent border-2 border-brand text-brand-hover hover:bg-brand-soft',
+      enhaLak:
+        'bg-transparent border-2 border-enha-lak text-enha-lak-hover hover:bg-enha-lak-soft',
+      journey:
+        'bg-transparent border-2 border-journey text-journey-hover hover:bg-journey-soft',
+    },
+  } as const;
 
-  const classes = `${baseStyles} ${sizeStyles[size]} ${colorStyles[variant][accentColor]} ${className}`;
+  const classes = `${baseStyles} ${sizeStyles[size]} ${colorStyles[variant][accent]} ${className}`;
 
   if (href) {
     if (disabled) {
