@@ -234,12 +234,18 @@ describe('getDependentGuardian', () => {
    * يتغيّرش عشان يعدّي** — التغيير نفسه هو العطل.
    */
   it('يرمي — ولا يرجّع null — لما التحقق نفسه يفشل', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     createClient.mockResolvedValue(
       supabaseWithRpc({ data: null, error: { message: 'permission denied' } }),
     );
     await expect(getDependentGuardian('u-1')).rejects.toThrow(
       'تعذّر التحقق من نوع الحساب',
     );
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Error resolving dependent link',
+      expect.objectContaining({ message: 'permission denied' }),
+    );
+    errorSpy.mockRestore();
   });
 });
 
@@ -277,11 +283,17 @@ describe('requireNotDependent', () => {
    * تعدّي. النسخة القديمة كانت بتعدّي.
    */
   it('يوقف العملية لما التحقق يفشل', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     getCurrentUser.mockResolvedValue(user({ role: 'student' }));
     createClient.mockResolvedValue(
       supabaseWithRpc({ data: null, error: { message: 'boom' } }),
     );
     await expect(requireNotDependent('الشراء')).rejects.toThrow();
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Error resolving dependent link',
+      expect.objectContaining({ message: 'boom' }),
+    );
+    errorSpy.mockRestore();
   });
 
   it('يرفض الزائر قبل ما يسأل القاعدة أصلًا', async () => {
