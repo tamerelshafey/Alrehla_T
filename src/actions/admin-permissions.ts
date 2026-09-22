@@ -51,14 +51,20 @@ export async function updateAdminPermissions(params: {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('user_profiles')
     .update({ permissions: clean, updated_at: new Date().toISOString() })
-    .eq('id', params.userId);
+    .eq('id', params.userId)
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     console.error('Error updating permissions', error);
     return { ok: false, error: `تعذّر الحفظ: ${error.message}` };
+  }
+
+  if (!data) {
+    return { ok: false, error: 'المستخدم غير موجود أو تعذّر تحديث صلاحياته' };
   }
 
   await logAuditAction({

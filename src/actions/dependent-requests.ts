@@ -125,13 +125,14 @@ export async function cancelDependentRequest(requestId: string): Promise<Request
     .eq('id', requestId)
     .eq('child_profile_id', dependent.childId)
     .eq('status', 'pending')
-    .select('id');
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     console.error('Error cancelling dependent request', error);
     return { ok: false, error: `تعذّر سحب الطلب: ${error.message}` };
   }
-  if (!data || data.length === 0) {
+  if (!data) {
     return { ok: false, error: 'الطلب مش موجود أو ولي أمرك بتّ فيه خلاص.' };
   }
 

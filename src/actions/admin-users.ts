@@ -239,14 +239,20 @@ export async function updateUserRole(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('user_profiles')
     .update({ role, updated_at: new Date().toISOString() })
-    .eq('id', userId);
+    .eq('id', userId)
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     console.error('Error updating user role', error);
     return { ok: false, error: `تعذّر تغيير الدور: ${error.message}` };
+  }
+
+  if (!data) {
+    return { ok: false, error: 'المستخدم غير موجود أو تعذّر تحديث دوره' };
   }
 
   await logAuditAction({
