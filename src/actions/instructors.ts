@@ -115,31 +115,33 @@ export async function approveProfileUpdateRequest(requestId: string) {
   // (`instructor_pricing_options`). الفئات اتشالت من شاشة المدرب —
   // بيكتب رقمه بنفسه دلوقتي — فالفرع بقى بلا مصدر.
 
-  if (Object.keys(update).length > 0) {
-    update.updated_at = new Date().toISOString();
-    const { data: updatedRows, error: updateError } = await supabase
-      .from('instructors')
-      .update(update)
-      .eq('id', request.instructor_id)
-      .select('id');
-    if (updateError) {
-      console.error('Error applying approved changes', updateError);
-      throw new Error('تعذّر تطبيق التعديلات');
-    }
-    // صفر صفوف = المدرب مش موجود أو الصلاحيات رفضت بصمت. من غير الفحص
-    // ده الطلب كان بيتقفل «تمت الموافقة» والمدرب ما اتغيّرش فيه حاجة.
-    if (!updatedRows || updatedRows.length === 0) {
-      throw new Error('التعديلات مروّحتش للقاعدة — ملف المدرب مش موجود أو الصلاحيات مش سامحة.');
-    }
+  update.updated_at = new Date().toISOString();
+  const { data: updatedInstructor, error: updateError } = await supabase
+    .from('instructors')
+    .update(update)
+    .eq('id', request.instructor_id)
+    .select('id')
+    .maybeSingle();
+
+  if (updateError) {
+    console.error('Error applying approved changes', updateError);
+    throw new Error('تعذّر تطبيق التعديلات');
+  }
+
+  // صفر صفوف = المدرب مش موجود أو الصلاحيات رفضت بصمت. من غير الفحص
+  // ده الطلب كان بيتقفل «تمت الموافقة» والمدرب ما اتغيّرش فيه حاجة.
+  if (!updatedInstructor) {
+    throw new Error('التعديلات مروّحتش للقاعدة — ملف المدرب مش موجود أو الصلاحيات مش سامحة.');
   }
 
   const { data: statusRows, error: statusError } = await supabase
     .from('profile_update_requests')
     .update({ status: 'approved' })
     .eq('id', requestId)
-    .select('id');
+    .select('id')
+    .maybeSingle();
   if (statusError) throw new Error('تعذّر تحديث حالة الطلب');
-  if (!statusRows || statusRows.length === 0) {
+  if (!statusRows) {
     throw new Error('الطلب مش موجود أو اتقفل قبل كده.');
   }
 
@@ -164,6 +166,8 @@ export async function approveProfileUpdateRequest(requestId: string) {
   revalidatePath('/dashboard/instructor/settings');
   return { success: true };
 }
+
+export const approveProfileUpdate = approveProfileUpdateRequest;
 
 export async function rejectProfileUpdateRequest(requestId: string, adminFeedback: string) {
   const currentUser = await requireInstructorAdmin();

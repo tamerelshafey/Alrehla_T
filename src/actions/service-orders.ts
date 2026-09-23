@@ -350,11 +350,12 @@ export async function startServiceOrder(orderId: string) {
     .from('service_orders')
     .update({ status: 'in_progress' })
     .eq('id', orderId)
+    .eq('status', 'paid')
     .select('id');
 
   if (error) throw new Error('تعذّر تحديث حالة الطلب');
   if (!started || started.length === 0) {
-    throw new Error('الطلب مش موجود — التغيير مروّحش للقاعدة.');
+    throw new Error('الطلب مش موجود أو تغيّرت حالته — التغيير مروّحش للقاعدة.');
   }
 
   await notifyUser({
@@ -390,18 +391,20 @@ export async function deliverServiceOrder(orderId: string, deliveryMessage: stri
     throw new Error('اكتب رسالة التسليم للعميل (ما الذي سلّمته وأين يجده)');
   }
 
-  await sendServiceOrderMessage(orderId, text, true);
-
   const { data: delivered, error } = await supabase
     .from('service_orders')
     .update({ status: 'delivered', delivered_at: new Date().toISOString() })
     .eq('id', orderId)
+    .in('status', ['in_progress', 'paid'])
     .select('id');
 
   if (error) throw new Error('تعذّر تسجيل التسليم');
   if (!delivered || delivered.length === 0) {
-    throw new Error('الطلب مش موجود — التسليم مااتسجّلش.');
+    throw new Error('الطلب مش موجود أو تغيّرت حالته — التسليم مااتسجّلش.');
   }
+
+  // إرسال رسالة التسليم بعد نجاح تحديث حالة الطلب لضمان عدم إدراج رسائل تسليم يتيمة عند فشل التحديث
+  await sendServiceOrderMessage(orderId, text, true);
 
   await notifyUser({
     event: 'order_status',
@@ -451,6 +454,7 @@ async function recordInstructorEarning(
   // A duplicate is the unique index doing its job, not a failure.
   if (error && !String(error.message).toLowerCase().includes('duplicate')) {
     console.error('Error recording instructor earning', error);
+    throw new Error('تعذّر تسجيل مستحقات المدرب لهذا الطلب');
   }
 }
 
@@ -476,11 +480,12 @@ async function completeOrder(
     .from('service_orders')
     .update({ status: 'completed', completed_at: new Date().toISOString() })
     .eq('id', order.id)
+    .eq('status', 'delivered')
     .select('id');
 
   if (error) throw new Error('تعذّر إقفال الطلب');
   if (!completed || completed.length === 0) {
-    throw new Error('الطلب مش موجود — الإقفال مروّحش للقاعدة.');
+    throw new Error('الطلب مش موجود أو تغيّرت حالته — الإقفال مروّحش للقاعدة.');
   }
 
   await recordInstructorEarning(supabase, order, service?.name ?? 'خدمة إبداعية');
@@ -533,11 +538,12 @@ export async function confirmServiceOrderPayment(orderId: string) {
     .from('service_orders')
     .update({ status: 'paid', due_at: dueAt.toISOString() })
     .eq('id', orderId)
+    .in('status', ['pending', 'awaiting_verification'])
     .select('id');
 
   if (error) throw new Error('تعذّر تأكيد الدفع');
   if (!paid || paid.length === 0) {
-    throw new Error('الطلب مش موجود — تأكيد الدفع مروّحش للقاعدة.');
+    throw new Error('الطلب مش موجود أو تم تأكيد دفعه مسبقاً — التغيير مروّحش للقاعدة.');
   }
 
   const { data: order } = await supabase
@@ -624,26 +630,42 @@ export async function setServiceOrderStatusByAdmin(
   if (!reason.trim()) throw new Error('اكتب السبب');
 
   const supabase = await createClient();
+
+  const { data: order, error: fetchError } = await supabase
+    .from('service_orders')
+    .select('id, status, buyer_profile_id')
+    .eq('id', orderId)
+    .maybeSingle();
+
+  if (fetchError || !order) {
+    throw new Error('الطلب غير موجود');
+  }
+
+  if (order.status === 'completed') {
+    throw new Error('لا يمكن إلغاء أو استرجاع طلب مكتمل');
+  }
+  if (order.status === 'cancelled') {
+    throw new Error('الطلب ملغي بالفعل');
+  }
+  if (order.status === 'refunded') {
+    throw new Error('تم استرجاع هذا الطلب بالفعل');
+  }
+
   const { data: statusRows, error } = await supabase
     .from('service_orders')
     .update({ status })
     .eq('id', orderId)
+    .eq('status', order.status)
     .select('id');
 
   if (error) throw new Error('تعذّر تحديث حالة الطلب');
   if (!statusRows || statusRows.length === 0) {
-    throw new Error('الطلب مش موجود — التغيير مروّحش للقاعدة.');
+    throw new Error('الطلب مش موجود أو تغيّرت حالته — التغيير مروّحش للقاعدة.');
   }
-
-  const { data: target } = await supabase
-    .from('service_orders')
-    .select('buyer_profile_id')
-    .eq('id', orderId)
-    .maybeSingle();
 
   await notifyUser({
     event: 'order_status',
-    recipientProfileId: target?.buyer_profile_id,
+    recipientProfileId: order.buyer_profile_id,
     title: status === 'refunded' ? 'تم استرجاع طلبك' : 'تم إلغاء طلبك',
     message: reason.trim(),
     link: `/account/orders/creative-writing/${orderId}`,

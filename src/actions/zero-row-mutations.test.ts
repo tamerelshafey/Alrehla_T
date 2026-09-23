@@ -12,10 +12,12 @@ vi.mock('@/lib/audit', () => ({
 }));
 
 const mockRequireAdmin = vi.fn();
+const mockRequireSuperAdmin = vi.fn();
 const mockRequireUser = vi.fn();
 const mockGetDependentGuardian = vi.fn();
 vi.mock('@/lib/auth-guard', () => ({
   requireAdmin: (...args: unknown[]) => mockRequireAdmin(...args),
+  requireSuperAdmin: (...args: unknown[]) => mockRequireSuperAdmin(...args),
   requireUser: (...args: unknown[]) => mockRequireUser(...args),
   getDependentGuardian: (...args: unknown[]) => mockGetDependentGuardian(...args),
 }));
@@ -38,6 +40,15 @@ vi.mock('@/data/domains/auth', () => ({
   ],
 }));
 
+const mockNotifyUser = vi.fn();
+const mockGetInstructorUserId = vi.fn();
+const mockNotifyAdmins = vi.fn();
+vi.mock('@/lib/notifications', () => ({
+  notifyUser: (...args: unknown[]) => mockNotifyUser(...args),
+  getInstructorUserId: (...args: unknown[]) => mockGetInstructorUserId(...args),
+  notifyAdmins: (...args: unknown[]) => mockNotifyAdmins(...args),
+}));
+
 let mockSupabase: any;
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () => Promise.resolve(mockSupabase),
@@ -46,6 +57,23 @@ vi.mock('@/lib/supabase/server', () => ({
 import { updateUserRole } from '@/actions/admin-users';
 import { updateAdminPermissions } from '@/actions/admin-permissions';
 import { cancelDependentRequest } from '@/actions/dependent-requests';
+import {
+  markInstructorPayoutPaid,
+  markInstructorPayoutAsPaid,
+  markPublisherPayoutPaid,
+  markPublisherPayoutAsPaid,
+} from '@/actions/finance';
+import {
+  approveProfileUpdate,
+  approveProfileUpdateRequest,
+} from '@/actions/instructors';
+import {
+  setServiceOrderStatusByAdmin,
+  startServiceOrder,
+  deliverServiceOrder,
+  confirmServiceOrderReceipt,
+  confirmServiceOrderPayment,
+} from '@/actions/service-orders';
 
 describe('Zero-Row Mutation Hardening Tests', () => {
   beforeEach(() => {
@@ -309,6 +337,1254 @@ describe('Zero-Row Mutation Hardening Tests', () => {
       if (!result.ok) {
         expect(result.error).toBe('غير مصرح');
       }
+    });
+  });
+
+  describe('4. markInstructorPayoutPaid (src/actions/finance.ts)', () => {
+    it('returns success and records audit when earnings payout row is successfully updated', async () => {
+      mockRequireSuperAdmin.mockResolvedValue({
+        id: 'super-admin-1',
+        fullName: 'Super Admin',
+        role: 'super_admin',
+      });
+
+      const maybeSingleMock = vi.fn().mockResolvedValue({
+        data: { id: 'payout-1', instructor_id: 'inst-1', amount: 500, status: 'paid' },
+        error: null,
+      });
+      const selectMock = vi.fn().mockReturnValue({ maybeSingle: maybeSingleMock });
+      const eqMock = vi.fn().mockReturnValue({ select: selectMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: eqMock });
+      const fromMock = vi.fn().mockReturnValue({ update: updateMock });
+
+      mockSupabase = { from: fromMock };
+
+      const result = await markInstructorPayoutPaid('payout-1');
+
+      expect(result).toEqual({ success: true });
+      expect(fromMock).toHaveBeenCalledWith('instructor_payouts');
+      expect(updateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'paid' })
+      );
+      expect(eqMock).toHaveBeenCalledWith('id', 'payout-1');
+      expect(selectMock).toHaveBeenCalledWith('id, instructor_id, amount, status');
+      expect(mockLogAuditAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'instructor_payout_marked_paid',
+          entityId: 'payout-1',
+          metadata: { instructorId: 'inst-1', amount: 500 },
+        })
+      );
+      expect(mockRevalidatePath).toHaveBeenCalledWith('/dashboard/admin/finance/instructor-payouts');
+    });
+
+    it('fails and prevents audit log when 0 rows are affected (no matching payout record)', async () => {
+      mockRequireSuperAdmin.mockResolvedValue({
+        id: 'super-admin-1',
+        fullName: 'Super Admin',
+        role: 'super_admin',
+      });
+
+      // 0 rows affected -> maybeSingle returns null
+      const maybeSingleMock = vi.fn().mockResolvedValue({ data: null, error: null });
+      const selectMock = vi.fn().mockReturnValue({ maybeSingle: maybeSingleMock });
+      const eqMock = vi.fn().mockReturnValue({ select: selectMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: eqMock });
+      const fromMock = vi.fn().mockReturnValue({ update: updateMock });
+
+      mockSupabase = { from: fromMock };
+
+      await expect(markInstructorPayoutPaid('non-existent-payout')).rejects.toThrow(
+        'سجل الدفعة غير موجود أو تعذّر تحديثه'
+      );
+
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
+    });
+
+    it('enforces authorization rules (super admin required)', async () => {
+      mockRequireSuperAdmin.mockRejectedValue(new Error('غير مصرح لك بإدارة المدفوعات'));
+
+      await expect(markInstructorPayoutPaid('payout-1')).rejects.toThrow(
+        'غير مصرح لك بإدارة المدفوعات'
+      );
+
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+    });
+
+    it('enforces status/database error rules and does not record successful audit on database failure', async () => {
+      mockRequireSuperAdmin.mockResolvedValue({
+        id: 'super-admin-1',
+        fullName: 'Super Admin',
+        role: 'super_admin',
+      });
+
+      const maybeSingleMock = vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Database constraint violation' },
+      });
+      const selectMock = vi.fn().mockReturnValue({ maybeSingle: maybeSingleMock });
+      const eqMock = vi.fn().mockReturnValue({ select: selectMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: eqMock });
+      const fromMock = vi.fn().mockReturnValue({ update: updateMock });
+
+      mockSupabase = { from: fromMock };
+
+      await expect(markInstructorPayoutPaid('payout-1')).rejects.toThrow('تعذّر تسجيل الدفع');
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('5. markPublisherPayoutPaid (src/actions/finance.ts)', () => {
+    it('returns success and records audit when earnings payout row is successfully updated', async () => {
+      mockRequireSuperAdmin.mockResolvedValue({
+        id: 'super-admin-1',
+        fullName: 'Super Admin',
+        role: 'super_admin',
+      });
+
+      const maybeSingleMock = vi.fn().mockResolvedValue({
+        data: { id: 'pub-payout-1', publisher_id: 'pub-1', amount: 1200, status: 'paid' },
+        error: null,
+      });
+      const selectMock = vi.fn().mockReturnValue({ maybeSingle: maybeSingleMock });
+      const eqMock = vi.fn().mockReturnValue({ select: selectMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: eqMock });
+      const fromMock = vi.fn().mockReturnValue({ update: updateMock });
+
+      mockSupabase = { from: fromMock };
+
+      const result = await markPublisherPayoutPaid('pub-payout-1');
+
+      expect(result).toEqual({ success: true });
+      expect(fromMock).toHaveBeenCalledWith('publisher_payouts');
+      expect(updateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'paid' })
+      );
+      expect(eqMock).toHaveBeenCalledWith('id', 'pub-payout-1');
+      expect(selectMock).toHaveBeenCalledWith('id, publisher_id, amount, status');
+      expect(mockLogAuditAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'publisher_payout_marked_paid',
+          entityId: 'pub-payout-1',
+          metadata: { publisherId: 'pub-1', amount: 1200 },
+        })
+      );
+      expect(mockRevalidatePath).toHaveBeenCalledWith('/dashboard/admin/finance/publisher-payouts');
+    });
+
+    it('fails and prevents audit log when 0 rows are affected (no matching payout record)', async () => {
+      mockRequireSuperAdmin.mockResolvedValue({
+        id: 'super-admin-1',
+        fullName: 'Super Admin',
+        role: 'super_admin',
+      });
+
+      // 0 rows affected -> maybeSingle returns null
+      const maybeSingleMock = vi.fn().mockResolvedValue({ data: null, error: null });
+      const selectMock = vi.fn().mockReturnValue({ maybeSingle: maybeSingleMock });
+      const eqMock = vi.fn().mockReturnValue({ select: selectMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: eqMock });
+      const fromMock = vi.fn().mockReturnValue({ update: updateMock });
+
+      mockSupabase = { from: fromMock };
+
+      await expect(markPublisherPayoutPaid('non-existent-pub-payout')).rejects.toThrow(
+        'سجل الدفعة غير موجود أو تعذّر تحديثه'
+      );
+
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
+    });
+
+    it('enforces authorization rules (super admin required)', async () => {
+      mockRequireSuperAdmin.mockRejectedValue(new Error('غير مصرح لك بإدارة المدفوعات'));
+
+      await expect(markPublisherPayoutPaid('pub-payout-1')).rejects.toThrow(
+        'غير مصرح لك بإدارة المدفوعات'
+      );
+
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+    });
+
+    it('enforces status/database error rules and does not record successful audit on database failure', async () => {
+      mockRequireSuperAdmin.mockResolvedValue({
+        id: 'super-admin-1',
+        fullName: 'Super Admin',
+        role: 'super_admin',
+      });
+
+      const maybeSingleMock = vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Database constraint violation' },
+      });
+      const selectMock = vi.fn().mockReturnValue({ maybeSingle: maybeSingleMock });
+      const eqMock = vi.fn().mockReturnValue({ select: selectMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: eqMock });
+      const fromMock = vi.fn().mockReturnValue({ update: updateMock });
+
+      mockSupabase = { from: fromMock };
+
+      await expect(markPublisherPayoutPaid('pub-payout-1')).rejects.toThrow('تعذّر تسجيل الدفع');
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('6. approveProfileUpdate (src/actions/instructors.ts)', () => {
+    it('successfully updates instructor profile and then approves request', async () => {
+      mockRequireAdmin.mockResolvedValue({
+        id: 'admin-1',
+        fullName: 'Admin User',
+        role: 'admin',
+      });
+      mockGetInstructorUserId.mockResolvedValue('user-inst-1');
+
+      const instructorMaybeSingleMock = vi.fn().mockResolvedValue({
+        data: { id: 'inst-1' },
+        error: null,
+      });
+      const instructorSelectMock = vi.fn().mockReturnValue({ maybeSingle: instructorMaybeSingleMock });
+      const instructorEqMock = vi.fn().mockReturnValue({ select: instructorSelectMock });
+      const instructorUpdateMock = vi.fn().mockReturnValue({ eq: instructorEqMock });
+
+      const requestSelectSingleMock = vi.fn().mockResolvedValue({
+        data: {
+          id: 'req-1',
+          instructor_id: 'inst-1',
+          requested_changes: { bio: 'New bio', specialties: ['Writing'] },
+          status: 'pending',
+        },
+        error: null,
+      });
+      const requestSelectEqMock = vi.fn().mockReturnValue({ single: requestSelectSingleMock });
+      const requestSelectMock = vi.fn().mockReturnValue({ eq: requestSelectEqMock });
+
+      const requestUpdateMaybeSingleMock = vi.fn().mockResolvedValue({
+        data: { id: 'req-1' },
+        error: null,
+      });
+      const requestUpdateSelectMock = vi.fn().mockReturnValue({ maybeSingle: requestUpdateMaybeSingleMock });
+      const requestUpdateEqMock = vi.fn().mockReturnValue({ select: requestUpdateSelectMock });
+      const requestUpdateMock = vi.fn().mockReturnValue({ eq: requestUpdateEqMock });
+
+      const fromMock = vi.fn((table: string) => {
+        if (table === 'instructors') {
+          return { update: instructorUpdateMock };
+        }
+        if (table === 'profile_update_requests') {
+          return {
+            select: requestSelectMock,
+            update: requestUpdateMock,
+          };
+        }
+        return {};
+      });
+
+      mockSupabase = { from: fromMock };
+
+      const result = await approveProfileUpdate('req-1');
+
+      expect(result).toEqual({ success: true });
+      expect(instructorUpdateMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          bio: 'New bio',
+          specialties: ['Writing'],
+          updated_at: expect.any(String),
+        })
+      );
+      expect(instructorEqMock).toHaveBeenCalledWith('id', 'inst-1');
+      expect(requestUpdateMock).toHaveBeenCalledWith({ status: 'approved' });
+      expect(requestUpdateEqMock).toHaveBeenCalledWith('id', 'req-1');
+      expect(mockLogAuditAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'instructor_profile_update_approved',
+          entityId: 'req-1',
+          metadata: { instructorId: 'inst-1' },
+        })
+      );
+      expect(mockNotifyUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recipientProfileId: 'user-inst-1',
+          link: '/dashboard/instructor/profile',
+        })
+      );
+      expect(mockRevalidatePath).toHaveBeenCalledWith('/dashboard/admin/instructors/inst-1');
+    });
+
+    it('fails and does NOT approve request when instructor profile UPDATE affects zero rows', async () => {
+      mockRequireAdmin.mockResolvedValue({
+        id: 'admin-1',
+        fullName: 'Admin User',
+        role: 'admin',
+      });
+
+      // 0 rows affected on instructor profile update
+      const instructorMaybeSingleMock = vi.fn().mockResolvedValue({
+        data: null,
+        error: null,
+      });
+      const instructorSelectMock = vi.fn().mockReturnValue({ maybeSingle: instructorMaybeSingleMock });
+      const instructorEqMock = vi.fn().mockReturnValue({ select: instructorSelectMock });
+      const instructorUpdateMock = vi.fn().mockReturnValue({ eq: instructorEqMock });
+
+      const requestSelectSingleMock = vi.fn().mockResolvedValue({
+        data: {
+          id: 'req-1',
+          instructor_id: 'non-existent-inst',
+          requested_changes: { bio: 'New bio' },
+          status: 'pending',
+        },
+        error: null,
+      });
+      const requestSelectEqMock = vi.fn().mockReturnValue({ single: requestSelectSingleMock });
+      const requestSelectMock = vi.fn().mockReturnValue({ eq: requestSelectEqMock });
+
+      const requestUpdateMock = vi.fn();
+
+      const fromMock = vi.fn((table: string) => {
+        if (table === 'instructors') {
+          return { update: instructorUpdateMock };
+        }
+        if (table === 'profile_update_requests') {
+          return {
+            select: requestSelectMock,
+            update: requestUpdateMock,
+          };
+        }
+        return {};
+      });
+
+      mockSupabase = { from: fromMock };
+
+      await expect(approveProfileUpdate('req-1')).rejects.toThrow(
+        'التعديلات مروّحتش للقاعدة — ملف المدرب مش موجود أو الصلاحيات مش سامحة.'
+      );
+
+      // Invariant: Request must NEVER be marked as approved when instructor update affects 0 rows!
+      expect(requestUpdateMock).not.toHaveBeenCalled();
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
+    });
+
+    it('fails and does NOT approve request when instructor profile UPDATE encounters a database error', async () => {
+      mockRequireAdmin.mockResolvedValue({
+        id: 'admin-1',
+        fullName: 'Admin User',
+        role: 'admin',
+      });
+
+      const instructorMaybeSingleMock = vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Database failure' },
+      });
+      const instructorSelectMock = vi.fn().mockReturnValue({ maybeSingle: instructorMaybeSingleMock });
+      const instructorEqMock = vi.fn().mockReturnValue({ select: instructorSelectMock });
+      const instructorUpdateMock = vi.fn().mockReturnValue({ eq: instructorEqMock });
+
+      const requestSelectSingleMock = vi.fn().mockResolvedValue({
+        data: {
+          id: 'req-1',
+          instructor_id: 'inst-1',
+          requested_changes: { bio: 'New bio' },
+          status: 'pending',
+        },
+        error: null,
+      });
+      const requestSelectEqMock = vi.fn().mockReturnValue({ single: requestSelectSingleMock });
+      const requestSelectMock = vi.fn().mockReturnValue({ eq: requestSelectEqMock });
+
+      const requestUpdateMock = vi.fn();
+
+      const fromMock = vi.fn((table: string) => {
+        if (table === 'instructors') {
+          return { update: instructorUpdateMock };
+        }
+        if (table === 'profile_update_requests') {
+          return {
+            select: requestSelectMock,
+            update: requestUpdateMock,
+          };
+        }
+        return {};
+      });
+
+      mockSupabase = { from: fromMock };
+
+      await expect(approveProfileUpdate('req-1')).rejects.toThrow('تعذّر تطبيق التعديلات');
+
+      // Invariant: Request must NEVER be marked as approved on DB error
+      expect(requestUpdateMock).not.toHaveBeenCalled();
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+    });
+
+    it('enforces authorization rules (canManageInstructors required)', async () => {
+      mockRequireAdmin.mockRejectedValue(new Error('غير مصرح لك بإدارة المدربين'));
+
+      await expect(approveProfileUpdate('req-1')).rejects.toThrow('غير مصرح لك بإدارة المدربين');
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+    });
+
+    it('enforces business validation: rejects when request is not found', async () => {
+      mockRequireAdmin.mockResolvedValue({
+        id: 'admin-1',
+        fullName: 'Admin User',
+        role: 'admin',
+      });
+
+      const requestSelectSingleMock = vi.fn().mockResolvedValue({
+        data: null,
+        error: null,
+      });
+      const requestSelectEqMock = vi.fn().mockReturnValue({ single: requestSelectSingleMock });
+      const requestSelectMock = vi.fn().mockReturnValue({ eq: requestSelectEqMock });
+
+      const fromMock = vi.fn((table: string) => {
+        if (table === 'profile_update_requests') {
+          return { select: requestSelectMock };
+        }
+        return {};
+      });
+
+      mockSupabase = { from: fromMock };
+
+      await expect(approveProfileUpdate('missing-req')).rejects.toThrow('الطلب غير موجود');
+    });
+
+    it('enforces business validation: rejects when request status is not pending', async () => {
+      mockRequireAdmin.mockResolvedValue({
+        id: 'admin-1',
+        fullName: 'Admin User',
+        role: 'admin',
+      });
+
+      const requestSelectSingleMock = vi.fn().mockResolvedValue({
+        data: {
+          id: 'req-1',
+          instructor_id: 'inst-1',
+          requested_changes: {},
+          status: 'approved',
+        },
+        error: null,
+      });
+      const requestSelectEqMock = vi.fn().mockReturnValue({ single: requestSelectSingleMock });
+      const requestSelectMock = vi.fn().mockReturnValue({ eq: requestSelectEqMock });
+
+      const fromMock = vi.fn((table: string) => {
+        if (table === 'profile_update_requests') {
+          return { select: requestSelectMock };
+        }
+        return {};
+      });
+
+      mockSupabase = { from: fromMock };
+
+      await expect(approveProfileUpdate('req-1')).rejects.toThrow('تم البتّ في هذا الطلب من قبل');
+    });
+  });
+
+  describe('7. setServiceOrderStatusByAdmin (src/actions/service-orders.ts)', () => {
+    it('enforces authorization: requires admin with canManageOrders permission', async () => {
+      mockRequireAdmin.mockRejectedValue(new Error('غير مصرح لك بإدارة الطلبات'));
+
+      await expect(
+        setServiceOrderStatusByAdmin('order-1', 'cancelled', 'سبب الإلغاء')
+      ).rejects.toThrow('غير مصرح لك بإدارة الطلبات');
+
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
+    });
+
+    it('validates reason: rejects empty reason before checking order', async () => {
+      mockRequireAdmin.mockResolvedValue({
+        id: 'admin-1',
+        fullName: 'Admin User',
+        role: 'admin',
+      });
+
+      await expect(
+        setServiceOrderStatusByAdmin('order-1', 'cancelled', '   ')
+      ).rejects.toThrow('اكتب السبب');
+
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+    });
+
+    it('validates existence: rejects non-existent order', async () => {
+      mockRequireAdmin.mockResolvedValue({
+        id: 'admin-1',
+        fullName: 'Admin User',
+        role: 'admin',
+      });
+
+      const orderMaybeSingleMock = vi.fn().mockResolvedValue({
+        data: null,
+        error: null,
+      });
+      const orderEqMock = vi.fn().mockReturnValue({ maybeSingle: orderMaybeSingleMock });
+      const orderSelectMock = vi.fn().mockReturnValue({ eq: orderEqMock });
+
+      mockSupabase = {
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') return { select: orderSelectMock };
+          return {};
+        }),
+      };
+
+      await expect(
+        setServiceOrderStatusByAdmin('non-existent', 'cancelled', 'سبب الإلغاء')
+      ).rejects.toThrow('الطلب غير موجود');
+
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
+    });
+
+    it('prevents invalid transition: completed order cannot be cancelled or refunded', async () => {
+      mockRequireAdmin.mockResolvedValue({
+        id: 'admin-1',
+        fullName: 'Admin User',
+        role: 'admin',
+      });
+
+      const orderMaybeSingleMock = vi.fn().mockResolvedValue({
+        data: { id: 'order-1', status: 'completed', buyer_profile_id: 'buyer-1' },
+        error: null,
+      });
+      const orderEqMock = vi.fn().mockReturnValue({ maybeSingle: orderMaybeSingleMock });
+      const orderSelectMock = vi.fn().mockReturnValue({ eq: orderEqMock });
+
+      const updateMock = vi.fn();
+
+      mockSupabase = {
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: orderSelectMock,
+              update: updateMock,
+            };
+          }
+          return {};
+        }),
+      };
+
+      await expect(
+        setServiceOrderStatusByAdmin('order-1', 'cancelled', 'إلغاء طلب')
+      ).rejects.toThrow('لا يمكن إلغاء أو استرجاع طلب مكتمل');
+
+      await expect(
+        setServiceOrderStatusByAdmin('order-1', 'refunded', 'استرجاع طلب')
+      ).rejects.toThrow('لا يمكن إلغاء أو استرجاع طلب مكتمل');
+
+      expect(updateMock).not.toHaveBeenCalled();
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
+    });
+
+    it('prevents invalid transition: already cancelled order cannot be cancelled again', async () => {
+      mockRequireAdmin.mockResolvedValue({
+        id: 'admin-1',
+        fullName: 'Admin User',
+        role: 'admin',
+      });
+
+      const orderMaybeSingleMock = vi.fn().mockResolvedValue({
+        data: { id: 'order-1', status: 'cancelled', buyer_profile_id: 'buyer-1' },
+        error: null,
+      });
+      const orderEqMock = vi.fn().mockReturnValue({ maybeSingle: orderMaybeSingleMock });
+      const orderSelectMock = vi.fn().mockReturnValue({ eq: orderEqMock });
+
+      const updateMock = vi.fn();
+
+      mockSupabase = {
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: orderSelectMock,
+              update: updateMock,
+            };
+          }
+          return {};
+        }),
+      };
+
+      await expect(
+        setServiceOrderStatusByAdmin('order-1', 'cancelled', 'إلغاء مكرر')
+      ).rejects.toThrow('الطلب ملغي بالفعل');
+
+      expect(updateMock).not.toHaveBeenCalled();
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
+    });
+
+    it('prevents invalid transition: already refunded order cannot be refunded or cancelled', async () => {
+      mockRequireAdmin.mockResolvedValue({
+        id: 'admin-1',
+        fullName: 'Admin User',
+        role: 'admin',
+      });
+
+      const orderMaybeSingleMock = vi.fn().mockResolvedValue({
+        data: { id: 'order-1', status: 'refunded', buyer_profile_id: 'buyer-1' },
+        error: null,
+      });
+      const orderEqMock = vi.fn().mockReturnValue({ maybeSingle: orderMaybeSingleMock });
+      const orderSelectMock = vi.fn().mockReturnValue({ eq: orderEqMock });
+
+      const updateMock = vi.fn();
+
+      mockSupabase = {
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: orderSelectMock,
+              update: updateMock,
+            };
+          }
+          return {};
+        }),
+      };
+
+      await expect(
+        setServiceOrderStatusByAdmin('order-1', 'refunded', 'استرجاع مكرر')
+      ).rejects.toThrow('تم استرجاع هذا الطلب بالفعل');
+
+      await expect(
+        setServiceOrderStatusByAdmin('order-1', 'cancelled', 'إلغاء بعد استرجاع')
+      ).rejects.toThrow('تم استرجاع هذا الطلب بالفعل');
+
+      expect(updateMock).not.toHaveBeenCalled();
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
+    });
+
+    it('succeeds on valid cancellation transition from in_progress and executes status-guarded update', async () => {
+      mockRequireAdmin.mockResolvedValue({
+        id: 'admin-1',
+        fullName: 'Admin User',
+        role: 'admin',
+      });
+
+      const orderMaybeSingleMock = vi.fn().mockResolvedValue({
+        data: { id: 'order-1', status: 'in_progress', buyer_profile_id: 'buyer-1' },
+        error: null,
+      });
+      const orderEqMock = vi.fn().mockReturnValue({ maybeSingle: orderMaybeSingleMock });
+      const orderSelectMock = vi.fn().mockReturnValue({ eq: orderEqMock });
+
+      const updateSelectMock = vi.fn().mockResolvedValue({
+        data: [{ id: 'order-1' }],
+        error: null,
+      });
+      const updateStatusEqMock = vi.fn().mockReturnValue({ select: updateSelectMock });
+      const updateIdEqMock = vi.fn().mockReturnValue({ eq: updateStatusEqMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: updateIdEqMock });
+
+      mockSupabase = {
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: orderSelectMock,
+              update: updateMock,
+            };
+          }
+          return {};
+        }),
+      };
+
+      const result = await setServiceOrderStatusByAdmin('order-1', 'cancelled', 'العميل تراجع');
+
+      expect(result).toEqual({ ok: true });
+      expect(updateMock).toHaveBeenCalledWith({ status: 'cancelled' });
+      expect(updateIdEqMock).toHaveBeenCalledWith('id', 'order-1');
+      expect(updateStatusEqMock).toHaveBeenCalledWith('status', 'in_progress');
+      expect(mockNotifyUser).toHaveBeenCalledWith({
+        event: 'order_status',
+        recipientProfileId: 'buyer-1',
+        title: 'تم إلغاء طلبك',
+        message: 'العميل تراجع',
+        link: '/account/orders/creative-writing/order-1',
+      });
+      expect(mockLogAuditAction).toHaveBeenCalledWith({
+        actorProfileId: 'admin-1',
+        actorName: 'Admin User',
+        action: 'service_order_cancelled',
+        entityType: 'ServiceOrder',
+        entityId: 'order-1',
+        metadata: { reason: 'العميل تراجع' },
+      });
+      expect(mockRevalidatePath).toHaveBeenCalled();
+    });
+
+    it('succeeds on valid refund transition from paid and notifies buyer with refund title', async () => {
+      mockRequireAdmin.mockResolvedValue({
+        id: 'admin-1',
+        fullName: 'Admin User',
+        role: 'admin',
+      });
+
+      const orderMaybeSingleMock = vi.fn().mockResolvedValue({
+        data: { id: 'order-2', status: 'paid', buyer_profile_id: 'buyer-2' },
+        error: null,
+      });
+      const orderEqMock = vi.fn().mockReturnValue({ maybeSingle: orderMaybeSingleMock });
+      const orderSelectMock = vi.fn().mockReturnValue({ eq: orderEqMock });
+
+      const updateSelectMock = vi.fn().mockResolvedValue({
+        data: [{ id: 'order-2' }],
+        error: null,
+      });
+      const updateStatusEqMock = vi.fn().mockReturnValue({ select: updateSelectMock });
+      const updateIdEqMock = vi.fn().mockReturnValue({ eq: updateStatusEqMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: updateIdEqMock });
+
+      mockSupabase = {
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: orderSelectMock,
+              update: updateMock,
+            };
+          }
+          return {};
+        }),
+      };
+
+      const result = await setServiceOrderStatusByAdmin('order-2', 'refunded', 'استرجاع المبلغ');
+
+      expect(result).toEqual({ ok: true });
+      expect(updateMock).toHaveBeenCalledWith({ status: 'refunded' });
+      expect(updateIdEqMock).toHaveBeenCalledWith('id', 'order-2');
+      expect(updateStatusEqMock).toHaveBeenCalledWith('status', 'paid');
+      expect(mockNotifyUser).toHaveBeenCalledWith({
+        event: 'order_status',
+        recipientProfileId: 'buyer-2',
+        title: 'تم استرجاع طلبك',
+        message: 'استرجاع المبلغ',
+        link: '/account/orders/creative-writing/order-2',
+      });
+      expect(mockLogAuditAction).toHaveBeenCalledWith({
+        actorProfileId: 'admin-1',
+        actorName: 'Admin User',
+        action: 'service_order_refunded',
+        entityType: 'ServiceOrder',
+        entityId: 'order-2',
+        metadata: { reason: 'استرجاع المبلغ' },
+      });
+    });
+
+    it('fails when update affects zero rows (concurrent status change) and prevents side effects', async () => {
+      mockRequireAdmin.mockResolvedValue({
+        id: 'admin-1',
+        fullName: 'Admin User',
+        role: 'admin',
+      });
+
+      const orderMaybeSingleMock = vi.fn().mockResolvedValue({
+        data: { id: 'order-1', status: 'paid', buyer_profile_id: 'buyer-1' },
+        error: null,
+      });
+      const orderEqMock = vi.fn().mockReturnValue({ maybeSingle: orderMaybeSingleMock });
+      const orderSelectMock = vi.fn().mockReturnValue({ eq: orderEqMock });
+
+      // Zero rows affected due to concurrent status change or deletion
+      const updateSelectMock = vi.fn().mockResolvedValue({
+        data: [],
+        error: null,
+      });
+      const updateStatusEqMock = vi.fn().mockReturnValue({ select: updateSelectMock });
+      const updateIdEqMock = vi.fn().mockReturnValue({ eq: updateStatusEqMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: updateIdEqMock });
+
+      mockSupabase = {
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: orderSelectMock,
+              update: updateMock,
+            };
+          }
+          return {};
+        }),
+      };
+
+      await expect(
+        setServiceOrderStatusByAdmin('order-1', 'cancelled', 'إلغاء متزامن')
+      ).rejects.toThrow('الطلب مش موجود أو تغيّرت حالته — التغيير مروّحش للقاعدة.');
+
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
+    });
+
+    it('fails when database returns an error on update and prevents side effects', async () => {
+      mockRequireAdmin.mockResolvedValue({
+        id: 'admin-1',
+        fullName: 'Admin User',
+        role: 'admin',
+      });
+
+      const orderMaybeSingleMock = vi.fn().mockResolvedValue({
+        data: { id: 'order-1', status: 'paid', buyer_profile_id: 'buyer-1' },
+        error: null,
+      });
+      const orderEqMock = vi.fn().mockReturnValue({ maybeSingle: orderMaybeSingleMock });
+      const orderSelectMock = vi.fn().mockReturnValue({ eq: orderEqMock });
+
+      const updateSelectMock = vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Database connection error' },
+      });
+      const updateStatusEqMock = vi.fn().mockReturnValue({ select: updateSelectMock });
+      const updateIdEqMock = vi.fn().mockReturnValue({ eq: updateStatusEqMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: updateIdEqMock });
+
+      mockSupabase = {
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: orderSelectMock,
+              update: updateMock,
+            };
+          }
+          return {};
+        }),
+      };
+
+      await expect(
+        setServiceOrderStatusByAdmin('order-1', 'cancelled', 'فشل قاعدة البيانات')
+      ).rejects.toThrow('تعذّر تحديث حالة الطلب');
+
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('8. startServiceOrder (src/actions/service-orders.ts)', () => {
+    it('enforces authentication and assigned instructor authorization', async () => {
+      mockSupabase = {
+        auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null } }) },
+      };
+      await expect(startServiceOrder('order-1')).rejects.toThrow('يجب تسجيل الدخول أولاً');
+
+      mockSupabase = {
+        auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'other-user' } } }) },
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: { id: 'order-1', instructor_id: 'inst-1', status: 'paid', buyer_profile_id: 'buyer-1' },
+                  }),
+                }),
+              }),
+            };
+          }
+          if (table === 'instructors') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  eq: vi.fn().mockReturnValue({
+                    maybeSingle: vi.fn().mockResolvedValue({ data: null }),
+                  }),
+                }),
+              }),
+            };
+          }
+          return {};
+        }),
+      };
+
+      await expect(startServiceOrder('order-1')).rejects.toThrow('هذا الطلب ليس مسنَدًا إليك');
+    });
+
+    it('requires order to be in paid status', async () => {
+      mockSupabase = {
+        auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'instructor-user' } } }) },
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: { id: 'order-1', instructor_id: 'inst-1', status: 'pending', buyer_profile_id: 'buyer-1' },
+                  }),
+                }),
+              }),
+            };
+          }
+          if (table === 'instructors') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  eq: vi.fn().mockReturnValue({
+                    maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'inst-1' } }),
+                  }),
+                }),
+              }),
+            };
+          }
+          return {};
+        }),
+      };
+
+      await expect(startServiceOrder('order-1')).rejects.toThrow('لا يمكن بدء التنفيذ قبل تأكيد الدفع');
+    });
+
+    it('succeeds on valid status transition with status guard in update', async () => {
+      const updateSelectMock = vi.fn().mockResolvedValue({ data: [{ id: 'order-1' }], error: null });
+      const updateStatusEqMock = vi.fn().mockReturnValue({ select: updateSelectMock });
+      const updateIdEqMock = vi.fn().mockReturnValue({ eq: updateStatusEqMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: updateIdEqMock });
+
+      mockSupabase = {
+        auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'instructor-user' } } }) },
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: { id: 'order-1', instructor_id: 'inst-1', status: 'paid', buyer_profile_id: 'buyer-1' },
+                  }),
+                }),
+              }),
+              update: updateMock,
+            };
+          }
+          if (table === 'instructors') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  eq: vi.fn().mockReturnValue({
+                    maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'inst-1' } }),
+                  }),
+                }),
+              }),
+            };
+          }
+          return {};
+        }),
+      };
+
+      const result = await startServiceOrder('order-1');
+      expect(result).toEqual({ ok: true });
+      expect(updateMock).toHaveBeenCalledWith({ status: 'in_progress' });
+      expect(updateIdEqMock).toHaveBeenCalledWith('id', 'order-1');
+      expect(updateStatusEqMock).toHaveBeenCalledWith('status', 'paid');
+      expect(mockNotifyUser).toHaveBeenCalledWith({
+        event: 'order_status',
+        recipientProfileId: 'buyer-1',
+        title: 'بدأ تنفيذ طلبك',
+        message: 'المدرب بدأ العمل على طلبك.',
+        link: '/account/orders/creative-writing/order-1',
+      });
+      expect(mockRevalidatePath).toHaveBeenCalled();
+    });
+
+    it('fails when update affects zero rows (concurrent state change)', async () => {
+      const updateSelectMock = vi.fn().mockResolvedValue({ data: [], error: null });
+      const updateStatusEqMock = vi.fn().mockReturnValue({ select: updateSelectMock });
+      const updateIdEqMock = vi.fn().mockReturnValue({ eq: updateStatusEqMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: updateIdEqMock });
+
+      mockSupabase = {
+        auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'instructor-user' } } }) },
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: { id: 'order-1', instructor_id: 'inst-1', status: 'paid', buyer_profile_id: 'buyer-1' },
+                  }),
+                }),
+              }),
+              update: updateMock,
+            };
+          }
+          if (table === 'instructors') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  eq: vi.fn().mockReturnValue({
+                    maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'inst-1' } }),
+                  }),
+                }),
+              }),
+            };
+          }
+          return {};
+        }),
+      };
+
+      await expect(startServiceOrder('order-1')).rejects.toThrow('الطلب مش موجود أو تغيّرت حالته — التغيير مروّحش للقاعدة.');
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('9. deliverServiceOrder (src/actions/service-orders.ts)', () => {
+    it('aborts without inserting delivery message if update affects zero rows', async () => {
+      const insertMessageMock = vi.fn();
+      const updateSelectMock = vi.fn().mockResolvedValue({ data: [], error: null });
+      const updateInMock = vi.fn().mockReturnValue({ select: updateSelectMock });
+      const updateIdEqMock = vi.fn().mockReturnValue({ in: updateInMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: updateIdEqMock });
+
+      mockSupabase = {
+        auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'instructor-user' } } }) },
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: { id: 'order-1', instructor_id: 'inst-1', status: 'in_progress', buyer_profile_id: 'buyer-1' },
+                  }),
+                }),
+              }),
+              update: updateMock,
+            };
+          }
+          if (table === 'instructors') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  eq: vi.fn().mockReturnValue({
+                    maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'inst-1' } }),
+                  }),
+                }),
+              }),
+            };
+          }
+          if (table === 'service_order_messages') {
+            return { insert: insertMessageMock };
+          }
+          return {};
+        }),
+      };
+
+      await expect(
+        deliverServiceOrder('order-1', 'هذا هو نص التسليم النهائي للمشروع المطلوب')
+      ).rejects.toThrow('الطلب مش موجود أو تغيّرت حالته — التسليم مااتسجّلش.');
+
+      // Atomic safety: message must NOT be inserted if status update failed
+      expect(insertMessageMock).not.toHaveBeenCalled();
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+    });
+
+    it('succeeds: updates status first, then inserts delivery message and notifies buyer', async () => {
+      const insertMessageMock = vi.fn().mockResolvedValue({ error: null });
+      const updateSelectMock = vi.fn().mockResolvedValue({ data: [{ id: 'order-1' }], error: null });
+      const updateInMock = vi.fn().mockReturnValue({ select: updateSelectMock });
+      const updateIdEqMock = vi.fn().mockReturnValue({ in: updateInMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: updateIdEqMock });
+
+      mockSupabase = {
+        auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'instructor-user' } } }) },
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: { id: 'order-1', instructor_id: 'inst-1', status: 'in_progress', buyer_profile_id: 'buyer-1' },
+                  }),
+                }),
+              }),
+              update: updateMock,
+            };
+          }
+          if (table === 'instructors') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  eq: vi.fn().mockReturnValue({
+                    maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'inst-1' } }),
+                  }),
+                }),
+              }),
+            };
+          }
+          if (table === 'service_order_messages') {
+            return { insert: insertMessageMock };
+          }
+          return {};
+        }),
+      };
+
+      const result = await deliverServiceOrder('order-1', 'هذا هو نص التسليم النهائي للمشروع المطلوب');
+      expect(result).toEqual({ ok: true });
+      expect(updateMock).toHaveBeenCalled();
+      expect(updateIdEqMock).toHaveBeenCalledWith('id', 'order-1');
+      expect(updateInMock).toHaveBeenCalledWith('status', ['in_progress', 'paid']);
+      expect(insertMessageMock).toHaveBeenCalledWith({
+        order_id: 'order-1',
+        sender_profile_id: 'instructor-user',
+        body: 'هذا هو نص التسليم النهائي للمشروع المطلوب',
+        is_delivery: true,
+      });
+      expect(mockNotifyUser).toHaveBeenCalledWith({
+        event: 'order_status',
+        recipientProfileId: 'buyer-1',
+        title: 'تم تسليم طلبك',
+        message: 'راجع ما سلّمه المدرب وأكّد الاستلام.',
+        link: '/account/orders/creative-writing/order-1',
+      });
+    });
+  });
+
+  describe('10. confirmServiceOrderReceipt & completeOrder (src/actions/service-orders.ts)', () => {
+    it('enforces buyer ownership and delivered status', async () => {
+      mockSupabase = {
+        auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'wrong-user' } } }) },
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: { id: 'order-1', buyer_profile_id: 'real-buyer', status: 'delivered' },
+                  }),
+                }),
+              }),
+            };
+          }
+          return {};
+        }),
+      };
+
+      await expect(confirmServiceOrderReceipt('order-1')).rejects.toThrow('هذا الطلب ليس طلبك');
+    });
+
+    it('rejects completion if order is not in delivered status', async () => {
+      mockSupabase = {
+        auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'buyer-1' } } }) },
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: { id: 'order-1', buyer_profile_id: 'buyer-1', status: 'in_progress' },
+                  }),
+                }),
+              }),
+            };
+          }
+          return {};
+        }),
+      };
+
+      await expect(confirmServiceOrderReceipt('order-1')).rejects.toThrow('لم يُسلَّم هذا الطلب بعد');
+    });
+
+    it('fails when update affects zero rows (concurrent state change)', async () => {
+      const updateSelectMock = vi.fn().mockResolvedValue({ data: [], error: null });
+      const updateStatusEqMock = vi.fn().mockReturnValue({ select: updateSelectMock });
+      const updateIdEqMock = vi.fn().mockReturnValue({ eq: updateStatusEqMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: updateIdEqMock });
+
+      mockSupabase = {
+        auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'buyer-1' } } }) },
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: { id: 'order-1', buyer_profile_id: 'buyer-1', status: 'delivered', amount: 500, instructor_id: 'inst-1' },
+                  }),
+                }),
+              }),
+              update: updateMock,
+            };
+          }
+          return {};
+        }),
+      };
+
+      await expect(confirmServiceOrderReceipt('order-1')).rejects.toThrow(
+        'الطلب مش موجود أو تغيّرت حالته — الإقفال مروّحش للقاعدة.'
+      );
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+    });
+
+    it('throws and prevents false success if recording instructor earning fails in database', async () => {
+      const updateSelectMock = vi.fn().mockResolvedValue({ data: [{ id: 'order-1' }], error: null });
+      const updateStatusEqMock = vi.fn().mockReturnValue({ select: updateSelectMock });
+      const updateIdEqMock = vi.fn().mockReturnValue({ eq: updateStatusEqMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: updateIdEqMock });
+
+      mockSupabase = {
+        auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'buyer-1' } } }) },
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: { id: 'order-1', buyer_profile_id: 'buyer-1', status: 'delivered', amount: 500, instructor_id: 'inst-1' },
+                  }),
+                }),
+              }),
+              update: updateMock,
+            };
+          }
+          if (table === 'instructor_payouts') {
+            return {
+              insert: vi.fn().mockResolvedValue({
+                error: { message: 'RLS check violation on instructor_payouts' },
+              }),
+            };
+          }
+          return {};
+        }),
+      };
+
+      await expect(confirmServiceOrderReceipt('order-1')).rejects.toThrow(
+        'تعذّر تسجيل مستحقات المدرب لهذا الطلب'
+      );
+      // Instructor must NOT be notified of false successful earnings addition
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('11. confirmServiceOrderPayment (src/actions/service-orders.ts)', () => {
+    it('enforces admin authorization and prevents confirming already paid/closed order', async () => {
+      mockRequireAdmin.mockResolvedValue({ id: 'admin-1', fullName: 'Admin' });
+
+      // Zero rows affected because status is already 'paid' or 'completed'
+      const updateSelectMock = vi.fn().mockResolvedValue({ data: [], error: null });
+      const updateInMock = vi.fn().mockReturnValue({ select: updateSelectMock });
+      const updateIdEqMock = vi.fn().mockReturnValue({ in: updateInMock });
+      const updateMock = vi.fn().mockReturnValue({ eq: updateIdEqMock });
+
+      mockSupabase = {
+        from: vi.fn((table: string) => {
+          if (table === 'service_orders') {
+            return { update: updateMock };
+          }
+          return {};
+        }),
+      };
+
+      await expect(confirmServiceOrderPayment('order-1')).rejects.toThrow(
+        'الطلب مش موجود أو تم تأكيد دفعه مسبقاً — التغيير مروّحش للقاعدة.'
+      );
+
+      expect(updateInMock).toHaveBeenCalledWith('status', ['pending', 'awaiting_verification']);
+      expect(mockNotifyUser).not.toHaveBeenCalled();
+      expect(mockLogAuditAction).not.toHaveBeenCalled();
     });
   });
 });

@@ -31,11 +31,15 @@ export async function markInstructorPayoutAsPaid(payoutId: string) {
     .update({ status: 'paid', updated_at: new Date().toISOString() })
     .eq('id', payoutId)
     .select('id, instructor_id, amount, status')
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
+  if (error) {
     console.error('Error marking instructor payout as paid', error);
     throw new Error('تعذّر تسجيل الدفع');
+  }
+
+  if (!data) {
+    throw new Error('سجل الدفعة غير موجود أو تعذّر تحديثه');
   }
 
   await logAuditAction({
@@ -53,6 +57,8 @@ export async function markInstructorPayoutAsPaid(payoutId: string) {
   return { success: true };
 }
 
+export const markInstructorPayoutPaid = markInstructorPayoutAsPaid;
+
 export async function markPublisherPayoutAsPaid(payoutId: string) {
   const user = await requireSuperAdmin();
   const supabase = await createClient();
@@ -62,11 +68,15 @@ export async function markPublisherPayoutAsPaid(payoutId: string) {
     .update({ status: 'paid', updated_at: new Date().toISOString() })
     .eq('id', payoutId)
     .select('id, publisher_id, amount, status')
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
+  if (error) {
     console.error('Error marking publisher payout as paid', error);
     throw new Error('تعذّر تسجيل الدفع');
+  }
+
+  if (!data) {
+    throw new Error('سجل الدفعة غير موجود أو تعذّر تحديثه');
   }
 
   await logAuditAction({
@@ -82,6 +92,8 @@ export async function markPublisherPayoutAsPaid(payoutId: string) {
   revalidatePath(`/dashboard/admin/finance/publisher-payouts/${payoutId}`);
   return { success: true };
 }
+
+export const markPublisherPayoutPaid = markPublisherPayoutAsPaid;
 
 /**
  * An instructor asking to withdraw what they have earned.
