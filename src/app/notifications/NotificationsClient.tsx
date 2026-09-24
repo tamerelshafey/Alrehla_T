@@ -7,18 +7,22 @@ import { Bell, CheckCheck, ArrowLeft } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import type { NotificationItem } from '@/types';
 import { markNotificationRead, markAllNotificationsRead } from '@/actions/notifications';
+import { useAction } from '@/lib/use-action';
+import { FormError } from '@/components/ui/FormError';
 
 export function NotificationsClient({ items }: { items: NotificationItem[] }) {
   const router = useRouter();
-  const [busy, setBusy] = useState(false);
   const unread = items.filter((i) => !i.isRead).length;
 
-  const markAll = async () => {
-    setBusy(true);
-    await markAllNotificationsRead();
-    router.refresh();
-    setBusy(false);
-  };
+  /**
+   * ⚠️ كان `setBusy(true)` وبعده `await` عارية. الأكشن بيرمي لما
+   *    المستخدم مايكونش مسجّلًا أو الصلاحيات ترفض — والرمي بيوقف
+   *    `setBusy(false)`، فالزر بيتقفل **للأبد** والإشعارات زي ما هي.
+   */
+  const markAll = useAction(markAllNotificationsRead, {
+    onSuccess: () => router.refresh(),
+    fallbackError: 'تعذّر تعليم الإشعارات كمقروءة.',
+  });
 
   if (items.length === 0) {
     return (
@@ -31,12 +35,15 @@ export function NotificationsClient({ items }: { items: NotificationItem[] }) {
 
   return (
     <div className="space-y-4">
+      <FormError message={markAll.error} />
+
       {unread > 0 && (
         <div className="flex justify-end">
           <button
             type="button"
-            disabled={busy}
-            onClick={markAll}
+            disabled={markAll.pending}
+            aria-busy={markAll.pending || undefined}
+            onClick={() => markAll.run()}
             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
           >
             <CheckCheck className="h-4 w-4" /> تعليم الكل كمقروء

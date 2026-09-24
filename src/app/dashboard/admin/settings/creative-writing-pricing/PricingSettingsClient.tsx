@@ -5,23 +5,38 @@ import { PricingFormulaSettings } from '@/types';
 import { Save, Info } from 'lucide-react';
 import { updatePricingFormulaSettings } from '@/actions/instructors';
 import { calculateFinalSessionPrice } from '@/lib/utils';
+import { useAction } from '@/lib/use-action';
+import { FormError } from '@/components/ui/FormError';
 
 export function PricingSettingsClient({ settings }: { settings: PricingFormulaSettings }) {
   const [multiplier, setMultiplier] = useState(settings.platformMultiplier);
   const [fixedFee, setFixedFee] = useState(settings.fixedAdminFee);
   const [isSaved, setIsSaved] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
 
   // Example base prices for live preview
   const examples = [100, 150, 200, 300];
 
+  /**
+   * ⚠️ دي شاشة **بتحدد سعر كل جلسة على الموقع**، وكانت أخطر واحدة في
+   *    الفئة دي: `await` عارية بلا `try`. والأكشن بيرمي لو الصلاحية
+   *    ناقصة — فـ`setIsSaving(false)` مبتتنفّذش والزر بيتقفل على
+   *    «جاري الحفظ...» للأبد، والإعدادات زي ما هي.
+   *
+   *    وأسوأ احتمال: الحفظ يقع والإداري يفتكره تم، فيبني تسعيره على
+   *    أرقام مش موجودة في القاعدة.
+   */
+  const save = useAction(updatePricingFormulaSettings, {
+    onSuccess: () => {
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 3000);
+    },
+    fallbackError: 'تعذّر حفظ إعدادات التسعير.',
+  });
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSaving(true);
-    await updatePricingFormulaSettings(multiplier, fixedFee);
-    setIsSaving(false);
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 3000);
+    setIsSaved(false);
+    await save.run(multiplier, fixedFee);
   };
 
   return (
@@ -60,6 +75,8 @@ export function PricingSettingsClient({ settings }: { settings: PricingFormulaSe
           </div>
         </div>
 
+        <FormError message={save.error} />
+
         <div className="flex justify-end gap-4 pt-4 border-t border-slate-100">
           {isSaved && (
             <div className="flex items-center gap-2 text-emerald-600 font-bold">
@@ -68,11 +85,12 @@ export function PricingSettingsClient({ settings }: { settings: PricingFormulaSe
           )}
           <button
             type="submit"
-            disabled={isSaving}
+            disabled={save.pending}
+            aria-busy={save.pending || undefined}
             className="flex items-center gap-2 rounded-xl bg-slate-900 px-8 py-3 font-bold text-white transition-colors hover:bg-slate-800 disabled:opacity-50"
           >
             <Save className="h-5 w-5" />
-            {isSaving ? 'جاري الحفظ...' : 'حفظ الإعدادات'}
+            {save.pending ? 'جاري الحفظ...' : 'حفظ الإعدادات'}
           </button>
         </div>
       </form>

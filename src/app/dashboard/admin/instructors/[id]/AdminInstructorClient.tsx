@@ -5,6 +5,9 @@ import { Instructor, ProfileUpdateRequest, InstructorCertification } from '@/typ
 import { CheckCircle2, AlertCircle, XCircle, Calendar, MessageSquare, Save } from 'lucide-react';
 import { approveProfileUpdateRequest, rejectProfileUpdateRequest, updateInstructorCertification } from '@/actions/instructors';
 import { PLATFORM_TIMEZONE } from '@/lib/timezone';
+import { useRouter } from 'next/navigation';
+import { useAction } from '@/lib/use-action';
+import { FormError } from '@/components/ui/FormError';
 
 interface AdminInstructorClientProps {
   instructor: Instructor;
@@ -13,32 +16,69 @@ interface AdminInstructorClientProps {
 }
 
 export function AdminInstructorClient({ instructor, updateRequests, certification }: AdminInstructorClientProps) {
+  const router = useRouter();
   const [trainingPassed, setTrainingPassed] = useState(certification?.examPassed || false);
   const [adminFeedback, setAdminFeedback] = useState('');
 
   const pendingRequests = updateRequests.filter(r => r.status === 'pending');
   const pastRequests = updateRequests.filter(r => r.status !== 'pending');
 
-  const handleApprove = async (reqId: string) => {
-    await approveProfileUpdateRequest(reqId);
-  };
+  /**
+   * ⚠️ التلات أزرار دي كانت `await` عارية بلا `try` ولا حالة انتظار.
+   *    التلات أكشنز بيرموا (`requireInstructorAdmin` بيرمي، وفحص صفر
+   *    صفوف بيرمي) — فالرفض كان بيطلع استثناء لحدود React والإداري
+   *    مبيشوفش أي رسالة: يدوس «اعتماد» ومفيش رد فعل.
+   */
+  const approve = useAction(approveProfileUpdateRequest, {
+    onSuccess: () => router.refresh(),
+    fallbackError: 'تعذّر اعتماد الطلب.',
+  });
+
+  const reject = useAction(rejectProfileUpdateRequest, {
+    onSuccess: () => {
+      setAdminFeedback('');
+      router.refresh();
+    },
+    fallbackError: 'تعذّر رفض الطلب.',
+  });
+
+  /**
+   * ⚠️ وده كان أخطرهم: `setTrainingPassed(checked)` كانت **قبل**
+   *    الأكشن. يعني لو الحفظ وقع، المربّع بيفضل متغيّرًا في الشاشة
+   *    والقاعدة ما اتغيّرش فيها حاجة — الإداري يقفل الصفحة وهو
+   *    فاكر إن المدرب اجتاز التدريب.
+   *
+   *    دلوقتي الشاشة بتتغيّر **بعد** نجاح الحفظ، وبترجع لمكانها لو وقع.
+   */
+  const certify = useAction(updateInstructorCertification, {
+    fallbackError: 'تعذّر حفظ حالة التدريب.',
+  });
+
+  const handleApprove = (reqId: string) => approve.run(reqId);
 
   const handleReject = async (reqId: string) => {
     if (!adminFeedback) {
       alert('يرجى كتابة سبب الرفض في خانة النقاش أدناه أولاً.');
       return;
     }
-    await rejectProfileUpdateRequest(reqId, adminFeedback);
-    setAdminFeedback('');
+    await reject.run(reqId, adminFeedback);
   };
 
   const handleTrainingToggle = async (checked: boolean) => {
+    const previous = trainingPassed;
     setTrainingPassed(checked);
-    await updateInstructorCertification(instructor.id, checked);
+    const result = await certify.run(instructor.id, checked);
+    if (result === undefined) setTrainingPassed(previous);
+    else router.refresh();
   };
+
+  const busy = approve.pending || reject.pending || certify.pending;
+  const actionError = approve.error || reject.error || certify.error;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <FormError message={actionError} className="lg:col-span-3" />
+
       {/* Sidebar Info */}
       <div className="space-y-6">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -70,6 +110,7 @@ export function AdminInstructorClient({ instructor, updateRequests, certificatio
                 type="checkbox" 
                 checked={trainingPassed} 
                 onChange={(e) => handleTrainingToggle(e.target.checked)}
+                disabled={certify.pending}
                 className="h-5 w-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
               />
               <span className="text-sm font-bold text-slate-700">اجتاز التدريب والاختبار</span>
@@ -178,8 +219,24 @@ export function AdminInstructorClient({ instructor, updateRequests, certificatio
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm outline-none focus:border-amber-500"
                   />
                   <div className="flex gap-3">
-                    <button onClick={() => handleApprove(req.id)} className="flex-1 rounded-xl bg-emerald-600 py-2 font-bold text-white hover:bg-emerald-700">اعتماد</button>
-                    <button onClick={() => handleReject(req.id)} className="flex-1 rounded-xl bg-rose-100 py-2 font-bold text-rose-700 hover:bg-rose-200">رفض بالملاحظات</button>
+                    <button
+                      type="button"
+                      onClick={() => handleApprove(req.id)}
+                      disabled={busy}
+                      aria-busy={approve.pending || undefined}
+                      className="flex-1 rounded-xl bg-emerald-600 py-2 font-bold text-white hover:bg-emerald-700 disabled:opacity-60"
+                    >
+                      {approve.pending ? 'جارٍ الاعتماد…' : 'اعتماد'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleReject(req.id)}
+                      disabled={busy}
+                      aria-busy={reject.pending || undefined}
+                      className="flex-1 rounded-xl bg-rose-100 py-2 font-bold text-rose-700 hover:bg-rose-200 disabled:opacity-60"
+                    >
+                      {reject.pending ? 'جارٍ الرفض…' : 'رفض بالملاحظات'}
+                    </button>
                   </div>
                 </div>
               </div>

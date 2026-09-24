@@ -1,5 +1,7 @@
 'use client';
 import React, { useState } from 'react';
+import { useAction } from '@/lib/use-action';
+import { FormError } from '@/components/ui/FormError';
 import { Instructor, DayOfWeek, WeeklySlot, PricingFormulaSettings } from '@/types';
 import { Calendar, Clock, Info, CheckCircle2, Save } from 'lucide-react';
 import { calculateFinalSessionPrice } from '@/lib/utils';
@@ -90,9 +92,24 @@ export function InstructorSettingsClient({
     }
   };
 
+  /**
+   * ⚠️ كانت `await` عارية بلا `try` ولا حالة انتظار — والأكشن بيرمي.
+   *    يعني المدرب يضبط جدوله وحصيلته، يدوس «حفظ وإرسال للاعتماد»،
+   *    ومفيش أي رد فعل: لا رسالة نجاح ولا خطأ. ولو نجح، الزر مفتوح
+   *    فيدوس تاني ويبعت طلبين للإدارة.
+   */
+  const save = useAction(submitInstructorProfileUpdate, {
+    onSuccess: () => {
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 3000);
+    },
+    fallbackError: 'تعذّر إرسال التعديلات للإدارة.',
+  });
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    await submitInstructorProfileUpdate(instructor.id, {
+    setIsSaved(false);
+    await save.run(instructor.id, {
       workModel: workModel as any,
       monthlyHoursCommitted: workModel === 'monthly' ? monthlyHours : undefined,
       // الحصيلة بتتبعت في الحالتين: راتب شهري مقترح، أو حصيلة الجلسة.
@@ -101,8 +118,6 @@ export function InstructorSettingsClient({
       requestedPrice: Number(requestedPrice),
       weeklySchedule: schedule
     });
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 3000);
   };
 
   // سعر العميل من حصيلة المدرب مباشرة. كان بيتحسب من «فئة السعر»
@@ -300,6 +315,8 @@ export function InstructorSettingsClient({
         )}
       </div>
 
+      <FormError message={save.error} />
+
       <div className="flex justify-end gap-4">
         {isSaved && (
           <div className="flex items-center gap-2 text-amber-600 font-bold">
@@ -309,10 +326,12 @@ export function InstructorSettingsClient({
         )}
         <button
           type="submit"
-          className="flex items-center gap-2 rounded-xl bg-slate-900 px-8 py-3 font-bold text-white transition-colors hover:bg-slate-800"
+          disabled={save.pending}
+          aria-busy={save.pending || undefined}
+          className="flex items-center gap-2 rounded-xl bg-slate-900 px-8 py-3 font-bold text-white transition-colors hover:bg-slate-800 disabled:opacity-60"
         >
           <Save className="h-5 w-5" />
-          حفظ وإرسال للاعتماد
+          {save.pending ? 'جارٍ الإرسال…' : 'حفظ وإرسال للاعتماد'}
         </button>
       </div>
     </form>

@@ -3,23 +3,45 @@
 import React, { useState } from 'react';
 import { Send, CheckCircle2 } from 'lucide-react';
 import { submitSupportSessionRequest } from '@/actions/support';
+import { useAction } from '@/lib/use-action';
+import { FormError } from '@/components/ui/FormError';
 
 export function SessionRequestForm() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  /**
+   * ⚠️ الشكل اللي كان هنا:
+   *
+   *     setIsSubmitting(true);
+   *     await submitSupportSessionRequest(...);   // بلا try
+   *     setIsSubmitting(false);
+   *     setIsSuccess(true);
+   *
+   * وde أسوأ من الزر الصامت: الأكشن ده **بيرمي** لما الصلاحيات ترفض
+   * أو الشبكة تقع. والرمي بيوقف السطرين اللي بعده — يعني
+   * `setIsSubmitting(false)` **مبيتنفّذش أبدًا**، فالزر بيفضل مقفولًا
+   * على «جاري الإرسال...» **للأبد**. النموذج بيتعلّق ومفيش أي رسالة.
+   *
+   * وفي الحالة العكسية كان أخطر: لو الأكشن رجع بلا ما يكتب حاجة،
+   * `setIsSuccess(true)` بتتنفّذ على طول — فالمستخدم بيشوف «تم إرسال
+   * طلبك بنجاح» على طلب ما وصلش.
+   */
+  const submit = useAction(submitSupportSessionRequest, {
+    onSuccess: () => {
+      setIsSuccess(true);
+      setName('');
+      setPhone('');
+      setMessage('');
+    },
+    fallbackError: 'تعذّر إرسال طلبك. جرّب تاني، ولو فضلت كلّمنا على واتساب.',
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    await submitSupportSessionRequest(name, phone, message);
-    setIsSubmitting(false);
-    setIsSuccess(true);
-    setName('');
-    setPhone('');
-    setMessage('');
+    await submit.run(name, phone, message);
   };
 
   if (isSuccess) {
@@ -40,6 +62,8 @@ export function SessionRequestForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+      <FormError message={submit.error} />
+
       <div className="space-y-4">
         <div>
           <label className="mb-1 block text-sm font-bold text-slate-700">الاسم الكريم</label>
@@ -78,11 +102,12 @@ export function SessionRequestForm() {
       </div>
       <button
         type="submit"
-        disabled={isSubmitting}
+        disabled={submit.pending}
+        aria-busy={submit.pending || undefined}
         className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 p-4 font-bold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
       >
         <Send className="h-5 w-5" />
-        {isSubmitting ? 'جاري الإرسال...' : 'إرسال الطلب'}
+        {submit.pending ? 'جاري الإرسال...' : 'إرسال الطلب'}
       </button>
     </form>
   );
