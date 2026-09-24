@@ -167,8 +167,6 @@ export async function approveProfileUpdateRequest(requestId: string) {
   return { success: true };
 }
 
-export const approveProfileUpdate = approveProfileUpdateRequest;
-
 export async function rejectProfileUpdateRequest(requestId: string, adminFeedback: string) {
   const currentUser = await requireInstructorAdmin();
   const supabase = await createClient();

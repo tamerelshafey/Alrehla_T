@@ -57,8 +57,6 @@ export async function markInstructorPayoutAsPaid(payoutId: string) {
   return { success: true };
 }
 
-export const markInstructorPayoutPaid = markInstructorPayoutAsPaid;
-
 export async function markPublisherPayoutAsPaid(payoutId: string) {
   const user = await requireSuperAdmin();
   const supabase = await createClient();
@@ -92,8 +90,6 @@ export async function markPublisherPayoutAsPaid(payoutId: string) {
   revalidatePath(`/dashboard/admin/finance/publisher-payouts/${payoutId}`);
   return { success: true };
 }
-
-export const markPublisherPayoutPaid = markPublisherPayoutAsPaid;
 
 /**
  * An instructor asking to withdraw what they have earned.

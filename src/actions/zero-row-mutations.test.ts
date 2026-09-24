@@ -58,15 +58,10 @@ import { updateUserRole } from '@/actions/admin-users';
 import { updateAdminPermissions } from '@/actions/admin-permissions';
 import { cancelDependentRequest } from '@/actions/dependent-requests';
 import {
-  markInstructorPayoutPaid,
   markInstructorPayoutAsPaid,
-  markPublisherPayoutPaid,
   markPublisherPayoutAsPaid,
 } from '@/actions/finance';
-import {
-  approveProfileUpdate,
-  approveProfileUpdateRequest,
-} from '@/actions/instructors';
+import { approveProfileUpdateRequest } from '@/actions/instructors';
 import {
   setServiceOrderStatusByAdmin,
   startServiceOrder,
@@ -340,7 +335,7 @@ describe('Zero-Row Mutation Hardening Tests', () => {
     });
   });
 
-  describe('4. markInstructorPayoutPaid (src/actions/finance.ts)', () => {
+  describe('4. markInstructorPayoutAsPaid (src/actions/finance.ts)', () => {
     it('returns success and records audit when earnings payout row is successfully updated', async () => {
       mockRequireSuperAdmin.mockResolvedValue({
         id: 'super-admin-1',
@@ -359,7 +354,7 @@ describe('Zero-Row Mutation Hardening Tests', () => {
 
       mockSupabase = { from: fromMock };
 
-      const result = await markInstructorPayoutPaid('payout-1');
+      const result = await markInstructorPayoutAsPaid('payout-1');
 
       expect(result).toEqual({ success: true });
       expect(fromMock).toHaveBeenCalledWith('instructor_payouts');
@@ -394,7 +389,7 @@ describe('Zero-Row Mutation Hardening Tests', () => {
 
       mockSupabase = { from: fromMock };
 
-      await expect(markInstructorPayoutPaid('non-existent-payout')).rejects.toThrow(
+      await expect(markInstructorPayoutAsPaid('non-existent-payout')).rejects.toThrow(
         'سجل الدفعة غير موجود أو تعذّر تحديثه'
       );
 
@@ -405,7 +400,7 @@ describe('Zero-Row Mutation Hardening Tests', () => {
     it('enforces authorization rules (super admin required)', async () => {
       mockRequireSuperAdmin.mockRejectedValue(new Error('غير مصرح لك بإدارة المدفوعات'));
 
-      await expect(markInstructorPayoutPaid('payout-1')).rejects.toThrow(
+      await expect(markInstructorPayoutAsPaid('payout-1')).rejects.toThrow(
         'غير مصرح لك بإدارة المدفوعات'
       );
 
@@ -430,12 +425,12 @@ describe('Zero-Row Mutation Hardening Tests', () => {
 
       mockSupabase = { from: fromMock };
 
-      await expect(markInstructorPayoutPaid('payout-1')).rejects.toThrow('تعذّر تسجيل الدفع');
+      await expect(markInstructorPayoutAsPaid('payout-1')).rejects.toThrow('تعذّر تسجيل الدفع');
       expect(mockLogAuditAction).not.toHaveBeenCalled();
     });
   });
 
-  describe('5. markPublisherPayoutPaid (src/actions/finance.ts)', () => {
+  describe('5. markPublisherPayoutAsPaid (src/actions/finance.ts)', () => {
     it('returns success and records audit when earnings payout row is successfully updated', async () => {
       mockRequireSuperAdmin.mockResolvedValue({
         id: 'super-admin-1',
@@ -454,7 +449,7 @@ describe('Zero-Row Mutation Hardening Tests', () => {
 
       mockSupabase = { from: fromMock };
 
-      const result = await markPublisherPayoutPaid('pub-payout-1');
+      const result = await markPublisherPayoutAsPaid('pub-payout-1');
 
       expect(result).toEqual({ success: true });
       expect(fromMock).toHaveBeenCalledWith('publisher_payouts');
@@ -489,7 +484,7 @@ describe('Zero-Row Mutation Hardening Tests', () => {
 
       mockSupabase = { from: fromMock };
 
-      await expect(markPublisherPayoutPaid('non-existent-pub-payout')).rejects.toThrow(
+      await expect(markPublisherPayoutAsPaid('non-existent-pub-payout')).rejects.toThrow(
         'سجل الدفعة غير موجود أو تعذّر تحديثه'
       );
 
@@ -500,7 +495,7 @@ describe('Zero-Row Mutation Hardening Tests', () => {
     it('enforces authorization rules (super admin required)', async () => {
       mockRequireSuperAdmin.mockRejectedValue(new Error('غير مصرح لك بإدارة المدفوعات'));
 
-      await expect(markPublisherPayoutPaid('pub-payout-1')).rejects.toThrow(
+      await expect(markPublisherPayoutAsPaid('pub-payout-1')).rejects.toThrow(
         'غير مصرح لك بإدارة المدفوعات'
       );
 
@@ -525,12 +520,12 @@ describe('Zero-Row Mutation Hardening Tests', () => {
 
       mockSupabase = { from: fromMock };
 
-      await expect(markPublisherPayoutPaid('pub-payout-1')).rejects.toThrow('تعذّر تسجيل الدفع');
+      await expect(markPublisherPayoutAsPaid('pub-payout-1')).rejects.toThrow('تعذّر تسجيل الدفع');
       expect(mockLogAuditAction).not.toHaveBeenCalled();
     });
   });
 
-  describe('6. approveProfileUpdate (src/actions/instructors.ts)', () => {
+  describe('6. approveProfileUpdateRequest (src/actions/instructors.ts)', () => {
     it('successfully updates instructor profile and then approves request', async () => {
       mockRequireAdmin.mockResolvedValue({
         id: 'admin-1',
@@ -582,7 +577,7 @@ describe('Zero-Row Mutation Hardening Tests', () => {
 
       mockSupabase = { from: fromMock };
 
-      const result = await approveProfileUpdate('req-1');
+      const result = await approveProfileUpdateRequest('req-1');
 
       expect(result).toEqual({ success: true });
       expect(instructorUpdateMock).toHaveBeenCalledWith(
@@ -656,7 +651,7 @@ describe('Zero-Row Mutation Hardening Tests', () => {
 
       mockSupabase = { from: fromMock };
 
-      await expect(approveProfileUpdate('req-1')).rejects.toThrow(
+      await expect(approveProfileUpdateRequest('req-1')).rejects.toThrow(
         'التعديلات مروّحتش للقاعدة — ملف المدرب مش موجود أو الصلاحيات مش سامحة.'
       );
 
@@ -711,7 +706,7 @@ describe('Zero-Row Mutation Hardening Tests', () => {
 
       mockSupabase = { from: fromMock };
 
-      await expect(approveProfileUpdate('req-1')).rejects.toThrow('تعذّر تطبيق التعديلات');
+      await expect(approveProfileUpdateRequest('req-1')).rejects.toThrow('تعذّر تطبيق التعديلات');
 
       // Invariant: Request must NEVER be marked as approved on DB error
       expect(requestUpdateMock).not.toHaveBeenCalled();
@@ -722,7 +717,7 @@ describe('Zero-Row Mutation Hardening Tests', () => {
     it('enforces authorization rules (canManageInstructors required)', async () => {
       mockRequireAdmin.mockRejectedValue(new Error('غير مصرح لك بإدارة المدربين'));
 
-      await expect(approveProfileUpdate('req-1')).rejects.toThrow('غير مصرح لك بإدارة المدربين');
+      await expect(approveProfileUpdateRequest('req-1')).rejects.toThrow('غير مصرح لك بإدارة المدربين');
       expect(mockLogAuditAction).not.toHaveBeenCalled();
     });
 
@@ -749,7 +744,7 @@ describe('Zero-Row Mutation Hardening Tests', () => {
 
       mockSupabase = { from: fromMock };
 
-      await expect(approveProfileUpdate('missing-req')).rejects.toThrow('الطلب غير موجود');
+      await expect(approveProfileUpdateRequest('missing-req')).rejects.toThrow('الطلب غير موجود');
     });
 
     it('enforces business validation: rejects when request status is not pending', async () => {
@@ -780,7 +775,7 @@ describe('Zero-Row Mutation Hardening Tests', () => {
 
       mockSupabase = { from: fromMock };
 
-      await expect(approveProfileUpdate('req-1')).rejects.toThrow('تم البتّ في هذا الطلب من قبل');
+      await expect(approveProfileUpdateRequest('req-1')).rejects.toThrow('تم البتّ في هذا الطلب من قبل');
     });
   });
 
