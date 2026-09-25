@@ -7,6 +7,7 @@ import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { User, Mail, Phone, Calendar, Briefcase, FileText, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
+import { joinRequestRoleLabel } from '@/lib/join-roles';
 
 import { JoinRequestActions } from './JoinRequestActions';
 
@@ -41,7 +42,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               <h2 className="text-2xl font-black text-slate-800">{target.applicantName}</h2>
               <div className="flex items-center gap-2 mt-1 text-slate-500 font-medium">
                 <Briefcase className="h-4 w-4" />
-                {target.requestedRole === 'instructor' ? 'طلب انضمام كمدرب' : 'طلب انضمام كناشر'}
+                {`طلب انضمام: ${joinRequestRoleLabel(target.requestedRole)}`}
               </div>
             </div>
           </div>
@@ -96,7 +97,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             </div>
           </div>
           
-          {target.requestedRole === 'instructor' && (
+          {target.requestedRole !== 'other' && (
             <div className="border-t border-slate-100 pt-8">
               <h3 className="font-bold text-slate-800 mb-4">روابط النماذج السابقة (Portfolio)</h3>
               {target.portfolioUrl ? (

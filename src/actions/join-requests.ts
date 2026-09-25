@@ -5,29 +5,112 @@ import { revalidatePath } from 'next/cache';
 import { notifyAdmins } from '@/lib/notifications';
 import { createClient } from '@/lib/supabase/server';
 import { logAuditAction } from '@/lib/audit';
+import { joinRequestRoleLabel, SERVICE_PROVIDER_ROLES } from '@/lib/join-roles';
+
+export type JoinRequestResult =
+  | { ok: true; nextHref?: string; nextLabel?: string }
+  | { ok: false; error: string };
 
 /**
- * Deciding on an application to join as an instructor or publisher.
+ * الدور المطلوب في الطلب ← الشاشة اللي بتعمل الحساب فعلًا.
  *
- * The admin screen had "قبول الطلب" and "رفض الطلب" buttons with no handler at
- * all, so every application stayed `pending` for ever however many times an
- * admin clicked.
+ * ⚠️ **ليه مش بننشئ الحساب هنا على طول؟**
+ *
+ * طلب الانضمام فيه: اسم وبريد وتليفون ورسالة ورابط أعمال. وملف المدرب
+ * محتاج كمان: اسم العرض، والتخصصات، وسنين الخبرة، ونموذج العمل. يعني
+ * الإنشاء التلقائي هيطلّع **ملف مدرب نصّه فاضي** — وده بالظبط اللي
+ * `admin-users.ts` بيمنعه لما شال «مدرب» من أدوار شاشة المستخدمين:
+ * «دور من غير ملف = لوحة فاضية وحساب مكسور».
+ *
+ * فالقبول بيوصّل الإدارة لشاشة الإنشاء الصح **والخانات متملّية** بالـ
+ * اللي في الطلب. الإدارة بتكمّل الباقي وتضغط. خطوة واحدة بدل إنها
+ * تفتح شاشة تانية وتنسخ البيانات بإيدها.
+ *
+ * ⚠️ **والرسّام والمعلّق الصوتي والكاتب مش ناشرين.** شاشة الطلب كانت
+ *    بتكتب «طلب انضمام كناشر» لأي دور غير المدرب — وده غلط بيخلّي
+ *    الإدارة تحطّ الشخص في المكان الغلط. دول **مقدّمو خدمة**
+ *    (`service_provider`)، والناشر دور تاني خالص.
+ */
+function nextStepFor(
+  requestedRole: string,
+  applicantName: string,
+  email: string,
+  message: string | null,
+): { nextHref?: string; nextLabel?: string } {
+  const q = new URLSearchParams({ new: '1', email, name: applicantName });
+
+  if (requestedRole === 'instructor') {
+    if (message) q.set('bio', message.slice(0, 500));
+    return {
+      nextHref: `/dashboard/admin/instructors?${q.toString()}`,
+      nextLabel: 'كمّل إنشاء ملف المدرب',
+    };
+  }
+
+  if (SERVICE_PROVIDER_ROLES.includes(requestedRole)) {
+    q.set('role', 'service_provider');
+    return {
+      nextHref: `/dashboard/admin/users?${q.toString()}`,
+      nextLabel: 'كمّل إنشاء حساب مقدّم الخدمة',
+    };
+  }
+
+  // `other` — مفيش شاشة واحدة صح. الإدارة تقرّر.
+  return {};
+}
+
+/**
+ * البتّ في طلب انضمام.
+ *
+ * الزرّان في شاشة الإدارة كانوا بلا أي معالج، فالطلب كان بيفضل
+ * `pending` مهما ضغطت الإدارة.
  */
 export async function setJoinRequestStatus(
   requestId: string,
-  status: 'approved' | 'rejected'
-) {
-  const admin = await requireAdmin('canManageSupport', 'غير مصرح لك بإدارة طلبات الانضمام');
+  status: 'approved' | 'rejected',
+): Promise<JoinRequestResult> {
+  const admin = await requireAdmin(
+    'canManageSupport',
+    'غير مصرح لك بإدارة طلبات الانضمام',
+  );
 
   const supabase = await createClient();
-  const { error } = await supabase
+
+  // ⚠️ **`.eq('status','pending')` + `.select()` مع بعض** (قاعدة «و»).
+  //
+  //    من غيرهم: `UPDATE` على صف مش موجود **بينجح** وبيرجّع صفر صفوف،
+  //    فالشاشة تقول «تم» وما حصلش حاجة. وأخطر من كده إن القبول مرتين
+  //    كان هيعدّي — ودي شاشة بتعمل حسابات، فالتكرار معناه حسابين.
+  const { data: updated, error } = await supabase
     .from('join_requests')
     .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', requestId);
+    .eq('id', requestId)
+    .eq('status', 'pending')
+    .select('id, applicant_name, email, requested_role, message')
+    .maybeSingle();
 
   if (error) {
     console.error('Error updating join request', error);
-    throw new Error('تعذّر تحديث حالة الطلب');
+    return { ok: false, error: 'تعذّر تحديث حالة الطلب' };
+  }
+
+  if (!updated) {
+    // صفر صفوف: يا إما الطلب مش موجود، يا إما حد بتّ فيه قبلك. بنسأل
+    // عشان الرسالة تقول السبب بدل «تعذّر» المبهمة.
+    const { data: current } = await supabase
+      .from('join_requests')
+      .select('status')
+      .eq('id', requestId)
+      .maybeSingle();
+
+    if (!current) return { ok: false, error: 'الطلب ده مش موجود' };
+    return {
+      ok: false,
+      error:
+        current.status === 'approved'
+          ? 'الطلب ده اتقبل قبل كده. لو الحساب ما اتعملش، اعمله من شاشة المدربين أو المستخدمين.'
+          : 'الطلب ده اترفض قبل كده.',
+    };
   }
 
   await logAuditAction({
@@ -41,15 +124,25 @@ export async function setJoinRequestStatus(
   revalidatePath(`/dashboard/admin/join-requests/${requestId}`);
   revalidatePath('/dashboard/admin/join-requests');
   revalidatePath('/dashboard/admin');
-  return { success: true };
+
+  if (status !== 'approved') return { ok: true };
+
+  return {
+    ok: true,
+    ...nextStepFor(
+      updated.requested_role ?? '',
+      updated.applicant_name ?? '',
+      updated.email ?? '',
+      updated.message ?? null,
+    ),
+  };
 }
 
 /**
- * Someone applying to join the platform.
+ * شخص بيقدّم طلب انضمام للمنصة.
  *
- * The public form was a `<form>` with no action whose submit was a
- * `type="button"`: every application — instructors, illustrators, authors —
- * vanished the moment the applicant clicked send.
+ * النموذج العام كان `<form>` بلا `action` وزرار إرساله `type="button"`:
+ * كل طلب — مدربين ورسامين وكُتّاب — كان بيضيع لحظة ما المتقدّم يدوس.
  */
 // عامّة عن قصد: أي زائر يقدم طلب انضمام. قاعدة البيانات بتفرض
 // `status = 'pending'` في قاعدة «Anyone can apply to join»، فمحدش
@@ -61,13 +154,18 @@ export async function submitJoinRequest(params: {
   requestedRole: string;
   portfolioUrl: string;
   message: string;
-}) {
+}): Promise<JoinRequestResult> {
   const applicantName = params.applicantName.trim();
-  const email = params.email.trim();
+  const email = params.email.trim().toLowerCase();
 
-  if (!applicantName) throw new Error('اكتب اسمك');
-  if (!email || !email.includes('@')) throw new Error('اكتب بريدًا إلكترونيًا صحيحًا');
-  if (!params.requestedRole) throw new Error('اختر الدور المطلوب');
+  // ⚠️ بترجّع بدل ما ترمي (قاعدة «هـ»): Next بيمسح نص أي خطأ مرميّ في
+  //    النسخة المنشورة، فرسايل زي «اكتب اسمك» مكانتش بتوصل للمتقدّم
+  //    أصلًا — كان بيشوف نصًّا إنجليزيًا عامًّا على نموذج عربي.
+  if (!applicantName) return { ok: false, error: 'اكتب اسمك' };
+  if (!email || !email.includes('@')) {
+    return { ok: false, error: 'اكتب بريدًا إلكترونيًا صحيحًا' };
+  }
+  if (!params.requestedRole) return { ok: false, error: 'اختر الدور المطلوب' };
 
   const supabase = await createClient();
   const { error } = await supabase.from('join_requests').insert({
@@ -82,24 +180,19 @@ export async function submitJoinRequest(params: {
 
   if (error) {
     console.error('Error submitting join request', error);
-    throw new Error('تعذّر إرسال الطلب، برجاء المحاولة مرة أخرى');
+    return { ok: false, error: 'تعذّر إرسال الطلب، برجاء المحاولة مرة أخرى' };
   }
 
+  // ⚠️ كان مكتوب **مرتين** بالنص، فالإدارة كانت بتاخد إشعارين متطابقين
+  //    على كل طلب. والإشعار المكرر بيدرّب الناس على تجاهل الإشعارات.
   await notifyAdmins({
     event: 'join_request',
     title: 'طلب انضمام جديد',
-    message: `${applicantName} قدّم طلب انضمام.`,
-    link: '/dashboard/admin/join-requests',
-  });
-
-  await notifyAdmins({
-    event: 'join_request',
-    title: 'طلب انضمام جديد',
-    message: `${applicantName} قدّم طلب انضمام.`,
+    message: `${applicantName} قدّم طلب انضمام (${joinRequestRoleLabel(params.requestedRole)}).`,
     link: '/dashboard/admin/join-requests',
   });
 
   revalidatePath('/dashboard/admin/join-requests');
   revalidatePath('/dashboard/admin');
-  return { success: true };
+  return { ok: true };
 }

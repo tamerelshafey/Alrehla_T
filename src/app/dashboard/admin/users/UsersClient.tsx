@@ -42,21 +42,31 @@ const ASSIGNABLE: UserRole[] = [
 
 const EMPTY_FILTERS = { search: '', role: '', guardian: '', account: '' };
 
+/** بيانات جاية من طلب انضمام مقبول — انظر `InstructorPrefill`. */
+export type UserPrefill = {
+  email: string;
+  fullName: string;
+  role: UserRole;
+};
+
 export function UsersClient({
   users,
   canInvite,
   isSuperAdmin,
   currentUserId,
+  prefill,
 }: {
   users: UserProfile[];
   canInvite: boolean;
   isSuperAdmin: boolean;
   currentUserId: string;
+  prefill?: UserPrefill | null;
 }) {
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [showForm, setShowForm] = useState(false);
+  // جاي من قبول طلب انضمام؟ النموذج يفتح لوحده.
+  const [showForm, setShowForm] = useState(Boolean(prefill));
 
   const set = (key: keyof typeof EMPTY_FILTERS, value: string) => {
     setFilters((f) => ({ ...f, [key]: value }));
@@ -137,7 +147,11 @@ export function UsersClient({
       )}
 
       {showForm && (
-        <AddUserForm isSuperAdmin={isSuperAdmin} onDone={() => setShowForm(false)} />
+        <AddUserForm
+          isSuperAdmin={isSuperAdmin}
+          prefill={prefill}
+          onDone={() => setShowForm(false)}
+        />
       )}
 
       <div className="mb-6 space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -318,17 +332,21 @@ function RoleCell({
  */
 function AddUserForm({
   isSuperAdmin,
+  prefill,
   onDone,
 }: {
   isSuperAdmin: boolean;
+  prefill?: UserPrefill | null;
   onDone: () => void;
 }) {
   const router = useRouter();
-  const [mode, setMode] = useState<'direct' | 'invite'>('direct');
+  // المتقدّم من برّه بيحدّد كلمة مروره بنفسه — فالدعوة هي الافتراضي
+  // لما التعبئة جاية من طلب انضمام، عشان مفيش كلمة سر تمر على الإدارة.
+  const [mode, setMode] = useState<'direct' | 'invite'>(prefill ? 'invite' : 'direct');
   const [form, setForm] = useState({
-    email: '',
-    fullName: '',
-    role: 'student' as UserRole,
+    email: prefill?.email ?? '',
+    fullName: prefill?.fullName ?? '',
+    role: (prefill?.role ?? 'student') as UserRole,
     password: '',
   });
   const [busy, setBusy] = useState(false);

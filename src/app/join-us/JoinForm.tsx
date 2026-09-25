@@ -51,7 +51,14 @@ export function JoinForm() {
     setBusy(true);
     setError('');
     try {
-      await submitJoinRequest(form);
+      // ⚠️ النتيجة بتتقرا دلوقتي. الأكشن كان بيرمي برسايل عربية
+      //    («اكتب اسمك»)، وNext بيمسح نص أي خطأ مرميّ في النسخة
+      //    المنشورة — فالمتقدّم كان بيشوف نصًّا إنجليزيًا عامًّا.
+      const result = await submitJoinRequest(form);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
       setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'تعذّر إرسال الطلب');

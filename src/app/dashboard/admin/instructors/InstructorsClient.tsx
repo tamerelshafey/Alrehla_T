@@ -24,17 +24,34 @@ const EMPTY_FILTERS = {
   workModel: '',
 };
 
+/**
+ * بيانات جاية من طلب انضمام مقبول.
+ *
+ * ⚠️ **بتتقرا على الخادم من `searchParams` لا من `useSearchParams`**:
+ *    الخطاف بيخلّي الصفحة تحتاج حدود `Suspense`، والقيم هنا مجرد
+ *    تعبئة أوّلية بيراجعها الإداري قبل ما يضغط.
+ */
+export type InstructorPrefill = {
+  email: string;
+  fullName: string;
+  bio: string;
+};
+
 export function InstructorsClient({
   instructors,
   canCreate,
+  prefill,
 }: {
   instructors: InstructorAdminRow[];
   canCreate: boolean;
+  prefill?: InstructorPrefill | null;
 }) {
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [showForm, setShowForm] = useState(false);
+  // جاي من قبول طلب انضمام؟ النموذج يفتح لوحده — الإداري ما يدوّرش
+  // على الزرار بعد ما اتحوّل هنا عشان يكمّل خطوة محددة.
+  const [showForm, setShowForm] = useState(Boolean(prefill));
 
   const set = (key: keyof typeof EMPTY_FILTERS, value: string) => {
     setFilters((f) => ({ ...f, [key]: value }));
@@ -133,7 +150,9 @@ export function InstructorsClient({
         </div>
       )}
 
-      {showForm && <AddInstructorForm onDone={() => setShowForm(false)} />}
+      {showForm && (
+        <AddInstructorForm prefill={prefill} onDone={() => setShowForm(false)} />
+      )}
 
       <div className="mb-6 space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
         <div className="relative">
@@ -256,13 +275,21 @@ function Select({
   );
 }
 
-function AddInstructorForm({ onDone }: { onDone: () => void }) {
+function AddInstructorForm({
+  prefill,
+  onDone,
+}: {
+  prefill?: InstructorPrefill | null;
+  onDone: () => void;
+}) {
   const router = useRouter();
   const [form, setForm] = useState({
-    email: '',
-    fullName: '',
-    displayName: '',
-    bio: '',
+    email: prefill?.email ?? '',
+    fullName: prefill?.fullName ?? '',
+    // اسم العرض بيبدأ من الاسم الكامل، والإداري يعدّله لو حب.
+    displayName: prefill?.fullName ?? '',
+    // رسالة المتقدّم نقطة بداية للنبذة — **مش** نبذة نهائية.
+    bio: prefill?.bio ?? '',
     specialties: '',
     yearsExperience: 0,
     workModel: 'per_session' as 'monthly' | 'per_session',

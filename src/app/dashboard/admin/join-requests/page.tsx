@@ -7,6 +7,7 @@ import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import Link from 'next/link';
 import { StatusBadge } from '@/components/StatusBadge';
+import { joinRequestRoleLabel } from '@/lib/join-roles';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +22,7 @@ export default async function Page() {
   const formatted = requests.map(r => ({
     ...r,
     nameDisplay: <Link href={`/dashboard/admin/join-requests/${r.id}`} className="font-bold text-blue-600 hover:underline">{r.applicantName}</Link>,
-    roleDisplay: r.requestedRole === 'instructor' ? 'مدرب' : 'ناشر',
+    roleDisplay: joinRequestRoleLabel(r.requestedRole),
     dateDisplay: formatDate(r.createdAt),
     statusDisplay: (
       <StatusBadge

@@ -9,13 +9,37 @@ import { InstructorsClient } from './InstructorsClient';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const user = await getCurrentUser();
   if (!hasAdminPermission(user, 'canManageInstructors')) {
     return <Unauthorized />;
   }
 
   const instructors = await getInstructorsForAdmin();
+
+  // تعبئة جاية من قبول طلب انضمام (`?new=1&email=…`).
+  //
+  // ⚠️ القيم دي **مجرد نص في رابط** — أي حد يقدر يكتب اللي هو عايزه
+  //    فيه. مفيش حاجة بتتحفظ منها هنا: بتتعرض في خانات النموذج،
+  //    والإداري هو اللي بيراجع ويضغط، و`createInstructor` بتتحقق من
+  //    كل قيمة عندها. فالرابط بيوفّر نسخ ولصق، مش أكتر.
+  const sp = await searchParams;
+  const one = (k: string) => {
+    const v = sp[k];
+    return (Array.isArray(v) ? v[0] : v) ?? '';
+  };
+  const prefill =
+    one('new') === '1'
+      ? {
+          email: one('email').slice(0, 200),
+          fullName: one('name').slice(0, 120),
+          bio: one('bio').slice(0, 500),
+        }
+      : null;
 
   // زرار «إضافة مدرب» بيتخفي لو مفتاح الخدمة مش متظبط على الخادم — أحسن من
   // زرار بيرمي خطأ لما تدوسه.
@@ -30,7 +54,11 @@ export default async function Page() {
           غير موجود على الخادم.
         </div>
       )}
-      <InstructorsClient instructors={instructors} canCreate={canCreate} />
+      <InstructorsClient
+        instructors={instructors}
+        canCreate={canCreate}
+        prefill={prefill}
+      />
     </div>
   );
 }
