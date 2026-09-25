@@ -3,11 +3,11 @@ import { formatPrice } from '@/lib/utils';
 import React, { useState } from 'react';
 import { Instructor, ProfileUpdateRequest, InstructorCertification } from '@/types';
 import { CheckCircle2, AlertCircle, XCircle, Calendar, MessageSquare, Save } from 'lucide-react';
-import { approveProfileUpdateRequest, rejectProfileUpdateRequest, updateInstructorCertification } from '@/actions/instructors';
+import { approveProfileUpdateRequest, rejectProfileUpdateRequest, updateInstructorCertification, setInstructorStatus } from '@/actions/instructors';
 import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 import { useRouter } from 'next/navigation';
 import { useAction } from '@/lib/use-action';
-import { FormError } from '@/components/ui/FormError';
+import { FormError, FormSuccess, FormNotice } from '@/components/ui/FormError';
 
 interface AdminInstructorClientProps {
   instructor: Instructor;
@@ -19,6 +19,29 @@ export function AdminInstructorClient({ instructor, updateRequests, certificatio
   const router = useRouter();
   const [trainingPassed, setTrainingPassed] = useState(certification?.examPassed || false);
   const [adminFeedback, setAdminFeedback] = useState('');
+  const [status, setStatus] = useState(instructor.status);
+  const [statusDone, setStatusDone] = useState('');
+
+  /**
+   * ⚠️ **الحالة دي هي اللي بتخلّي المدرب يظهر لولي الأمر.**
+   *
+   *    معالج الحجز بيفلتر `status === 'active'`، ومكانش فيه أي طريق
+   *    في الموقع كله يغيّرها — المدرب بيتعمل `pending_training`
+   *    ويفضل كده للأبد.
+   */
+  const changeStatus = useAction(setInstructorStatus, {
+    onSuccess: (result) => {
+      if (result.ok) {
+        setStatus(result.status as typeof instructor.status);
+        setStatusDone(
+          result.status === 'active'
+            ? 'المدرب بقى نشطًا، وهيظهر لأولياء الأمور في معالج الحجز.'
+            : 'الحالة اتحدّثت.',
+        );
+      }
+    },
+    fallbackError: 'تعذّر تغيير حالة المدرب.',
+  });
 
   const pendingRequests = updateRequests.filter(r => r.status === 'pending');
   const pastRequests = updateRequests.filter(r => r.status !== 'pending');
@@ -102,6 +125,45 @@ export function AdminInstructorClient({ instructor, updateRequests, certificatio
             </div>
           </div>
         </div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 className="mb-2 text-lg font-black text-slate-800">حالة المدرب</h3>
+          <p className="mb-4 text-sm font-medium text-slate-500">
+            المدرب مايظهرش لأولياء الأمور في معالج الحجز إلا وهو <strong>نشط</strong>.
+          </p>
+
+          <FormError message={changeStatus.error} className="mb-3" />
+          <FormSuccess message={statusDone} className="mb-3" />
+
+          {!trainingPassed && status !== 'active' && (
+            <FormNotice
+              className="mb-3"
+              message="لازم يجتاز التدريب والاختبار الأول — اظبط الخانة تحت، وبعدين فعّله."
+            />
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            {([
+              { value: 'active', label: 'نشط', tone: 'bg-emerald-600 hover:bg-emerald-700' },
+              { value: 'pending_approval', label: 'في انتظار الاعتماد', tone: 'bg-amber-600 hover:bg-amber-700' },
+              { value: 'suspended', label: 'موقوف', tone: 'bg-rose-600 hover:bg-rose-700' },
+            ] as const).map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  setStatusDone('');
+                  changeStatus.run(instructor.id, option.value);
+                }}
+                // الزرار بتاع الحالة الحالية مقفول — الضغط عليه مالوش معنى.
+                disabled={changeStatus.pending || status === option.value}
+                className={`rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-colors disabled:opacity-40 ${option.tone}`}
+              >
+                {status === option.value ? `${option.label} ✓` : option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h3 className="font-black text-slate-800 mb-4 text-lg">التدريب والاعتماد</h3>
           <div className="space-y-4">

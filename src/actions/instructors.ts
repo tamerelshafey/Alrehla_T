@@ -263,6 +263,87 @@ export async function updateInstructorCertification(instructorId: string, passed
   return { success: true };
 }
 
+/**
+ * تفعيل المدرب أو إيقافه.
+ *
+ * ── العطل ───────────────────────────────────────────────────
+ *
+ * ⚠️ **مفيش سطر واحد في المشروع كله كان بيكتب `instructors.status`.**
+ *
+ *    `createInstructor` بتعمله بحالة `pending_training`، وشاشة
+ *    الإدارة فيها خانة «اجتاز التدريب والاختبار» — وهي بتكتب في
+ *    `training_passed` **وبس**. فالحالة بتفضل `pending_training`
+ *    للأبد.
+ *
+ *    ومعالج الحجز بيفلتر `status === 'active'`. يعني:
+ *
+ *        **ولا مدرب واحد كان بيظهر لولي الأمر، مهما عملت الإدارة.**
+ *
+ *    والإدارة مكانش عندها أي طريق تعرف ده منه: الخانة اتظبطت،
+ *    والشاشة قالت «تم»، والمدرب مختفي.
+ *
+ * ── القاعدة ─────────────────────────────────────────────────
+ *
+ * ⚠️ **مفيش تفعيل قبل اجتياز التدريب.** الفحص هنا على الخادم لا في
+ *    الشاشة (قاعدة «ع»)، وبيقرا `training_passed` **من القاعدة** لا
+ *    من اللي الشاشة بعتته (قاعدة «ف»).
+ */
+export async function setInstructorStatus(
+  instructorId: string,
+  status: 'pending_training' | 'pending_approval' | 'active' | 'suspended',
+): Promise<{ ok: true; status: string } | { ok: false; error: string }> {
+  const currentUser = await requireInstructorAdmin();
+  const supabase = await createClient();
+
+  const { data: current, error: readError } = await supabase
+    .from('instructors')
+    .select('id, display_name, training_passed, status')
+    .eq('id', instructorId)
+    .maybeSingle();
+
+  if (readError || !current) {
+    console.error('Error reading instructor before status change', readError);
+    return { ok: false, error: 'المدرب ده مش موجود' };
+  }
+
+  if (status === 'active' && !current.training_passed) {
+    return {
+      ok: false,
+      error: 'مينفعش تفعّله قبل ما يجتاز التدريب والاختبار. اظبط الخانة الأول.',
+    };
+  }
+
+  const { data: rows, error } = await supabase
+    .from('instructors')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', instructorId)
+    .select('id');
+
+  // ⚠️ `UPDATE` على صفر صفوف بينجح (قاعدة «و») — فبنفحص العدد.
+  if (error || !rows || rows.length === 0) {
+    console.error('Error updating instructor status', error);
+    return { ok: false, error: 'الحفظ مروّحش للقاعدة — راجع الصلاحيات.' };
+  }
+
+  await logAuditAction({
+    actorProfileId: currentUser.id,
+    actorName: currentUser.fullName,
+    action: `instructor_status_${status}`,
+    entityType: 'Instructor',
+    entityId: instructorId,
+    metadata: { from: current.status, to: status, name: current.display_name },
+  });
+
+  revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
+  revalidatePath('/dashboard/admin/instructors');
+  revalidatePath('/creative-writing/instructors');
+  revalidatePath(`/creative-writing/instructors/${instructorId}`);
+  // ⚠️ دي أهمهم: معالج الحجز هو اللي بيقرا القايمة، ومن غيرها
+  //    المدرب المفعَّل يفضل مخفي عن ولي الأمر لحد ما الصفحة تتبني تاني.
+  revalidatePath('/creative-writing/booking');
+  return { ok: true, status };
+}
+
 export async function updatePricingFormulaSettings(
   platformMultiplier: number,
   fixedAdminFee: number
