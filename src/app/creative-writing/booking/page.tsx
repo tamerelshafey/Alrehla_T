@@ -18,9 +18,15 @@ import {
   getWritingPackages,
   getBookedSlotsByInstructor,
 } from '@/data/domains/writing';
+import { fetchFamilyMembers } from '@/app/actions/family';
 import { Section } from '@/components/ui/Section';
 
-export default async function BookingPage() {
+export default async function BookingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ package?: string; instructor?: string; child?: string }>;
+}) {
+  const { instructor: instructorParam, child: childParam } = await searchParams;
   const [instructors, packages] = await Promise.all([
     getPublicInstructors(),
     getWritingPackages(),
@@ -32,6 +38,14 @@ export default async function BookingPage() {
   const bookedSlots = await getBookedSlotsByInstructor(
     instructors.filter((i) => i.status === 'active').map((i) => i.id),
   );
+
+  // المستفيد بييجي من موافقة ولي الأمر على طلب ابنه.
+  //
+  // ⚠️ الاسم بيتحلّ من **قايمة أبناء الداخل دلوقتي**، فرقم طفل حد
+  //    تاني بيتجاهل بلا أي تسريب — ولا حتى وجود الرقم بيتأكد.
+  const family = childParam ? await fetchFamilyMembers() : [];
+  const presetChild = family.find((c) => c.id === childParam) ?? null;
+
   return (
     <PageContainer className="!py-0 !space-y-0">
       <Section containerClassName="mx-auto w-full max-w-4xl pt-12 pb-24">
@@ -43,6 +57,8 @@ export default async function BookingPage() {
         <BookingWizardClient
           instructors={instructors}
           bookedSlots={bookedSlots}
+          presetInstructorId={instructorParam}
+          presetChild={presetChild ? { id: presetChild.id, name: presetChild.fullName } : undefined}
           packages={packages
             .filter((pkg) => pkg.isActive)
             .map((pkg) => ({

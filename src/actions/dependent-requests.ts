@@ -159,9 +159,28 @@ async function loadGuardianRequest(requestId: string) {
 /**
  * ولي الأمر بيوافق.
  *
- * مابيعملش الطلب — بيقفل طلب الابن ويرجّع رابط شاشة الطلب العادية
- * بالبيانات جاهزة، عشان يكمّل الدفع من نفس المسار اللي أي عميل بيمر
- * منه.
+ * مابيعملش الطلب — بيقفل طلب الابن ويرجّع رابط **أول** المسار العادي
+ * باختيارات الابن جاهزة، عشان ولي الأمر يكمّل من نفس المسار اللي أي
+ * عميل بيمر منه.
+ *
+ * ── ليه أول المسار مش شاشة الدفع ────────────────────────────
+ *
+ * ⚠️ الموافقة كانت بتوديه على `booking/confirm` **مباشرةً** — يعني
+ *    شاشة الدفع. والمشكلة مش إنها اختصار، المشكلة إن خطوات المسار
+ *    بتتخطّى **بقيَم مفترضة من الموقع**:
+ *
+ *      • **الميعاد الأسبوعي مابيتختارش أصلًا.** طلب الابن مافيهوش
+ *        يوم ولا ساعة، فولي الأمر كان بيدفع والميعاد فاضي، والجلسات
+ *        تتجدول بعدين من أول خانة فاضية في جدول المدرب.
+ *      • المدرب بيتثبّت على اختيار الابن بلا فرصة مراجعة في شاشته.
+ *
+ *    والقرار المنتجي: **ولي الأمر بيطلب من الأول زي أي عميل**،
+ *    والفرق الوحيد إن اختيارات الابن بتيجي **مختارة سلفًا** — لأن
+ *    الطلب جه منه. فهو بيراجع ويعدّل ويكمّل، مش بيوقّع على ورقة
+ *    نص فاضية.
+ *
+ * **التعديل قبل الموافقة**: ولي الأمر يقدر يبعت مقدّم خدمة أو مدرب
+ * مختلف عن اللي الابن طلبه — الرابط بيتبني على اللي هو اختاره.
  *
  * **التعديل قبل الموافقة**: ولي الأمر يقدر يبعت مقدّم خدمة أو مدرب
  * مختلف عن اللي الابن طلبه — الرابط بيتبني على اللي هو اختاره.
@@ -229,9 +248,11 @@ export async function approveDependentRequest(
     const providerId = overrides?.providerId ?? request.provider_id;
     const params = new URLSearchParams({ child: request.child_profile_id });
     if (providerId) params.set('provider', providerId);
+    // صفحة الخدمة — قايمة المقدّمين — مش شاشة الطلب. ولي الأمر يشوف
+    // اختيار ابنه معلَّمًا وسطهم، ويقدر يغيّره قبل ما يكمّل.
     return {
       ok: true,
-      href: `/creative-writing/services/${request.service_id}/order?${params.toString()}`,
+      href: `/creative-writing/services/${request.service_id}?${params.toString()}`,
     };
   }
 
@@ -241,7 +262,9 @@ export async function approveDependentRequest(
   });
   const instructorId = overrides?.instructorId ?? request.instructor_id;
   if (instructorId) params.set('instructor', instructorId);
-  return { ok: true, href: `/creative-writing/booking/confirm?${params.toString()}` };
+  // معالج الحجز من خطوته الأولى — الباقة والمدرب مختارين سلفًا،
+  // **والميعاد الأسبوعي لسه لازم يتحدد**. ده كان بيتخطّى خالص.
+  return { ok: true, href: `/creative-writing/booking?${params.toString()}` };
 }
 
 /** ولي الأمر بيرفض، ومعاه سبب يوصل للابن. */

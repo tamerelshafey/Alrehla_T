@@ -42,6 +42,17 @@ interface BookingWizardProps {
    */
   instructors: PublicInstructor[];
   /**
+   * المدرب اللي الابن طلبه — بيتختار سلفًا وولي الأمر يقدر يغيّره.
+   */
+  presetInstructorId?: string;
+  /**
+   * المستفيد لما ولي الأمر بيكمّل طلب ابنه.
+   *
+   * ⚠️ بيتحلّ على الخادم من قايمة أبناء الداخل — المكوّن ده بياخد
+   *    الاسم جاهزًا ومش بيسأل عن حد.
+   */
+  presetChild?: { id: string; name: string };
+  /**
    * الباقات الحقيقية من قاعدة البيانات.
    *
    * كانت القايمة تلات أسماء مكتوبة في الكود، **والاسم نفسه** هو اللي
@@ -57,6 +68,8 @@ export function BookingWizardClient({
   instructors,
   packages,
   bookedSlots,
+  presetInstructorId,
+  presetChild,
 }: BookingWizardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -68,7 +81,17 @@ export function BookingWizardClient({
       ? requestedPackage
       : (packages[0]?.id ?? ''),
   );
-  const [selectedInstructorId, setSelectedInstructorId] = useState<string>('');
+  // المدرب اللي الابن طلبه بيتختار سلفًا — لو لسه مفعّل.
+  //
+  // ⚠️ الموافقة كانت بتعدّي المعالج كله وتودّي على شاشة الدفع
+  //    مباشرةً، فالميعاد الأسبوعي مكانش بيتختار خالص. دلوقتي ولي
+  //    الأمر بيمر من نفس الخطوات، واختيارات الابن **جاهزة** بس
+  //    قابلة للتغيير.
+  const [selectedInstructorId, setSelectedInstructorId] = useState<string>(
+    instructors.some((i) => i.id === presetInstructorId && i.status === 'active')
+      ? (presetInstructorId as string)
+      : '',
+  );
   const [selectedSlot, setSelectedSlot] = useState<WeeklySlot | null>(null);
 
   const activeInstructors = instructors.filter(i => i.status === 'active');
@@ -103,6 +126,9 @@ export function BookingWizardClient({
       package: selectedPackage,
       instructor: selectedInstructorId,
     });
+    // المستفيد بيعدّي للشاشة اللي بعدها — من غيره ولي الأمر بيكمّل
+    // الحجز **باسمه هو** والخدمة تتنفّذ على إنها له.
+    if (presetChild) params.set('child', presetChild.id);
     if (selectedSlot) {
       params.set('day', selectedSlot.day);
       params.set('time', selectedSlot.time);
@@ -112,6 +138,19 @@ export function BookingWizardClient({
 
   return (
     <Card accentColor="emerald" className="p-6 md:p-10 shadow-xl shadow-slate-200/50">
+      {/* ولي الأمر لازم يعرف إنه بيكمّل طلب ابنه، ولمين الحجز. */}
+      {presetChild && (
+        <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+          <p className="font-bold text-emerald-900">
+            بتكمّل طلب {presetChild.name}
+          </p>
+          <p className="mt-1 text-sm font-medium text-emerald-800">
+            اختياراته جاهزة قدامك — راجعها وغيّر اللي تحبه، والحجز هيتسجّل
+            باسمه.
+          </p>
+        </div>
+      )}
+
       <form onSubmit={handleConfirm} className="space-y-8">
         
         {/* Step 1: Package & Instructor */}
