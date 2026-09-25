@@ -3,6 +3,7 @@ import {
 } from '@/types';
 import { createClient } from '@/lib/supabase/server';
 import { User } from '@supabase/supabase-js';
+import { needsPasswordSetup } from '@/lib/first-login';
 
 
 // Safe profile synchronization helper
@@ -107,6 +108,7 @@ export const getCurrentUser = async (): Promise<UserProfile> => {
     isGuardian: profile.is_guardian || false,
     avatarUrl: profile.avatar_url || undefined,
     createdAt: profile.created_at || user.created_at,
+    mustSetPassword: needsPasswordSetup(user),
     ...(permissions.length > 0 ? { permissions } : {})
   };
 };

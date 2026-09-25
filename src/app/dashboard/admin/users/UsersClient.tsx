@@ -340,9 +340,7 @@ function AddUserForm({
   onDone: () => void;
 }) {
   const router = useRouter();
-  // المتقدّم من برّه بيحدّد كلمة مروره بنفسه — فالدعوة هي الافتراضي
-  // لما التعبئة جاية من طلب انضمام، عشان مفيش كلمة سر تمر على الإدارة.
-  const [mode, setMode] = useState<'direct' | 'invite'>(prefill ? 'invite' : 'direct');
+  const [mode, setMode] = useState<'direct' | 'invite'>('direct');
   const [form, setForm] = useState({
     email: prefill?.email ?? '',
     fullName: prefill?.fullName ?? '',
@@ -414,7 +412,7 @@ function AddUserForm({
 
       <p className="mb-6 text-sm font-medium text-slate-500">
         {mode === 'direct'
-          ? 'الحساب هيتعمل فورًا بكلمة مرور. سيب الخانة فاضية وإحنا نولّد كلمة مرور قوية، وهتظهرلك مرة واحدة بعد الإنشاء عشان تسلّمها لصاحبها.'
+          ? 'الحساب هيتعمل فورًا برمز مؤقت تسلّمه لصاحبه. سيب الخانة فاضية وإحنا نولّد رمزًا قويًّا. أول ما يدخل بيه، الموقع هيوقفه على شاشة يحطّ فيها كلمة مروره بنفسه — فمفيش كلمة مرور دائمة بتعرفها.'
           : 'الحساب هيتعمل وهيظهرلك رابط تبعته للشخص (واتساب مثلًا) يحدد منه كلمة مروره. مفيش كلمة مرور بتمر عليك ولا بتتخزّن في أي مكان.'}
       </p>
 
@@ -539,8 +537,9 @@ function NewAccountBox({ email, password }: { email: string; password: string })
     <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
       <p className="font-bold text-emerald-900">الحساب اتعمل وجاهز للدخول.</p>
       <p className="mt-1 text-sm font-medium text-emerald-900">
-        انسخ البيانات دي دلوقتي — <strong>كلمة المرور مش هتظهر تاني</strong> ومش
-        متخزّنة عندنا. يُفضَّل إن صاحب الحساب يغيّرها بعد أول دخول.
+        انسخ البيانات دي دلوقتي — <strong>الرمز مش هيظهر تاني</strong> ومش
+        متخزّن عندنا. وأول ما صاحب الحساب يدخل بيه، الموقع هيوقفه على شاشة يحطّ
+        فيها كلمة مروره بنفسه، وبعدها الرمز مايبقاش ينفع.
       </p>
 
       <div className="mt-3 space-y-2">
@@ -551,7 +550,7 @@ function NewAccountBox({ email, password }: { email: string; password: string })
           </span>
         </div>
         <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2">
-          <span className="text-xs font-bold text-slate-500">كلمة المرور</span>
+          <span className="text-xs font-bold text-slate-500">الرمز المؤقت</span>
           <span dir="ltr" className="flex-1 text-left font-mono text-sm text-slate-800">
             {password}
           </span>
@@ -564,7 +563,7 @@ function NewAccountBox({ email, password }: { email: string; password: string })
         className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-800"
       >
         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-        {copied ? 'اتنسخ' : 'نسخ البريد وكلمة المرور'}
+        {copied ? 'اتنسخ' : 'نسخ البريد والرمز'}
       </button>
     </div>
   );

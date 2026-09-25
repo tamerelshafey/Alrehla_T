@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import type { UserRole } from '@/types';
+import { needsPasswordSetup, SET_PASSWORD_PATH } from '@/lib/first-login';
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -54,6 +55,24 @@ export async function middleware(request: NextRequest) {
   // مسجّل دخوله. اتشال هو والشريط اللي كان بيكتبه ودالة المستخدم الوهمي.
 
   const pathname = request.nextUrl.pathname;
+
+  // ── حاجز أول دخول ──────────────────────────────────────────
+  //
+  // الحساب اللي الإدارة عملته برمز مؤقت بيتوقف هنا: مايشوفش لوحته
+  // ولا حسابه ولا يعمل أي حاجة قبل ما يحطّ كلمة مروره.
+  //
+  // ⚠️ **الترتيب قبل كل الفحوص التانية عن قصد.** لو اتحط بعدها، كان
+  //    الحساب هيعدّي فحص الدور الأول ويوصل لصفحة بتقرا بياناته —
+  //    وهو لسه داخل برمز مرّ على واتساب.
+  //
+  // ⚠️ **والعلامة من `app_metadata`**: مفتاح الخدمة وحده اللي يكتب
+  //    فيها، فالمستخدم مايقدرش يشيلها من المتصفح ويعدّي الحاجز.
+  if (isAuthenticated && needsPasswordSetup(user)) {
+    if (pathname !== SET_PASSWORD_PATH) {
+      return NextResponse.redirect(new URL(SET_PASSWORD_PATH, request.url));
+    }
+    return supabaseResponse;
+  }
 
   // Route Protection Rules
   //
@@ -130,5 +149,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/account/:path*'],
+  matcher: ['/dashboard/:path*', '/account/:path*', '/set-password'],
 };

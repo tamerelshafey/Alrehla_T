@@ -8,7 +8,7 @@ import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Pagination } from '@/components/dashboard/Pagination';
 import { createInstructor } from '@/actions/admin-instructors';
-import { InviteLinkBox } from '@/components/dashboard/InviteLinkBox';
+import { TempCodeBox } from '@/components/dashboard/TempCodeBox';
 import type { InstructorAdminRow } from '@/data/domains/writing';
 
 const inputClass =
@@ -297,13 +297,14 @@ function AddInstructorForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState('');
-  const [link, setLink] = useState('');
+  const [code, setCode] = useState('');
+  const [codeEmail, setCodeEmail] = useState('');
 
   const submit = async () => {
     setBusy(true);
     setError('');
     setDone('');
-    setLink('');
+    setCode('');
     try {
       const result = await createInstructor({
         ...form,
@@ -313,9 +314,16 @@ function AddInstructorForm({
           .filter(Boolean),
         yearsExperience: Number(form.yearsExperience) || 0,
       });
-      if (result.inviteLink) setLink(result.inviteLink);
-      else
-        setDone('الشخص كان مسجّلاً بالفعل — تم تحويله لمدرب من غير دعوة جديدة.');
+      if (result.tempCode) {
+        setCode(result.tempCode);
+        // البريد بيتمسح من النموذج بعد شوية سطور، فبنمسكه دلوقتي
+        // عشان رسالة الواتساب تطلع كاملة.
+        setCodeEmail(form.email.trim().toLowerCase());
+      } else {
+        setDone(
+          'الشخص كان مسجّلاً بالفعل — اتحوّل لمدرب، وبيدخل بكلمة مروره الحالية زي ما هي.',
+        );
+      }
       setForm({
         email: '',
         fullName: '',
@@ -337,8 +345,9 @@ function AddInstructorForm({
     <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <h2 className="mb-2 text-lg font-black text-slate-800">مدرب جديد</h2>
       <p className="mb-6 text-sm font-medium text-slate-500">
-        هيظهرلك رابط دعوة تبعته للمدرب يحدد منه كلمة مروره بنفسه. بيبدأ بحالة
-        «قيد التدريب»، وما يظهرش للعملاء إلا لما تفعّله من صفحته.
+        هيظهرلك رمز مؤقت تبعته للمدرب. أول ما يدخل بيه، الموقع هيوقفه على شاشة
+        يحطّ فيها كلمة مروره بنفسه. بيبدأ بحالة «قيد التدريب»، وما يظهرش
+        للعملاء إلا لما تفعّله من صفحته.
       </p>
 
       {error && (
@@ -352,7 +361,7 @@ function AddInstructorForm({
         </div>
       )}
 
-      {link && <InviteLinkBox link={link} />}
+      {code && <TempCodeBox code={code} email={codeEmail} role="المدرب" />}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">

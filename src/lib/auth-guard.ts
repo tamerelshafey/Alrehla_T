@@ -22,12 +22,30 @@ import type { AdminPermission, UserProfile } from '@/types';
  * عشان كده ما ينفعش أبدًا نستبدل قاعدة صلاحيات بواحدة من دول.
  */
 
+/**
+ * الحساب لسه على الرمز المؤقت؟
+ *
+ * ⚠️ **الحارس في `middleware.ts` بيغطّي التنقّل بين الصفحات وبس.**
+ *    دوال الخادم بتتنادى مباشرة من المتصفح ومش بتعدّي عليه — فحد
+ *    معاه الرمز المؤقت كان يقدر ينادي أكشن من غير ما يمر على شاشة
+ *    «حط كلمة مرورك» أصلًا.
+ *
+ *    السطر ده بيقفل الباب ده. ومش بديلًا عن الحارس: الحارس بيوجّه
+ *    للشاشة الصح، وده بيمنع التنفيذ.
+ */
+function blockIfPasswordPending(user: UserProfile) {
+  if (user.mustSetPassword) {
+    throw new Error('لازم تحدّد كلمة مرورك الأول من صفحة «حدّد كلمة مرورك».');
+  }
+}
+
 /** المستخدم مسجَّل دخول؟ */
 export async function requireUser(): Promise<UserProfile> {
   const user = await getCurrentUser();
   if (!user || user.role === 'visitor') {
     throw new Error('يجب تسجيل الدخول أولاً');
   }
+  blockIfPasswordPending(user);
   return user;
 }
 
@@ -40,6 +58,7 @@ export async function requireAdmin(
   if (!hasAdminPermission(user, permission)) {
     throw new Error(message);
   }
+  blockIfPasswordPending(user);
   return user;
 }
 
@@ -51,6 +70,7 @@ export async function requireSuperAdmin(
   if (user.role !== 'super_admin') {
     throw new Error(message);
   }
+  blockIfPasswordPending(user);
   return user;
 }
 
@@ -162,5 +182,6 @@ export async function requireAnyAdmin(
   if (!permissions.some((p) => hasAdminPermission(user, p))) {
     throw new Error(message);
   }
+  blockIfPasswordPending(user);
   return user;
 }

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logAuditAction } from '@/lib/audit';
 import type { UserRole } from '@/types';
+import { generateTempCode, MUST_SET_PASSWORD } from '@/lib/first-login';
 
 /**
  * ليه النتيجة بترجع بدل ما الخطأ يترمي:
@@ -48,13 +49,8 @@ function checkRole(role: UserRole, actorRole: UserRole): string | null {
   return null;
 }
 
-/** كلمة مرور عشوائية قوية — بتتعرض للإدارة مرة واحدة وما بتتخزّنش عندنا. */
-function generatePassword(): string {
-  const alphabet = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%';
-  const bytes = new Uint32Array(16);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join('');
-}
+// الرمز المؤقت بقى في `@/lib/first-login` — مشترك مع شاشة المدربين،
+// وحروفه الملتبسة مشالة عشان يتقال في تليفون من غير لبس.
 
 /** كتابة الملف الشخصي بعد إنشاء الحساب — مشتركة بين الطريقتين. */
 async function writeProfile(userId: string, fullName: string, role: UserRole) {
@@ -69,12 +65,14 @@ async function writeProfile(userId: string, fullName: string, role: UserRole) {
 /**
  * إنشاء حساب مباشرة بكلمة مرور — من غير دعوة.
  *
- * الحساب بيتعمل مفعّل وجاهز للدخول فورًا. كلمة المرور بترجع للإدارة
- * مرة واحدة عشان تسلّمها لصاحبها؛ إحنا ما بنخزّنهاش في أي مكان عندنا
- * (Supabase بتخزّن بصمتها المشفّرة بس).
+ * الحساب بيتعمل مفعّل وجاهز للدخول فورًا. الرمز بيرجع للإدارة مرة
+ * واحدة عشان تسلّمه لصاحبه؛ إحنا ما بنخزّنهوش في أي مكان عندنا
+ * (Supabase بتخزّن بصمته المشفّرة بس).
  *
- * ⚠️ الفرق عن الدعوة: هنا الإدارة بتعرف كلمة المرور الأولى. لو ده مش
- * مطلوب، استخدم الدعوة — الشخص بيحدد كلمة مروره بنفسه.
+ * ⚠️ **والرمز ده مؤقت بالبناء لا بالنية:** الحساب بيتعلّم إنه محتاج
+ *    كلمة مرور، فأول ما صاحبه يدخل بيتوقف على شاشة «حط كلمة مرورك»
+ *    وما يقدرش يعدّيها. يعني الإدارة ما بتعرفش كلمة المرور الدائمة
+ *    أبدًا — وده نفس الضمان بتاع رابط الدعوة، بخطوة أبسط.
  */
 export async function createUserDirectly(params: {
   email: string;
@@ -97,7 +95,7 @@ export async function createUserDirectly(params: {
   const roleError = checkRole(params.role, admin.role);
   if (roleError) return { ok: false, error: roleError };
 
-  const password = typed || generatePassword();
+  const password = typed || generateTempCode();
   const supabaseAdmin = createAdminClient();
 
   const { data, error } = await supabaseAdmin.auth.admin.createUser({
@@ -106,6 +104,13 @@ export async function createUserDirectly(params: {
     // مفعّل فورًا: مفيش بريد تأكيد بيتبعت، ودي فكرة «إنشاء مباشر» أصلًا.
     email_confirm: true,
     user_metadata: { full_name: fullName },
+    // ⚠️ **أي حساب الإدارة عارفة كلمة مروره لازم تتغيّر أول دخول.**
+    //    ده بيشمل الرمز المولَّد **والكلمة اللي الإداري كتبها بإيده** —
+    //    الاتنين مرّوا على طرف تالت، فالاتنين مؤقتين.
+    //
+    //    والعلامة في `app_metadata` لا `user_metadata`: التانية
+    //    المستخدم يعدّلها من المتصفح ويعدّي الشاشة.
+    app_metadata: { [MUST_SET_PASSWORD]: true },
   });
 
   if (error) {

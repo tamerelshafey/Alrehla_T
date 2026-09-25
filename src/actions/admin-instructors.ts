@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logAuditAction } from '@/lib/audit';
+import { generateTempCode, MUST_SET_PASSWORD } from '@/lib/first-login';
 
 /**
  * إضافة مدرب من لوحة الإدارة.
@@ -13,9 +14,17 @@ import { logAuditAction } from '@/lib/audit';
  * بيشترط `user_id`، فمفيش مدرب من غير حساب.
  *
  * الدالة بتغطي الحالتين:
- *   - الشخص مسجَّل بالفعل → بنحوّل دوره لمدرب وبننشئ صف المدرب
- *   - الشخص جديد → بنولّد رابط دعوة ترجعه الشاشة للإدارة عشان تبعته
- *     للمدرب بنفسها، ويحدد كلمة مروره منه
+ *   - الشخص مسجَّل بالفعل → بنحوّل دوره لمدرب وبننشئ صف المدرب،
+ *     **وكلمة مروره ما بتتلمسش** — هو داخل بيها خلاص
+ *   - الشخص جديد → بنعمل الحساب **برمز مؤقت** ترجعه الشاشة للإدارة
+ *     عشان تبعته للمدرب. وأول ما يدخل بيه، الموقع بيوقفه على شاشة
+ *     «حط كلمة مرورك» قبل أي حاجة تانية (`src/lib/first-login.ts`)
+ *
+ * ⚠️ **كان رابط دعوة، واتغيّر بقرار.** الرابط مفتاح حساب كامل، طويل
+ *    وصعب النقل على واتساب، وبينتهي بمدة — فالمدرب اللي يفتحه متأخر
+ *    كان محتاج دعوة جديدة. والرمز المؤقت بيدّي نفس النتيجة: المدرب
+ *    هو اللي بيحدّد كلمة مروره في الآخر، ومفيش كلمة مرور دائمة
+ *    بتعرفها الإدارة.
  *
  * المدرب الجديد بيبدأ بحالة «قيد التدريب» وتدريب غير مجتاز — مش «نشط».
  * إنه يظهر للعملاء قرار منفصل بياخده المسؤول بعد ما يخلّص تدريبه.
@@ -51,7 +60,7 @@ export async function createInstructor(params: {
 
   let userId: string;
   let invited = false;
-  let inviteLink: string | null = null;
+  let tempCode: string | null = null;
 
   if (existing) {
     userId = existing.id;
@@ -66,20 +75,31 @@ export async function createInstructor(params: {
       throw new Error('الشخص ده مسجَّل كمدرب بالفعل');
     }
   } else {
-    const { data, error } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'invite',
+    const code = generateTempCode();
+    const { data, error } = await supabaseAdmin.auth.admin.createUser({
       email,
-      options: { data: { full_name: fullName } },
+      password: code,
+      // مفعّل فورًا: مفيش بريد تأكيد بيتبعت، والإدارة هي اللي بتسلّم
+      // الرمز بإيدها. ومن غير ده الحساب يتعمل ويقف برّه.
+      email_confirm: true,
+      user_metadata: { full_name: fullName },
+      // ⚠️ **العلامة في `app_metadata` لا `user_metadata`**: التانية
+      //    المستخدم يعدّلها من المتصفح بنداء واحد، فكان هيشيلها
+      //    ويعدّي الشاشة وهو لسه على الرمز المؤقت.
+      app_metadata: { [MUST_SET_PASSWORD]: true },
     });
     if (error) {
-      console.error('Error generating instructor invite link', error);
-      throw new Error('تعذّر إنشاء الدعوة');
+      console.error('Error creating instructor account', error);
+      if (error.message?.toLowerCase().includes('already')) {
+        throw new Error('فيه حساب بالبريد ده بالفعل');
+      }
+      throw new Error('تعذّر إنشاء الحساب');
     }
-    if (!data.user?.id || !data.properties?.action_link) {
+    if (!data.user?.id) {
       throw new Error('تعذّر إنشاء الحساب');
     }
     userId = data.user.id;
-    inviteLink = data.properties.action_link;
+    tempCode = code;
     invited = true;
   }
 
@@ -124,5 +144,5 @@ export async function createInstructor(params: {
   revalidatePath('/dashboard/admin/instructors');
   revalidatePath('/creative-writing/instructors');
 
-  return { ok: true, instructorId: created.id, invited, inviteLink };
+  return { ok: true, instructorId: created.id, invited, tempCode };
 }

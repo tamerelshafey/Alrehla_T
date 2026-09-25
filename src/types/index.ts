@@ -12,6 +12,11 @@ export type UserProfile = {
   avatarUrl?: string;
   createdAt: string;
   permissions?: AdminPermission[];
+  /**
+   * الحساب لسه على الرمز المؤقت وما حطّش كلمة مروره.
+   * مصدرها `app_metadata` بتاع Supabase — انظر `src/lib/first-login.ts`.
+   */
+  mustSetPassword?: boolean;
 };
 
 // الفئة العمرية للباقات
