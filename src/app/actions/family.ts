@@ -52,10 +52,23 @@ export async function fetchFamilyMembers(): Promise<ChildProfile[]> {
   }));
 }
 
+/**
+ * ⚠️ **صورة الطفل كانت بتتقرا ومحدّش بيكتبها.**
+ *
+ * `child_profiles.avatar_url` موجود في القاعدة، و`fetchFamilyMembers`
+ * بترجّعه، و`ChildProfile` فيه `avatarUrl` — **ومفيش ولا موضع في
+ * الموقع كله بيحطّ فيه قيمة**. يعني العمود موجود من بدري وفاضي دايمًا.
+ *
+ * فمعالج الشراء كان بيرسم دايرة رمادية فيها أول حرف من الاسم، وده
+ * مكانش عطل عرض — **مكانش فيه صورة أصلًا تتعرض**.
+ *
+ * دلوقتي ولي الأمر بيحطّها من المركز العائلي، والمعالج بيعرضها.
+ */
 export async function createFamilyMember(
   fullName: string,
   birthDate: string,
   gender?: 'male' | 'female' | null,
+  avatarUrl?: string | null,
 ): Promise<ChildProfile | null> {
   const user = await requireNotDependent('إضافة فرد للعائلة');
   const supabase = await createClient();
@@ -65,7 +78,8 @@ export async function createFamilyMember(
       user_profile_id: user.id,
       full_name: fullName,
       birth_date: birthDate,
-      gender: gender ?? null
+      gender: gender ?? null,
+      avatar_url: avatarUrl?.trim() || null
     })
     .select('*')
     .single();
@@ -93,17 +107,32 @@ export async function updateFamilyMember(
   fullName: string,
   birthDate: string,
   gender?: 'male' | 'female' | null,
+  avatarUrl?: string | null,
 ): Promise<boolean> {
   const user = await requireNotDependent('تعديل بيانات فرد العائلة');
   const supabase = await createClient();
 
-  const { error } = await supabase.from('child_profiles')
-    .update({ full_name: fullName, birth_date: birthDate, gender: gender ?? null })
+  const { data, error } = await supabase.from('child_profiles')
+    .update({
+      full_name: fullName,
+      birth_date: birthDate,
+      gender: gender ?? null,
+      avatar_url: avatarUrl?.trim() || null,
+    })
     .eq('id', id)
-    .eq('user_profile_id', user.id);
+    .eq('user_profile_id', user.id)
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     console.error('Error updating child profile', error);
+    return false;
+  }
+
+  // ⚠️ قاعدة (و): `UPDATE` على صف مش موجود بينجح بصفر صفوف وبلا خطأ.
+  //    من غير الفحص ده الشاشة بتقول «اتحفظ» ومفيش حاجة وصلت.
+  if (!data) {
+    console.error('Child profile update matched zero rows', id);
     return false;
   }
 

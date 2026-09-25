@@ -3,6 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { FamilyMember } from '@/types';
 import { fetchFamilyMembers } from '@/app/actions/family';
 import { BirthDatePicker } from '@/components/ui/BirthDatePicker';
+import { PersonAvatar } from '@/components/ui/PersonAvatar';
 
 export function Step1ChildInfo({ onNext }: { onNext: () => void }) {
   const { register, watch, setValue, formState: { errors } } = useFormContext();
@@ -63,9 +64,20 @@ export function Step1ChildInfo({ onNext }: { onNext: () => void }) {
                 className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-colors
                   ${familyMemberId === m.id ? 'border-blue-600 bg-blue-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}
               >
-                <div className="h-16 w-16 bg-slate-200 rounded-full mb-3 flex items-center justify-center text-2xl font-bold text-slate-500">
-                  {m.fullName.charAt(0)}
-                </div>
+                {/*
+                  ⚠️ دي كانت دايرة رمادية بالحرف الأول **دايمًا** —
+                  ومش لأن العرض نسي يسأل، لأ: `child_profiles.avatar_url`
+                  مكانش فيه قيمة أصلًا، مفيش شاشة في الموقع كانت بتكتبه.
+
+                  دلوقتي ولي الأمر بيحطّ الصورة من المركز العائلي،
+                  والحرف الأول باقٍ لمن مالوش صورة.
+                */}
+                <PersonAvatar
+                  name={m.fullName}
+                  avatarUrl={m.avatarUrl}
+                  size={64}
+                  className="mb-3"
+                />
                 <span className="font-bold text-slate-800">{m.fullName}</span>
               </button>
             ))}

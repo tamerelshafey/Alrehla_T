@@ -3,9 +3,11 @@ import { formatPrice } from '@/lib/utils';
 
 import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { AddonProduct, PersonalizedProduct } from '@/types';
+import { AddonProduct, ChildProfile, PersonalizedProduct } from '@/types';
 import Image from 'next/image';
 import { optimizedImageUrl } from '@/lib/cloudinary';
+import { PersonAvatar } from '@/components/ui/PersonAvatar';
+import { fetchFamilyMembers } from '@/app/actions/family';
 
 export function OrderSummarySidebar({
   product,
@@ -24,6 +26,20 @@ export function OrderSummarySidebar({
   
   const [facePhotoPreviewUrl, setFacePhotoPreviewUrl] = useState<string | null>(null);
 
+  /**
+   * أفراد العائلة — عشان صورة الطفل المختار تبان في الملخّص قبل ما
+   * العميل يرفع صورة الوش.
+   *
+   * ⚠️ الصورتان مختلفتان عن قصد: **صورة الملف** هي صورة الطفل
+   *    المحفوظة في المركز العائلي، و**صورة الوش** هي اللي الكتاب
+   *    بيتبني عليها وبترتفع مع كل طلب. الأولى بتبان لحد ما التانية
+   *    تترفع، وبعدين التانية ليها الأولوية — لأنها هي اللي هتطبع.
+   */
+  const [members, setMembers] = useState<ChildProfile[]>([]);
+  useEffect(() => {
+    fetchFamilyMembers().then(setMembers).catch(() => setMembers([]));
+  }, []);
+
   useEffect(() => {
     if (!facePhotoFile) {
       setFacePhotoPreviewUrl(null);
@@ -34,7 +50,10 @@ export function OrderSummarySidebar({
     return () => URL.revokeObjectURL(url);
   }, [facePhotoFile]);
   
-  const childName = newChildName || (familyMemberId ? 'مشارك من العائلة' : null);
+  const selectedMember = members.find((m) => m.id === familyMemberId) ?? null;
+  // اسم الطفل الحقيقي بدل «مشارك من العائلة» — كان نصًا ثابتًا.
+  const childName = newChildName || selectedMember?.fullName
+    || (familyMemberId ? 'مشارك من العائلة' : null);
 
   // ⚠️ العرض هنا **تقدير**: الحساب الحقيقي بيتم في
   //    `create_customer_order` من أسعار الجدول. المتصفح مبيبعتش سعرًا.
@@ -69,13 +88,24 @@ export function OrderSummarySidebar({
         <div className="mb-6 pb-6 border-b border-slate-100">
           <h4 className="font-bold text-slate-700 text-sm mb-2">الطفل:</h4>
           <div className="flex items-center gap-3">
-            <div className="relative h-10 w-10 overflow-hidden rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
-              {facePhotoPreviewUrl ? (
-                 <Image src={facePhotoPreviewUrl} alt="صورة وجه الطفل للطلب" fill sizes="96px" unoptimized className="object-cover" />
-              ) : (
-                <span className="text-xl text-slate-400 font-bold">{childName.charAt(0)}</span>
-              )}
-            </div>
+            {facePhotoPreviewUrl ? (
+              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
+                <Image
+                  src={facePhotoPreviewUrl}
+                  alt="صورة وجه الطفل للطلب"
+                  fill
+                  sizes="96px"
+                  unoptimized
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <PersonAvatar
+                name={childName}
+                avatarUrl={selectedMember?.avatarUrl}
+                size={40}
+              />
+            )}
             <span className="font-bold text-slate-800">{childName}</span>
           </div>
         </div>

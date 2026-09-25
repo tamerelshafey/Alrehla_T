@@ -8,6 +8,8 @@ import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { Trash2, Edit2, Plus, X, FileText } from 'lucide-react';
 import { calculateAge } from '@/lib/utils';
 import { BirthDatePicker } from '@/components/ui/BirthDatePicker';
+import { AvatarPicker } from '@/components/dashboard/AvatarPicker';
+import { PersonAvatar } from '@/components/ui/PersonAvatar';
 import { StudentAccountCell } from './StudentAccountCell';
 
 export function FamilyClient({
@@ -27,11 +29,12 @@ export function FamilyClient({
     fullName: string;
     birthDate: string;
     gender: 'male' | 'female' | '';
-  }>({ fullName: '', birthDate: '', gender: '' });
+    avatarUrl: string;
+  }>({ fullName: '', birthDate: '', gender: '', avatarUrl: '' });
   const [error, setError] = useState('');
 
   const resetForm = () => {
-    setFormData({ fullName: '', birthDate: '', gender: '' });
+    setFormData({ fullName: '', birthDate: '', gender: '', avatarUrl: '' });
     setEditingId(null);
     setShowForm(false);
     setError('');
@@ -42,6 +45,7 @@ export function FamilyClient({
       fullName: child.fullName,
       birthDate: child.birthDate || '',
       gender: child.gender ?? '',
+      avatarUrl: child.avatarUrl ?? '',
     });
     setEditingId(child.id);
     setShowForm(true);
@@ -82,13 +86,20 @@ export function FamilyClient({
             formData.fullName,
             formData.birthDate,
             gender,
+            formData.avatarUrl,
           );
           if (!success) {
             setError('تعذّر الحفظ — جرّب تاني');
             return;
           }
           setMembers(prev => prev.map(m => m.id === editingId
-            ? { ...m, fullName: formData.fullName, birthDate: formData.birthDate, gender }
+            ? {
+                ...m,
+                fullName: formData.fullName,
+                birthDate: formData.birthDate,
+                gender,
+                avatarUrl: formData.avatarUrl || null,
+              }
             : m));
           resetForm();
         } else {
@@ -96,6 +107,7 @@ export function FamilyClient({
             formData.fullName,
             formData.birthDate,
             gender,
+            formData.avatarUrl,
           );
           if (!newChild) {
             setError('تعذّر الإضافة — جرّب تاني');
@@ -111,7 +123,17 @@ export function FamilyClient({
   };
 
   const columns = [
-    { header: 'الاسم', accessorKey: 'fullName' },
+    {
+      header: 'الاسم',
+      accessorKey: 'fullName',
+      // الصورة جنب الاسم — لو مفيش، الحرف الأول.
+      cell: (child: ChildProfile) => (
+        <span className="flex items-center gap-3">
+          <PersonAvatar name={child.fullName} avatarUrl={child.avatarUrl} size={36} />
+          <span className="font-bold text-slate-800">{child.fullName}</span>
+        </span>
+      ),
+    },
     { 
       header: 'العمر (سنوات)', 
       accessorKey: 'age',
@@ -173,6 +195,19 @@ export function FamilyClient({
               {error}
             </div>
           )}
+          {/* ⚠️ الصورة دي كانت **مستحيلة**: العمود في القاعدة والنوع
+              في الكود، ومفيش أي شاشة بتكتب فيها. فمعالج الشراء بيرسم
+              دايرة رمادية بالحرف الأول دايمًا. */}
+          <div className="w-full">
+            <AvatarPicker
+              value={formData.avatarUrl}
+              onChange={(url) => setFormData({ ...formData, avatarUrl: url })}
+              onError={(message) => setError(message)}
+              label="صورة الطفل (اختياري)"
+              folder="alrehla/children"
+            />
+          </div>
+
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-bold text-slate-700 mb-2">اسم الطفل</label>
             <input 
