@@ -24,7 +24,15 @@ export default async function CustomProductPage({ params }: { params: Promise<{ 
     getAddonProducts(),
   ]);
 
-  if (!product || product.ownerType !== 'platform') {
+  // ⚠️ **الحارس كان `ownerType !== 'platform'`.**
+  //
+  //    يعني المعالج ده كان بيفتح لأي منتج للمنصة **مهما كان تصنيفه** —
+  //    بما فيهم منتجات «المكتبة» اللي المفروض تخصيص غلاف بس. وفي نفس
+  //    الوقت كان بيرفض أي منتج «مخصص» لناشر.
+  //
+  //    التصنيف هو اللي بيقول إيه الشغل اللي العميل هياخده، فهو اللي
+  //    بيحرس. والمالك بيقرّر مين بياخد فلوس وبس.
+  if (!product || product.category !== 'custom') {
     return (
       <PageContainer>
         <div className="flex flex-col items-center justify-center py-20 text-center">

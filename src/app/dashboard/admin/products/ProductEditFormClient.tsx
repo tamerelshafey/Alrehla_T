@@ -5,6 +5,10 @@ import React, { useState, useEffect } from 'react';
 import { Publisher, PersonalizedProduct, PricingFormulaSettings } from '@/types';
 import { customerPriceFromCost } from '@/lib/publisher-pricing';
 import { saveProduct } from '@/actions/products';
+import {
+  ASSIGNABLE_PRODUCT_CATEGORIES,
+  PRODUCT_CATEGORY_LABELS,
+} from '@/lib/product-categories';
 
 interface Props {
   product: PersonalizedProduct;
@@ -43,12 +47,17 @@ export function ProductEditFormClient({ product, publishers, pricingSettings }: 
         <div>
           <label className="block text-sm font-bold text-slate-700 mb-2">النوع / التصنيف</label>
           <select name="category" defaultValue={product.category} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-amber-500 focus:outline-none">
-            <option value="library">مكتبة</option>
-            <option value="custom">مخصص (إنها لك)</option>
-            <option value="subscription">اشتراك</option>
-            <option value="book">كتاب</option>
-            <option value="game">لعبة</option>
-            <option value="accessory">ملحق</option>
+            {/* ⚠️ **كانت ستة، تلاتة منهم القاعدة بترفضهم.**
+                «كتاب» و«لعبة» و«ملحق» مش في النوع المعرَّف
+                `product_category` — الحفظ بيترفض من القاعدة.
+                و«اشتراك» اتشال لأن مفيش ولا شاشة بتعرضه: شاشة
+                الاشتراك بتقرا من `box_subscription_plans`، فالمنتج
+                كان يتحفظ ويختفي. */}
+            {ASSIGNABLE_PRODUCT_CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {PRODUCT_CATEGORY_LABELS[c]}
+              </option>
+            ))}
           </select>
         </div>
       </div>

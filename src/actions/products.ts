@@ -7,6 +7,10 @@ import { getCurrentUser } from '@/data/domains/auth';
 import { getMyPublisher } from '@/data/domains/products';
 import { hasAdminPermission } from '@/lib/utils';
 import {
+  isProductCategory,
+  PUBLISHER_PRODUCT_CATEGORIES,
+} from '@/lib/product-categories';
+import {
   customerPriceFromCost,
   NEUTRAL_FORMULA,
   type PricingFormula,
@@ -30,7 +34,15 @@ export async function saveProduct(formData: FormData) {
   const isNew = !id;
   
   const name = formData.get('name') as string;
-  const category = formData.get('category') as 'library' | 'custom' | 'subscription';
+  // ⚠️ **الخانة في الواجهة مش دليل** (قاعدة «ع»). النموذج بيعرض
+  //    القيم الصالحة بس، لكن اللي بيوصل للخادم نص من المتصفح — وأي
+  //    حد يقدر يبعت اللي هو عايزه. والقاعدة هترفض القيمة الغلط،
+  //    لكن الرسالة اللي هتوصل للإداري ساعتها غير مفهومة.
+  const categoryRaw = formData.get('category');
+  if (!isProductCategory(categoryRaw)) {
+    throw new Error('التصنيف المختار غير صالح');
+  }
+  const category = categoryRaw;
   // ⚠️ **الرقم اللي بيوصل من الناشر هو نصيبه، مش سعر العميل.**
   //    سعر العميل بيتحسب تحت من معادلة `publisher-default`. أما
   //    الإدارة فبتكتب سعر منتج المنصة مباشرة — مفيش ناشر ياخد منه.
@@ -58,6 +70,15 @@ export async function saveProduct(formData: FormData) {
 
     // رقم الناشر بيتاخد من الحساب، مش من الفورم.
     effectivePublisherId = myPublisher.id;
+
+    // ⚠️ **الناشر ممنوع من «مخصص».** القصة المخصصة بتتكتب من الصفر
+    //    في المنصة بعد الطلب — مش إصدارًا جاهزًا عند ناشر. ولو عدّت،
+    //    المنتج بيظهر في «أنت البطل هنا» ومعالجه بيرفضه، فالعميل
+    //    يوصل لصفحة «غير متاح للتخصيص». المنع هنا بيقفل الباب في
+    //    الخادم، مش في القايمة وبس.
+    if (!PUBLISHER_PRODUCT_CATEGORIES.includes(category)) {
+      throw new Error('التصنيف ده مش متاح للناشرين — منتجاتك بتتعرض في المكتبة.');
+    }
 
     if (!isNew) {
       const { data: existing } = await supabase

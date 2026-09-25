@@ -4,6 +4,7 @@ import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader'
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { getPersonalizedProducts, getMyPublisher } from '@/data/domains/products';
 import Link from 'next/link';
+import { productCategoryLabel } from '@/lib/product-categories';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,18 +17,14 @@ export default async function PublisherProductsPage() {
   const allProducts = await getPersonalizedProducts();
   const myProducts = allProducts.filter(p => p.publisherId === myPublisher.id);
 
-  const categoryMap: Record<string, string> = {
-    book: 'كتاب',
-    game: 'لعبة',
-    accessory: 'ملحق',
-    library: 'مكتبة',
-  };
+  // ⚠️ الخريطة القديمة كانت بتترجم «كتاب» و«لعبة» و«ملحق» —
+  //    تصنيفات القاعدة أصلًا مش بتقبلها.
 
   const formattedProducts = myProducts.map(product => ({
     ...product,
     nameDisplay: <Link href={`/dashboard/publisher/products/${product.id}`} className="font-bold text-blue-600 hover:underline">{product.name}</Link>,
     priceDisplay: `${formatPrice(product.price)}`,
-    categoryDisplay: categoryMap[product.category] || product.category
+    categoryDisplay: productCategoryLabel(product.category)
   }));
 
   const columns = [

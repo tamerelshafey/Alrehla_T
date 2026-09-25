@@ -5,6 +5,10 @@ import { getPersonalizedProducts, getMyPublisher } from '@/data/domains/products
 import { saveProduct } from '@/actions/products';
 import { getPublisherPricingSettings } from '@/data/domains/admin';
 import { PublisherCostField } from '@/components/dashboard/PublisherCostField';
+import {
+  PUBLISHER_PRODUCT_CATEGORIES,
+  PRODUCT_CATEGORY_LABELS,
+} from '@/lib/product-categories';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,10 +50,17 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">النوع / التصنيف</label>
               <select name="category" defaultValue={target.category} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-amber-500 focus:outline-none">
-                <option value="library">مكتبة</option>
-                <option value="book">كتاب</option>
-                <option value="game">لعبة</option>
-                <option value="accessory">ملحق</option>
+                {/* ⚠️ **كانت أربعة، تلاتة منهم القاعدة بترفضهم**
+                    («كتاب» و«لعبة» و«ملحق» مش في النوع المعرَّف).
+                    والناشر بيعرض إصدارات جاهزة، فالمكتبة هي مساره —
+                    و«مخصص» ممنوع عليه عن قصد: القصة المخصصة بتتكتب
+                    من الصفر في المنصة، ولو الناشر اختارها كان
+                    منتجه يظهر في «أنت البطل» ومعالجه يرفضه. */}
+                {PUBLISHER_PRODUCT_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {PRODUCT_CATEGORY_LABELS[c]}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

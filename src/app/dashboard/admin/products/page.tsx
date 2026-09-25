@@ -7,6 +7,7 @@ import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import Link from 'next/link';
 import { StatusBadge } from '@/components/StatusBadge';
+import { productCategoryLabel } from '@/lib/product-categories';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +31,9 @@ export default async function Page() {
       ...p,
       nameDisplay: <Link href={`/dashboard/admin/products/${p.id}`} className="font-bold text-blue-600 hover:underline">{p.name}</Link>,
       priceDisplay: `${formatPrice(p.price)}`,
-      categoryDisplay: p.category === 'library' ? 'مكتبة' : p.category === 'custom' ? 'مخصص' : 'اشتراك',
+      // ⚠️ كان شرطًا ثلاثيًّا بيكتب «اشتراك» على **أي حاجة تانية** —
+      //    يعني تصنيف غير معروف كان بيتعرض غلط بدل ما يبان.
+      categoryDisplay: productCategoryLabel(p.category),
       ownerDisplay
     };
   });

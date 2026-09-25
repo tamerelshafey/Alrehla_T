@@ -15,6 +15,7 @@ import { productSchema, breadcrumbSchema } from '@/lib/structured-data';
 import { getSiteSettings } from '@/data/domains/content';
 import { ShareSection } from '@/components/share/ShareSection';
 import { ArrowLeft } from 'lucide-react';
+import { customizationPath } from '@/lib/product-categories';
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -46,6 +47,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </PageContainer>
     );
   }
+
+  // المسار من التصنيف — حقل واحد بيقرّر، مش اتنين بيتنافسوا.
+  const customization = customizationPath(product.category, product.slug);
 
   const settings = await getSiteSettings();
   const siteName = settings.siteName?.trim() || 'الرحلة';
@@ -138,21 +142,25 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </div>
               
               <div className="mt-6">
-                {product.ownerType === 'platform' ? (
-                  <Button 
-                    href={`/enha-lak/custom/${product.slug}`}
+                {/* ⚠️ **الشرط كان `ownerType === 'platform'` الأول.**
+                    فمنتج للمنصة تصنيفه «مكتبة» كان الزرار هنا بيقول
+                    «ابدأ التخصيص» ويوديه لمعالج القصة الكاملة، بينما
+                    زرار نفس المنتج في المكتبة بيوديه لتخصيص الغلاف.
+                    **نفس المنتج، نفس السعر، وشغل مختلف حسب الزرار.**
+
+                    دلوقتي المسار من التصنيف وحده — مصدر واحد في
+                    `customizationPath`. */}
+                {customization ? (
+                  <Button
+                    href={customization.href}
                     accentColor="rose"
-                    className="w-full justify-center !bg-slate-900 !text-white hover:!bg-slate-800"
+                    className={
+                      product.category === 'custom'
+                        ? 'w-full justify-center !bg-slate-900 !text-white hover:!bg-slate-800'
+                        : 'w-full justify-center !bg-emerald-600 hover:!bg-emerald-700'
+                    }
                   >
-                    ابدأ التخصيص
-                  </Button>
-                ) : product.category === 'library' ? (
-                  <Button 
-                    href={`/enha-lak/custom-library/${product.slug}`}
-                    accentColor="rose"
-                    className="w-full justify-center !bg-emerald-600 hover:!bg-emerald-700"
-                  >
-                    تخصيص الغلاف وإضافة للسلة
+                    {customization.label}
                   </Button>
                 ) : (
                   <AddToCartButton 
