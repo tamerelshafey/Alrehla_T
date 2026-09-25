@@ -13,6 +13,8 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { pageMetadata } from '@/lib/seo';
 import { productSchema, breadcrumbSchema } from '@/lib/structured-data';
 import { getSiteSettings } from '@/data/domains/content';
+import { ShareSection } from '@/components/share/ShareSection';
+import { ArrowLeft } from 'lucide-react';
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -82,6 +84,17 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     }
   }) }} />
       <Section>
+        {/* Top Navigation */}
+        <div className="mb-8">
+          <Link
+            href={product.category === 'library' ? '/enha-lak/library' : '/enha-lak/custom'}
+            className="inline-flex items-center gap-2 font-bold text-slate-500 hover:text-rose-600 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {product.category === 'library' ? 'العودة للمكتبة' : 'العودة للقصص المخصصة'}
+          </Link>
+        </div>
+
         <div className="grid gap-12 lg:grid-cols-2">
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-lg">
             {product.coverImageUrl ? (
@@ -120,10 +133,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             )}
             
             <Card accentColor="rose" className="p-6">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between gap-4">
                 <span className="text-3xl font-black text-rose-500">{formatPrice(product.price)}</span>
-                {/* A struck-through "original price" of price + 5000 used to be
-                    printed here — an invented discount on every product. */}
               </div>
               
               <div className="mt-6">
@@ -159,6 +170,21 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </div>
             </Card>
           </div>
+        </div>
+
+        {/* Share Section */}
+        <div className="mt-16 border-t border-slate-200 pt-10">
+          <ShareSection
+            title="مشاركة هذا الإصدار"
+            subtitle="شارك هذا الكتاب أو القصة مع الأصدقاء والعائلة عبر وسائل التواصل"
+            theme="rose"
+            data={{
+              title: product.name,
+              description: product.shortDescription,
+              url: `/enha-lak/product/${product.slug}`,
+              shortPath: `/s/p/${product.id ? product.id.split('-')[0] : product.slug}`,
+            }}
+          />
         </div>
       </Section>
     </PageContainer>

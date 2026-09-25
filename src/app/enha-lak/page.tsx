@@ -23,6 +23,7 @@ import { SectionHeader } from '@/components/SectionHeader';
 
 
 
+
 import {
 
 
@@ -123,6 +124,7 @@ export default async function EnhaLakPage() {
         <p className="text-xl md:text-2xl font-medium text-slate-600 mb-8 leading-relaxed">
           {content['enhaLak.hero.subtitle']}
         </p>
+
       </Section>
       
 
@@ -266,6 +268,8 @@ export default async function EnhaLakPage() {
           ))}
         </div>
       </Section>
+
+
     </PageContainer>
   );
 }

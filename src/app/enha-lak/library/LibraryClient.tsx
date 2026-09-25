@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Book, FileText, Search, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import { PersonalizedProduct, Publisher } from '@/types';
 
+
 interface LibraryClientProps {
   initialProducts: PersonalizedProduct[];
   publishers: Publisher[];
@@ -150,6 +151,7 @@ export function LibraryClient({ initialProducts, publishers }: LibraryClientProp
                       {publisher.name}
                     </div>
                   )}
+
                 </div>
                 <div className="flex flex-1 flex-col p-6 z-10 pointer-events-none">
                   <h3 className="mb-2 text-xl font-bold text-slate-800">

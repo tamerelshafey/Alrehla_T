@@ -2,7 +2,7 @@ import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PageContainer } from '@/components/PageContainer';
-import { ArrowLeft, Calendar, User, BookOpen, Share2, Facebook, Twitter, Linkedin } from 'lucide-react';
+import { ArrowLeft, Calendar, User, BookOpen } from 'lucide-react';
 import { getBlogPosts, getBlogPostBySlug } from '@/data/domains/content';
 import { notFound } from 'next/navigation';
 import { Section } from '@/components/ui/Section';
@@ -12,6 +12,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { pageMetadata } from '@/lib/seo';
 import { articleSchema, breadcrumbSchema } from '@/lib/structured-data';
 import { getSiteSettings } from '@/data/domains/content';
+import { ShareSection } from '@/components/share/ShareSection';
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -62,11 +63,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         ]}
       />
       <Section containerClassName="max-w-4xl pt-12 pb-24">
-        {/* Back link */}
-        <Link href="/blog" className="mb-8 inline-flex items-center gap-2 font-bold text-slate-500 hover:text-brand-strong transition-colors">
-          <ArrowLeft className="h-4 w-4" />
-          العودة للمدونة
-        </Link>
+        {/* Top Navigation */}
+        <div className="mb-8">
+          <Link href="/blog" className="inline-flex items-center gap-2 font-bold text-slate-500 hover:text-brand-strong transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            العودة للمدونة
+          </Link>
+        </div>
 
         {/* Article Header */}
         <header className="mb-12 text-center">
@@ -90,7 +93,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <Image 
               src={optimizedImageUrl(post.coverImageUrl, 1400)} 
               alt={post.title} 
-              className="h-full w-full object-cover"
+              fill
+              sizes="(max-width: 1024px) 100vw, 896px"
+              priority
+              className="object-cover"
               referrerPolicy="no-referrer"
             />
           ) : (
@@ -112,20 +118,19 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
         </article>
 
-        {/* Share */}
-        <div className="mt-16 flex items-center justify-center gap-4 border-t border-slate-200 pt-8">
-          <span className="font-bold text-slate-700">شارك المقال:</span>
-          <div className="flex gap-2">
-            <Button variant="secondary" accentColor="amber" className="!px-3 !py-3">
-              <Facebook className="h-5 w-5" />
-            </Button>
-            <Button variant="secondary" accentColor="amber" className="!px-3 !py-3">
-              <Twitter className="h-5 w-5" />
-            </Button>
-            <Button variant="secondary" accentColor="amber" className="!px-3 !py-3">
-              <Linkedin className="h-5 w-5" />
-            </Button>
-          </div>
+        {/* Share Section */}
+        <div className="mt-16 border-t border-slate-200 pt-10">
+          <ShareSection
+            title="شارك المقال"
+            subtitle="انشر الفائدة وشارك المقال مع أصدقائك وعائلتك عبر وسائل التواصل"
+            theme="amber"
+            data={{
+              title: post.title,
+              description: post.excerpt,
+              url: `/blog/${post.slug}`,
+              shortPath: `/s/b/${post.id ? post.id.split('-')[0] : post.slug}`,
+            }}
+          />
         </div>
       </Section>
     </PageContainer>

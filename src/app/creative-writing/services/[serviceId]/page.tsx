@@ -12,6 +12,7 @@ import { fetchFamilyMembers } from '@/app/actions/family';
 import { PersonAvatar } from '@/components/ui/PersonAvatar';
 import { pageMetadata } from '@/lib/seo';
 
+
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<{ serviceId: string }> }) {
@@ -80,17 +81,22 @@ export default async function ServiceProvidersPage({
   return (
     <PageContainer>
       <Section containerClassName="mx-auto w-full max-w-4xl pt-16 pb-10">
-        <Link
-          href="/creative-writing/services"
-          className="mb-8 inline-flex items-center gap-2 font-bold text-slate-500 transition-colors hover:text-emerald-600"
-        >
-          <ArrowLeft className="h-4 w-4 rotate-180" />
-          كل الخدمات الإبداعية
-        </Link>
+        {/* Top Navigation */}
+        <div className="mb-8">
+          <Link
+            href="/creative-writing/services"
+            className="inline-flex items-center gap-2 font-bold text-slate-500 transition-colors hover:text-emerald-600"
+          >
+            <ArrowLeft className="h-4 w-4 rotate-180" />
+            كل الخدمات الإبداعية
+          </Link>
+        </div>
 
-        <h1 className="text-4xl font-black tracking-tight text-slate-900">
-          مقدمو خدمة: {service.name}
-        </h1>
+        <div>
+          <h1 className="text-4xl font-black tracking-tight text-slate-900">
+            مقدمو خدمة: {service.name}
+          </h1>
+        </div>
         <p className="mt-4 text-lg font-medium leading-relaxed text-slate-600">
           {service.description}
         </p>
@@ -192,6 +198,8 @@ export default async function ServiceProvidersPage({
           </div>
         )}
       </Section>
+
+
     </PageContainer>
   );
 }

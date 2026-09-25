@@ -24,6 +24,7 @@ import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 
+
 export default async function CustomPage() {
   const allProducts = await getPersonalizedProducts();
   const customProducts = allProducts.filter((p) => p.category === 'custom');
@@ -32,12 +33,15 @@ export default async function CustomPage() {
   return (
     <PageContainer className="!py-0 !space-y-0">
       {/* Header */}
-      <SectionHeader
-        title="أنت البطل هنا"
-        icon={<PenTool className="h-8 w-8" />}
-        iconClassName="bg-rose-50 text-rose-600"
-        description="نصنع محتوى مخصصاً لطفلك من الصفر بعد إتمام الطلب، ليكون هو محور القصة بأدق تفاصيلها."
-      />
+      <div className="relative">
+        <SectionHeader
+          title="أنت البطل هنا"
+          icon={<PenTool className="h-8 w-8" />}
+          iconClassName="bg-rose-50 text-rose-600"
+          description="نصنع محتوى مخصصاً لطفلك من الصفر بعد إتمام الطلب، ليكون هو محور القصة بأدق تفاصيلها."
+        />
+
+      </div>
 
       {/* Custom Products */}
       <Section containerClassName="max-w-6xl">
@@ -60,6 +64,7 @@ export default async function CustomPage() {
                 ) : (
                   <ImagePlaceholder label={product.name} />
                 )}
+
               </div>
               <div className="flex flex-1 flex-col p-6">
                 <h3 className="mb-2 text-2xl font-bold text-slate-800">
@@ -166,6 +171,8 @@ export default async function CustomPage() {
           ))}
         </div>
       </Section>
+
+
     </PageContainer>
   );
 }

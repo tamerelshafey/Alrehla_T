@@ -17,6 +17,7 @@ import { PageContainer } from '@/components/PageContainer';
 import { SectionHeader } from '@/components/SectionHeader';
 import { Section } from '@/components/ui/Section';
 
+
 /**
  * The catalogue itself now comes from the database. Only presentation —
  * which icon and colour a category wears — stays in code. This page used to
@@ -110,6 +111,7 @@ export default async function ServicesPage() {
         <p className="text-lg md:text-xl font-medium text-slate-600 leading-relaxed">
           خدمات مصممة خصيصاً لدعم رحلة طفلك الإبداعية في كل خطوة، سواء كان مشتركاً في برامجنا أم لا.
         </p>
+
       </Section>
 
       {/* Services Categories */}
@@ -134,9 +136,11 @@ export default async function ServicesPage() {
                     className={`flex flex-col rounded-3xl border-2 ${category.borderColor} bg-white p-8 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg`}
                   >
                     <div className="mb-6 flex-1">
-                      <h3 className="mb-3 text-2xl font-black text-slate-800">
-                        {service.title}
-                      </h3>
+                      <div className="mb-3">
+                        <h3 className="text-2xl font-black text-slate-800">
+                          {service.title}
+                        </h3>
+                      </div>
                       <p className="text-sm font-medium leading-relaxed text-slate-600 min-h-[40px]">
                         {service.description}
                       </p>
@@ -174,7 +178,7 @@ export default async function ServicesPage() {
       </Section>
 
       {/* Packages Link */}
-      <Section containerClassName="pb-24">
+      <Section containerClassName="pb-16">
         <div className="mx-auto w-full max-w-4xl rounded-3xl border border-slate-200 bg-slate-50 p-10 text-center shadow-sm">
           <h3 className="mb-4 text-2xl font-black text-slate-800">
             تبحث عن مسار متكامل بدل خدمة واحدة؟
@@ -188,6 +192,8 @@ export default async function ServicesPage() {
           </Link>
         </div>
       </Section>
+
+
     </PageContainer>
   );
 }

@@ -18,6 +18,7 @@ import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 
+
 import {
   PenTool,
   Target,
@@ -112,6 +113,7 @@ export default async function CreativeWritingPage() {
         <p className="text-xl md:text-2xl font-medium text-slate-600 mb-8 leading-relaxed">
           {content['cw.hero.subtitle']}
         </p>
+
       </Section>
 
       {/* Suitable For */}
@@ -286,6 +288,8 @@ export default async function CreativeWritingPage() {
           </Button>
         </div>
       </Section>
+
+
     </PageContainer>
   );
 }
