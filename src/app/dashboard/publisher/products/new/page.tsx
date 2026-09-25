@@ -3,6 +3,8 @@ import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getMyPublisher } from '@/data/domains/products';
 import { saveProduct } from '@/actions/products';
+import { getPublisherPricingSettings } from '@/data/domains/admin';
+import { PublisherCostField } from '@/components/dashboard/PublisherCostField';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +13,11 @@ export default async function Page() {
   // الجدول» — يعني أي ناشر كان بيشوف بيانات الناشر الأول مش بتاعته.
   const myPublisher = await getMyPublisher();
   if (!myPublisher) notFound();
+
+  // المعادلة من القاعدة — عشان الناشر يشوف سعر العميل وهو بيكتب
+  // نصيبه. والخادم بيقراها تاني وقت الحفظ ومبيثقش في اللي جاي
+  // من الفورم (قاعدة «ف»).
+  const formula = await getPublisherPricingSettings();
 
   return (
     <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">
@@ -40,10 +47,7 @@ export default async function Page() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">السعر الورقي (ج.م)</label>
-              <input type="number" name="price" required className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-amber-500 focus:outline-none" />
-            </div>
+            <PublisherCostField formula={formula} />
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">السعر الإلكتروني (اختياري)</label>
               <input type="number" name="electronicPrice" className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-amber-500 focus:outline-none" />

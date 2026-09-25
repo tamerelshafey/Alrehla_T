@@ -222,22 +222,57 @@ export async function submitWithdrawalRequest(
   return { ok: true, amount: available };
 }
 
+/**
+ * معادلة تسعير الناشرين.
+ *
+ * ⚠️ **كانت `update` مجرّدة، ودي قاعدة «و» بالنص.**
+ *
+ *    `UPDATE` على صف **مش موجود** بينجح ويرجّع صفر صفوف. فلو صفّ
+ *    `publisher-default` مكانش اتعمل يوم ما الجدول اتبنى، الإدارة
+ *    كانت تكتب النسبة وتدوس «حفظ» وتشوف «تم» — **والقيمة ما
+ *    اتخزّنتش**. والقارئ بيرجع ساعتها للافتراضي: معامل 1 ورسم 0،
+ *    يعني **المنصة ما بتاخدش حاجة** من كل كتاب.
+ *
+ *    وشاشة المدربين كانت بتعمل `upsert` من الأول — يعني الفرق بين
+ *    الشاشتين هو اللي خلّى ده يعدّي. `upsert` هنا بتوحّدهم.
+ *
+ * ⚠️ **والقيم بتتفحص هنا مش في الواجهة وبس** (قاعدة «ع»): معامل
+ *    بالسالب أو رسم بالسالب معناه سعر عميل أقل من نصيب الناشر —
+ *    يعني المنصة بتدفع من جيبها على كل عملية بيع.
+ */
 export async function updatePublisherPricingSettings(multiplier: number, fixedFee: number) {
   const user = await requireSuperAdmin();
+
+  if (!Number.isFinite(multiplier) || multiplier <= 0) {
+    throw new Error('المعامل لازم يكون رقمًا أكبر من صفر');
+  }
+  if (!Number.isFinite(fixedFee) || fixedFee < 0) {
+    throw new Error('الرسم الثابت لازم يكون صفرًا أو أكتر');
+  }
+
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('pricing_formula_settings')
-    .update({
-      platform_multiplier: multiplier,
-      fixed_admin_fee: fixedFee,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', 'publisher-default');
+    .upsert(
+      {
+        id: 'publisher-default',
+        platform_multiplier: multiplier,
+        fixed_admin_fee: fixedFee,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'id' },
+    )
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     console.error('Error updating publisher pricing settings', error);
     throw new Error('تعذّر حفظ إعدادات التسعير');
+  }
+
+  if (!data) {
+    throw new Error('الحفظ ما وصلش للقاعدة — كلّم الإدارة التقنية');
   }
 
   await logAuditAction({

@@ -258,6 +258,13 @@ export type PersonalizedProduct = {
   publisherId?: string;
   ownerType: 'platform' | 'publisher';
   features?: string[];
+  /**
+   * نصيب الناشر من النسخة الواحدة (ملف SQL 97).
+   *
+   * ⚠️ **مش للعرض للعميل.** `price` هو سعر العميل، وده اللي بيوصل
+   *    للناشر — بيظهر في شاشة الناشر وشاشة الإدارة وبس.
+   */
+  publisherCost?: number;
 };
 
 // حالة الطلب

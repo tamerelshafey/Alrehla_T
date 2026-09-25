@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Truck, PackageCheck, Package, X, Check } from 'lucide-react';
 import { setOrderFulfilmentStatus } from '@/actions/admin-orders';
+import type { PublisherEarningsResult } from '@/actions/admin-orders';
+import { FormError, FormSuccess, FormNotice } from '@/components/ui/FormError';
+import { formatPrice } from '@/lib/utils';
 
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-3 text-sm font-medium outline-none transition-colors focus:border-amber-500 focus:bg-white';
@@ -28,6 +31,8 @@ export function FulfilmentPanel({
 }) {
   const router = useRouter();
   const [step, setStep] = useState<Step | null>(null);
+  // نتيجة تسجيل مستحقات الناشرين — بتتعرض، مش بتترمي.
+  const [payouts, setPayouts] = useState<PublisherEarningsResult>(null);
   const [tracking, setTracking] = useState(trackingReference);
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
@@ -39,13 +44,18 @@ export function FulfilmentPanel({
   const apply = async (target: Step) => {
     setBusy(true);
     setError('');
+    setPayouts(null);
     try {
-      await setOrderFulfilmentStatus({
+      // ⚠️ **النتيجة بتتقري.** «تم التسليم» على طلب فيه كتب ناشرين
+      //    بيسجّل مستحقاتهم — ولو ما اتسجّلوش، الإدارة لازم تعرف
+      //    دلوقتي. الشاشة كانت بترمي الرد في الزبالة.
+      const result = await setOrderFulfilmentStatus({
         orderId,
         status: target,
         trackingReference: target === 'shipped' ? tracking : undefined,
         note: note.trim() || undefined,
       });
+      setPayouts(result?.payouts ?? null);
       setStep(null);
       setNote('');
       router.refresh();
@@ -60,7 +70,28 @@ export function FulfilmentPanel({
 
   return (
     <div className="w-full space-y-3">
-      {error && <p className="text-sm font-bold text-red-600">{error}</p>}
+      <FormError message={error} />
+
+      {payouts?.failed && (
+        <FormError message="الطلب اتسلّم، بس تسجيل مستحقات الناشرين وقع. علّم الطلب «تم التسليم» تاني — إعادة التسجيل آمنة ومش بتدفع مرتين." />
+      )}
+
+      {payouts && !payouts.failed && (payouts.missing_cost ?? 0) > 0 && (
+        <FormNotice
+          message={
+            `الطلب اتسلّم، بس فيه ${payouts.missing_cost} ناشر منتجه بلا «نصيب الناشر» مسجَّل — `
+            + 'فمستحقه ما اتحسبش. اظبط النصيب من شاشة المنتجات وعلّم الطلب «تم التسليم» تاني.'
+          }
+        />
+      )}
+
+      {payouts?.recorded && (
+        <FormSuccess
+          message={
+            `اتسجّل مستحق لـ${payouts.publishers} ناشر بإجمالي ${formatPrice(payouts.amount ?? 0)}.`
+          }
+        />
+      )}
 
       <div className="flex flex-wrap gap-2">
         {canFulfil && status === 'paid' && (

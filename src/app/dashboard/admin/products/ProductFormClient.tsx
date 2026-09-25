@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Publisher, PricingFormulaSettings } from '@/types';
-import { calculateFinalSessionPrice } from '@/lib/utils';
+import { customerPriceFromCost } from '@/lib/publisher-pricing';
 import { saveProduct } from '@/actions/products';
 import { ImageField } from '@/components/dashboard/ImageField';
 
@@ -19,7 +19,7 @@ export function ProductFormClient({ publishers, pricingSettings }: Props) {
 
   useEffect(() => {
     if (ownerType === 'publisher' && basePrice > 0) {
-      setFinalPrice(calculateFinalSessionPrice(basePrice, pricingSettings));
+      setFinalPrice(customerPriceFromCost(basePrice, pricingSettings));
     } else {
       setFinalPrice(basePrice);
     }
@@ -77,11 +77,21 @@ export function ProductFormClient({ publishers, pricingSettings }: Props) {
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">السعر الأساسي (الورقي)</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2">
+              {ownerType === 'publisher' ? 'نصيب الناشر من النسخة' : 'السعر الورقي'}
+            </label>
             <div className="relative">
+              {/* ⚠️ **الشاشة كانت بتكدب.**
+                  الخانة اسمها `price`، والشاشة تحتها بتعرض «السعر
+                  النهائي: 150» — والمحفوظ كان 100. يعني الإداري
+                  بيشوف رقمًا والعميل بيشوف رقمًا تاني.
+
+                  دلوقتي الرقم ده بيتبعت باسمه الصح: نصيب الناشر لو
+                  المنتج لناشر، وسعر المنصة لو المنتج بتاعها —
+                  والخادم بيحسب الباقي بنفسه. */}
               <input 
                 type="number" 
-                name="price"
+                name={ownerType === 'publisher' ? 'publisherCost' : 'price'}
                 min="0"
                 required 
                 value={basePrice || ''}
@@ -95,7 +105,7 @@ export function ProductFormClient({ publishers, pricingSettings }: Props) {
           {ownerType === 'publisher' && basePrice > 0 && (
             <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-600">نسبة المنصة:</span>
+                <span className="text-slate-600">هامش المنصة:</span>
                 <span className="font-bold text-blue-700">+{finalPrice - basePrice} ج.م</span>
               </div>
               <div className="flex justify-between font-black text-lg border-t border-blue-200 pt-2 mt-2">

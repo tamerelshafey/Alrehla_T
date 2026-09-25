@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/auth-guard';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { logAuditAction } from '@/lib/audit';
-import { notifyUser } from '@/lib/notifications';
+import { notifyUser, notifyAdmins } from '@/lib/notifications';
 import type { Database } from '@/types/supabase';
 
 /**
@@ -14,6 +14,22 @@ import type { Database } from '@/types/supabase';
  * state at all, and the "تحديث حالة الشحن" button had no handler. A customer
  * who paid for a printed book had no way of knowing whether it had been sent.
  */
+
+/**
+ * نتيجة تسجيل مستحقات الناشرين عند التسليم.
+ *
+ * ⚠️ **`null` معناها «الخطوة دي ما اتنفّذتش»** (الحالة مش «تم
+ *    التسليم»)، و`failed: true` معناها **اتنفّذت ووقعت**. الفرق
+ *    مهم: الشاشة بتسكت في الأولى وبتتكلم في التانية.
+ */
+export type PublisherEarningsResult = {
+  recorded?: boolean;
+  publishers?: number;
+  amount?: number;
+  missing_cost?: number;
+  reason?: string;
+  failed?: boolean;
+} | null;
 
 const FLOW: Record<string, string> = {
   preparing: 'قيد التجهيز',
@@ -62,6 +78,46 @@ export async function setOrderFulfilmentStatus(params: {
     throw new Error('تعذّر تحديث حالة الطلب');
   }
 
+  // ── مستحقات الناشرين عند التسليم ──────────────────────────
+  //
+  // ⚠️ **بعد ما الحالة تتحفظ فعلًا، لا قبلها.** الدالة بتشترط إن
+  //    الطلب `delivered` وبتقراه بنفسها من القاعدة — فلو اتنادت قبل
+  //    الحفظ كانت هترفض.
+  //
+  // ⚠️ **وفشلها مش بيرمي.** الطلب اتسلّم فعلًا، والرمي هنا كان
+  //    هيدّي الإدارة رسالة خطأ على عملية **تمّت** — وهي نفس الحفرة
+  //    اللي ضيّعت مستحق المدرب في ملف 90: الإدارة تحاول تاني،
+  //    الحالة بقت `delivered` خلاص، والمحاولة تترفض. فبنرجّع
+  //    النتيجة والشاشة بتقولها.
+  let payouts: PublisherEarningsResult = null;
+
+  if (status === 'delivered') {
+    const { data: result, error: payoutError } = await supabase.rpc(
+      'record_order_publisher_earnings',
+      { p_order_id: orderId },
+    );
+
+    if (payoutError) {
+      console.error('Error recording publisher earnings', payoutError);
+      payouts = { recorded: false, failed: true };
+    } else {
+      payouts = (result as PublisherEarningsResult) ?? null;
+    }
+
+    // منتج ناشر بلا نصيب مسجَّل: المستحق **ما اتحسبش**، والإدارة
+    // لازم تعرف دلوقتي مش آخر الشهر.
+    if (payouts && !payouts.failed && (payouts.missing_cost ?? 0) > 0) {
+      await notifyAdmins({
+        event: 'order_status',
+        title: 'مستحق ناشر ما اتسجّلش',
+        message:
+          `الطلب اتسلّم، بس فيه ${payouts.missing_cost} ناشر منتجه بلا «نصيب الناشر» مسجَّل. `
+          + 'اظبط النصيب من شاشة المنتجات وبعدين علّم الطلب «تم التسليم» تاني.',
+        link: `/dashboard/admin/orders/${orderId}`,
+      });
+    }
+  }
+
   await notifyUser({
     event: 'order_status',
     recipientProfileId: data.user_id,
@@ -85,5 +141,7 @@ export async function setOrderFulfilmentStatus(params: {
   revalidatePath(`/dashboard/admin/orders/${orderId}`);
   revalidatePath('/dashboard/admin/orders');
   revalidatePath('/account/orders/enha-lak');
-  return { ok: true };
+  revalidatePath('/dashboard/publisher/payouts');
+  revalidatePath('/dashboard/admin/finance/publisher-payouts');
+  return { ok: true, payouts };
 }

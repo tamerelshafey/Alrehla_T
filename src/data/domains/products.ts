@@ -44,6 +44,7 @@ export const getPersonalizedProducts = async (): Promise<PersonalizedProduct[]> 
     coverImageUrl: p.cover_image_url || undefined,
     publisherId: p.publisher_id || undefined,
     ownerType: p.owner_type,
+    publisherCost: p.publisher_cost ?? undefined,
     features: p.features || undefined
   }));
 };
@@ -194,6 +195,7 @@ export const getProductBySlug = async (rawSlug: string): Promise<PersonalizedPro
       coverImageUrl: data.cover_image_url || undefined,
       publisherId: data.publisher_id || undefined,
       ownerType: data.owner_type,
+      publisherCost: data.publisher_cost ?? undefined,
       features: data.features || undefined
     };
   }
@@ -210,14 +212,24 @@ export const getProductBySlug = async (rawSlug: string): Promise<PersonalizedPro
  * الناشر 70% ثابتة مكتوبة في الكود. يعني أي ناشر بيفتح لوحته كان بيشوف
  * طلبات وأرباح مش موجودة.
  *
- * النسخة دي بتقرا من قاعدة البيانات، وبتحسب النصيب بعكس معادلة التسعير
- * المحفوظة في «إعدادات تسعير الناشرين»:
+ * النسخة دي بتقرا من قاعدة البيانات.
  *
- *     سعر العميل  =  نصيب الناشر × المُعامِل + الرسم الثابت
- *     نصيب الناشر =  (سعر العميل − الرسم الثابت) ÷ المُعامِل
+ * ⚠️ **والنصيب بيتقري من `publisher_cost` لا بعكس المعادلة** (ملف
+ *    97). كانت بتتحسب بالعكس:
  *
- * الرسم الثابت بيتخصم على الوحدة الواحدة، زي ما بيتخصم على الجلسة
- * الواحدة في جانب المدربين.
+ *        نصيب الناشر = (سعر العميل − الرسم) ÷ المعامل
+ *
+ *    والعكس ده بيدّي رقمًا صح **طول ما المعادلة ما اتغيّرتش**. أول ما
+ *    الإدارة تعدّل النسبة، كل الطلبات القديمة بتتحسب بالمعادلة
+ *    الجديدة — فالناشر يفتح لوحته يلاقي نصيبه من بيعة الشهر اللي فات
+ *    **اتغيّر لوحده**، ورقم شاشة الطلبات يخالف رقم المستحقات.
+ *
+ *    `publisher_cost` رقم مخزّن على المنتج، فالشاشتان بيقروا نفس
+ *    المصدر.
+ *
+ * ⚠️ **والقديم لسه بيتحسب بالعكس**: المنتجات اللي اتعملت قبل ملف 97
+ *    `publisher_cost` بتاعها فاضي، فبنرجع للعكس عشان مانعرضش صفرًا
+ *    على بيعة حقيقية.
  */
 export async function getPublisherOrders(): Promise<PublisherOrder[]> {
   const publisher = await getMyPublisher();
@@ -228,11 +240,11 @@ export async function getPublisherOrders(): Promise<PublisherOrder[]> {
   // منتجات الناشر ده.
   const { data: products } = await supabase
     .from('personalized_products')
-    .select('id, name')
+    .select('id, name, publisher_cost')
     .eq('publisher_id', publisher.id);
 
   if (!products || products.length === 0) return [];
-  const productById = new Map(products.map((p) => [p.id, p.name]));
+  const productById = new Map(products.map((p) => [p.id, p]));
 
   // بنودها في الطلبات.
   const { data: items } = await supabase
@@ -259,17 +271,21 @@ export async function getPublisherOrders(): Promise<PublisherOrder[]> {
     const order = orderById.get(item.order_id);
     if (!order) continue;
 
+    const product = productById.get(item.product_id);
     const totalAmount = item.unit_price * item.quantity;
-    // النصيب لا ينزل تحت الصفر لو الرسم الثابت أكبر من سعر الوحدة.
-    const sharePerUnit = Math.max(
-      0,
-      (item.unit_price - formula.fixedAdminFee) / multiplier,
-    );
+
+    // النصيب المخزّن أولًا؛ والعكس احتياطيًا للمنتجات الأقدم من ملف 97.
+    // والنصيب لا ينزل تحت الصفر لو الرسم الثابت أكبر من سعر الوحدة.
+    const storedCost = product?.publisher_cost;
+    const sharePerUnit =
+      storedCost != null && storedCost > 0
+        ? storedCost
+        : Math.max(0, (item.unit_price - formula.fixedAdminFee) / multiplier);
 
     rows.push({
       id: item.id,
       orderId: item.order_id,
-      productName: productById.get(item.product_id) ?? 'منتج محذوف',
+      productName: product?.name ?? 'منتج محذوف',
       quantity: item.quantity,
       totalAmount,
       publisherShare: sharePerUnit * item.quantity,

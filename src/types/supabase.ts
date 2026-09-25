@@ -989,6 +989,8 @@ export type Database = {
           publisher_id: string | null
           owner_type: Database["public"]["Enums"]["owner_type"]
           features: string[] | null
+          /** نصيب الناشر من النسخة الواحدة — ملف SQL 97. */
+          publisher_cost: number | null
           created_at: string
           updated_at: string
         }
@@ -1004,6 +1006,7 @@ export type Database = {
           publisher_id?: string | null
           owner_type?: Database["public"]["Enums"]["owner_type"]
           features?: string[] | null
+          publisher_cost?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -1019,6 +1022,7 @@ export type Database = {
           publisher_id?: string | null
           owner_type?: Database["public"]["Enums"]["owner_type"]
           features?: string[] | null
+          publisher_cost?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -1112,6 +1116,10 @@ export type Database = {
           period: string
           amount: number
           status: Database["public"]["Enums"]["payout_status_enum"]
+          /** مصدر المستحق ورقمه — ملف SQL 97، وعليهم الفهرس الفريد. */
+          source_type: string | null
+          source_id: string | null
+          description: string | null
           created_at: string
           updated_at: string
         }
@@ -1121,6 +1129,9 @@ export type Database = {
           period: string
           amount: number
           status?: Database["public"]["Enums"]["payout_status_enum"]
+          source_type?: string | null
+          source_id?: string | null
+          description?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -1130,6 +1141,9 @@ export type Database = {
           period?: string
           amount?: number
           status?: Database["public"]["Enums"]["payout_status_enum"]
+          source_type?: string | null
+          source_id?: string | null
+          description?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -1894,6 +1908,11 @@ export type Database = {
        * ⚠️ اتكتبت بالإيد زي `public_instructors` تحت.
        */
       record_service_order_earning: {
+        Args: { p_order_id: string }
+        Returns: Json
+      }
+      /** مستحقات ناشري طلب مسلَّم — ملف SQL 97. */
+      record_order_publisher_earnings: {
         Args: { p_order_id: string }
         Returns: Json
       }

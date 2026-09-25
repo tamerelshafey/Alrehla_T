@@ -3,6 +3,8 @@ import React from 'react';
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { getPersonalizedProducts, getMyPublisher } from '@/data/domains/products';
 import { saveProduct } from '@/actions/products';
+import { getPublisherPricingSettings } from '@/data/domains/admin';
+import { PublisherCostField } from '@/components/dashboard/PublisherCostField';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +24,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   // المنتج لازم يكون بتاع الناشر ده. من غير السطر ده، ناشر يقدر يفتح
   // صفحة تعديل منتج ناشر تاني بمجرد إنه يعرف رقمه.
   if (target.publisherId !== myPublisher.id) notFound();
+
+  const formula = await getPublisherPricingSettings();
 
   return (
     <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">
@@ -51,10 +55,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">السعر الورقي (ج.م)</label>
-              <input type="number" name="price" defaultValue={target.price} required className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-amber-500 focus:outline-none" />
-            </div>
+            <PublisherCostField formula={formula} defaultCost={target.publisherCost} />
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">السعر الإلكتروني (اختياري)</label>
               <input type="number" name="electronicPrice" defaultValue={target.electronicPrice || ''} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-amber-500 focus:outline-none" />
