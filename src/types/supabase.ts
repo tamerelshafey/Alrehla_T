@@ -455,6 +455,8 @@ export type Database = {
           instructor_id: string | null
           preferred_slot: Json | null
           note: string | null
+          /** الاسم المطلوب — لطلبات name_change (ملف SQL 93). */
+          requested_name: string | null
           status: string
           guardian_note: string | null
           decided_at: string | null
@@ -472,6 +474,7 @@ export type Database = {
           instructor_id?: string | null
           preferred_slot?: Json | null
           note?: string | null
+          requested_name?: string | null
           status?: string
           guardian_note?: string | null
           decided_at?: string | null
@@ -489,6 +492,7 @@ export type Database = {
           instructor_id?: string | null
           preferred_slot?: Json | null
           note?: string | null
+          requested_name?: string | null
           status?: string
           guardian_note?: string | null
           decided_at?: string | null
@@ -1891,6 +1895,11 @@ export type Database = {
        */
       record_service_order_earning: {
         Args: { p_order_id: string }
+        Returns: Json
+      }
+      /** موافقة ولي الأمر على تغيير اسم ابنه — ملف SQL 93. */
+      apply_dependent_name_change: {
+        Args: { p_request_id: string }
         Returns: Json
       }
       public_instructors: {

@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import { CheckCircle2 } from 'lucide-react';
 import { AvatarPicker } from '@/components/dashboard/AvatarPicker';
 import { updateMyProfile } from '@/actions/profiles';
+import { requestNameChange } from '@/actions/dependent-requests';
+import { useAction } from '@/lib/use-action';
+import { FormError, FormSuccess } from '@/components/ui/FormError';
 
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 font-medium outline-none transition-colors focus:border-amber-500 focus:bg-white';
@@ -19,18 +22,45 @@ export function StudentProfileClient({
   avatarUrl: string;
 }) {
   const router = useRouter();
+  /**
+   * ⚠️ **الاسم مش بيتحفظ من هنا — بيتبعت كطلب لولي الأمر.**
+   *
+   * كان `input` عادي بيتحفظ مع الصورة في `user_profiles.full_name`.
+   * والتعديل كان **بينجح فعلًا** — وميظهرش لحد: في اسمين لنفس الطفل،
+   * ودوال القاعدة مكتوبة `COALESCE(ch.full_name, up.full_name, …)`
+   * فاسم المركز العائلي بيكسب دايمًا.
+   *
+   * يعني الطالب يغيّر اسمه ويشوفه في لوحته، وولي الأمر والمدرب
+   * والطلبات **والكتاب اللي هيتطبع** كلهم على الاسم القديم.
+   *
+   * والاسم ده بيتطبع على الكتاب، فالقرار إنه ملك ولي الأمر —
+   * والطالب يقترح (ملف SQL 93).
+   */
   const [fullName, setFullName] = useState(initialName);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatar);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
 
+  const [nameSent, setNameSent] = useState('');
+
+  const nameRequest = useAction(requestNameChange, {
+    onSuccess: (result) => {
+      if (result.ok) {
+        setNameSent('اتبعت طلب تغيير الاسم لولي أمرك. هتشوف رده في «طلباتي».');
+        setFullName(initialName);
+      }
+    },
+    fallbackError: 'تعذّر إرسال طلب تغيير الاسم.',
+  });
+
+  /** الصورة بتتحفظ على طول — هي ملك الطالب، مش بتتطبع على الكتاب. */
   const save = async () => {
     setBusy(true);
     setError('');
     setSaved(false);
     try {
-      await updateMyProfile({ fullName, avatarUrl });
+      await updateMyProfile({ fullName: initialName, avatarUrl });
       setSaved(true);
       router.refresh();
     } catch (err) {
@@ -71,6 +101,24 @@ export function StudentProfileClient({
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
           />
+          <p className="text-xs font-medium text-slate-500">
+            اسمك بيظبطه ولي أمرك — لأنه اللي بيتطبع على كتابك ويشوفه مدربك.
+            اكتب الاسم اللي عايزه واطلب منه يوافق.
+          </p>
+          <FormError message={nameRequest.error} />
+          <FormSuccess message={nameSent} />
+          <button
+            type="button"
+            disabled={nameRequest.pending || fullName.trim() === initialName.trim()}
+            aria-busy={nameRequest.pending || undefined}
+            onClick={() => {
+              setNameSent('');
+              nameRequest.run(fullName);
+            }}
+            className="inline-flex min-h-[44px] items-center rounded-xl bg-amber-500 px-5 font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+          >
+            {nameRequest.pending ? 'جارٍ الإرسال…' : 'اطلب تغيير الاسم'}
+          </button>
         </div>
         <div className="space-y-2">
           <label className="text-sm font-bold text-slate-700">البريد الإلكتروني</label>

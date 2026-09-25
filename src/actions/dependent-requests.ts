@@ -112,6 +112,114 @@ export async function createDependentRequest(params: {
   return { ok: true };
 }
 
+/**
+ * الطفل يقترح اسمًا جديدًا لنفسه.
+ *
+ * ── ليه طلب مش تعديل مباشر ──────────────────────────────────
+ *
+ * في **اسمين** لنفس الطفل: `user_profiles.full_name` (حساب الطالب)
+ * و`child_profiles.full_name` (المركز العائلي). ودوال القاعدة مكتوبة
+ * `COALESCE(ch.full_name, up.full_name, …)` — يعني **اسم المركز
+ * العائلي بيكسب دايمًا**.
+ *
+ * فلما الطفل كان بيعدّل اسمه من لوحته، التعديل **بيتحفظ فعلًا** في
+ * حسابه — ومبيوصلش لولي الأمر ولا للمدرب ولا للطلبات ولا للكتاب
+ * اللي هيتطبع. عملية بتنجح وبتبان ناجحة ومحدّش بيشوف نتيجتها.
+ *
+ * والاسم ده **بيتطبع على الكتاب**، فمكانش ينفع الطفل يغيّره لوحده.
+ * القرار: يقترح، وولي الأمر يوافق أو يرفض بسبب — نفس نمط طلبات
+ * الباقات والخدمات.
+ */
+export async function requestNameChange(newName: string): Promise<RequestResult> {
+  const user = await requireUser();
+  const dependent = await getDependentGuardian();
+
+  if (!dependent) {
+    return { ok: false, error: 'الصفحة دي لحسابات الأبناء.' };
+  }
+
+  const name = newName.trim();
+  if (name.length < 2) return { ok: false, error: 'اكتب اسمك كامل.' };
+  if (name.length > 120) return { ok: false, error: 'الاسم طويل أوي.' };
+  if (name === dependent.fullName) {
+    return { ok: false, error: 'ده اسمك الحالي خلاص.' };
+  }
+
+  const supabase = await createClient();
+
+  // طلب تغيير اسم واحد معلّق يكفي.
+  const { data: existing } = await supabase
+    .from('dependent_requests')
+    .select('id')
+    .eq('child_profile_id', dependent.childId)
+    .eq('kind', 'name_change')
+    .eq('status', 'pending')
+    .maybeSingle();
+
+  if (existing) {
+    return { ok: false, error: 'بعتّ طلب تغيير اسم قبل كده وولي أمرك لسه بيراجعه.' };
+  }
+
+  const { data: created, error } = await supabase
+    .from('dependent_requests')
+    .insert({
+      child_profile_id: dependent.childId,
+      guardian_profile_id: dependent.guardianId,
+      requester_profile_id: user.id,
+      kind: 'name_change',
+      requested_name: name,
+      status: 'pending',
+    })
+    .select('id')
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error creating name change request', error);
+    return { ok: false, error: `تعذّر إرسال الطلب: ${error.message}` };
+  }
+  if (!created) {
+    return { ok: false, error: 'الطلب مروّحش للقاعدة — كلّم ولي أمرك.' };
+  }
+
+  await notifyUser({
+    event: 'service_order_new',
+    recipientProfileId: dependent.guardianId,
+    title: `${dependent.fullName} عايز يغيّر اسمه`,
+    message: `طلب إن اسمه يبقى «${name}».`,
+    link: '/account/family/requests',
+  });
+
+  revalidatePath('/account/family/requests');
+  revalidatePath('/dashboard/student/requests');
+  return { ok: true };
+}
+
+/**
+ * ولي الأمر بيوافق على تغيير الاسم.
+ *
+ * ⚠️ بتمر على دالة في القاعدة (ملف 93) مش على تعديلين منفصلين: ولي
+ *    الأمر يقدر يعدّل `child_profiles` بتاعه، لكنه **ممنوع** من
+ *    `user_profiles` بتاع الطفل. ومن غير الاتنين، الطالب هيفضل شايف
+ *    اسمه القديم في لوحته بعد الموافقة.
+ */
+export async function approveNameChange(requestId: string): Promise<RequestResult> {
+  const supabase = await createClient();
+
+  const { error } = await supabase.rpc('apply_dependent_name_change', {
+    p_request_id: requestId,
+  });
+
+  if (error) {
+    console.error('Error approving name change', error);
+    return { ok: false, error: error.message || 'تعذّر تطبيق الاسم الجديد.' };
+  }
+
+  revalidatePath('/account/family/requests');
+  revalidatePath('/account/family');
+  revalidatePath('/dashboard/student');
+  return { ok: true };
+}
+
 /** الطفل يسحب طلبه قبل ما ولي الأمر يبتّ. */
 export async function cancelDependentRequest(requestId: string): Promise<RequestResult> {
   const user = await requireUser();

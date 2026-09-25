@@ -11,8 +11,11 @@ export type DependentRequestRow = {
   id: string;
   childProfileId: string;
   childName: string;
-  kind: 'service' | 'package';
+  kind: 'service' | 'package' | 'name_change';
+  /** اسم المطلوب: الباقة أو الخدمة، أو الاسم الجديد لطلب تغيير الاسم. */
   targetName: string;
+  /** الاسم اللي الطفل طلبه — لطلبات `name_change` وبس (ملف SQL 93). */
+  requestedName: string | null;
   providerName: string | null;
   note: string | null;
   status: 'pending' | 'approved' | 'rejected' | 'cancelled';
@@ -22,18 +25,22 @@ export type DependentRequestRow = {
 };
 
 const SELECT =
-  'id, child_profile_id, kind, service_id, provider_id, package_id, instructor_id, note, status, guardian_note, created_at, decided_at, child_profiles(full_name), standalone_services(name), creative_writing_packages(name), service_providers(display_name)';
+  'id, child_profile_id, kind, service_id, provider_id, package_id, instructor_id, requested_name, note, status, guardian_note, created_at, decided_at, child_profiles(full_name), standalone_services(name), creative_writing_packages(name), service_providers(display_name)';
 
 function map(rows: unknown[]): DependentRequestRow[] {
   return (rows as Record<string, any>[]).map((row) => ({
     id: row.id,
     childProfileId: row.child_profile_id,
     childName: row.child_profiles?.full_name ?? 'فرد العائلة',
-    kind: row.kind === 'package' ? 'package' : 'service',
+    kind:
+      row.kind === 'package' || row.kind === 'name_change' ? row.kind : 'service',
     targetName:
-      row.kind === 'package'
-        ? (row.creative_writing_packages?.name ?? 'باقة محذوفة')
-        : (row.standalone_services?.name ?? 'خدمة محذوفة'),
+      row.kind === 'name_change'
+        ? (row.requested_name ?? 'اسم جديد')
+        : row.kind === 'package'
+          ? (row.creative_writing_packages?.name ?? 'باقة محذوفة')
+          : (row.standalone_services?.name ?? 'خدمة محذوفة'),
+    requestedName: row.requested_name ?? null,
     providerName: row.service_providers?.display_name ?? null,
     note: row.note ?? null,
     status: row.status,

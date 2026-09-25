@@ -6,6 +6,7 @@ import { Check, X, Clock, MessageSquare } from 'lucide-react';
 import type { DependentRequestRow } from '@/data/domains/dependent-requests';
 import {
   approveDependentRequest,
+  approveNameChange,
   rejectDependentRequest,
 } from '@/actions/dependent-requests';
 import { formatCairo } from '@/lib/timezone';
@@ -29,6 +30,24 @@ export function RequestsClient({ requests }: { requests: DependentRequestRow[] }
   const [error, setError] = useState('');
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [note, setNote] = useState('');
+
+  /**
+   * طلب تغيير الاسم بيتطبّق هنا وخلاص — مفيش شاشة يكمّل منها.
+   *
+   * ⚠️ الفرق ده مقصود: طلبات الباقات والخدمات بتودّي لمسار الشراء
+   *    عشان ولي الأمر يراجع ويدفع. أما الاسم فقرار من كلمة واحدة.
+   */
+  const approveName = (id: string) => {
+    setError('');
+    startTransition(async () => {
+      const result = await approveNameChange(id);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      router.refresh();
+    });
+  };
 
   const approve = (id: string) => {
     setError('');
@@ -83,7 +102,11 @@ export function RequestsClient({ requests }: { requests: DependentRequestRow[] }
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-black text-slate-800">{request.targetName}</h3>
+                  <h3 className="font-black text-slate-800">
+                    {request.kind === 'name_change'
+                      ? `يبقى اسمه: ${request.targetName}`
+                      : request.targetName}
+                  </h3>
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${status.className}`}>
                     {status.label}
                   </span>
@@ -93,7 +116,11 @@ export function RequestsClient({ requests }: { requests: DependentRequestRow[] }
                 </div>
 
                 <p className="mt-1 text-xs font-bold text-slate-400">
-                  {request.kind === 'package' ? 'باقة' : 'خدمة إبداعية'}
+                  {request.kind === 'name_change'
+                    ? 'تغيير الاسم'
+                    : request.kind === 'package'
+                      ? 'باقة'
+                      : 'خدمة إبداعية'}
                   {request.providerName && ` · ${request.providerName}`}
                   {' · '}
                   {formatCairo(request.createdAt, { dateStyle: 'long' })}
@@ -118,10 +145,15 @@ export function RequestsClient({ requests }: { requests: DependentRequestRow[] }
                   <button
                     type="button"
                     disabled={isPending}
-                    onClick={() => approve(request.id)}
+                    onClick={() =>
+                      request.kind === 'name_change'
+                        ? approveName(request.id)
+                        : approve(request.id)
+                    }
                     className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
                   >
-                    <Check className="h-4 w-4" /> وافق وكمّل
+                    <Check className="h-4 w-4" />{' '}
+                    {request.kind === 'name_change' ? 'وافق' : 'وافق وكمّل'}
                   </button>
                   <button
                     type="button"

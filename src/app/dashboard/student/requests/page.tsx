@@ -58,9 +58,17 @@ export default async function StudentRequestsPage() {
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="font-bold text-slate-800">{r.targetName}</p>
+                  <p className="font-bold text-slate-800">
+                    {r.kind === 'name_change'
+                      ? `يبقى اسمي: ${r.targetName}`
+                      : r.targetName}
+                  </p>
                   <p className="mt-1 text-xs font-medium text-slate-500">
-                    {r.kind === 'package' ? 'باقة تدريبية' : 'خدمة إبداعية'}
+                    {r.kind === 'name_change'
+                      ? 'تغيير الاسم'
+                      : r.kind === 'package'
+                        ? 'باقة تدريبية'
+                        : 'خدمة إبداعية'}
                     {r.providerName ? ` · ${r.providerName}` : ''}
                   </p>
                 </div>
