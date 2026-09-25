@@ -10,6 +10,7 @@ import { AdminInstructorClient } from './AdminInstructorClient';
 import { InstructorServicesSection } from './InstructorServicesSection';
 import { InstructorProfileEditor } from './InstructorProfileEditor';
 import { getStandaloneServices, getInstructorServiceOffers } from '@/data/domains/services';
+import { getWritingPackages, getPublicInstructorById } from '@/data/domains/writing';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,6 +33,13 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const serviceOffers = await getInstructorServiceOffers(target.id);
   const formula = await getPricingFormulaSettings();
 
+  // الباقات المفعّلة + اللي المدرب مسجَّل عليها دلوقتي.
+  // ⚠️ بتتقري من الدالة العامة عشان تبقى **نفس المصدر** اللي معالج
+  //    الحجز بيقرا منه — مصدرين لنفس الرقم بيفترقوا يوم ما.
+  const allPackages = (await getWritingPackages()).filter((p) => p.isActive !== false);
+  const publicRow = await getPublicInstructorById(target.id);
+  const instructorPackageIds = publicRow?.packageIds ?? [];
+
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
       <DashboardPageHeader title={`إدارة المدرب: ${target.displayName}`} backHref="/dashboard/admin/instructors" />
@@ -39,6 +47,14 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         instructor={target} 
         updateRequests={updateRequests} 
         certification={certification} 
+        packages={allPackages.map((p) => ({
+          id: p.id,
+          name: p.name,
+          track: p.track ?? null,
+          ageGroup: p.ageGroup,
+          sessionsCount: p.sessionsCount ?? null,
+        }))}
+        selectedPackageIds={instructorPackageIds}
       />
       <div className="mt-8">
         <InstructorProfileEditor instructor={target} />

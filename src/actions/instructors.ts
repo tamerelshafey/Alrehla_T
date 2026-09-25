@@ -115,6 +115,24 @@ export async function approveProfileUpdateRequest(requestId: string) {
   // (`instructor_pricing_options`). الفئات اتشالت من شاشة المدرب —
   // بيكتب رقمه بنفسه دلوقتي — فالفرع بقى بلا مصدر.
 
+  // ── الباقات ───────────────────────────────────────────────
+  //
+  // ⚠️ **دي في جدول تاني، مش أعمدة على `instructors`** — فبتتطبّق
+  //    بدالة بتستبدل الصفوف دفعة واحدة (ملف 102). لو اتعملت على
+  //    خطوتين من هنا وفشلت التانية، المدرب يفضل **بلا ولا باقة** —
+  //    يعني بقاعدتنا بيظهر في **كلها**، وهو عكس اللي اتوافق عليه.
+  const requestedPackages = (changes as { packageIds?: string[] }).packageIds;
+  if (Array.isArray(requestedPackages)) {
+    const { error: packagesError } = await supabase.rpc('set_instructor_packages', {
+      p_instructor_id: request.instructor_id,
+      p_package_ids: requestedPackages,
+    });
+    if (packagesError) {
+      console.error('Error applying approved packages', packagesError);
+      throw new Error('تعذّر تطبيق باقات المدرب — الطلب لسه معلّق.');
+    }
+  }
+
   update.updated_at = new Date().toISOString();
   const { data: updatedInstructor, error: updateError } = await supabase
     .from('instructors')
@@ -288,6 +306,52 @@ export async function updateInstructorCertification(instructorId: string, passed
  *    الشاشة (قاعدة «ع»)، وبيقرا `training_passed` **من القاعدة** لا
  *    من اللي الشاشة بعتته (قاعدة «ف»).
  */
+/**
+ * تحديد باقات المدرب من لوحة الإدارة مباشرة.
+ *
+ * المدرب بيقترح من لوحته والإدارة توافق (نفس نمط طلبات تعديل الملف)،
+ * والدالة دي للإدارة لما تحب تحدّد بنفسها من غير انتظار اقتراح.
+ *
+ * ⚠️ **المصفوفة الفاضية معناها «كل الباقات»** لا «ولا باقة» —
+ *    والشاشة بتقول ده بالنص عشان محدّش يفتكر إنه قفل المدرب.
+ */
+export async function setInstructorPackages(
+  instructorId: string,
+  packageIds: string[],
+): Promise<{ ok: true; count: number } | { ok: false; error: string }> {
+  const currentUser = await requireInstructorAdmin();
+  const supabase = await createClient();
+
+  const clean = Array.from(new Set((packageIds ?? []).filter((id) => typeof id === 'string' && id)));
+
+  const { data, error } = await supabase.rpc('set_instructor_packages', {
+    p_instructor_id: instructorId,
+    p_package_ids: clean,
+  });
+
+  if (error) {
+    console.error('Error setting instructor packages', error);
+    return { ok: false, error: 'تعذّر حفظ باقات المدرب.' };
+  }
+
+  await logAuditAction({
+    actorProfileId: currentUser.id,
+    actorName: currentUser.fullName,
+    action: 'instructor_packages_set',
+    entityType: 'Instructor',
+    entityId: instructorId,
+    metadata: { count: clean.length, packageIds: clean },
+  });
+
+  revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
+  revalidatePath('/creative-writing/instructors');
+  // ⚠️ أهمهم: معالج الحجز هو اللي بيقرا القايمة.
+  revalidatePath('/creative-writing/booking');
+
+  const count = (data as { count?: number } | null)?.count ?? clean.length;
+  return { ok: true, count };
+}
+
 export async function setInstructorStatus(
   instructorId: string,
   status: 'pending_training' | 'pending_approval' | 'active' | 'suspended',

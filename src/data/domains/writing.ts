@@ -118,6 +118,7 @@ type PublicInstructorRow = {
   status: string;
   weekly_schedule: unknown;
   avatar_url: string | null;
+  package_ids: string[] | null;
 };
 
 function toPublicInstructor(row: PublicInstructorRow): PublicInstructor {
@@ -132,6 +133,8 @@ function toPublicInstructor(row: PublicInstructorRow): PublicInstructor {
     status: row.status as InstructorStatus,
     weeklySchedule: (row.weekly_schedule as WeeklySlot[]) ?? [],
     avatarUrl: row.avatar_url ?? undefined,
+    // فاضية = كل الباقات (انظر `PublicInstructor.packageIds`).
+    packageIds: row.package_ids ?? [],
   };
 }
 

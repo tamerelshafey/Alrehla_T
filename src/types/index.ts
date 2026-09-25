@@ -100,6 +100,17 @@ export type Instructor = {
   pendingSchedule?: WeeklySlot[]; // If they requested a schedule change
   
   monthlyHoursCommitted?: number; // Only if workModel === 'monthly'. Minimum 60.
+
+  /**
+   * الباقات اللي المدرب بيدرّبها (ملف SQL 102).
+   *
+   * ⚠️ **المصفوفة الفاضية معناها «كل الباقات» — مش «ولا باقة».**
+   *
+   *    والفرق ده مقصود: لو الفاضي معناه «ولا باقة»، كان كل المدربين
+   *    يختفوا من الموقع أول ما الميزة تنشر، لحد ما الإدارة تفتح كل
+   *    واحد وتحدّدله. الافتراضي لازم يبقى الوضع اللي كان شغّالًا.
+   */
+  packageIds?: string[];
 };
 
 /**

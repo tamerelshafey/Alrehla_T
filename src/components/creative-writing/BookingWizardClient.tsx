@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PublicInstructor, WeeklySlot, BookedSlot, DayOfWeek } from '@/types';
 import { formatPrice } from '@/lib/utils';
 import { Calendar, Clock, User, ArrowRight, Video } from 'lucide-react';
@@ -94,9 +94,43 @@ export function BookingWizardClient({
   );
   const [selectedSlot, setSelectedSlot] = useState<WeeklySlot | null>(null);
 
-  const activeInstructors = instructors.filter(i => i.status === 'active');
+  /**
+   * المدربون اللي بيظهروا للباقة المختارة.
+   *
+   * ⚠️ **كان `status === 'active'` وبس** — يعني كل مدرب نشط بيظهر في
+   *    كل الباقات: من «السطور السحرية» لطفل تحت ١٢، لحد «رحلتي نحو
+   *    الحكاية» ٤٨ جلسة لمراهق. ولي الأمر بيختار مدرب مش عارف إذا
+   *    كان ده مجاله، والمدرب بيتحجزله في باقة ممكن مايكونش مستعد لها.
+   *
+   * ⚠️ **والمصفوفة الفاضية معناها «كل الباقات»** (ملف SQL 102).
+   *    الشرط ده هو اللي بيخلّي المدربين الحاليين — وكلهم بلا اختيار
+   *    لحد دلوقتي — يفضلوا ظاهرين زي ما هم.
+   */
+  const activeInstructors = instructors.filter(
+    (i) =>
+      i.status === 'active' &&
+      (!i.packageIds || i.packageIds.length === 0 || i.packageIds.includes(selectedPackage)),
+  );
 
   /** الميعاد محجوز لحد امتى؟ فاضي = متاح. */
+  /**
+   * ⚠️ **تغيير الباقة بيغيّر قايمة المدربين.**
+   *
+   *    من غير السطر ده، ولي الأمر يختار مدرب وموعد، يرجع يغيّر
+   *    الباقة، والمدرب يختفي من القايمة — **والاختيار يفضل محفوظًا
+   *    في الحالة**. فيكمّل ويدفع لمدرب مش بيدرّب الباقة دي أصلًا،
+   *    وهو شايف إنه اختار صح.
+   */
+  useEffect(() => {
+    if (
+      selectedInstructorId &&
+      !activeInstructors.some((i) => i.id === selectedInstructorId)
+    ) {
+      setSelectedInstructorId('');
+      setSelectedSlot(null);
+    }
+  }, [selectedPackage, selectedInstructorId, activeInstructors]);
+
   const bookedUntilFor = (instructorId: string, slot: WeeklySlot): string | null => {
     const taken = (bookedSlots[instructorId] ?? []).find(
       (b) => b.day === slot.day && b.time === slot.time,
@@ -186,10 +220,15 @@ export function BookingWizardClient({
 
               <div className="space-y-4">
                 <label className="text-sm font-bold text-slate-700">المدرب المفضل</label>
+                {/* ⚠️ الرسالة بتفرّق بين سببين مختلفين. «مفيش مدربين»
+                    على باقة ليها مدربين في باقات تانية بتخلّي ولي
+                    الأمر يفتكر إن الموقع مكسور، والحقيقة إنه اختار
+                    باقة محدّش مسجّل عليها. */}
                 {activeInstructors.length === 0 && (
                   <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-bold text-amber-800">
-                    مفيش مدربين مفعّلين حاليًا. المدرب لازم تكون حالته
-                    «مفعّل» في لوحة الإدارة عشان يظهر هنا بمواعيده.
+                    {instructors.some((i) => i.status === 'active')
+                      ? 'مفيش مدرب متاح للباقة دي حاليًا. جرّب باقة تانية، أو كلّمنا ونرتّبلك.'
+                      : 'مفيش مدربين مفعّلين حاليًا. المدرب لازم تكون حالته «مفعّل» في لوحة الإدارة عشان يظهر هنا بمواعيده.'}
                   </p>
                 )}
                 {/*

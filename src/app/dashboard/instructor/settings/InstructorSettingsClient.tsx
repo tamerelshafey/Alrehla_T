@@ -6,6 +6,7 @@ import { Instructor, DayOfWeek, WeeklySlot, PricingFormulaSettings } from '@/typ
 import { Calendar, Clock, Info, CheckCircle2, Save } from 'lucide-react';
 import { calculateFinalSessionPrice } from '@/lib/utils';
 import { submitInstructorProfileUpdate } from '@/actions/instructors';
+import { PackagePicker, type PackageChoice } from '@/components/dashboard/PackagePicker';
 
 interface InstructorSettingsClientProps {
   instructor: Instructor;
@@ -16,6 +17,10 @@ interface InstructorSettingsClientProps {
   formulaSettings: PricingFormulaSettings;
   /** فوق الرقم ده بيظهر تنبيه — والمدرب يقدر يكمل. صفر = مفيش تنبيه. */
   priceAlert?: number;
+  /** الباقات المفعّلة اللي المدرب يقدر يختار منها. */
+  packages: PackageChoice[];
+  /** اللي هو مسجَّل عليها دلوقتي — فاضية = كل الباقات (ملف SQL 102). */
+  selectedPackageIds: string[];
 }
 
 const DAYS: { key: DayOfWeek; label: string }[] = [
@@ -32,11 +37,14 @@ export function InstructorSettingsClient({
   instructor,
   formulaSettings,
   priceAlert = 0,
+  packages,
+  selectedPackageIds,
 }: InstructorSettingsClientProps) {
   const [workModel, setWorkModel] = useState(instructor.workModel || 'per_session');
   const [monthlyHours, setMonthlyHours] = useState(instructor.monthlyHoursCommitted || 60);
   const [requestedPrice, setRequestedPrice] = useState(instructor.requestedPrice || 100);
   const [schedule, setSchedule] = useState<WeeklySlot[]>(instructor.weeklySchedule || []);
+  const [pickedPackages, setPickedPackages] = useState<string[]>(selectedPackageIds);
   const [isSaved, setIsSaved] = useState(false);
 
   // ── ليه بقى منتقي وقت بدل أزرار ثابتة ──────────────────────
@@ -116,7 +124,12 @@ export function InstructorSettingsClient({
       // كانت بتتبعت في حالة الشهري بس، والجلسة بتتاخد من «فئة سعر»
       // ثابتة (مبتدئ / متوسط / خبير) — واللي اتشالت.
       requestedPrice: Number(requestedPrice),
-      weeklySchedule: schedule
+      weeklySchedule: schedule,
+      // ⚠️ **الباقات بتتبعت كاقتراح، مش بتتطبّق.** الإدارة هي اللي
+      //    بتوافق، والموافقة هي اللي بتكتب في جدول الربط (ملف 102).
+      //    فلو المدرب حط نفسه في باقة مش مؤهّل لها، الاختيار يقف عند
+      //    الطلب.
+      packageIds: pickedPackages,
     });
   };
 
@@ -211,6 +224,22 @@ export function InstructorSettingsClient({
             </div>
           )}
         </div>
+      </div>
+
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-4">
+          <h3 className="text-lg font-black text-slate-800">الباقات اللي تقدر تدرّبها</h3>
+          <p className="text-sm text-slate-500">
+            اختيارك هنا <strong>اقتراح</strong> — الإدارة بتراجعه مع باقي تعديلاتك،
+            وبيتطبّق بعد الموافقة.
+          </p>
+        </div>
+        <PackagePicker
+          packages={packages}
+          selected={pickedPackages}
+          onChange={setPickedPackages}
+          disabled={save.pending}
+        />
       </div>
 
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

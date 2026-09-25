@@ -3,6 +3,8 @@ import { InstructorSettingsClient } from './InstructorSettingsClient';
 import {
   getInstructorById,
   getPricingFormulaSettings,
+  getWritingPackages,
+  getPublicInstructorById,
 } from '@/data/domains/writing';
 import { getSiteSettings } from '@/data/domains/content';
 import { getMyInstructorId } from '@/data/domains/services';
@@ -15,11 +17,17 @@ export default async function InstructorSettingsPage() {
   const instructorId = await getMyInstructorId();
   if (!instructorId) return null;
 
-  const [instructor, formulaSettings, settings] = await Promise.all([
+  const [instructor, formulaSettings, settings, allPackages, publicRow] = await Promise.all([
     getInstructorById(instructorId),
     getPricingFormulaSettings(),
     getSiteSettings(),
+    getWritingPackages(),
+    // ⚠️ نفس المصدر اللي معالج الحجز بيقرا منه — مصدرين لنفس الرقم
+    //    بيفترقوا يوم ما.
+    getPublicInstructorById(instructorId),
   ]);
+
+  const packages = allPackages.filter((p) => p.isActive !== false);
 
   if (!instructor) return null;
 
@@ -34,6 +42,14 @@ export default async function InstructorSettingsPage() {
         instructor={instructor}
         formulaSettings={formulaSettings}
         priceAlert={settings.instructorPriceAlert}
+        packages={packages.map((p) => ({
+          id: p.id,
+          name: p.name,
+          track: p.track ?? null,
+          ageGroup: p.ageGroup,
+          sessionsCount: p.sessionsCount ?? null,
+        }))}
+        selectedPackageIds={publicRow?.packageIds ?? []}
       />
     </div>
   );

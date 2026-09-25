@@ -3,7 +3,8 @@ import { formatPrice } from '@/lib/utils';
 import React, { useState } from 'react';
 import { Instructor, ProfileUpdateRequest, InstructorCertification } from '@/types';
 import { CheckCircle2, AlertCircle, XCircle, Calendar, MessageSquare, Save } from 'lucide-react';
-import { approveProfileUpdateRequest, rejectProfileUpdateRequest, updateInstructorCertification, setInstructorStatus } from '@/actions/instructors';
+import { approveProfileUpdateRequest, rejectProfileUpdateRequest, updateInstructorCertification, setInstructorStatus, setInstructorPackages } from '@/actions/instructors';
+import { PackagePicker, type PackageChoice } from '@/components/dashboard/PackagePicker';
 import { PLATFORM_TIMEZONE } from '@/lib/timezone';
 import { useRouter } from 'next/navigation';
 import { useAction } from '@/lib/use-action';
@@ -13,14 +14,37 @@ interface AdminInstructorClientProps {
   instructor: Instructor;
   updateRequests: ProfileUpdateRequest[];
   certification: InstructorCertification | null;
+  packages: PackageChoice[];
+  selectedPackageIds: string[];
 }
 
-export function AdminInstructorClient({ instructor, updateRequests, certification }: AdminInstructorClientProps) {
+export function AdminInstructorClient({
+  instructor,
+  updateRequests,
+  certification,
+  packages,
+  selectedPackageIds,
+}: AdminInstructorClientProps) {
   const router = useRouter();
   const [trainingPassed, setTrainingPassed] = useState(certification?.examPassed || false);
   const [adminFeedback, setAdminFeedback] = useState('');
   const [status, setStatus] = useState(instructor.status);
   const [statusDone, setStatusDone] = useState('');
+  const [pickedPackages, setPickedPackages] = useState<string[]>(selectedPackageIds);
+  const [packagesDone, setPackagesDone] = useState('');
+
+  const savePackages = useAction(setInstructorPackages, {
+    onSuccess: (result) => {
+      if (result.ok) {
+        setPackagesDone(
+          result.count === 0
+            ? 'اتحفظ. المدرب بيظهر في كل الباقات.'
+            : `اتحفظ. المدرب بيظهر في ${result.count} باقة.`,
+        );
+      }
+    },
+    fallbackError: 'تعذّر حفظ باقات المدرب.',
+  });
 
   /**
    * ⚠️ **الحالة دي هي اللي بتخلّي المدرب يظهر لولي الأمر.**
@@ -162,6 +186,38 @@ export function AdminInstructorClient({ instructor, updateRequests, certificatio
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:col-span-2">
+          <h3 className="mb-2 text-lg font-black text-slate-800">الباقات اللي بيدرّبها</h3>
+          <p className="mb-4 text-sm font-medium text-slate-500">
+            دي اللي بتحدّد يظهر لولي الأمر في أنهي باقة وقت الحجز.
+          </p>
+
+          <FormError message={savePackages.error} className="mb-3" />
+          <FormSuccess message={packagesDone} className="mb-3" />
+
+          <PackagePicker
+            packages={packages}
+            selected={pickedPackages}
+            onChange={(next) => {
+              setPickedPackages(next);
+              setPackagesDone('');
+            }}
+            disabled={savePackages.pending}
+          />
+
+          <button
+            type="button"
+            onClick={() => {
+              setPackagesDone('');
+              savePackages.run(instructor.id, pickedPackages);
+            }}
+            disabled={savePackages.pending}
+            className="mt-4 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-slate-800 disabled:opacity-50"
+          >
+            {savePackages.pending ? 'جاري الحفظ...' : 'حفظ الباقات'}
+          </button>
         </div>
 
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

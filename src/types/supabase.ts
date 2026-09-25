@@ -1921,6 +1921,11 @@ export type Database = {
         Args: { p_order_id: string }
         Returns: Json
       }
+      /** باقات المدرب — استبدال دفعة واحدة، ملف SQL 102. */
+      set_instructor_packages: {
+        Args: { p_instructor_id: string; p_package_ids: string[] }
+        Returns: Json
+      }
       /** موافقة ولي الأمر على تغيير اسم ابنه — ملف SQL 93. */
       apply_dependent_name_change: {
         Args: { p_request_id: string }
