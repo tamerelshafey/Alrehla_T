@@ -84,7 +84,21 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             </div>
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">مدة الجلسة</label>
-              <input type="text" name="sessionDuration" defaultValue={target.sessionDuration || '40 دقيقة'} required className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              {/* ⚠️ **كان `|| '40 دقيقة'` — والشاشة كانت بتكدب.**
+
+                  الباقة اللي عمودها فاضي في القاعدة كانت بتفتح هنا
+                  والخانة مكتوب فيها «40 دقيقة»، فالإداري يبص ويقول
+                  «متظبطة» ويقفل. والقيمة ما اتحفظتش أبدًا.
+
+                  وفي نفس الوقت صفحة الباقات العامة بتخفي المدة
+                  خالص لما تكون فاضية — فالعميل **مايشوفش مدة
+                  الجلسة**، والإدارة شايفاها. نفس فئة العطل بتاعة
+                  «السعر النهائي 150 والمحفوظ 100».
+
+                  دلوقتي الخانة بتفضل فاضية، و`required` بيلزم
+                  الإداري يكتبها بوعي. ولوحة الإدارة أصلًا بتعدّ
+                  الباقات الناقصة (`packagesMissingDuration`). */}
+              <input type="text" name="sessionDuration" defaultValue={target.sessionDuration ?? ''} placeholder="مثال: 40 دقيقة" required className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
           </div>
 
