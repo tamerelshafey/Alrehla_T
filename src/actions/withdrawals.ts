@@ -4,14 +4,19 @@ import { requireAdmin } from '@/lib/auth-guard';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { logAuditAction } from '@/lib/audit';
-import { notifyUser, getInstructorUserId } from '@/lib/notifications';
+import { notifyUser, getInstructorUserId, getPublisherUserId } from '@/lib/notifications';
 
 /**
- * Deciding on an instructor's withdrawal request.
+ * البتّ في طلب سحب — لمدرب أو لناشر.
  *
- * Instructors could file a request and the admin dashboard counted them, but
- * there was no screen to open one — so a request sat unanswered for ever while
- * the instructor waited for their money.
+ * المدربون كانوا يقدّموا طلبات واللوحة بتعدّها، ومفيش شاشة تفتح
+ * الطلب — فالطلب يفضل بلا رد والمدرب مستني فلوسه.
+ *
+ * ⚠️ **وبعد ملف 100 الطلب ممكن يكون لناشر.** الكود القديم كان بينادي
+ *    `getInstructorUserId(data.instructor_id)` على طول — ومع صف
+ *    ناشر العمود ده **فاضي**، فالإشعار كان هيروح لحساب فاضي:
+ *    الإدارة تعتمد التحويل، والناشر مايعرفش. **عملية بتنجح ومحدّش
+ *    بيشوف نتيجتها** — نفس فئة الأعطال اللي بنقفلها.
  */
 export async function setWithdrawalStatus(params: {
   requestId: string;
@@ -22,7 +27,7 @@ export async function setWithdrawalStatus(params: {
 
   const { requestId, status, adminNotes } = params;
   if (status === 'rejected' && !adminNotes?.trim()) {
-    throw new Error('اكتب سبب الرفض ليصل للمدرب');
+    throw new Error('اكتب سبب الرفض ليصل لصاحب الطلب');
   }
 
   const supabase = await createClient();
@@ -34,7 +39,7 @@ export async function setWithdrawalStatus(params: {
       updated_at: new Date().toISOString(),
     })
     .eq('id', requestId)
-    .select('instructor_id, amount')
+    .select('instructor_id, publisher_id, amount')
     .single();
 
   if (error || !data) {
@@ -48,12 +53,17 @@ export async function setWithdrawalStatus(params: {
     rejected: 'لم يُعتمد طلب السحب',
   };
 
+  const isPublisher = data.publisher_id != null;
+
   await notifyUser({
     event: 'withdrawal',
-    recipientProfileId: await getInstructorUserId(data.instructor_id),
+    recipientProfileId: isPublisher
+      ? await getPublisherUserId(data.publisher_id as string)
+      : await getInstructorUserId(data.instructor_id as string),
     title: titles[status],
     message: adminNotes?.trim(),
-    link: '/dashboard/instructor/payouts',
+    // الرابط لازم يوديه للوحته هو — لوحة المدرب مقفولة على الناشر.
+    link: isPublisher ? '/dashboard/publisher/payouts' : '/dashboard/instructor/payouts',
   });
 
   await logAuditAction({
@@ -67,6 +77,7 @@ export async function setWithdrawalStatus(params: {
 
   revalidatePath('/dashboard/admin/finance/withdrawals');
   revalidatePath('/dashboard/instructor/payouts');
+  revalidatePath('/dashboard/publisher/payouts');
   revalidatePath('/dashboard/admin');
   return { ok: true };
 }

@@ -3,10 +3,7 @@ import { formatPrice } from '@/lib/utils';
 
 import React, { useState } from 'react';
 import { InstructorPayout } from '@/types';
-import { submitWithdrawalRequest } from '@/actions/finance';
-import { useAction } from '@/lib/use-action';
-import { FormError, FormSuccess } from '@/components/ui/FormError';
-import { Wallet, ArrowRight, Building, CreditCard } from 'lucide-react';
+import { WithdrawalRequestForm } from '@/components/dashboard/WithdrawalRequestForm';
 
 interface Props {
   payouts: InstructorPayout[];
@@ -14,49 +11,11 @@ interface Props {
 
 export function InstructorPayoutsClient({ payouts }: Props) {
   const [showWithdrawForm, setShowWithdrawForm] = useState(false);
-  const [withdrawMethod, setWithdrawMethod] = useState('bank');
-
-  // ⚠️ الخانات دي كانت `required` **ومش مربوطة بأي حالة**: المدرب
-  //    بيملاها والمتصفح يسمحله، والبيانات تضيع في المتصفح. فالإدارة
-  //    كانت بتشوف «تحويل بنكي» من غير رقم حساب.
-  const [bankName, setBankName] = useState('');
-  const [bankAccount, setBankAccount] = useState('');
-  const [walletNumber, setWalletNumber] = useState('');
-  const [done, setDone] = useState('');
 
   const pendingAmount = payouts.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0);
 
-  /**
-   * ⚠️ **المبلغ مش بيتبعت من هنا خلاص.**
-   *
-   * كان `submitWithdrawalRequest(pendingAmount, method)` — الشاشة
-   * بتحسب الرصيد وبتبعته والخادم بياخده زي ما هو. يعني تبويبة متلاعب
-   * فيها تطلب أي رقم. دلوقتي الخادم بيحسبه من `instructor_payouts`،
-   * والرقم اللي فوق للعرض بس.
-   */
-  const withdraw = useAction(submitWithdrawalRequest, {
-    onSuccess: (result) => {
-      if (result.ok) {
-        setDone(`اتقدّم طلب سحب بـ${formatPrice(result.amount)} للمراجعة.`);
-        setShowWithdrawForm(false);
-      }
-    },
-    fallbackError: 'تعذّر إرسال طلب السحب.',
-  });
-
-  const handleWithdrawSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setDone('');
-    const details =
-      withdrawMethod === 'bank'
-        ? `تحويل بنكي · البنك: ${bankName.trim()} · الحساب/الآيبان: ${bankAccount.trim()}`
-        : `محفظة إلكترونية · الرقم: ${walletNumber.trim()}`;
-    await withdraw.run(withdrawMethod, details);
-  };
-
   return (
     <div className="space-y-8">
-      <FormSuccess message={done} />
 
       {/* Overview Cards */}
       <div className="grid gap-6 md:grid-cols-2">
@@ -81,101 +40,13 @@ export function InstructorPayoutsClient({ payouts }: Props) {
         </div>
       </div>
 
-      {/* Withdraw Form Modal / Section */}
+      {/* النموذج بقى مشتركًا مع شاشة الناشر — نسخة واحدة تتصلّح
+          مرة واحدة. انظر `WithdrawalRequestForm`. */}
       {showWithdrawForm && (
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-xl font-black text-slate-800 mb-6">تقديم طلب سحب</h3>
-          <FormError message={withdraw.error} className="mb-4" />
-          <form onSubmit={handleWithdrawSubmit} className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">طريقة السحب</label>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setWithdrawMethod('bank')}
-                    className={`flex items-center justify-center gap-2 rounded-xl border-2 p-3 font-bold transition-all ${
-                      withdrawMethod === 'bank' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600'
-                    }`}
-                  >
-                    <Building className="h-5 w-5" />
-                    تحويل بنكي
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setWithdrawMethod('wallet')}
-                    className={`flex items-center justify-center gap-2 rounded-xl border-2 p-3 font-bold transition-all ${
-                      withdrawMethod === 'wallet' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600'
-                    }`}
-                  >
-                    <CreditCard className="h-5 w-5" />
-                    محفظة إلكترونية
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {withdrawMethod === 'bank' ? (
-                  <>
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-slate-700">اسم البنك</label>
-                      <input
-                        required
-                        type="text"
-                        value={bankName}
-                        onChange={(e) => setBankName(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 outline-none focus:border-blue-500"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-slate-700">رقم الحساب أو الآيبان (IBAN)</label>
-                      <input
-                        required
-                        type="text"
-                        dir="ltr"
-                        value={bankAccount}
-                        onChange={(e) => setBankAccount(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-left outline-none focus:border-blue-500"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-slate-700">رقم المحفظة (الهاتف)</label>
-                      <input
-                        required
-                        type="tel"
-                        dir="ltr"
-                        value={walletNumber}
-                        onChange={(e) => setWalletNumber(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-left outline-none focus:border-blue-500"
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex justify-end gap-3 pt-4">
-              <button 
-                type="button" 
-                onClick={() => setShowWithdrawForm(false)}
-                className="rounded-xl px-6 py-3 font-bold text-slate-600 hover:bg-slate-100"
-              >
-                إلغاء
-              </button>
-              <button 
-                type="submit"
-                disabled={withdraw.pending}
-                aria-busy={withdraw.pending || undefined}
-                className="rounded-xl bg-slate-900 px-8 py-3 font-bold text-white hover:bg-slate-800 disabled:opacity-50"
-              >
-                {withdraw.pending ? 'جاري التقديم...' : 'تأكيد طلب السحب'}
-              </button>
-            </div>
-          </form>
-        </div>
+        <WithdrawalRequestForm
+          availableAmount={pendingAmount}
+          onDone={() => setShowWithdrawForm(false)}
+        />
       )}
 
       {/* Payouts Table */}

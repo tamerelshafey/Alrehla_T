@@ -64,7 +64,14 @@ export function WithdrawalsClient({ requests }: { requests: WithdrawalRequestRow
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-black text-slate-800">{request.instructorName}</h3>
+                  <h3 className="font-black text-slate-800">
+                    {request.ownerName}
+                    {/* الإدارة لازم تعرف نوع الحساب: التحويل بيروح
+                        لمدرب ولا لدار نشر، والبيانات بتختلف. */}
+                    <span className="mr-2 rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-500">
+                      {request.ownerKind === 'publisher' ? 'ناشر' : 'مدرب'}
+                    </span>
+                  </h3>
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${status.className}`}>
                     {status.label}
                   </span>

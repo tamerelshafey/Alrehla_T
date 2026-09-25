@@ -33,6 +33,32 @@ export const getInstructorPayouts = async (): Promise<InstructorPayout[]> => {
   }));
 };
 
+/**
+ * طلبات السحب المعلّقة للحساب الداخل.
+ *
+ * ⚠️ **بتعتمد على صلاحيات القاعدة في الفلترة** (قاعدة «ك»): الناشر
+ *    بيشوف صفوفه هو وبس، والصفوف اللي مش بتاعته **بترجع فاضية لا
+ *    بخطأ**. فالعدد ده بتاعه هو.
+ *
+ *    والسبب إنها مش بتفلتر بإيدها إن `getMyPublisher` نداء زيادة على
+ *    القاعدة في كل تحميل للشاشة، والسياسة بتعمل نفس الشغل.
+ */
+export const getMyOpenWithdrawalRequests = async (): Promise<number> => {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from('withdrawal_requests')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'pending');
+
+  if (error) {
+    console.error('Error counting open withdrawal requests', error);
+    // ⚠️ صفر عند الخطأ معناه الشاشة تعرض الزرار، والقاعدة ترفض
+    //    الطلب التاني برسالة واضحة. أهون من إخفاء الزرار غلط.
+    return 0;
+  }
+  return count ?? 0;
+};
+
 export const getPublisherPayouts = async (): Promise<PublisherPayout[]> => {
   const supabase = await createClient();
   const { data, error } = await supabase.from('publisher_payouts')
@@ -183,8 +209,18 @@ export const getPublisherPricingSettings = async (): Promise<PricingFormulaSetti
 
 export type WithdrawalRequestRow = {
   id: string;
-  instructorId: string;
-  instructorName: string;
+  /**
+   * صاحب الطلب — مدرب أو ناشر (ملف SQL 100).
+   *
+   * ⚠️ **واحد بس من الرقمين متملّي**، والقاعدة بتفرض ده بقيد. وقبل
+   *    ملف 100 كان الجدول للمدرب وحده، فالناشر مكانش يقدر يطلب سحبه
+   *    من الموقع خالص.
+   */
+  ownerKind: 'instructor' | 'publisher';
+  instructorId: string | null;
+  publisherId: string | null;
+  /** اسم المدرب أو الناشر — اللي الإدارة بتشوفه. */
+  ownerName: string;
   amount: number;
   method: string;
   /**
@@ -200,24 +236,34 @@ export type WithdrawalRequestRow = {
 };
 
 /**
- * Instructor withdrawal requests — row-level security limits this to admins
- * and to the instructor's own rows.
+ * طلبات السحب — للمدربين والناشرين.
+ *
+ * الصلاحيات في القاعدة بتحصر ده على الإدارة وعلى صفوف صاحب الطلب
+ * نفسه، فمفيش فلترة هنا عن قصد.
  */
 export async function getWithdrawalRequests(): Promise<WithdrawalRequestRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('withdrawal_requests')
-    .select('id, instructor_id, amount, method, status, payout_details, admin_notes, created_at, instructors(display_name)')
+    .select(
+      'id, instructor_id, publisher_id, amount, method, status, payout_details, admin_notes, created_at, instructors(display_name), publishers(name)',
+    )
     .order('created_at', { ascending: false });
 
   if (error || !data) return [];
 
   return data.map((row) => {
-    const joined = row.instructors as unknown as { display_name: string } | null;
+    const instructor = row.instructors as unknown as { display_name: string } | null;
+    const publisher = row.publishers as unknown as { name: string } | null;
+    const isPublisher = row.publisher_id != null;
     return {
       id: row.id,
+      ownerKind: (isPublisher ? 'publisher' : 'instructor') as 'instructor' | 'publisher',
       instructorId: row.instructor_id,
-      instructorName: joined?.display_name ?? 'مدرب',
+      publisherId: row.publisher_id,
+      ownerName: isPublisher
+        ? publisher?.name ?? 'ناشر'
+        : instructor?.display_name ?? 'مدرب',
       amount: row.amount,
       method: row.method,
       payoutDetails: row.payout_details,

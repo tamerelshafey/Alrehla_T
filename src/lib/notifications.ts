@@ -109,6 +109,23 @@ export async function getInstructorUserId(instructorId: string): Promise<string 
 }
 
 /**
+ * حساب الناشر اللي بيستقبل الإشعارات.
+ *
+ * ⚠️ بترجع فاضي لو الناشر مالوش حساب دخول — ودي حالة حقيقية:
+ *    `publishers.user_id` بيقبل الفراغ، فالدار ممكن تكون مسجّلة
+ *    في الكتالوج من غير ما حد منها يدخل الموقع.
+ */
+export async function getPublisherUserId(publisherId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('publishers')
+    .select('user_id')
+    .eq('id', publisherId)
+    .maybeSingle();
+  return data?.user_id ?? null;
+}
+
+/**
  * حساب مقدّم الخدمة اللي بيستقبل الإشعارات على الطلب.
  *
  * بترجع فاضي لما المنصة هي المقدّم — مفيش شخص بعينه يتبعتله إشعار،

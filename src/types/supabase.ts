@@ -1800,11 +1800,14 @@ export type Database = {
       withdrawal_requests: {
         Row: {
           id: string
-          instructor_id: string
+          /** واحد بس من دول متملّي — قيد في القاعدة، ملف SQL 100. */
+          instructor_id: string | null
+          publisher_id: string | null
+          /** بيتكتب في محفّز `guard_withdrawal_request` من الرصيد الحقيقي (ملف 100). */
           amount: number
           method: string
           status: string
-          /** بيانات التحويل اللي المدرب كتبها — ملف SQL 92. */
+          /** بيانات التحويل اللي صاحب الطلب كتبها — ملف SQL 92. */
           payout_details: string | null
           admin_notes: string | null
           created_at: string
@@ -1812,7 +1815,8 @@ export type Database = {
         }
         Insert: {
           id?: string
-          instructor_id: string
+          instructor_id?: string | null
+          publisher_id?: string | null
           amount: number
           method: string
           status?: string
@@ -1823,7 +1827,8 @@ export type Database = {
         }
         Update: {
           id?: string
-          instructor_id?: string
+          instructor_id?: string | null
+          publisher_id?: string | null
           amount?: number
           method?: string
           status?: string
