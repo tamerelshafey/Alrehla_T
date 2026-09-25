@@ -55,7 +55,7 @@ export default async function DependentPortfolioPage({
     <div className="space-y-6">
       <DashboardPageHeader
         title={`معرض أعمال ${child.fullName}`}
-        backHref="/account/family"
+        backHref={`/account/family/${child.id}`}
       />
 
       {!child.accountProfileId ? (

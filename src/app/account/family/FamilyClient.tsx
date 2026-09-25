@@ -131,24 +131,19 @@ export function FamilyClient({
       header: 'المتابعة',
       accessorKey: 'follow',
       /**
-       * متابعة شغل الطفل — معرض أعماله وملاحظات مدربه.
+       * متابعة الطفل — باقاته وجلساته ومعرض أعماله في صفحة واحدة.
        *
-       * ⚠️ بتظهر للطفل اللي عنده حساب دخول بس: المعرض بيتكتب من
-       *    حساب الطالب، فمن غير حساب مفيش حاجة تتعرض. والصفحة نفسها
-       *    بتقول السبب لو حد فتحها برابط مباشر.
+       * ⚠️ بتظهر لكل طفل، حتى اللي مالوش حساب دخول: الباقات والجلسات
+       *    موجودة له برضه، والصفحة بتوضّح إن المعرض وحده محتاج حساب.
        */
       cell: (child: ChildProfile) =>
-        child.accountProfileId ? (
-          <Link
-            href={`/account/family/${child.id}/portfolio`}
-            className="inline-flex items-center gap-1.5 text-sm font-bold text-amber-700 hover:underline"
-          >
-            <FileText className="h-4 w-4" />
-            معرض أعماله
-          </Link>
-        ) : (
-          <span className="text-xs font-medium text-slate-400">محتاج حساب دخول</span>
-        ),
+        <Link
+          href={`/account/family/${child.id}`}
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-amber-700 hover:underline"
+        >
+          <FileText className="h-4 w-4" />
+          تابع تقدّمه
+        </Link>,
     },
     { 
       header: 'الإجراءات', 
