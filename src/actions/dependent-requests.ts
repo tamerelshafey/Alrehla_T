@@ -182,12 +182,23 @@ async function loadGuardianRequest(requestId: string) {
  * **التعديل قبل الموافقة**: ولي الأمر يقدر يبعت مقدّم خدمة أو مدرب
  * مختلف عن اللي الابن طلبه — الرابط بيتبني على اللي هو اختاره.
  *
- * **التعديل قبل الموافقة**: ولي الأمر يقدر يبعت مقدّم خدمة أو مدرب
- * مختلف عن اللي الابن طلبه — الرابط بيتبني على اللي هو اختاره.
+ * ── والتعديل مكانه المسار نفسه ──────────────────────────────
+ *
+ * كان فيه باراميتر `overrides` هنا عشان ولي الأمر يبعت مدربًا أو
+ * مقدّم خدمة مختلفًا **وقت الموافقة**. اتشال.
+ *
+ * السبب إنه بقى بلا معنى: ولي الأمر دلوقتي بيدخل المسار من أوله
+ * ويقدر يغيّر **كل حاجة** — الباقة والمدرب والميعاد، أو مقدّم
+ * الخدمة — في شاشاتها الطبيعية. نموذج تعديل مصغّر جنب زرار
+ * الموافقة كان هيبقى **مكانًا تانيًا لنفس القرار**، والاتنين
+ * بيفترقوا مع الوقت.
+ *
+ * ⚠️ وكان **كود ميت** كمان: مفيش ولا موضع في الموقع كله بينادي
+ *    الدالة دي بـ`overrides`. شاشة «طلبات الأبناء» فيها «اعتماد»
+ *    و«رفض» وبس.
  */
 export async function approveDependentRequest(
   requestId: string,
-  overrides?: { providerId?: string | null; instructorId?: string | null },
 ): Promise<ApprovedTarget> {
   let ctx;
   try {
@@ -245,7 +256,7 @@ export async function approveDependentRequest(
   // بالغلط، والخدمة تتنفّذ على إنها له. الموافقة لازم تربط، مش تسلّم
   // يدويًا.
   if (request.kind === 'service') {
-    const providerId = overrides?.providerId ?? request.provider_id;
+    const providerId = request.provider_id;
     const params = new URLSearchParams({ child: request.child_profile_id });
     if (providerId) params.set('provider', providerId);
     // صفحة الخدمة — قايمة المقدّمين — مش شاشة الطلب. ولي الأمر يشوف
@@ -260,7 +271,7 @@ export async function approveDependentRequest(
     package: String(request.package_id),
     child: request.child_profile_id,
   });
-  const instructorId = overrides?.instructorId ?? request.instructor_id;
+  const instructorId = request.instructor_id;
   if (instructorId) params.set('instructor', instructorId);
   // معالج الحجز من خطوته الأولى — الباقة والمدرب مختارين سلفًا،
   // **والميعاد الأسبوعي لسه لازم يتحدد**. ده كان بيتخطّى خالص.
