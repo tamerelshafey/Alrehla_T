@@ -1880,6 +1880,15 @@ export type Database = {
        *    اتكتبوا بالإيد لأن التوليد مبيتعملش من هنا. لو اتعمل توليد
        *    يومًا، اتأكد إنهم لسه موجودين.
        */
+      /**
+       * تسجيل مستحق المدرب لطلب خدمة مكتمل — ملف SQL 91.
+       *
+       * ⚠️ اتكتبت بالإيد زي `public_instructors` تحت.
+       */
+      record_service_order_earning: {
+        Args: { p_order_id: string }
+        Returns: Json
+      }
       public_instructors: {
         Args: Record<string, never>
         Returns: {

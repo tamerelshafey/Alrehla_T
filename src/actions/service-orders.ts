@@ -421,41 +421,66 @@ export async function deliverServiceOrder(orderId: string, deliveryMessage: stri
 /**
  * تسجيل مستحق المدرب عند اكتمال الطلب.
  *
- * الفهرس الفريد في قاعدة البيانات يمنع تسجيل نفس الطلب مرتين، فحتى لو
- * اكتمل الطلب مرتين بأي طريقة لا يُدفع مرتين.
+ * ── العطل اللي خلّى ده يبقى دالة في القاعدة ─────────────────
+ *
+ * كان `INSERT` مباشر في `instructor_payouts` من هنا. والمشكلة إن
+ * اللي بيدوس «أكّد الاستلام» هو **العميل** — والجدول ده عليه سياسة
+ * كتابة واحدة: `is_super_admin()`.
+ *
+ * يعني الإدراج كان بيترفض، والكود يرمي، **بعد** ما الطلب بقى
+ * `completed`. فالنتيجة:
+ *
+ *     الطلب مكتمل ✓     ·     المستحق ما اتسجّلش ✗
+ *
+ * والعميل يشوف رسالة خطأ على عملية تمّت. ولو حاول تاني، الإقفال
+ * مشروط بـ`status = 'delivered'` والحالة بقت `completed` — فالمحاولة
+ * بترفض والمستحق يضيع بلا طريق رجوع. والمدرب ما يشتكيش، لأنه بيشوف
+ * قايمة مستحقاته وبس والصف مش موجود فيها أصلًا.
+ *
+ * ⚠️ وحتى الإقفال الإداري كان بيقع: السياسة بتطلب **مدير النظام**
+ *    لا أي إداري.
+ *
+ * ⚠️ والتشخيص (ملف 90) أثبت إن الجدول فاضي ومفيش طلب مكتمل ليه
+ *    مدرب — يعني العطل **لسه ما ضربش**، وأول طلب كان هيقع فيه.
+ *
+ * دلوقتي بيمر على `record_service_order_earning` (ملف 91): دالة
+ * `SECURITY DEFINER` بتقرا الطلب بنفسها، **بتحسب المبلغ من صف
+ * الطلب** لا من المتصفح، وبتستعمل `ON CONFLICT DO NOTHING` على
+ * الفهرس الفريد — فإعادة النداء آمنة.
+ *
+ * والبديل اللي مااتاخدش: فتح سياسة إدراج للعميل. ده كان هيخلّي أي
+ * عميل يكتب أي مبلغ لأي مدرب، لأن الصلاحيات بتحمي الصفوف لا الأعمدة
+ * (قاعدة «ب») فمفيش سياسة تقدر تقيّد **المبلغ**.
  */
 async function recordInstructorEarning(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  order: {
-    id: string;
-    instructor_id: string | null;
-    instructor_earning: number | null;
-    amount: number;
-  },
-  serviceName: string
-) {
-  if (!order.instructor_id) return;
+  order: { id: string; instructor_id: string | null }
+): Promise<boolean> {
+  if (!order.instructor_id) return false;
 
-  const earning = order.instructor_earning ?? order.amount;
-  if (!earning || earning <= 0) return;
-
-  const period = new Date().toISOString().slice(0, 7); // YYYY-MM
-
-  const { error } = await supabase.from('instructor_payouts').insert({
-    instructor_id: order.instructor_id,
-    period,
-    amount: Math.round(earning),
-    status: 'pending',
-    source_type: 'service_order',
-    source_id: order.id,
-    description: serviceName,
+  const { error } = await supabase.rpc('record_service_order_earning', {
+    p_order_id: order.id,
   });
 
-  // A duplicate is the unique index doing its job, not a failure.
-  if (error && !String(error.message).toLowerCase().includes('duplicate')) {
+  if (error) {
+    // ⚠️ **مش بنرمي هنا.** الطلب اتقفل فعلًا، ورمي استثناء دلوقتي
+    //    بيوري العميل خطأ على عملية تمّت — ويمنعه من إعادة المحاولة
+    //    لأن الحالة بقت `completed`.
+    //
+    //    الطرف اللي لازم يعرف هو **الإدارة**، مش العميل. والدالة
+    //    idempotent، فإعادة النداء على نفس الطلب بتسجّل الناقص من
+    //    غير خطر دفع مرتين.
     console.error('Error recording instructor earning', error);
-    throw new Error('تعذّر تسجيل مستحقات المدرب لهذا الطلب');
+    await notifyAdmins({
+      event: 'payment_review',
+      title: 'مستحق مدرب ما اتسجّلش',
+      message: `الطلب ${order.id} اتقفل، ومستحق المدرب مااتسجّلش. محتاج مراجعة.`,
+      link: `/dashboard/admin/orders/services/${order.id}`,
+    });
+    return false;
   }
+
+  return true;
 }
 
 async function completeOrder(
@@ -468,13 +493,8 @@ async function completeOrder(
     standalone_service_id: string | null;
   }
 ) {
-  const { data: service } = order.standalone_service_id
-    ? await supabase
-        .from('standalone_services')
-        .select('name')
-        .eq('id', order.standalone_service_id)
-        .maybeSingle()
-    : { data: null };
+  // (اسم الخدمة كان بيتقرا هنا عشان وصف المستحق. بقى بيتقرا جوّه
+  //  `record_service_order_earning` في القاعدة — استعلام أقل من هنا.)
 
   const { data: completed, error } = await supabase
     .from('service_orders')
@@ -488,14 +508,24 @@ async function completeOrder(
     throw new Error('الطلب مش موجود أو تغيّرت حالته — الإقفال مروّحش للقاعدة.');
   }
 
-  await recordInstructorEarning(supabase, order, service?.name ?? 'خدمة إبداعية');
+  // اسم الخدمة بقى بيتقرا جوّه الدالة في القاعدة.
+  const earningRecorded = await recordInstructorEarning(supabase, order);
 
   if (order.instructor_id) {
+    // ⚠️ **الرسالة بتتغيّر حسب اللي حصل فعلًا.**
+    //
+    //    كانت ثابتة: «وأُضيفت حصيلتك إلى مستحقاتك» — تتبعت حتى لو
+    //    التسجيل فشل. يعني المدرب ياخد تأكيدًا بحصيلة **مش موجودة**،
+    //    ويستنى فلوسًا مالهاش صف في القاعدة، ومايشتكيش لأنه مطمّن.
+    //
+    //    كذبة على المدرب أسوأ من سكوت: السكوت بيخلّيه يسأل.
     await notifyUser({
       event: 'order_status',
       recipientProfileId: await getInstructorUserId(order.instructor_id),
       title: 'اكتمل الطلب',
-      message: 'تم تأكيد الاستلام، وأُضيفت حصيلتك إلى مستحقاتك.',
+      message: earningRecorded
+        ? 'تم تأكيد الاستلام، وأُضيفت حصيلتك إلى مستحقاتك.'
+        : 'تم تأكيد الاستلام. حصيلتك تحت المراجعة — هنبلّغك أول ما تظهر في مستحقاتك.',
       link: '/dashboard/instructor/payouts',
     });
   }

@@ -1514,7 +1514,27 @@ describe('Zero-Row Mutation Hardening Tests', () => {
       expect(mockNotifyUser).not.toHaveBeenCalled();
     });
 
-    it('throws and prevents false success if recording instructor earning fails in database', async () => {
+    /**
+     * ⚠️ **العقد اتغيّر هنا عن قصد — اقرا قبل ما تعدّل.**
+     *
+     * الاختبار ده كان بيثبّت إن فشل تسجيل المستحق **بيرمي**. والرمي
+     * كان غلط في محلّه: الطلب بيبقى `completed` فعلًا قبل السطر ده،
+     * فالعميل كان يشوف رسالة خطأ على عملية **تمّت** — وميقدرش يعيد
+     * المحاولة، لأن الإقفال مشروط بـ`status = 'delivered'`.
+     *
+     * الغرض الحقيقي من الاختبار مكتوب في سطره الأخير:
+     * **المدرب مايتبلّغش بحصيلة مااتسجّلتش.** والعقد الجديد بيحافظ
+     * على ده ويزوّد عليه:
+     *
+     *   • مبيرميش — العملية تمّت فعلًا
+     *   • **بيبلّغ الإدارة** — دي الجهة اللي تقدر تصلّح
+     *   • ورسالة المدرب بتتغيّر: «تحت المراجعة» مش «أُضيفت حصيلتك»
+     *
+     * ⚠️ لو رجّع حد الرسالة الثابتة «وأُضيفت حصيلتك إلى مستحقاتك»،
+     *    الاختبار ده بيسقط. **ما يتغيّرش عشان يعدّي** — ده بالظبط
+     *    الكذب اللي بيمنعه.
+     */
+    it('لا يرمي عند فشل تسجيل المستحق، وبيبلّغ الإدارة ومبيكدبش على المدرب', async () => {
       const updateSelectMock = vi.fn().mockResolvedValue({ data: [{ id: 'order-1' }], error: null });
       const updateStatusEqMock = vi.fn().mockReturnValue({ select: updateSelectMock });
       const updateIdEqMock = vi.fn().mockReturnValue({ eq: updateStatusEqMock });
@@ -1522,6 +1542,11 @@ describe('Zero-Row Mutation Hardening Tests', () => {
 
       mockSupabase = {
         auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'buyer-1' } } }) },
+        // الدالة في القاعدة بترفض (مثلًا الصلاحيات أو عطل مؤقت).
+        rpc: vi.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'permission denied for table instructor_payouts' },
+        }),
         from: vi.fn((table: string) => {
           if (table === 'service_orders') {
             return {
@@ -1535,22 +1560,22 @@ describe('Zero-Row Mutation Hardening Tests', () => {
               update: updateMock,
             };
           }
-          if (table === 'instructor_payouts') {
-            return {
-              insert: vi.fn().mockResolvedValue({
-                error: { message: 'RLS check violation on instructor_payouts' },
-              }),
-            };
-          }
           return {};
         }),
       };
 
-      await expect(confirmServiceOrderReceipt('order-1')).rejects.toThrow(
-        'تعذّر تسجيل مستحقات المدرب لهذا الطلب'
-      );
-      // Instructor must NOT be notified of false successful earnings addition
-      expect(mockNotifyUser).not.toHaveBeenCalled();
+      // العملية تمّت — فمفيش رمي في وش العميل.
+      await expect(confirmServiceOrderReceipt('order-1')).resolves.toEqual({ ok: true });
+
+      // الإدارة لازم تعرف.
+      expect(mockNotifyAdmins).toHaveBeenCalled();
+
+      // والمدرب مايتقالوش إن حصيلته اتضافت.
+      const messages = mockNotifyUser.mock.calls
+        .map((call) => String((call[0] as { message?: string })?.message ?? ''))
+        .join(' | ');
+      expect(messages).not.toContain('وأُضيفت حصيلتك إلى مستحقاتك');
+      expect(messages).toContain('تحت المراجعة');
     });
   });
 
