@@ -1952,6 +1952,14 @@ export type Database = {
           subscription_id: string
           user_ref: string
           child_ref: string | null
+          /**
+           * صاحب مستندات المعرض — ملف SQL 89.
+           *
+           * ⚠️ **مش** `user_ref`. حساب دخول الطفل لو موجود، وإلا
+           *    المشتري. الفرق ده كان بيخلّي المدرب يسأل عن مستندات
+           *    ولي الأمر بدل الطفل فيلاقيها فاضية.
+           */
+          documents_ref: string
           participant_name: string
           package_name: string
           sessions_total: number

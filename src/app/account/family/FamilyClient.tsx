@@ -1,10 +1,11 @@
 'use client';
 import React, { useState, useTransition } from 'react';
+import Link from 'next/link';
 import { ChildProfile } from '@/types';
 import { createFamilyMember, updateFamilyMember, deleteFamilyMember } from '@/app/actions/family';
 import { Button } from '@/components/ui/Button';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
-import { Trash2, Edit2, Plus, X } from 'lucide-react';
+import { Trash2, Edit2, Plus, X, FileText } from 'lucide-react';
 import { calculateAge } from '@/lib/utils';
 import { BirthDatePicker } from '@/components/ui/BirthDatePicker';
 import { StudentAccountCell } from './StudentAccountCell';
@@ -125,6 +126,29 @@ export function FamilyClient({
       cell: (child: ChildProfile) => (
         <StudentAccountCell child={child} enabled={accountsEnabled} />
       ),
+    },
+    {
+      header: 'المتابعة',
+      accessorKey: 'follow',
+      /**
+       * متابعة شغل الطفل — معرض أعماله وملاحظات مدربه.
+       *
+       * ⚠️ بتظهر للطفل اللي عنده حساب دخول بس: المعرض بيتكتب من
+       *    حساب الطالب، فمن غير حساب مفيش حاجة تتعرض. والصفحة نفسها
+       *    بتقول السبب لو حد فتحها برابط مباشر.
+       */
+      cell: (child: ChildProfile) =>
+        child.accountProfileId ? (
+          <Link
+            href={`/account/family/${child.id}/portfolio`}
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-amber-700 hover:underline"
+          >
+            <FileText className="h-4 w-4" />
+            معرض أعماله
+          </Link>
+        ) : (
+          <span className="text-xs font-medium text-slate-400">محتاج حساب دخول</span>
+        ),
     },
     { 
       header: 'الإجراءات', 

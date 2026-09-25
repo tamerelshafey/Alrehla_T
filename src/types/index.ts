@@ -495,7 +495,16 @@ export interface StudentSession {
 }
 
 export interface InstructorStudent {
+  /** رقم المشتري — وهو اللي روابط الصفحات مبنية عليه. */
   id: string;
+  /**
+   * رقم صاحب مستندات المعرض.
+   *
+   * ⚠️ **غير `id`** لما الطالب طفل تابع عنده حساب دخول: المستندات
+   *    بتتخزّن باسم حساب الطفل، و`id` رقم ولي الأمر اللي اشترى.
+   *    السؤال بـ`id` بيرجّع صفر مستندات **بلا خطأ**.
+   */
+  documentsRef: string;
   name: string;
   avatarUrl?: string;
   packageName: string;

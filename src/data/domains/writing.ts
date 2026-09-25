@@ -381,6 +381,8 @@ export const getInstructorStudents = async (): Promise<InstructorStudent[]> => {
     // المعرّف ده هو اللي روابط «الملف» بتستخدمه، فلازم يبقى نفسه في
     // اللوحة الرئيسية وفي القايمة — كانوا مختلفين قبل كده.
     id: row.user_ref,
+    // ⚠️ الرقم اللي المستندات بتتسأل بيه — مش `user_ref`. شوف ملف 89.
+    documentsRef: row.documents_ref,
     name: row.participant_name,
     packageName: row.package_name,
     sessionsCompleted: row.sessions_completed,
@@ -392,6 +394,7 @@ type InstructorStudentRow = {
   subscription_id: string;
   user_ref: string;
   child_ref: string | null;
+  documents_ref: string;
   participant_name: string;
   package_name: string;
   sessions_total: number;

@@ -41,7 +41,11 @@ export default async function StudentDetailsPage({ params }: { params: Promise<{
   }));
 
   
-  const documents = await getStudentDocuments(studentId);
+  // ⚠️ `studentId` هو رقم **المشتري**، ومستندات المعرض بتتخزّن باسم
+  //    **حساب الطفل** لما الطالب طفل تابع. السؤال بالرقم الغلط كان
+  //    بيرجّع صفر مستندات بلا أي خطأ، فالصفحة تقول «لا توجد مستندات»
+  //    والمدرب مش شايف شغل طالبه أصلًا (ملف SQL 89).
+  const documents = await getStudentDocuments(student.documentsRef);
   const docsData = documents.map((doc: any) => ({
     title: doc.title,
     date: formatDate(doc.updatedAt),
