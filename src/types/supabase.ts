@@ -1786,6 +1786,8 @@ export type Database = {
           amount: number
           method: string
           status: string
+          /** بيانات التحويل اللي المدرب كتبها — ملف SQL 92. */
+          payout_details: string | null
           admin_notes: string | null
           created_at: string
           updated_at: string
@@ -1796,6 +1798,7 @@ export type Database = {
           amount: number
           method: string
           status?: string
+          payout_details?: string | null
           admin_notes?: string | null
           created_at?: string
           updated_at?: string
@@ -1806,6 +1809,7 @@ export type Database = {
           amount?: number
           method?: string
           status?: string
+          payout_details?: string | null
           admin_notes?: string | null
           created_at?: string
           updated_at?: string

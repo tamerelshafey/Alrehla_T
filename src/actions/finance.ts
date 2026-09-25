@@ -92,36 +92,120 @@ export async function markPublisherPayoutAsPaid(payoutId: string) {
 }
 
 /**
- * An instructor asking to withdraw what they have earned.
+ * المدرب بيطلب سحب مستحقاته.
  *
- * The instructor is resolved here from the signed-in user rather than taken
- * from the browser, so a request can only ever be filed for oneself.
+ * ── ثلاث مشاكل كانت هنا ─────────────────────────────────────
+ *
+ * **١. المبلغ كان جاي من المتصفح.** الشاشة بتحسب الرصيد وبتبعته،
+ * والخادم بياخده زي ما هو ويكتبه. يعني تبويبة متلاعب فيها تقدر تطلب
+ * **أي رقم**، والحارس الوحيد إن إداري يبص على الطلب قبل ما يدفع.
+ *
+ * ودي مخالفة لقاعدة ماشي عليها المشروع كله: دالة إنشاء الطلب بتجيب
+ * السعر من جدول المنتجات، ودالة الحجز بتجيبه من الباقة، ودالة
+ * المستحق بتحسبه من صف الطلب. **المتصفح مبيبعتش أرقام فلوس.**
+ *
+ * دلوقتي المبلغ بيتحسب هنا من `instructor_payouts` — والباراميتر
+ * اتشال أصلًا عشان محدش يفتكر إنه لسه بيتبعت.
+ *
+ * **٢. مفيش منع للتكرار.** المدرب يدوس مرتين فيطلع طلبين بنفس
+ * الرصيد، والإدارة تشوف صفّين وتفتكرهم مستحقين.
+ *
+ * **٣. الرصيد الصفر كان بيعدّي.** مدرب لسه مالوش مستحقات يقدر
+ * يبعت طلب سحب بصفر.
+ *
+ * ⚠️ **ولسه مفيش قيد في القاعدة على المبلغ** (`CHECK (amount > 0)`
+ *    وبس). الفحص هنا حارس تطبيق لا حارس قاعدة — ولو اتفتح طريق تاني
+ *    لإنشاء طلبات السحب يومًا، لازم يمر من هنا أو يتكتب له نفس المنطق.
  */
-export async function submitWithdrawalRequest(amount: number, method: string) {
+export type WithdrawalResult =
+  | { ok: true; amount: number }
+  | { ok: false; error: string };
+
+export async function submitWithdrawalRequest(
+  method: string,
+  payoutDetails: string,
+): Promise<WithdrawalResult> {
   const user = await getCurrentUser();
   if (user.role !== 'instructor') {
-    throw new Error('غير مصرح لك بتقديم طلب سحب');
+    return { ok: false, error: 'غير مصرح لك بتقديم طلب سحب' };
   }
 
-  if (!Number.isFinite(amount) || amount <= 0) {
-    throw new Error('المبلغ غير صحيح');
+  // ⚠️ **بيانات التحويل كانت بتضيع.** خانات «اسم البنك» و«رقم
+  //    الحساب» في الشاشة مكانتش مربوطة بأي حالة ومبتتبعتش للخادم —
+  //    مكتوب عليها `required` بس، فالمدرب بيملاها والمتصفح يسمحله
+  //    والخادم ياخد `method` وحده.
+  //
+  //    فالإدارة بتشوف «تحويل بنكي» **من غير رقم حساب**: طلب وصل
+  //    ومينفعش يتنفّذ، ولازم حد يكلّم المدرب يسأله.
+  const details = payoutDetails.trim();
+  if (!details) {
+    return { ok: false, error: 'اكتب بيانات التحويل — من غيرها الطلب مش هينفّذ.' };
+  }
+  if (details.length > 600) {
+    return { ok: false, error: 'بيانات التحويل طويلة أوي — اختصرها.' };
   }
 
   const instructorId = await getMyInstructorId();
   if (!instructorId) {
-    throw new Error('لم يتم العثور على ملف المدرب');
+    return { ok: false, error: 'لم يتم العثور على ملف المدرب' };
   }
 
   const supabase = await createClient();
+
+  // ── الرصيد: من القاعدة لا من الشاشة ───────────────────────
+  const { data: earnings, error: earningsError } = await supabase
+    .from('instructor_payouts')
+    .select('amount')
+    .eq('instructor_id', instructorId)
+    .eq('status', 'pending');
+
+  if (earningsError) {
+    console.error('Error reading instructor earnings', earningsError);
+    return { ok: false, error: 'تعذّر قراءة رصيدك — جرّب تاني.' };
+  }
+
+  const available = (earnings ?? []).reduce((sum, row) => sum + (row.amount ?? 0), 0);
+
+  if (available <= 0) {
+    return { ok: false, error: 'مفيش رصيد قابل للسحب دلوقتي.' };
+  }
+
+  // ── طلب معلّق واحد يكفي ───────────────────────────────────
+  const { data: openRequests, error: openError } = await supabase
+    .from('withdrawal_requests')
+    .select('id')
+    .eq('instructor_id', instructorId)
+    .eq('status', 'pending')
+    .limit(1);
+
+  if (openError) {
+    console.error('Error reading open withdrawal requests', openError);
+    return { ok: false, error: 'تعذّر التحقق من طلباتك السابقة — جرّب تاني.' };
+  }
+
+  if (openRequests && openRequests.length > 0) {
+    return {
+      ok: false,
+      error: 'عندك طلب سحب مستني المراجعة خلاص. استنى الرد عليه الأول.',
+    };
+  }
+
   const { data, error } = await supabase
     .from('withdrawal_requests')
-    .insert({ instructor_id: instructorId, amount, method, status: 'pending' })
+    .insert({
+      instructor_id: instructorId,
+      amount: available,
+      method,
+      payout_details: details,
+      status: 'pending',
+    })
     .select('id')
-    .single();
+    .maybeSingle();
 
   if (error || !data) {
+    // ⚠️ نص خطأ القاعدة إنجليزي ومبهم للمدرب، فبيتسجّل ومبيتعرضش.
     console.error('Error submitting withdrawal request', error);
-    throw new Error('تعذّر إرسال طلب السحب');
+    return { ok: false, error: 'تعذّر إرسال طلب السحب — جرّب تاني، ولو فضلت كلّم الإدارة.' };
   }
 
   await logAuditAction({
@@ -130,12 +214,12 @@ export async function submitWithdrawalRequest(amount: number, method: string) {
     action: 'instructor_withdrawal_requested',
     entityType: 'withdrawal_request',
     entityId: data.id,
-    metadata: { instructorId, amount, method },
+    metadata: { instructorId, amount: available, method },
   });
 
   revalidatePath('/dashboard/instructor/payouts');
   revalidatePath('/dashboard/admin/finance');
-  return { success: true };
+  return { ok: true, amount: available };
 }
 
 export async function updatePublisherPricingSettings(multiplier: number, fixedFee: number) {

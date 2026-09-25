@@ -187,6 +187,13 @@ export type WithdrawalRequestRow = {
   instructorName: string;
   amount: number;
   method: string;
+  /**
+   * بيانات التحويل اللي المدرب كتبها (ملف SQL 92).
+   *
+   * ⚠️ من غيرها الطلب **مينفعش يتنفّذ**: الإدارة بتشوف «تحويل بنكي»
+   *    وبس. الطلبات القديمة — اللي اتعملت قبل الإصلاح — فاضية هنا.
+   */
+  payoutDetails: string | null;
   status: string;
   adminNotes: string | null;
   createdAt: string;
@@ -200,7 +207,7 @@ export async function getWithdrawalRequests(): Promise<WithdrawalRequestRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('withdrawal_requests')
-    .select('id, instructor_id, amount, method, status, admin_notes, created_at, instructors(display_name)')
+    .select('id, instructor_id, amount, method, status, payout_details, admin_notes, created_at, instructors(display_name)')
     .order('created_at', { ascending: false });
 
   if (error || !data) return [];
@@ -213,6 +220,7 @@ export async function getWithdrawalRequests(): Promise<WithdrawalRequestRow[]> {
       instructorName: joined?.display_name ?? 'مدرب',
       amount: row.amount,
       method: row.method,
+      payoutDetails: row.payout_details,
       status: row.status,
       adminNotes: row.admin_notes,
       createdAt: row.created_at,

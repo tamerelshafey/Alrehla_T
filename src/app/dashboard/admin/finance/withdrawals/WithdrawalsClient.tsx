@@ -72,6 +72,18 @@ export function WithdrawalsClient({ requests }: { requests: WithdrawalRequestRow
                 <p className="mt-1 text-sm font-medium text-slate-500">
                   {formatDate(request.createdAt)} · طريقة التحويل: {request.method}
                 </p>
+                {/* بيانات التحويل — من غيرها الإداري مايقدرش ينفّذ. */}
+                {request.payoutDetails ? (
+                  <p className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm font-medium text-slate-700">
+                    <span className="font-bold">بيانات التحويل: </span>
+                    <span dir="auto">{request.payoutDetails}</span>
+                  </p>
+                ) : (
+                  <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-bold text-amber-900">
+                    مفيش بيانات تحويل مع الطلب ده — كلّم المدرب قبل ما تنفّذ.
+                  </p>
+                )}
+
                 {request.adminNotes && (
                   <p className="mt-2 rounded-xl bg-slate-50 p-3 text-sm font-medium text-slate-600">
                     <span className="font-bold">ملاحظة الإدارة:</span> {request.adminNotes}
