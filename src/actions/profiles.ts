@@ -96,7 +96,7 @@ export async function updateMyPublisherProfile(params: {
 
   if (!owned) throw new Error('غير مصرح لك بتعديل هذا الملف');
 
-  const { error } = await supabase
+  const { data: saved, error } = await supabase
     .from('publishers')
     .update({
       name,
@@ -104,7 +104,15 @@ export async function updateMyPublisherProfile(params: {
       logo_url: params.logoUrl?.trim() || null,
       updated_at: new Date().toISOString(),
     })
-    .eq('id', params.publisherId);
+    .eq('id', params.publisherId)
+    .select('id');
+
+  // ⚠️ فحص الملكية فوق بيقرا، والكتابة بتمر على الصلاحيات تاني —
+  //    والاتنين ممكن يختلفوا. صفر صفوف هنا معناها الحفظ ما تمّش
+  //    (قاعدة «و»).
+  if (!error && (!saved || saved.length === 0)) {
+    throw new Error('الحفظ مروّحش للقاعدة — راجع الصلاحيات.');
+  }
 
   if (error) {
     console.error('Error updating publisher profile', error);

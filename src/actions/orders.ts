@@ -162,14 +162,37 @@ export async function submitPaymentProof(
     return { success: false, error: 'تم إرسال إثبات الدفع لهذا الطلب بالفعل' };
   }
 
-  const { error } = await supabase
+  // ⚠️ **دي أخطر `UPDATE` في الملف** (قاعدة «و»).
+  //
+  //    فيه محفّز حماية على `orders` بيسمح بانتقال واحد بس:
+  //    `pending → awaiting_verification`. ولو رفض، أو لو الصلاحيات
+  //    منعت الصف، `UPDATE` **بينجح ويرجّع صفر صفوف** — والكود كان
+  //    بيقول «تم».
+  //
+  //    يعني العميل يرفع إيصال تحويل حقيقي، والشاشة تقول وصل،
+  //    والطلب يفضل `pending` ومحدّش في الإدارة شايفه. **فلوس
+  //    اتحوّلت ومفيش أثر.**
+  //
+  //    والشرط `status = 'pending'` في الاستعلام نفسه بيقفل كمان
+  //    سباق الضغطتين: التانية بترجّع صفر صفوف بدل ما تدوس فوق
+  //    الأولى.
+  const { data: updated, error } = await supabase
     .from('orders')
     .update({
       status: 'awaiting_verification',
       payment_method: payment.method,
       payment_receipt_url: payment.receiptUrl,
     })
-    .eq('id', orderId);
+    .eq('id', orderId)
+    .eq('status', 'pending')
+    .select('id');
+
+  if (!error && (!updated || updated.length === 0)) {
+    return {
+      success: false,
+      error: 'إثبات الدفع مروّحش للطلب. حدّث الصفحة وجرّب تاني، ولو فضلت كلّمنا فورًا.',
+    };
+  }
 
   if (error) {
     console.error('Error submitting payment proof:', error);

@@ -86,7 +86,8 @@ export async function resolveDeletionRequest(params: {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase
+  // قاعدة «و» + منع البتّ مرتين: الشرط على الحالة في الاستعلام نفسه.
+  const { data: decided, error } = await supabase
     .from('account_deletion_requests')
     .update({
       status: params.status,
@@ -94,7 +95,13 @@ export async function resolveDeletionRequest(params: {
       handled_at: new Date().toISOString(),
       handled_by: admin.id,
     })
-    .eq('id', params.id);
+    .eq('id', params.id)
+    .eq('status', 'pending')
+    .select('id');
+
+  if (!error && (!decided || decided.length === 0)) {
+    return { ok: false, error: 'الطلب ده اتبتّ فيه قبل كده، أو مش موجود.' };
+  }
 
   if (error) {
     console.error('Error resolving deletion request', error);

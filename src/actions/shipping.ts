@@ -47,13 +47,20 @@ export async function upsertShippingRate(params: {
     updated_at: new Date().toISOString(),
   };
 
-  const { error } = params.id
-    ? await supabase.from('shipping_rates').update(row).eq('id', params.id)
-    : await supabase.from('shipping_rates').upsert(row, { onConflict: 'governorate,city' });
+  const { data: saved, error } = params.id
+    ? await supabase.from('shipping_rates').update(row).eq('id', params.id).select('id')
+    : await supabase
+        .from('shipping_rates')
+        .upsert(row, { onConflict: 'governorate,city' })
+        .select('id');
 
   if (error) {
     console.error('Error saving shipping rate', error);
     throw new Error('تعذّر حفظ السعر');
+  }
+  // قاعدة «و»: التعديل على صف مش موجود بينجح ويرجّع صفر صفوف.
+  if (!saved || saved.length === 0) {
+    throw new Error('الحفظ مروّحش للقاعدة — المنطقة مش موجودة أو الصلاحيات مش سامحة.');
   }
 
   await logAuditAction({
@@ -112,12 +119,30 @@ export async function adjustShippingRatesByGovernorate(governorate: string, delt
 
   if (!rates?.length) throw new Error('لا توجد مناطق في هذه المحافظة');
 
+  // ⚠️ الحلقة دي كانت `await` **عارية**: مفيش فحص خطأ ولا عدد صفوف.
+  //    فلو صف أو اتنين فشلوا، الإدارة بتشوف «تم» والأسعار **نصها
+  //    اتغيّر ونصها لأ** — وده أسوأ من فشل كامل، لأن محدّش هيعرف
+  //    أنهي منهم اتغيّر.
+  let changed = 0;
   for (const rate of rates) {
     const next = Math.max(0, rate.fee + delta);
-    await supabase
+    const { data, error } = await supabase
       .from('shipping_rates')
       .update({ fee: next, updated_at: new Date().toISOString() })
-      .eq('id', rate.id);
+      .eq('id', rate.id)
+      .select('id');
+
+    if (error) {
+      console.error('Error adjusting shipping rate', error);
+      throw new Error(
+        `اتغيّرت ${changed} منطقة من ${rates.length}، وبعدين وقف. راجع الأسعار قبل ما تعيد.`,
+      );
+    }
+    if (data && data.length > 0) changed += 1;
+  }
+
+  if (changed === 0) {
+    throw new Error('ولا سعر اتغيّر — راجع الصلاحيات.');
   }
 
   await logAuditAction({
