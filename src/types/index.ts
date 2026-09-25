@@ -195,6 +195,12 @@ export type ServiceProvider = {
   bio: string;
   yearsExperience: number;
   /**
+   * صورة مقدّم الخدمة — من `user_profiles.avatar_url` عبر صف المدرب.
+   *
+   * ⚠️ فاضية للأنواع اللي مالهاش صف في جدول المدربين (شريك، ناشر).
+   */
+  avatarUrl?: string;
+  /**
    * اللي العميل بيدفعه فعلًا.
    *
    * ⚠️ كان فيه فرق بين ده وبين اللي بيتعرض: الصفحة كانت بتعرض مستحق

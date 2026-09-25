@@ -1,14 +1,13 @@
 'use client';
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { PublicInstructor, WeeklySlot, BookedSlot, DayOfWeek } from '@/types';
 import { formatPrice } from '@/lib/utils';
 import { Calendar, Clock, User, ArrowRight, Video } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { PersonAvatar } from '@/components/ui/PersonAvatar';
 import { PLATFORM_TIMEZONE } from '@/lib/timezone';
-import { optimizedImageUrl } from '@/lib/cloudinary';
 
 const DAY_ORDER: DayOfWeek[] = [
   'saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
@@ -191,29 +190,11 @@ export function BookingWizardClient({
                           صورة المدرب — **كانت مش موجودة هنا خالص.**
 
                           الكارت كان بيرسم دايرة رمادية فيها أول حرف من
-                          الاسم وبس، مهما كانت الصورة مرفوعة. ودي تالت
-                          مرة نفس النمط يتكرر: البيانات موجودة والطبقة
-                          اللي بتعرض مش بتسأل عنها (صفحة المدرب، وكارت
-                          قائمة المدربين، ودلوقتي المعالج).
-
-                          الحرف الأول باقٍ كبديل لما مفيش صورة.
+                          الاسم وبس، مهما كانت الصورة مرفوعة. والنمط ده
+                          اتكرر في **خمس** شاشات، فبقى في مكوّن واحد
+                          (`PersonAvatar`) بدل ما يتنسخ في كل واحدة.
                         */}
-                        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-slate-200">
-                          {inst.avatarUrl ? (
-                            <Image
-                              src={optimizedImageUrl(inst.avatarUrl, 96)}
-                              alt=""
-                              fill
-                              sizes="48px"
-                              className="object-cover"
-                              referrerPolicy="no-referrer"
-                            />
-                          ) : (
-                            <span className="flex h-full w-full items-center justify-center font-bold text-slate-500">
-                              {inst.displayName.charAt(0)}
-                            </span>
-                          )}
-                        </div>
+                        <PersonAvatar name={inst.displayName} avatarUrl={inst.avatarUrl} />
                         <div>
                           <h4 className="font-bold text-slate-800">{inst.displayName}</h4>
                           <p className="text-xs text-slate-500">{inst.specialties.join('، ')}</p>

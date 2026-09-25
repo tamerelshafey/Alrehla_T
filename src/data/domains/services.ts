@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { getPublicInstructors } from '@/data/domains/writing';
 import { calculateFinalSessionPrice } from '@/lib/utils';
 import type {
   CreativeService,
@@ -144,20 +145,31 @@ export async function getProvidersForService(
 
   if (rows.length === 0) return [];
 
-  // سنوات الخبرة موجودة على صف المدرب بس. استعلام واحد للكل بدل واحد
-  // لكل مقدّم.
-  const instructorIds = rows
-    .map((r) => r.provider.instructor_id)
-    .filter((id): id is string => Boolean(id));
+  // سنوات الخبرة والصورة موجودتان على صف المدرب وملفه، مش على مقدّم
+  // الخدمة. استعلام واحد للكل بدل واحد لكل مقدّم.
+  //
+  // ── ليه `getPublicInstructors()` مش استعلامًا مباشرًا ────────
+  //
+  // ⚠️ دي كانت `supabase.from('instructors').select(...)` بمفتاح
+  //    المستخدم. وبعد ملف SQL 84 بقت قراءة جدول المدربين
+  //    **للمسجَّلين وحدهم** — يعني الاستعلام ده بيرجع **فاضي للزائر**،
+  //    بلا أي خطأ (قاعدة «ك»). والنتيجة إن كل مقدّم خدمة كان بيتعرض
+  //    للزائر بـ«صفر سنوات خبرة»، والزائر هو بالظبط المشتري المحتمل.
+  //
+  //    `getPublicInstructors()` بتمر على دالة `SECURITY DEFINER`
+  //    (ملف 83) فبترجّع نفس البيانات للزائر والمسجَّل — ومعاها
+  //    `avatar_url` اللي مكانش حد بيطلبه هنا أصلًا.
+  const instructorIds = new Set(
+    rows.map((r) => r.provider.instructor_id).filter((id): id is string => Boolean(id)),
+  );
 
   const experience = new Map<string, number>();
-  if (instructorIds.length > 0) {
-    const { data: instructors } = await supabase
-      .from('instructors')
-      .select('id, years_experience')
-      .in('id', instructorIds);
-    for (const i of instructors ?? []) {
-      experience.set(i.id, i.years_experience ?? 0);
+  const avatars = new Map<string, string>();
+  if (instructorIds.size > 0) {
+    for (const i of await getPublicInstructors()) {
+      if (!instructorIds.has(i.id)) continue;
+      experience.set(i.id, i.yearsExperience ?? 0);
+      if (i.avatarUrl) avatars.set(i.id, i.avatarUrl);
     }
   }
 
@@ -199,6 +211,9 @@ export async function getProvidersForService(
         yearsExperience: provider.instructor_id
           ? (experience.get(provider.instructor_id) ?? 0)
           : 0,
+        avatarUrl: provider.instructor_id
+          ? avatars.get(provider.instructor_id)
+          : undefined,
         price,
         providerEarning: isPlatform ? null : approved,
       } satisfies ServiceProvider;

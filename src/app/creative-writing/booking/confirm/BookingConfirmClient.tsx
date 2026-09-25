@@ -7,6 +7,7 @@ import { createCourseBooking, submitBookingPaymentProof } from '@/actions/bookin
 import { PaymentProofForm, type PaymentMethod } from '@/components/checkout/PaymentProofForm';
 import { Button } from '@/components/ui/Button';
 import { TransferInstructions } from '@/components/checkout/TransferInstructions';
+import { PersonAvatar } from '@/components/ui/PersonAvatar';
 
 export function BookingConfirmClient({
   paymentWalletNumber,
@@ -16,6 +17,7 @@ export function BookingConfirmClient({
   packagePrice,
   instructorId,
   instructorName,
+  instructorAvatarUrl,
   preferredSlot,
   presetChildId,
 }: {
@@ -26,6 +28,8 @@ export function BookingConfirmClient({
   packagePrice: number;
   instructorId?: string;
   instructorName?: string;
+  /** صورة المدرب — نفس العطل اللي اتكرر في أربع شاشات قبل دي. */
+  instructorAvatarUrl?: string;
   /** الموعد الأسبوعي اللي العميل اختاره في المعالج، بعد التأكد إنه في جدول المدرب. */
   preferredSlot?: { day: string; time: string };
   /**
@@ -127,7 +131,14 @@ export function BookingConfirmClient({
               <User className="h-5 w-5 text-emerald-500" />
               <span>المدرب</span>
             </div>
-            <span className="font-bold text-slate-900">
+            <span className="flex items-center gap-2 font-bold text-slate-900">
+              {instructorName && (
+                <PersonAvatar
+                  name={instructorName}
+                  avatarUrl={instructorAvatarUrl}
+                  size={32}
+                />
+              )}
               {instructorName ?? 'يحدده فريق المنصة'}
             </span>
           </div>

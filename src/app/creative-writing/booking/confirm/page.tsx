@@ -99,6 +99,7 @@ export default async function BookingConfirmPage({
               packagePrice={chosenPackage.price}
               instructorId={chosenInstructor?.id}
               instructorName={chosenInstructor?.displayName}
+              instructorAvatarUrl={chosenInstructor?.avatarUrl}
               presetChildId={childParam}
               preferredSlot={
                 slotDay && slotTime &&

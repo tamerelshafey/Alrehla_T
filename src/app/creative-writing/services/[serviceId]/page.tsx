@@ -8,6 +8,7 @@ import { formatPrice } from '@/lib/utils';
 import { PageContainer } from '@/components/PageContainer';
 import { Section } from '@/components/ui/Section';
 import { getStandaloneServices, getProvidersForService } from '@/data/domains/services';
+import { PersonAvatar } from '@/components/ui/PersonAvatar';
 import { pageMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -97,6 +98,13 @@ export default async function ServiceProvidersPage({
                 key={provider.offerId}
                 className="flex flex-wrap items-center gap-6 rounded-3xl border-2 border-slate-100 bg-white p-8 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
               >
+                {/* الصورة كانت موجودة في القاعدة ومحدش بيطلبها هنا. */}
+                <PersonAvatar
+                  name={provider.displayName}
+                  avatarUrl={provider.avatarUrl}
+                  size={64}
+                />
+
                 <div className="min-w-[200px] flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-xl font-black text-slate-800">{provider.displayName}</h2>
