@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient, isAdminApiConfigured } from '@/lib/supabase/admin';
 import { logAuditAction } from '@/lib/audit';
-import { requireUser } from '@/lib/auth-guard';
+import { requireNotDependent } from '@/lib/auth-guard';
 
 /**
  * حساب دخول منفصل للطالب التابع.
@@ -81,9 +81,20 @@ function ageFrom(birthDate: string | null): number | null {
   return years;
 }
 
-/** الطفل ده تابع للداخل دلوقتي؟ */
+/**
+ * الطفل ده تابع للداخل دلوقتي؟
+ *
+ * ⚠️ `requireNotDependent` مش `requireUser`.
+ *
+ *    كانت `requireUser()` — بتتأكد إن في مستخدم داخل وبس. والفرق
+ *    مش شكلي: **حساب الطالب نفسه كان يقدر يفتح حسابات طلاب**، لو
+ *    قدر يعمل صف طفل تحت حسابه الأول (شوف `family.ts`).
+ *
+ *    ودي نقطة الاختناق للأربع دوال كلها — فتح الحساب، وكلمة السر
+ *    الجديدة، والإيقاف، والتفعيل. سطر واحد بيقفلهم.
+ */
 async function requireOwnChild(childId: string) {
-  const guardian = await requireUser();
+  const guardian = await requireNotDependent('إدارة حسابات الأبناء');
   const supabase = await createClient();
 
   const { data: child } = await supabase

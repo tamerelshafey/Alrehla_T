@@ -156,11 +156,23 @@ export async function submitInstructorFeedback(documentId: string, feedback: str
     })
     .eq('id', documentId)
     .select('id, student_id')
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
+  if (error) {
     console.error('Error saving instructor feedback', error);
     throw new Error('تعذّر حفظ الملاحظات');
+  }
+
+  // ⚠️ صفر صفوف هنا **مش** عطلًا في القاعدة — دي الصلاحيات بترفض
+  //    بصمت (قاعدة «ك»). سياسة `Instructors grade their own students
+  //    documents` شرطها `instructor_teaches(student_id)`، فالمدرب
+  //    اللي بيحاول يعلّق على نص مش لطالبه بياخد صفر صفوف.
+  //
+  //    وكانت `.single()`، فالرفض ده كان بيطلع «تعذّر حفظ الملاحظات» —
+  //    رسالة بتقول «في عطل عندنا» على حاجة هي **منع مقصود**. المدرب
+  //    كان يفضل يجرّب تاني وتالت في حاجة مش هتنجح.
+  if (!data) {
+    throw new Error('النص ده مش لطالب من طلابك، أو مش موجود.');
   }
 
   revalidatePath(`/dashboard/instructor/students/${data.student_id}/portfolio/${documentId}`);

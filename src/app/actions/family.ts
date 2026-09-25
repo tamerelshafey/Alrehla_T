@@ -2,6 +2,31 @@
 import { createClient } from '@/lib/supabase/server';
 import { ChildProfile } from '@/types';
 import { revalidatePath } from 'next/cache';
+import { requireNotDependent } from '@/lib/auth-guard';
+
+/**
+ * ⚠️ **ليه `requireNotDependent` في كل دالة بتكتب هنا؟**
+ *
+ * نموذج الحسابات بيقول: العميل يضيف أطفالًا فيتفعّل المركز العائلي
+ * ويبقى **ولي أمر**، وولي الأمر يقدر يفتح حساب دخول لأي طفل تابع.
+ * والطالب التابع **مش** بيعمل طلبات ولا بيبقى ولي أمر.
+ *
+ * والدوال دي كانت بتتأكد إن في مستخدم داخل **وبس** — بلا أي فحص
+ * للدور. يعني حساب طفل تابع كان يقدر ينادي `createFamilyMember`
+ * مباشرةً، يعمل «أطفالًا» تحته، ويتحوّل لولي أمر — وبعدها يفتح لهم
+ * حسابات دخول من `student-accounts.ts`. سلسلة كاملة خارج النموذج.
+ *
+ * ⚠️ والصلاحيات مش بتمنع ده: سياسة الإدراج على `child_profiles`
+ *    شرطها إن الصف يخص الداخل، والطفل بيكتب صفًا يخصه فعلًا —
+ *    فالسياسة **بتسمح عن حق**. المنع ده قرار منتج، ومكانه الخادم.
+ *
+ * ⚠️ وإخفاء الشاشة مش حماية: `middleware` بيحوّل الطالب بره
+ *    `/account`، لكن أكشن الخادم بيتنادى مباشرةً من غير ما يعدّي
+ *    على الصفحة أصلًا.
+ *
+ * `fetchFamilyMembers` مستثناة: قراءة، وبترجّع أبناء الداخل — والطالب
+ * مالوش أبناء فبترجّع فاضية.
+ */
 
 export async function fetchFamilyMembers(): Promise<ChildProfile[]> {
   const supabase = await createClient();
@@ -32,9 +57,8 @@ export async function createFamilyMember(
   birthDate: string,
   gender?: 'male' | 'female' | null,
 ): Promise<ChildProfile | null> {
+  const user = await requireNotDependent('إضافة فرد للعائلة');
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthorized');
 
   const { data, error } = await supabase.from('child_profiles')
     .insert({
@@ -70,9 +94,8 @@ export async function updateFamilyMember(
   birthDate: string,
   gender?: 'male' | 'female' | null,
 ): Promise<boolean> {
+  const user = await requireNotDependent('تعديل بيانات فرد العائلة');
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthorized');
 
   const { error } = await supabase.from('child_profiles')
     .update({ full_name: fullName, birth_date: birthDate, gender: gender ?? null })
@@ -89,9 +112,8 @@ export async function updateFamilyMember(
 }
 
 export async function deleteFamilyMember(id: string): Promise<boolean> {
+  const user = await requireNotDependent('حذف فرد من العائلة');
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthorized');
 
   const { error } = await supabase.from('child_profiles')
     .delete()
@@ -127,11 +149,11 @@ export async function resolveWizardChild(params: {
   newChildBirthDate?: string;
   newChildGender?: 'male' | 'female' | '' | null;
 }): Promise<{ childId?: string; childName: string }> {
+  // ⚠️ دي كمان بتعمل صف طفل جديد — ومعالج الشراء بينادي عليها **قبل**
+  //    `createOrder`. فحساب الطالب التابع كان يقدر يملا العيلة بملفات
+  //    من غير ما يكمّل أي طلب: الشراء نفسه مقفول عليه، ودي مكانتش.
+  const user = await requireNotDependent('الشراء');
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error('يجب تسجيل الدخول أولاً');
 
   // (1) اختار واحد من عيلته: الاسم بييجي من الملف نفسه، مش من الواجهة.
   if (params.familyMemberId) {
