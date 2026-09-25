@@ -7,7 +7,7 @@ import { getCourseBookingsForAdmin, getInstructors } from '@/data/domains/writin
 import { hasAdminPermission, formatDate } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { PaymentReviewPanel } from '@/components/admin/PaymentReviewPanel';
-import { confirmBookingPayment } from '@/actions/bookings';
+import { ConfirmPaymentButton } from '@/components/dashboard/ConfirmPaymentButton';
 import { AssignInstructor } from './AssignInstructor';
 
 export const dynamic = 'force-dynamic';
@@ -40,11 +40,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   ]);
   const target = bookings.find((b) => b.id === id);
   if (!target) notFound();
-
-  const confirmPaymentAction = async () => {
-    'use server';
-    await confirmBookingPayment(target.id);
-  };
 
   return (
     <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">
@@ -114,17 +109,16 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         />
 
         {target.status === 'awaiting_verification' && (
-          <form action={confirmPaymentAction} className="mb-6">
-            <button
-              type="submit"
-              className="rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white transition-colors hover:bg-emerald-700"
-            >
-              تأكيد استلام الدفع وتفعيل الحجز
-            </button>
+          <div className="mb-6">
+            <ConfirmPaymentButton
+              kind="booking"
+              targetId={target.id}
+              label="تأكيد استلام الدفع وتفعيل الحجز"
+            />
             <p className="mt-2 text-xs font-medium text-slate-500">
               راجع الإيصال والمبلغ فوق قبل التأكيد. بعد التفعيل تُجدول الجلسات.
             </p>
-          </form>
+          </div>
         )}
 
         <div className="flex gap-4 border-t border-slate-100 pt-6">

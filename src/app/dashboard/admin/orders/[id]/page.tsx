@@ -7,7 +7,7 @@ import { getPersonalizedProducts } from '@/data/domains/products';
 import { hasAdminPermission, formatDate , formatPrice } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
-import { confirmOrderPayment } from '@/actions/orders';
+import { ConfirmPaymentButton } from '@/components/dashboard/ConfirmPaymentButton';
 import { FulfilmentPanel } from './FulfilmentPanel';
 import { PaymentReviewPanel } from '@/components/admin/PaymentReviewPanel';
 
@@ -57,11 +57,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     { header: 'الإجمالي', accessorKey: 'totalDisplay' }
   ];
 
-  const confirmPaymentAction = async () => {
-    'use server';
-    await confirmOrderPayment(target.id);
-  };
-
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
       <DashboardPageHeader title={`تفاصيل الطلب #${target.id.split('-')[1]}`} backHref="/dashboard/admin/orders" />
@@ -87,11 +82,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
           <div className="flex gap-3">
             {target.status === 'awaiting_verification' && (
-              <form action={confirmPaymentAction}>
-                <button type="submit" className="rounded-xl bg-emerald-600 px-6 py-2 font-bold text-white transition-colors hover:bg-emerald-700">
-                  تأكيد استلام الدفع
-                </button>
-              </form>
+              <ConfirmPaymentButton kind="order" targetId={target.id} />
             )}
             <FulfilmentPanel
               orderId={target.id}

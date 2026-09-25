@@ -202,20 +202,48 @@ export async function submitPaymentProof(
 }
 
 export async function confirmOrderPayment(orderId: string) {
-  const currentUser = await requireAdmin(
-    'canManageOrders',
-    'تأكيد الدفع متاح للإدارة فقط',
-  );
+  // ⚠️ `requireAdmin` **بترمي**، وNext بيمسح نص الاستثناء في الإنتاج
+  //    (قاعدة «هـ»). والزرار ده في شاشة الإدارة، فالإداري اللي مالوش
+  //    الصلاحية كان بيدوس ويشوف شاشة خطأ عامة بالإنجليزي.
+  let currentUser;
+  try {
+    currentUser = await requireAdmin(
+      'canManageOrders',
+      'تأكيد الدفع متاح للإدارة فقط',
+    );
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'غير مصرح لك بتأكيد الدفع',
+    };
+  }
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from('orders')
     .update({ status: 'paid' })
-    .eq('id', orderId);
+    .eq('id', orderId)
+    .eq('status', 'awaiting_verification')
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     console.error('Error confirming payment:', error);
-    return { success: false, error: 'Order not found or update failed' };
+    return { success: false, error: 'تعذّر تأكيد الدفع — جرّب تاني.' };
+  }
+
+  // ⚠️ قاعدة (و): `UPDATE` على صف مش موجود بينجح **بصفر صفوف وبلا
+  //    خطأ**. والدالة دي كانت بترجّع `{ success: true }` على طول —
+  //    يعني الإداري يشوف «تم» على **طلب ما اتغيّرش**، ويفتكر إن الفلوس
+  //    اتأكدت والطلب داخل التنفيذ.
+  //
+  //    وشرط `status` اتضاف معاه: الطلب اللي اتأكد خلاص أو اتلغى
+  //    مايتأكدش تاني بالغلط.
+  if (!updated) {
+    return {
+      success: false,
+      error: 'الطلب مش موجود أو حالته اتغيّرت — حدّث الصفحة وشوفها.',
+    };
   }
 
   await logAuditAction({

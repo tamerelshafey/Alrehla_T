@@ -284,15 +284,22 @@ export async function confirmBookingPayment(subscriptionId: string) {
     preferredSlot: (updated.preferred_slot as WeeklySlot | null) ?? null,
   });
 
-  if (sessionsCreated > 0) {
-    await notifyUser({
-      event: 'session_update',
-      recipientProfileId: updated.user_id,
-      title: 'اتأكد دفعك — جلساتك جاهزة',
-      message: `اتعمل ${sessionsCreated} جلسة بمواعيد مبدئية. هنتواصل معاك لتثبيتها.`,
-      link: '/account/subscriptions/course',
-    });
-  }
+  // ⚠️ الإشعار كان **جوّه** `if (sessionsCreated > 0)`. يعني لو الجدولة
+  //    فشلت، العميل كان بيدفع ويتأكد دفعه **ومحدّش بيقوله حاجة خالص**:
+  //    لا إشعار، ولا جلسات في لوحته. فلوس دخلت وسكوت تام.
+  //
+  //    الدفع اتأكد في الحالتين، فالعميل بيعرف في الحالتين — والنص
+  //    بيتغيّر بدل ما يختفي.
+  await notifyUser({
+    event: 'session_update',
+    recipientProfileId: updated.user_id,
+    title: sessionsCreated > 0 ? 'اتأكد دفعك — جلساتك جاهزة' : 'اتأكد دفعك',
+    message:
+      sessionsCreated > 0
+        ? `اتعمل ${sessionsCreated} جلسة بمواعيد مبدئية. هنتواصل معاك لتثبيتها.`
+        : 'استلمنا دفعك وسجّلنا اشتراكك. المواعيد هنرتّبها ونتواصل معاك.',
+    link: '/account/subscriptions/course',
+  });
 
   await logAuditAction({
     actorProfileId: user.id,
