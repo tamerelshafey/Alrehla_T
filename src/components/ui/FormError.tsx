@@ -55,3 +55,30 @@ export function FormSuccess({
     </div>
   );
 }
+
+/**
+ * رسالة «تمّت، بس لسه ناقصها حاجة منك».
+ *
+ * ⚠️ مش أخضر ومش أحمر **عن قصد**. الحالة اللي المكوّن ده ليها هي
+ *    العملية اللي نجحت والمستخدم لسه مطلوب منه خطوة — زي حساب اتعمل
+ *    ومستني تأكيد بريد. الأخضر بيقول «خلاص» فالمستخدم بيقفل الصفحة،
+ *    والأحمر بيقول «فشل» فبيعيد التسجيل من الأول ويعمل حساب تاني.
+ */
+export function FormNotice({
+  message,
+  className = '',
+}: {
+  message?: string | null;
+  className?: string;
+}) {
+  if (!message) return null;
+
+  return (
+    <div
+      role="status"
+      className={`rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-bold text-amber-800 ${className}`}
+    >
+      {message}
+    </div>
+  );
+}

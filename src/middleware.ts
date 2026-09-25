@@ -56,12 +56,30 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Route Protection Rules
+  //
+  // ⚠️ **الحالتين دول مش حاجة واحدة، وكانوا متعاملين كحاجة واحدة.**
+  //
+  //   «مش مسجّل دخول»      ← لازم يسجّل  → صفحة الدخول
+  //   «مسجّل بس الدور غلط» ← دخوله سليم  → لوحته هو
+  //
+  // الكود القديم كان بيبعت الاتنين لـ`/sign-in`. فالمدرب اللي دخل
+  // صح وفتح رابط لوحة الإدارة (من إشعار مثلًا) كان يلاقي نفسه في
+  // صفحة تسجيل الدخول — والرسالة اللي بتوصله: «أنا مش داخل». فيحاول
+  // يدخل تاني، ويتبعت لـ`/dashboard`، وأول ما يرجع للرابط يترمي
+  // تاني. حلقة كاملة شكلها «الموقع مش بيقبل دخولي».
+  //
+  // ⚠️ ومفيش حلقة في الحل: `/dashboard` بتوزّع كل دور على لوحته،
+  //    والدور اللي بيوصلها مسجَّل بالفعل.
   const requireAuth = (allowedRoles?: UserRole[]) => {
     if (!isAuthenticated) {
-      return NextResponse.redirect(new URL('/sign-in', request.url));
+      // وبناخد معانا المكان اللي كان رايحه، عشان يرجع له بعد الدخول
+      // بدل ما يتوه في لوحة عامة.
+      const signInUrl = new URL('/sign-in', request.url);
+      signInUrl.searchParams.set('next', pathname + request.nextUrl.search);
+      return NextResponse.redirect(signInUrl);
     }
     if (allowedRoles && !allowedRoles.includes(role)) {
-      return NextResponse.redirect(new URL('/sign-in', request.url));
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     return null;
   };
