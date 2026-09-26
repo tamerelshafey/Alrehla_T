@@ -137,6 +137,19 @@ export async function createInstructor(params: {
     throw new Error('تعذّر إنشاء ملف المدرب');
   }
 
+  // إنشاء صف مقدّم الخدمة المرتبط بالمدرب لسوق الخدمات الإبداعية تلقائيًا
+  try {
+    await supabaseAdmin.from('service_providers').insert({
+      kind: 'instructor',
+      instructor_id: created.id,
+      display_name: displayName,
+      bio: params.bio.trim(),
+      status: 'pending',
+    });
+  } catch (provErr) {
+    console.error('Failed to create linked service_provider row', provErr);
+  }
+
   await logAuditAction({
     actorProfileId: admin.id,
     actorName: admin.fullName,

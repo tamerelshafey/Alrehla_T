@@ -46,7 +46,12 @@ export function MyServiceOffersClient({ services, offers, formula, priceAlert = 
       setEditingId(null);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'حدث خطأ غير متوقع');
+      const msg = err instanceof Error ? err.message : 'حدث خطأ غير متوقع';
+      if (msg.includes('Server Components render') || msg.includes('digest')) {
+        setError('تعذّر إرسال العرض للإدارة حالياً. يرجى إعادة المحاولة.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setBusy(false);
     }

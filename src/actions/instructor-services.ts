@@ -2,6 +2,7 @@
 import { requireAdmin } from '@/lib/auth-guard';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient, isAdminApiConfigured } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { getCurrentUser } from '@/data/domains/auth';
 import { getMyInstructorId } from '@/data/domains/services';
@@ -53,7 +54,9 @@ async function resolveProviderId(
   supabase: Awaited<ReturnType<typeof createClient>>,
   instructorId: string,
 ): Promise<{ ok: true; providerId: string } | { ok: false; error: string }> {
-  const { data: existing } = await supabase
+  const adminClient = isAdminApiConfigured() ? createAdminClient() : supabase;
+
+  const { data: existing } = await adminClient
     .from('service_providers')
     .select('id')
     .eq('instructor_id', instructorId)
@@ -61,7 +64,7 @@ async function resolveProviderId(
 
   if (existing) return { ok: true, providerId: existing.id };
 
-  const { data: instructor } = await supabase
+  const { data: instructor } = await adminClient
     .from('instructors')
     .select('display_name, bio, status')
     .eq('id', instructorId)
@@ -69,7 +72,9 @@ async function resolveProviderId(
 
   if (!instructor) return { ok: false, error: 'المدرب مش موجود' };
 
-  const { data: created, error } = await supabase
+  // ⚠️ إنشاء صف مقدّم الخدمة يتطلب صلاحيات الإدارة بسبب سياسة RLS ("Admins insert providers").
+  // لذلك نستخدم عميل الإدارة بمفتاح الخدمة لإنشائه تلقائياً هنا في حال عدم وجوده.
+  const { data: created, error } = await adminClient
     .from('service_providers')
     .insert({
       kind: 'instructor' as const,
@@ -79,10 +84,19 @@ async function resolveProviderId(
       status: instructor.status === 'active' ? ('active' as const) : ('pending' as const),
     })
     .select('id')
-    .single();
+    .maybeSingle();
 
   if (error || !created) {
     console.error('Error creating provider row for instructor', error);
+    // محاولة قراءة ثانية في حالة الإنشاء المتزامن:
+    const { data: retry } = await adminClient
+      .from('service_providers')
+      .select('id')
+      .eq('instructor_id', instructorId)
+      .maybeSingle();
+
+    if (retry) return { ok: true, providerId: retry.id };
+
     return {
       ok: false,
       error: `حسابك مش مربوط بملف مقدّم خدمة، والربط التلقائي فشل: ${error?.message ?? ''}`,
@@ -284,7 +298,9 @@ export async function proposeServiceOffer(serviceId: string, requestedPrice: num
   const provider = await resolveProviderId(supabase, instructorId);
   if (!provider.ok) throw new Error(provider.error);
 
-  const { data: existing } = await supabase
+  const adminClient = isAdminApiConfigured() ? createAdminClient() : supabase;
+
+  const { data: existing } = await adminClient
     .from('provider_services')
     .select('id')
     .eq('provider_id', provider.providerId)
@@ -294,12 +310,12 @@ export async function proposeServiceOffer(serviceId: string, requestedPrice: num
   // تعديل السعر المقترح لا يُنزل الحالة من "معتمدة" — الخدمة تظل معروضة
   // للعملاء بالسعر المعتمد القديم حتى تعتمد الإدارة السعر الجديد.
   const { data: saved, error } = existing
-    ? await supabase
+    ? await adminClient
         .from('provider_services')
         .update({ requested_price: requestedPrice, updated_at: new Date().toISOString() })
         .eq('id', existing.id)
         .select('id')
-    : await supabase
+    : await adminClient
         .from('provider_services')
         .insert({
           provider_id: provider.providerId,
@@ -333,7 +349,9 @@ export async function setMyOfferActive(serviceId: string, isActive: boolean) {
   const provider = await resolveProviderId(supabase, instructorId);
   if (!provider.ok) throw new Error(provider.error);
 
-  const { data: toggled, error } = await supabase
+  const adminClient = isAdminApiConfigured() ? createAdminClient() : supabase;
+
+  const { data: toggled, error } = await adminClient
     .from('provider_services')
     .update({ is_active: isActive, updated_at: new Date().toISOString() })
     .eq('provider_id', provider.providerId)
@@ -361,7 +379,9 @@ export async function withdrawMyOffer(serviceId: string) {
   const provider = await resolveProviderId(supabase, instructorId);
   if (!provider.ok) throw new Error(provider.error);
 
-  const { data: offer } = await supabase
+  const adminClient = isAdminApiConfigured() ? createAdminClient() : supabase;
+
+  const { data: offer } = await adminClient
     .from('provider_services')
     .select('id, status')
     .eq('provider_id', provider.providerId)
@@ -373,7 +393,7 @@ export async function withdrawMyOffer(serviceId: string) {
     throw new Error('الخدمة معتمدة — استخدم «إيقاف مؤقت» بدل السحب');
   }
 
-  const { error } = await supabase
+  const { error } = await adminClient
     .from('provider_services')
     .delete()
     .eq('id', offer.id);
