@@ -293,6 +293,7 @@ function AddInstructorForm({
     specialties: '',
     yearsExperience: 0,
     workModel: 'per_session' as 'monthly' | 'per_session',
+    password: '',
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -308,6 +309,7 @@ function AddInstructorForm({
     try {
       const result = await createInstructor({
         ...form,
+        password: form.password.trim() || undefined,
         specialties: form.specialties
           .split(/[،,]/)
           .map((s) => s.trim())
@@ -332,6 +334,7 @@ function AddInstructorForm({
         specialties: '',
         yearsExperience: 0,
         workModel: 'per_session',
+        password: '',
       });
       router.refresh();
     } catch (err) {
@@ -428,6 +431,20 @@ function AddInstructorForm({
             <option value="per_session">بالجلسة</option>
             <option value="monthly">اشتراك شهري</option>
           </select>
+        </div>
+        <div className="space-y-1.5 md:col-span-2">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-bold text-slate-700">كلمة المرور الأولية (اختياري)</label>
+            <span className="text-xs text-slate-400 font-medium">اتركه فارغاً لتوليد رمز مؤقت آمن تلقائياً</span>
+          </div>
+          <input
+            type="text"
+            dir="ltr"
+            placeholder="مثال: اختر كلمة مرور للمدرب (8 أحرف فأكثر) أو اتركه فارغاً"
+            className={`${inputClass} text-left font-mono`}
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
         </div>
         <div className="space-y-1.5 md:col-span-2">
           <label className="text-sm font-bold text-slate-700">نبذة</label>

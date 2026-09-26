@@ -7,8 +7,6 @@ import { getProfileUpdateRequestsByInstructor, getInstructorCertification, getPr
 import { hasAdminPermission } from '@/lib/utils';
 import { Unauthorized } from '@/components/admin/Unauthorized';
 import { AdminInstructorClient } from './AdminInstructorClient';
-import { InstructorServicesSection } from './InstructorServicesSection';
-import { InstructorProfileEditor } from './InstructorProfileEditor';
 import { getStandaloneServices, getInstructorServiceOffers } from '@/data/domains/services';
 import { getWritingPackages, getPublicInstructorById } from '@/data/domains/writing';
 
@@ -40,11 +38,24 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const publicRow = await getPublicInstructorById(target.id);
   const instructorPackageIds = publicRow?.packageIds ?? [];
 
+  let accountEmail: string | undefined;
+  if (target.userId) {
+    try {
+      const { createAdminClient } = await import('@/lib/supabase/admin');
+      const adminSupabase = createAdminClient();
+      const { data: userAuth } = await adminSupabase.auth.admin.getUserById(target.userId);
+      accountEmail = userAuth?.user?.email;
+    } catch {
+      // Non-fatal fallback
+    }
+  }
+
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
       <DashboardPageHeader title={`إدارة المدرب: ${target.displayName}`} backHref="/dashboard/admin/instructors" />
       <AdminInstructorClient 
         instructor={target} 
+        accountEmail={accountEmail}
         updateRequests={updateRequests} 
         certification={certification} 
         packages={allPackages.map((p) => ({
@@ -55,18 +66,10 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           sessionsCount: p.sessionsCount ?? null,
         }))}
         selectedPackageIds={instructorPackageIds}
+        services={services}
+        serviceOffers={serviceOffers}
+        formula={formula}
       />
-      <div className="mt-8">
-        <InstructorProfileEditor instructor={target} />
-      </div>
-      <div className="mt-8">
-        <InstructorServicesSection
-          instructorId={target.id}
-          services={services}
-          offers={serviceOffers}
-          formula={formula}
-        />
-      </div>
     </div>
   );
 }

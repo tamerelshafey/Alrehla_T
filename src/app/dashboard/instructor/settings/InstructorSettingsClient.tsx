@@ -4,9 +4,10 @@ import React, { useState } from 'react';
 import { useAction } from '@/lib/use-action';
 import { FormError, FormSuccess } from '@/components/ui/FormError';
 import { Instructor, WeeklySlot, PricingFormulaSettings } from '@/types';
-import { Info, CheckCircle2, Save, Layers, Calendar, Clock, AlertTriangle } from 'lucide-react';
+import { Info, CheckCircle2, Save, Layers, Calendar, Clock, AlertTriangle, KeyRound, Lock } from 'lucide-react';
 import { calculateFinalSessionPrice } from '@/lib/utils';
 import { submitInstructorProfileUpdate, submitInstructorPackageUpdateRequest } from '@/actions/instructors';
+import { setMyPassword } from '@/actions/set-password';
 import { PackagePicker, type PackageChoice } from '@/components/dashboard/PackagePicker';
 import { WeeklySchedulePicker } from '@/components/dashboard/WeeklySchedulePicker';
 
@@ -41,6 +42,45 @@ export function InstructorSettingsClient({
   // إدارة باقات التدريب في طلب مستقل ومنفصل
   const [pickedPackages, setPickedPackages] = useState<string[]>(selectedPackageIds);
   const [isPackageSaved, setIsPackageSaved] = useState(false);
+
+  // إدارة كلمة المرور الشخصية للمدرب
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (newPassword.length < 8) {
+      setPasswordError('كلمة المرور يجب أن تكون 8 أحرف أو أرقام على الأقل.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('كلمتا المرور غير متطابقتين.');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const res = await setMyPassword(newPassword);
+      if (!res.ok) {
+        setPasswordError(res.error);
+      } else {
+        setPasswordSuccess('تم تحديث كلمة المرور الخاصة بك بنجاح!');
+        setNewPassword('');
+        setConfirmPassword('');
+        setTimeout(() => setPasswordSuccess(''), 5000);
+      }
+    } catch {
+      setPasswordError('تعذّر تحديث كلمة المرور.');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
   const saveProfile = useAction(submitInstructorProfileUpdate, {
     onSuccess: () => {
@@ -287,6 +327,71 @@ export function InstructorSettingsClient({
           >
             <Save className="h-5 w-5" />
             {savePackages.pending ? 'جارٍ إرسال طلب الباقات…' : 'حفظ وإرسال طلب اعتماد الباقات للإدارة'}
+          </button>
+        </div>
+      </form>
+
+      {/* 3. قسم أمان الحساب وتغيير كلمة المرور */}
+      <form
+        onSubmit={handleChangePassword}
+        className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs space-y-6"
+      >
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white">
+            <KeyRound className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-xl font-black text-slate-900">أمان الحساب وتغيير كلمة المرور</h3>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              يمكنك تحديث كلمة المرور الخاصة بحسابك في أي وقت لحماية خصوصيتك وبيانات تدريبك.
+            </p>
+          </div>
+        </div>
+
+        {passwordError && <FormError message={passwordError} />}
+        {passwordSuccess && <FormSuccess message={passwordSuccess} />}
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700">كلمة المرور الجديدة</label>
+            <input
+              type="password"
+              dir="ltr"
+              required
+              minLength={8}
+              placeholder="8 أحرف أو أرقام على الأقل"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-mono text-slate-900 focus:border-slate-800 focus:outline-hidden"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700">تأكيد كلمة المرور الجديدة</label>
+            <input
+              type="password"
+              dir="ltr"
+              required
+              minLength={8}
+              placeholder="أعد إدخال كلمة المرور"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-mono text-slate-900 focus:border-slate-800 focus:outline-hidden"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-100">
+          <span className="text-xs text-slate-500 font-medium">
+            💡 كلمة المرور يجب ألا تقل عن 8 خانات، وتأكد من حفظها في مكان آمن.
+          </span>
+          <button
+            type="submit"
+            disabled={isChangingPassword}
+            className="flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 font-bold text-white hover:bg-slate-800 disabled:opacity-50 transition-colors shadow-xs text-sm"
+          >
+            <Lock className="h-4 w-4" />
+            <span>{isChangingPassword ? 'جارٍ الحفظ…' : 'تحديث كلمة المرور'}</span>
           </button>
         </div>
       </form>

@@ -37,15 +37,20 @@ export async function createInstructor(params: {
   specialties: string[];
   yearsExperience: number;
   workModel: 'monthly' | 'per_session';
+  password?: string;
 }) {
   const admin = await requireAdmin('canManageInstructors', 'غير مصرح لك بإضافة مدربين');
 
   const email = params.email.trim().toLowerCase();
   const fullName = params.fullName.trim();
   const displayName = params.displayName.trim() || fullName;
+  const typedPassword = params.password?.trim() ?? '';
 
   if (!email || !email.includes('@')) throw new Error('اكتب بريدًا إلكترونيًا صحيحًا');
   if (!fullName) throw new Error('اكتب اسم المدرب');
+  if (typedPassword && typedPassword.length < 8) {
+    throw new Error('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+  }
 
   const supabaseAdmin = createAdminClient();
 
@@ -75,7 +80,7 @@ export async function createInstructor(params: {
       throw new Error('الشخص ده مسجَّل كمدرب بالفعل');
     }
   } else {
-    const code = generateTempCode();
+    const code = typedPassword || generateTempCode();
     const { data, error } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: code,
@@ -138,11 +143,80 @@ export async function createInstructor(params: {
     action: 'instructor_created',
     entityType: 'Instructor',
     entityId: created.id,
-    metadata: { email, invited },
+    metadata: { email, invited, isCustomPassword: Boolean(typedPassword) },
   });
 
   revalidatePath('/dashboard/admin/instructors');
   revalidatePath('/creative-writing/instructors');
 
   return { ok: true, instructorId: created.id, invited, tempCode };
+}
+
+/**
+ * إعادة تعيين أو منح كلمة مرور دخول جديدة للمدرب من لوحة الإدارة.
+ *
+ * مفيد للمدربين المتعثرين الذين نسوا كلمة المرور أو يواجهون مشاكل في الدخول.
+ * يمكن للإدارة إما توليد رمز مؤقت آمن أو إدخال كلمة مرور مخصصة.
+ * في الحالتين يتم فرض شاشة تعيين كلمة المرور (MUST_SET_PASSWORD) عند أول تسجيل دخول
+ * لضمان خصوصية المدرب وحماية حسابه.
+ */
+export async function resetInstructorPassword(params: {
+  instructorId: string;
+  customPassword?: string;
+}): Promise<{ ok: true; email: string; tempCode: string; isCustom: boolean }> {
+  const admin = await requireAdmin('canManageInstructors', 'غير مصرح لك بإدارة حسابات المدربين');
+
+  const supabaseAdmin = createAdminClient();
+
+  // جلب صف المدرب
+  const { data: instructor, error: instructorError } = await supabaseAdmin
+    .from('instructors')
+    .select('id, user_id, display_name')
+    .eq('id', params.instructorId)
+    .single();
+
+  if (instructorError || !instructor || !instructor.user_id) {
+    throw new Error('المدرب غير موجود أو ليس لديه حساب مستخدم مرتبط');
+  }
+
+  // جلب بيانات الحساب من Auth
+  const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(instructor.user_id);
+  if (userError || !userData?.user) {
+    throw new Error('تعذّر العثور على حساب الدخول للمدرب');
+  }
+
+  const email = userData.user.email ?? '';
+  const typed = params.customPassword?.trim() ?? '';
+  if (typed && typed.length < 8) {
+    throw new Error('كلمة المرور يجب أن تكون 8 أحرف أو أرقام على الأقل');
+  }
+
+  const password = typed || generateTempCode();
+
+  // تحديث كلمة المرور ووضع علامة must_set_password في app_metadata
+  const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(instructor.user_id, {
+    password,
+    app_metadata: { [MUST_SET_PASSWORD]: true },
+  });
+
+  if (updateError) {
+    console.error('Error resetting instructor password', updateError);
+    throw new Error(`تعذّر تعيين كلمة المرور: ${updateError.message}`);
+  }
+
+  await logAuditAction({
+    actorProfileId: admin.id,
+    actorName: admin.fullName,
+    action: 'instructor_password_reset',
+    entityType: 'Instructor',
+    entityId: instructor.id,
+    metadata: { email, isCustom: Boolean(typed) },
+  });
+
+  return {
+    ok: true,
+    email,
+    tempCode: password,
+    isCustom: Boolean(typed),
+  };
 }
