@@ -18,6 +18,16 @@ interface AdminInstructorClientProps {
   selectedPackageIds: string[];
 }
 
+const ARABIC_DAYS: Record<string, string> = {
+  saturday: 'السبت',
+  sunday: 'الأحد',
+  monday: 'الإثنين',
+  tuesday: 'الثلاثاء',
+  wednesday: 'الأربعاء',
+  thursday: 'الخميس',
+  friday: 'الجمعة',
+};
+
 export function AdminInstructorClient({
   instructor,
   updateRequests,
@@ -134,19 +144,26 @@ export function AdminInstructorClient({
             <div>
               <span className="block text-slate-500 mb-1">نظام العمل:</span>
               <span className="font-bold text-slate-800">
-                {instructor.workModel === 'monthly' ? 'راتب شهري' : 'بالجلسة'}
+                {instructor.workModel === 'monthly'
+                  ? 'راتب شهري (تواصل مباشر مع الإدارة)'
+                  : 'بالجلسة'}
               </span>
             </div>
-            {instructor.workModel === 'monthly' && (
+            {instructor.workModel === 'monthly' ? (
               <div>
                 <span className="block text-slate-500 mb-1">الحد الأدنى للساعات:</span>
-                <span className="font-bold text-slate-800">{instructor.monthlyHoursCommitted || 60} ساعة شهرياً</span>
+                <span className="font-bold text-slate-800">
+                  {instructor.monthlyHoursCommitted || 60} ساعة شهرياً
+                </span>
+              </div>
+            ) : (
+              <div>
+                <span className="block text-slate-500 mb-1">السعر المعتمد للجلسة:</span>
+                <span className="font-bold text-slate-800">
+                  {instructor.approvedPrice ? `${instructor.approvedPrice} ج.م` : 'غير محدد'}
+                </span>
               </div>
             )}
-            <div>
-              <span className="block text-slate-500 mb-1">السعر المعتمد:</span>
-              <span className="font-bold text-slate-800">{instructor.approvedPrice ? `${instructor.approvedPrice} ج.م` : 'غير محدد'}</span>
-            </div>
           </div>
         </div>
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -272,16 +289,26 @@ export function AdminInstructorClient({
                     {req.requestedChanges.workModel !== undefined && (
                       <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
                         <div className="font-bold text-slate-700 mb-2">النظام المطلوب</div>
-                        <div>{req.requestedChanges.workModel === 'monthly' ? 'شهري' : 'بالجلسة'}</div>
-                        {req.requestedChanges.workModel === 'monthly' && <div>الساعات: {req.requestedChanges.monthlyHoursCommitted}</div>}
+                        <div>
+                          {req.requestedChanges.workModel === 'monthly'
+                            ? 'راتب شهري (تواصل مباشر مع الإدارة)'
+                            : 'بالجلسة'}
+                        </div>
+                        {req.requestedChanges.workModel === 'monthly' && (
+                          <div className="text-xs text-slate-500 mt-1">
+                            الساعات: {req.requestedChanges.monthlyHoursCommitted || 60} ساعة شهرياً
+                          </div>
+                        )}
                       </div>
                     )}
-                    {(req.requestedChanges.requestedPrice !== undefined || req.requestedChanges.selectedPricingOptionId !== undefined) && (
-                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                        <div className="font-bold text-slate-700 mb-2">السعر المطلوب</div>
-                        <div>{req.requestedChanges.requestedPrice || 'فئة سعر رقم: ' + req.requestedChanges.selectedPricingOptionId}</div>
-                      </div>
-                    )}
+                    {req.requestedChanges.workModel !== 'monthly' &&
+                      (req.requestedChanges.requestedPrice !== undefined ||
+                        req.requestedChanges.selectedPricingOptionId !== undefined) && (
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                          <div className="font-bold text-slate-700 mb-2">حصيلة الجلسة المطلوبة</div>
+                          <div>{req.requestedChanges.requestedPrice ? `${req.requestedChanges.requestedPrice} ج.م` : 'غير محدد'}</div>
+                        </div>
+                      )}
                     {req.requestedChanges.displayName !== undefined && (
                       <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
                         <div className="font-bold text-slate-700 mb-2">الاسم المعروض</div>
@@ -319,9 +346,13 @@ export function AdminInstructorClient({
                     <h4 className="font-bold text-slate-700 mb-3 text-sm">الجدول المطلوب</h4>
                     <div className="flex flex-wrap gap-2">
                       {req.requestedChanges.weeklySchedule?.map((s, idx) => (
-                        <span key={idx} className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1 text-sm text-emerald-800">
-                          <span className="font-bold capitalize mr-1">{s.day}:</span> {s.time}
-                          {s.commitmentType === 'fixed_term' && <span className="text-xs block text-emerald-600">({s.commitmentMonths} شهور)</span>}
+                        <span key={idx} className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-sm text-emerald-800">
+                          <span className="font-bold mr-1">{ARABIC_DAYS[s.day] || s.day}:</span> {s.time}
+                          {s.commitmentType === 'fixed_term' && (
+                            <span className="text-xs block text-emerald-700 font-bold mt-0.5">
+                              مؤقت حتى يوم: {s.commitmentEndsAt || (s.commitmentMonths ? `${s.commitmentMonths} شهور` : 'تاريخ محدد')}
+                            </span>
+                          )}
                         </span>
                       ))}
                     </div>
@@ -378,13 +409,15 @@ export function AdminInstructorClient({
                 if (daySlots.length === 0) return null;
                 return (
                   <div key={dayKey} className="rounded-3xl border border-slate-100 bg-slate-50 p-4">
-                    <h4 className="font-bold text-slate-700 mb-2 capitalize">{dayKey}</h4>
+                    <h4 className="font-bold text-slate-700 mb-2">{ARABIC_DAYS[dayKey] || dayKey}</h4>
                     <div className="flex flex-wrap gap-2">
                       {daySlots.map(s => (
                         <div key={s.time} className="rounded-lg bg-white border border-slate-200 px-3 py-2 text-sm text-slate-600 flex flex-col gap-1">
                           <span className="font-bold">{s.time} {s.isBooked && <span className="text-rose-500 mr-1">(محجوز)</span>}</span>
                           {s.commitmentType === 'fixed_term' && (
-                            <span className="text-xs text-blue-600 bg-blue-50 px-1 py-0.5 rounded">التزام {s.commitmentMonths} شهور</span>
+                            <span className="text-xs text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded font-bold">
+                              مؤقت حتى يوم: {s.commitmentEndsAt || (s.commitmentMonths ? `${s.commitmentMonths} شهور` : 'تاريخ محدد')}
+                            </span>
                           )}
                         </div>
                       ))}

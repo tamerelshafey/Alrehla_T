@@ -7,6 +7,7 @@ import { Calendar, Clock, Info, CheckCircle2, Save } from 'lucide-react';
 import { calculateFinalSessionPrice } from '@/lib/utils';
 import { submitInstructorProfileUpdate } from '@/actions/instructors';
 import { PackagePicker, type PackageChoice } from '@/components/dashboard/PackagePicker';
+import { WeeklySchedulePicker } from '@/components/dashboard/WeeklySchedulePicker';
 
 interface InstructorSettingsClientProps {
   instructor: Instructor;
@@ -47,58 +48,7 @@ export function InstructorSettingsClient({
   const [pickedPackages, setPickedPackages] = useState<string[]>(selectedPackageIds);
   const [isSaved, setIsSaved] = useState(false);
 
-  // ── ليه بقى منتقي وقت بدل أزرار ثابتة ──────────────────────
-  //
-  // الشاشة كانت بتدّي ست ساعات بس (10، 12، 14، 16، 18، 20) — يعني
-  // مدرب بيشتغل 9 الصبح أو 9 بالليل مالوش أي طريقة يسجّل ميعاده.
-  // شبكة 24×7 كاملة معناها 168 زرار على الشاشة، فبدلها: اختار يوم
-  // ووقت واضغط «إضافة». أي وقت مسموح، وبأي دقيقة.
-  const [newDay, setNewDay] = useState<DayOfWeek>('saturday');
-  const [newTime, setNewTime] = useState('16:00');
-  const [slotError, setSlotError] = useState('');
 
-  const addSlot = () => {
-    setSlotError('');
-    if (!/^\d{2}:\d{2}$/.test(newTime)) {
-      setSlotError('اكتب الوقت بصيغة صحيحة');
-      return;
-    }
-    if (schedule.some((s) => s.day === newDay && s.time === newTime)) {
-      setSlotError('الميعاد ده مضاف عندك بالفعل');
-      return;
-    }
-    setSchedule([...schedule, { day: newDay, time: newTime, commitmentType: 'ongoing' }]);
-  };
-
-  const removeSlot = (day: DayOfWeek, time: string) => {
-    setSchedule(schedule.filter((s) => !(s.day === day && s.time === time)));
-  };
-
-  /** الجدول مرتّبًا: باليوم ثم بالساعة. */
-  const orderedSchedule = [...schedule].sort(
-    (a, b) =>
-      DAYS.findIndex((d) => d.key === a.day) - DAYS.findIndex((d) => d.key === b.day) ||
-      a.time.localeCompare(b.time),
-  );
-
-  const updateSlotCommitment = (day: DayOfWeek, time: string, field: 'commitmentType' | 'commitmentMonths', value: string) => {
-    const newSchedule = [...schedule];
-    const index = newSchedule.findIndex(s => s.day === day && s.time === time);
-    if (index >= 0) {
-      if (field === 'commitmentType') {
-        newSchedule[index].commitmentType = value as 'ongoing' | 'fixed_term';
-        if (value === 'fixed_term' && !newSchedule[index].commitmentMonths) {
-          newSchedule[index].commitmentMonths = 1;
-        } else if (value === 'ongoing') {
-          delete newSchedule[index].commitmentMonths;
-          delete newSchedule[index].commitmentEndsAt;
-        }
-      } else if (field === 'commitmentMonths') {
-        newSchedule[index].commitmentMonths = parseInt(value) || 1;
-      }
-      setSchedule(newSchedule);
-    }
-  };
 
   /**
    * ⚠️ كانت `await` عارية بلا `try` ولا حالة انتظار — والأكشن بيرمي.
@@ -120,10 +70,8 @@ export function InstructorSettingsClient({
     await save.run(instructor.id, {
       workModel: workModel as any,
       monthlyHoursCommitted: workModel === 'monthly' ? monthlyHours : undefined,
-      // الحصيلة بتتبعت في الحالتين: راتب شهري مقترح، أو حصيلة الجلسة.
-      // كانت بتتبعت في حالة الشهري بس، والجلسة بتتاخد من «فئة سعر»
-      // ثابتة (مبتدئ / متوسط / خبير) — واللي اتشالت.
-      requestedPrice: Number(requestedPrice),
+      // في نظام الراتب الشهري لا توجد قيمة للراتب المقترح بل يتم التواصل مع الإدارة
+      requestedPrice: workModel === 'monthly' ? undefined : Number(requestedPrice),
       weeklySchedule: schedule,
       // ⚠️ **الباقات بتتبعت كاقتراح، مش بتتطبّق.** الإدارة هي اللي
       //    بتوافق، والموافقة هي اللي بتكتب في جدول الربط (ملف 102).
@@ -167,22 +115,27 @@ export function InstructorSettingsClient({
           </div>
 
           {workModel === 'monthly' && (
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">عدد الساعات الملتزم بها شهرياً (الحد الأدنى 60)</label>
-              <input 
-                type="number" 
-                min={60}
-                value={monthlyHours}
-                onChange={(e) => setMonthlyHours(parseInt(e.target.value))}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-amber-500 focus:outline-none"
-              />
-              <label className="text-sm font-bold text-slate-700 mt-4 block">قيمة الراتب الشهري المقترح (ج.م)</label>
-              <input 
-                type="number" 
-                value={requestedPrice}
-                onChange={(e) => setRequestedPrice(Number(e.target.value))}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-amber-500 focus:outline-none"
-              />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700">عدد الساعات الملتزم بها شهرياً (الحد الأدنى 60)</label>
+                <input 
+                  type="number" 
+                  min={60}
+                  value={monthlyHours}
+                  onChange={(e) => setMonthlyHours(parseInt(e.target.value))}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 focus:border-amber-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-amber-950 space-y-1.5">
+                <div className="flex items-center gap-2 font-bold text-slate-900">
+                  <Info className="h-4 w-4 text-amber-600 shrink-0" />
+                  <span>التواصل المباشر مع الإدارة لتحديد الراتب</span>
+                </div>
+                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                  في نظام الراتب الشهري، لا يتم تحديد راتب مقترح هنا بل يكون التنسيق والتواصل المباشر مع إدارة المنصة للاتفاق على قيمة الراتب الشهري والشروط التعاقدية المناسبة.
+                </p>
+              </div>
             </div>
           )}
 
@@ -242,106 +195,19 @@ export function InstructorSettingsClient({
         />
       </div>
 
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-4">
-          <h3 className="text-lg font-black text-slate-800">الجدول الأسبوعي المتاح</h3>
-          <p className="text-sm text-slate-500">
-            أضف أي موعد في أي يوم وأي ساعة. لما طالب يحجز موعدًا، الموعد ده
-            بيبقى ثابت له أسبوعيًا طول مدة الباقة، وبيختفي من المتاح لغيره
-            لحد ما الباقة تخلص.
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+        <div>
+          <h3 className="text-lg font-black text-slate-800">الجدول الأسبوعي المتاح (7 أيام)</h3>
+          <p className="text-sm text-slate-500 mt-1">
+            اختر أوقات وساعات عملك مقسمة على مدار الأيام السبعة. يمكنك تحديد مواعيد دائمة مستمرة، أو مواعيد مؤقتة تنتهي بتاريخ محدد باليوم.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-slate-600">اليوم</label>
-            <select
-              value={newDay}
-              onChange={(e) => setNewDay(e.target.value as DayOfWeek)}
-              className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm font-bold text-slate-700 outline-none focus:border-amber-500"
-            >
-              {DAYS.map((d) => (
-                <option key={d.key} value={d.key}>{d.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-slate-600">الساعة</label>
-            <input
-              type="time"
-              value={newTime}
-              onChange={(e) => setNewTime(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-sm font-bold text-slate-700 outline-none focus:border-amber-500"
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={addSlot}
-            className="rounded-xl bg-amber-500 px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-amber-600"
-          >
-            إضافة الموعد
-          </button>
-
-          {slotError && (
-            <p className="w-full text-xs font-bold text-red-600">{slotError}</p>
-          )}
-        </div>
-
-        {orderedSchedule.length === 0 ? (
-          <p className="mt-4 rounded-2xl border border-dashed border-slate-200 py-10 text-center text-sm font-bold text-slate-400">
-            لسه ما أضفتش أي موعد. الطلاب مش هيقدروا يحجزوا معاك من غير مواعيد.
-          </p>
-        ) : (
-          <div className="mt-4 space-y-2">
-            {orderedSchedule.map((slot) => (
-              <div
-                key={`${slot.day}-${slot.time}`}
-                className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3"
-              >
-                <span className="min-w-24 font-bold text-slate-800">
-                  {DAYS.find((d) => d.key === slot.day)?.label}
-                </span>
-                <span className="font-black text-amber-700">{slot.time}</span>
-
-                <select
-                  value={slot.commitmentType || 'ongoing'}
-                  onChange={(e) =>
-                    updateSlotCommitment(slot.day, slot.time, 'commitmentType', e.target.value)
-                  }
-                  className="rounded-lg border border-amber-200 bg-white py-1 px-2 text-xs font-bold text-amber-800 outline-none focus:border-amber-400"
-                >
-                  <option value="ongoing">مستمر</option>
-                  <option value="fixed_term">فترة محددة</option>
-                </select>
-
-                {slot.commitmentType === 'fixed_term' && (
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      min="1"
-                      value={slot.commitmentMonths || 1}
-                      onChange={(e) =>
-                        updateSlotCommitment(slot.day, slot.time, 'commitmentMonths', e.target.value)
-                      }
-                      className="w-16 rounded-lg border border-amber-200 bg-white py-1 px-2 text-xs font-bold text-amber-800 outline-none focus:border-amber-400"
-                    />
-                    <span className="text-xs font-bold text-amber-700">شهور</span>
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => removeSlot(slot.day, slot.time)}
-                  className="mr-auto rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-bold text-red-600 transition-colors hover:bg-red-50"
-                >
-                  حذف
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+        <WeeklySchedulePicker
+          schedule={schedule}
+          onChange={setSchedule}
+          disabled={save.pending}
+        />
       </div>
 
       <FormError message={save.error} />

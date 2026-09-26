@@ -345,7 +345,16 @@ export function BookingWizardClient({
                     // «محجوز حتى». اختفاؤها كان بيخلي العميل يفتكر إن
                     // المدرب مش شغّال في الوقت ده أصلًا.
                     const daySlots = selectedInstructor.weeklySchedule
-                      .filter(s => s.day === dayKey)
+                      .filter((s) => {
+                        if (s.day !== dayKey) return false;
+                        // استبعاد المواعيد المؤقتة التي انقضى تاريخ نهايتها المحدد باليوم
+                        if (s.commitmentType === 'fixed_term' && s.commitmentEndsAt) {
+                          const ends = new Date(s.commitmentEndsAt);
+                          ends.setHours(23, 59, 59, 999);
+                          if (ends.getTime() < Date.now()) return false;
+                        }
+                        return true;
+                      })
                       .sort((a, b) => a.time.localeCompare(b.time));
                     if (daySlots.length === 0) return null;
                     return (
@@ -381,7 +390,16 @@ export function BookingWizardClient({
                                     : 'bg-white border border-slate-200 text-slate-700 hover:border-emerald-400'
                                 }`}
                               >
-                                {s.time}
+                                <span>{s.time}</span>
+                                {s.commitmentType === 'fixed_term' && s.commitmentEndsAt && (
+                                  <span
+                                    className={`block text-[10px] font-medium leading-tight mt-0.5 ${
+                                      isSelected ? 'text-emerald-100' : 'text-amber-700'
+                                    }`}
+                                  >
+                                    مؤقت حتى {s.commitmentEndsAt}
+                                  </span>
+                                )}
                               </button>
                             );
                           })}
