@@ -7,6 +7,7 @@ import { logAuditAction } from '@/lib/audit';
 import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/types/supabase';
 import { notifyUser, getInstructorUserId, notifyAdmins } from '@/lib/notifications';
+import { summarizeInstructorChangesText } from '@/lib/request-summary';
 
 /**
  * Instructor profile changes, certification and pricing settings.
@@ -32,20 +33,20 @@ async function requireOwnInstructorProfile(instructorId: string) {
 
   const { data } = await supabase
     .from('instructors')
-    .select('id')
+    .select('id, display_name')
     .eq('id', instructorId)
     .eq('user_id', user.id)
     .maybeSingle();
 
   if (!data) throw new Error('غير مصرح لك بتعديل هذا الملف');
-  return user;
+  return { user, instructorName: data.display_name };
 }
 
 export async function submitInstructorProfileUpdate(
   instructorId: string,
   changes: Partial<Instructor>
 ) {
-  await requireOwnInstructorProfile(instructorId);
+  const { instructorName } = await requireOwnInstructorProfile(instructorId);
   const supabase = await createClient();
 
   const { error } = await supabase.from('profile_update_requests').insert({
@@ -59,12 +60,59 @@ export async function submitInstructorProfileUpdate(
     throw new Error('تعذّر إرسال الطلب');
   }
 
-  // من غير الإشعار ده، طلب المراجعة بيستنى لحد ما حد يفتح شاشة المدرب
-  // بالصدفة — وده اللي كان بيحصل.
+  // تلخيص التغييرات التي تمت بدقة وإشعار الإدارة بها
+  const summary = summarizeInstructorChangesText(changes);
+
   await notifyAdmins({
     event: 'instructor_profile',
-    title: 'طلب تعديل ملف مدرب',
-    message: 'مدرب طلب تعديل بياناته وبيستنى المراجعة.',
+    title: `طلب تعديل ملف: ${instructorName || 'مدرب'}`,
+    message: summary,
+    link: `/dashboard/admin/instructors/${instructorId}`,
+  });
+
+  revalidatePath('/dashboard/instructor/settings');
+  revalidatePath(`/dashboard/admin/instructors/${instructorId}`);
+  return { success: true };
+}
+
+/**
+ * إرسال طلب مستقل لتعديل باقات التدريب المعتمدة للمدرب.
+ * يذهب في طلب منفصل للادارة للموافقة عليه أو رفضه.
+ */
+export async function submitInstructorPackageUpdateRequest(
+  instructorId: string,
+  packageIds: string[]
+) {
+  const { instructorName } = await requireOwnInstructorProfile(instructorId);
+  const supabase = await createClient();
+
+  // جلب أسماء الباقات لتوضيح أسماء الباقات المطلوبة في إشعار الإدارة
+  const { data: allPackages } = await supabase
+    .from('creative_writing_packages')
+    .select('id, name');
+
+  const requestedChanges = {
+    packageIds,
+    _requestType: 'packages' as const,
+  };
+
+  const { error } = await supabase.from('profile_update_requests').insert({
+    instructor_id: instructorId,
+    requested_changes: requestedChanges as never,
+    status: 'pending',
+  });
+
+  if (error) {
+    console.error('Error submitting package update request', error);
+    throw new Error('تعذّر إرسال طلب تعديل الباقات');
+  }
+
+  const summary = summarizeInstructorChangesText(requestedChanges, allPackages || []);
+
+  await notifyAdmins({
+    event: 'instructor_profile',
+    title: `طلب اعتماد باقات: ${instructorName || 'مدرب'}`,
+    message: summary,
     link: `/dashboard/admin/instructors/${instructorId}`,
   });
 
