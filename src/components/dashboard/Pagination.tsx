@@ -6,44 +6,48 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 /**
  * تقسيم الجداول على صفحات.
  *
- * الجداول في اللوحة كانت بتعرض كل الصفوف دفعة واحدة. مع 20 مدرب مش مشكلة،
- * مع 2000 عميل الصفحة بتقف.
+ * يدعم الاستدعاء الكامل بحجم الصفحة والإجمالي، أو الاستدعاء البسيط بعدد الصفحات الكلي.
  */
 export function Pagination({
   page,
-  pageSize,
+  pageSize = 25,
   total,
+  totalPages,
   onPageChange,
   onPageSizeChange,
 }: {
   page: number;
-  pageSize: number;
-  total: number;
+  pageSize?: number;
+  total?: number;
+  totalPages?: number;
   onPageChange: (page: number) => void;
-  onPageSizeChange: (size: number) => void;
+  onPageSizeChange?: (size: number) => void;
 }) {
-  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const pageCount = totalPages ?? (total !== undefined ? Math.max(1, Math.ceil(total / pageSize)) : 1);
+  const showSummary = total !== undefined && onPageSizeChange !== undefined;
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const to = Math.min(page * pageSize, total);
+  const to = Math.min(page * pageSize, total ?? 0);
 
   return (
     <div className="mt-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
-      <div className="flex items-center gap-3 text-sm font-medium text-slate-600">
-        <span>
-          {total === 0 ? 'لا توجد نتائج' : `${from}–${to} من ${total}`}
-        </span>
-        <select
-          value={pageSize}
-          onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          className="rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
-        >
-          {[25, 50, 100].map((n) => (
-            <option key={n} value={n}>
-              {n} في الصفحة
-            </option>
-          ))}
-        </select>
-      </div>
+      {showSummary && (
+        <div className="flex items-center gap-3 text-sm font-medium text-slate-600">
+          <span>
+            {total === 0 ? 'لا توجد نتائج' : `${from}–${to} من ${total}`}
+          </span>
+          <select
+            value={pageSize}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
+            className="rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
+          >
+            {[25, 50, 100].map((n) => (
+              <option key={n} value={n}>
+                {n} في الصفحة
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {pageCount > 1 && (
         <div className="flex items-center gap-2">

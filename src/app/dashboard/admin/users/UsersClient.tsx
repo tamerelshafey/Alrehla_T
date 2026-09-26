@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Check, Copy, Plus, Search, X } from 'lucide-react';
+import { Check, Copy, Eye, Plus, Search, X } from 'lucide-react';
 import { SimpleDataTable } from '@/components/dashboard/SimpleDataTable';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Pagination } from '@/components/dashboard/Pagination';
@@ -122,6 +122,18 @@ export function UsersClient({
     ) : (
       <span className="text-slate-400">—</span>
     ),
+    actionsDisplay: (
+      <div className="flex items-center gap-2">
+        <Link
+          href={`/dashboard/admin/users/${user.id}`}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-50 hover:border-slate-300 shadow-2xs"
+          title="عرض الملف وإدارة الحساب"
+        >
+          <Eye className="h-3.5 w-3.5 text-slate-500" />
+          <span>إدارة الحساب</span>
+        </Link>
+      </div>
+    ),
   }));
 
   const columns = [
@@ -129,6 +141,7 @@ export function UsersClient({
     { header: 'البريد الإلكتروني', accessorKey: 'emailDisplay' },
     { header: 'الدور', accessorKey: 'roleDisplay' },
     { header: 'ولي أمر', accessorKey: 'guardianDisplay' },
+    { header: 'الإجراءات', accessorKey: 'actionsDisplay' },
   ];
 
   return (
@@ -350,7 +363,7 @@ function AddUserForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [link, setLink] = useState('');
-  const [created, setCreated] = useState<{ email: string; password: string } | null>(null);
+  const [created, setCreated] = useState<{ fullName: string; email: string; password: string } | null>(null);
 
   const reset = () => setForm({ email: '', fullName: '', role: 'student', password: '' });
 
@@ -366,7 +379,11 @@ function AddUserForm({
           setError(result.error);
           return; // الفورم ما بيتفضّاش عند الفشل: التصحيح أسهل من إعادة الكتابة
         }
-        setCreated({ email: form.email.trim().toLowerCase(), password: result.password });
+        setCreated({
+          fullName: form.fullName.trim(),
+          email: form.email.trim().toLowerCase(),
+          password: result.password,
+        });
       } else {
         const result = await inviteUser(form);
         if (!result.ok) {
@@ -422,7 +439,13 @@ function AddUserForm({
         </div>
       )}
       {link && <InviteLinkBox link={link} />}
-      {created && <NewAccountBox email={created.email} password={created.password} />}
+      {created && (
+        <NewAccountBox
+          fullName={created.fullName}
+          email={created.email}
+          password={created.password}
+        />
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
@@ -520,51 +543,88 @@ function AddUserForm({
  * كلمة المرور مش متخزّنة عندنا في أي مكان، فلو الصفحة اتقفلت من غير
  * نسخها، الحل الوحيد هو تغييرها من جديد.
  */
-function NewAccountBox({ email, password }: { email: string; password: string }) {
-  const [copied, setCopied] = useState(false);
+function NewAccountBox({
+  fullName,
+  email,
+  password,
+}: {
+  fullName?: string;
+  email: string;
+  password: string;
+}) {
+  const [copiedKey, setCopiedKey] = useState<'code' | 'all' | 'whatsapp' | null>(null);
 
-  const copy = async () => {
+  const copy = async (what: 'code' | 'all' | 'whatsapp') => {
     try {
-      await navigator.clipboard.writeText(`${email}\n${password}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      if (what === 'code') {
+        await navigator.clipboard.writeText(password);
+      } else if (what === 'all') {
+        await navigator.clipboard.writeText(`البريد: ${email}\nكلمة المرور: ${password}`);
+      } else if (what === 'whatsapp') {
+        const msg = `مرحباً أستاذ/ة ${fullName || 'المحترم/ة'}،\n\nإليك بيانات تسجيل الدخول الخاصة بحسابك في منصة الرحلة:\n• البريد الإلكتروني: ${email}\n• كلمة المرور المؤقتة: ${password}\n• رابط الدخول: https://alrehlat.vercel.app/login\n\n⚠️ ملاحظة هامة: فور تسجيل الدخول، سيطلب منك الموقع تعيين كلمة مرور شخصية خاصة بك لحماية بيانات حسابك.\n\nنتمنى لك تجربة ممتعة وموفقة في المنصة!`;
+        await navigator.clipboard.writeText(msg);
+      }
+      setCopiedKey(what);
+      setTimeout(() => setCopiedKey(null), 2500);
     } catch {
-      setCopied(false);
+      setCopiedKey(null);
     }
   };
 
   return (
-    <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
-      <p className="font-bold text-emerald-900">الحساب اتعمل وجاهز للدخول.</p>
-      <p className="mt-1 text-sm font-medium text-emerald-900">
-        انسخ البيانات دي دلوقتي — <strong>الرمز مش هيظهر تاني</strong> ومش
-        متخزّن عندنا. وأول ما صاحب الحساب يدخل بيه، الموقع هيوقفه على شاشة يحطّ
-        فيها كلمة مروره بنفسه، وبعدها الرمز مايبقاش ينفع.
-      </p>
+    <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-xs">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <p className="font-bold text-emerald-950 text-base">تم إنشاء الحساب وجاهز للدخول فوراً ✓</p>
+          <p className="mt-1 text-xs font-medium text-emerald-800 leading-relaxed">
+            انسخ البيانات دي الآن — <strong>الرمز مش هيظهر تاني</strong> ومش متخزّن بنصه في أي مكان. أول ما صاحب الحساب يدخل بيه، هيطلب منه الموقع تعيين كلمة مروره الخاصة.
+          </p>
+        </div>
+      </div>
 
-      <div className="mt-3 space-y-2">
-        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2">
-          <span className="text-xs font-bold text-slate-500">البريد</span>
-          <span dir="ltr" className="flex-1 text-left text-sm text-slate-800">
+      <div className="mt-3 space-y-2.5">
+        <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-white px-4 py-2.5">
+          <span className="text-xs font-bold text-slate-500">البريد الإلكتروني:</span>
+          <span dir="ltr" className="font-mono text-sm font-bold text-slate-800">
             {email}
           </span>
         </div>
-        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2">
-          <span className="text-xs font-bold text-slate-500">الرمز المؤقت</span>
-          <span dir="ltr" className="flex-1 text-left font-mono text-sm text-slate-800">
+        <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-white px-4 py-2.5">
+          <span className="text-xs font-bold text-slate-500">الرمز / كلمة المرور:</span>
+          <span dir="ltr" className="font-mono text-base font-black tracking-wider text-emerald-900">
             {password}
           </span>
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={copy}
-        className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-800"
-      >
-        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-        {copied ? 'اتنسخ' : 'نسخ البريد والرمز'}
-      </button>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => copy('code')}
+          className="flex-1 min-w-[130px] flex items-center justify-center gap-1.5 rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs font-bold text-emerald-800 transition-colors hover:bg-emerald-100"
+        >
+          {copiedKey === 'code' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          <span>{copiedKey === 'code' ? 'تم نسخ الرمز' : 'نسخ الرمز فقط'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => copy('all')}
+          className="flex-1 min-w-[150px] flex items-center justify-center gap-1.5 rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs font-bold text-emerald-800 transition-colors hover:bg-emerald-100"
+        >
+          {copiedKey === 'all' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          <span>{copiedKey === 'all' ? 'تم نسخ البيانات' : 'نسخ البريد والرمز'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => copy('whatsapp')}
+          className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-emerald-800"
+        >
+          {copiedKey === 'whatsapp' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          <span>{copiedKey === 'whatsapp' ? 'تم نسخ رسالة الواتساب!' : 'نسخ رسالة واتساب جاهزة للشخص'}</span>
+        </button>
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser } from '@/data/domains/auth';
 import { DeleteAccountClient } from './DeleteAccountClient';
 import { ProfileForm } from './ProfileForm';
+import { PasswordChangeForm } from './PasswordChangeForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +34,8 @@ export default async function Page() {
       <h1 className="mb-8 text-2xl font-black text-slate-800">إعدادات الحساب</h1>
 
       <ProfileForm fullName={user.fullName} email={user.email} />
+
+      <PasswordChangeForm />
 
       <DeleteAccountClient hasOpenRequest={Boolean(openRequest)} />
     </div>

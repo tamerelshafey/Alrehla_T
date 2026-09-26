@@ -273,3 +273,58 @@ export async function updateUserRole(
   revalidatePath(`/dashboard/admin/users/${userId}`);
   return { ok: true };
 }
+
+/**
+ * إعادة تعيين أو منح كلمة مرور جديدة للمستخدم من لوحة الإدارة.
+ *
+ * لمساعدة المستخدمين والعملاء المتعثرين في الدخول أو الذين نسوا كلمة المرور.
+ * الإدارة يمكنها توليد رمز مؤقت أو إدخال كلمة مرور مخصصة.
+ * يتم تفعيل شاشة MUST_SET_PASSWORD لضمان الخصوصية عند أول دخول.
+ */
+export async function resetUserPassword(params: {
+  userId: string;
+  customPassword?: string;
+}): Promise<UserActionResult<{ email: string; tempCode: string; isCustom: boolean }>> {
+  const admin = await requireAdmin('canManageUsers', 'غير مصرح لك بإدارة حسابات المستخدمين');
+
+  const supabaseAdmin = createAdminClient();
+
+  const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(params.userId);
+  if (userError || !userData?.user) {
+    return { ok: false, error: 'تعذّر العثور على حساب الدخول لهذا المستخدم' };
+  }
+
+  const email = userData.user.email ?? '';
+  const typed = params.customPassword?.trim() ?? '';
+  if (typed && typed.length < 8) {
+    return { ok: false, error: 'كلمة المرور يجب أن تكون 8 أحرف أو أرقام على الأقل' };
+  }
+
+  const password = typed || generateTempCode();
+
+  const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(params.userId, {
+    password,
+    app_metadata: { [MUST_SET_PASSWORD]: true },
+  });
+
+  if (updateError) {
+    console.error('Error resetting user password', updateError);
+    return { ok: false, error: `تعذّر تعيين كلمة المرور: ${updateError.message}` };
+  }
+
+  await logAuditAction({
+    actorProfileId: admin.id,
+    actorName: admin.fullName,
+    action: 'user_password_reset',
+    entityType: 'UserProfile',
+    entityId: params.userId,
+    metadata: { email, isCustom: Boolean(typed) },
+  });
+
+  return {
+    ok: true,
+    email,
+    tempCode: password,
+    isCustom: Boolean(typed),
+  };
+}
