@@ -57,8 +57,8 @@ export function WeeklySchedulePicker({
   onChange,
   disabled = false,
 }: WeeklySchedulePickerProps) {
-  // نمط العرض: إما جدول الأيام السبعة معاً (grid) أو التركيز على يوم واحد (single)
-  const [viewMode, setViewMode] = useState<'grid' | 'single'>('grid');
+  // نمط العرض: التركيز على يوم محدد افتراضياً (single) مع إمكانية التبديل لعرض الأيام السبعة معاً (grid)
+  const [viewMode, setViewMode] = useState<'grid' | 'single'>('single');
   const [activeDay, setActiveDay] = useState<DayOfWeek>('saturday');
   const [customTime, setCustomTime] = useState<Record<DayOfWeek, string>>({
     saturday: '17:30',
